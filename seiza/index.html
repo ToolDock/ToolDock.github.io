@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>今日の星座占い｜12星座ランキング</title>
+
+<meta name="description" content="毎日朝4時更新。12星座の今日の運勢ランキング、ラッキーアイテム、アドバイスをチェック。">
+<meta name="keywords" content="星座占い,12星座,今日の運勢,占いランキング">
+<meta name="theme-color" content="#111827">
+
+<meta property="og:title" content="今日の星座占い">
+<meta property="og:description" content="毎日更新の12星座ランキング">
+<meta property="og:type" content="website">
+
+<link rel="canonical" href="./">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Hiragino Sans",
+        "Yu Gothic",
+        sans-serif;
+
+    min-height:100vh;
+
+    background:
+        radial-gradient(circle at top,#1e293b,#0f172a 70%);
+
+    color:white;
+    padding:18px;
+}
+
+.container{
+    max-width:760px;
+    margin:auto;
+}
+
+/* =========================
+   ヒーローバナー
+========================= */
+
+.hero{
+    position:relative;
+    overflow:hidden;
+
+    height:220px;
+
+    border-radius:26px;
+
+    margin-bottom:24px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    box-shadow:0 10px 30px rgba(0,0,0,0.35);
+}
+
+.hero-image{
+    position:absolute;
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+}
+
+.hero-overlay{
+    position:absolute;
+    inset:0;
+
+    background:linear-gradient(
+        180deg,
+        rgba(0,0,0,0.25),
+        rgba(0,0,0,0.55)
+    );
+}
+
+.hero-content{
+    position:relative;
+    z-index:2;
+    text-align:center;
+    padding:20px;
+}
+
+.hero h1{
+    font-size:2.2rem;
+    margin-bottom:12px;
+    text-shadow:0 4px 12px rgba(0,0,0,0.4);
+}
+
+.date{
+    opacity:0.9;
+    font-size:1rem;
+    text-shadow:0 2px 8px rgba(0,0,0,0.35);
+}
+
+/* =========================
+   UI
+========================= */
+
+.select-area{
+    display:flex;
+    gap:10px;
+    margin-bottom:22px;
+}
+
+select{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    background:#1e293b;
+    color:white;
+    font-size:1rem;
+}
+
+button{
+    border:none;
+    padding:14px 18px;
+    border-radius:14px;
+    background:#6366f1;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:translateY(-1px);
+}
+
+.card{
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px;
+    padding:18px;
+    margin-bottom:14px;
+    animation:fade 0.45s ease;
+}
+
+@keyframes fade{
+    from{
+        opacity:0;
+        transform:translateY(8px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.rank{
+    font-size:1.5rem;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.name{
+    font-size:1.25rem;
+    margin-bottom:12px;
+}
+
+.score{
+    color:#93c5fd;
+    margin-bottom:10px;
+    font-weight:bold;
+}
+
+.advice{
+    line-height:1.7;
+    opacity:0.92;
+}
+
+.lucky{
+    margin-top:12px;
+    color:#fde68a;
+}
+
+.me{
+    border:2px solid #facc15;
+    box-shadow:0 0 18px rgba(250,204,21,0.25);
+}
+
+footer{
+    margin-top:24px;
+    text-align:center;
+    opacity:0.6;
+    font-size:0.85rem;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header class="hero">
+
+    <img
+        class="hero-image"
+        src="https://images.unsplash.com/photo-1502134249126-9f3755a50d78?q=80&w=1600&auto=format&fit=crop"
+        alt="星空"
+    >
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+        <h1>今日の星座占い</h1>
+        <div class="date" id="date"></div>
+    </div>
+
+</header>
+
+<div class="select-area">
+    <select id="zodiacSelect"></select>
+
+    <button id="saveBtn">
+        自分の星座を保存
+    </button>
+</div>
+
+<div id="result"></div>
+
+<footer>
+    毎日朝4:00に更新
+</footer>
+
+</div>
+
+<script>
+
+window.dataLayer = window.dataLayer || [];
+
+function track(eventName,data={}){
+    dataLayer.push({event:eventName,...data});
+}
+
+const zodiacSigns = [
+"おひつじ座","おうし座","ふたご座","かに座",
+"しし座","おとめ座","てんびん座","さそり座",
+"いて座","やぎ座","みずがめ座","うお座"
+];
+
+const adviceTemplates = [
+"新しい挑戦が良い流れを呼びます。",
+"周囲との会話を大切にしましょう。",
+"無理せず休憩を取ると効率アップ。",
+"小さな行動が大きな成果に繋がります。",
+"今日は直感を信じると良い結果に。",
+"焦らず丁寧に進めるのがポイント。",
+"思い切った決断が運気を変えそうです。",
+"身の回りを整理すると気分も上向き。",
+"笑顔を意識すると良い縁に恵まれます。",
+"新しい知識を吸収すると吉。"
+];
+
+const advices =
+Array.from({length:100},(_,i)=>
+adviceTemplates[i%adviceTemplates.length]
+);
+
+const luckyItems = [
+"ノート","イヤホン","腕時計","コーヒー","本",
+"スマホケース","財布","水筒","キャンディ","傘",
+"帽子","シャツ","ペン","キーホルダー","ハンカチ",
+"スニーカー","タオル","チョコ","ガム","鏡",
+"ネックレス","リング","バッグ","リュック","充電器",
+"観葉植物","クッション","香水","マグカップ","ヘッドホン",
+"メモ帳","サングラス","ジャケット","カメラ","ポーチ",
+"マスク","ブレスレット","靴下","キーケース","スピーカー",
+"タブレット","USB","ライト","紅茶","ココア",
+"クッキー","アイス","パーカー","デニム","ベルト",
+"鉛筆","万年筆","辞書","ゲーム","リップ",
+"目薬","キャンドル","アルバム","シール","ストラップ",
+"ぬいぐるみ","イヤリング","ヘアゴム","バインダー","卓上時計",
+"ブックカバー","クロワッサン","パン","ミント","コイン",
+"手袋","カーディガン","タルト","プリン","炭酸水",
+"マフラー","カレンダー","文庫本","パズル","ペットボトル",
+"タンブラー","ペンダント","スマートウォッチ","消しゴム","定規",
+"付箋","Bluetooth","PC","キーボード","マウス",
+"モバイルバッテリー","うどん","そば","お茶","スープ"
+];
+
+function getDailySeedDate(){
+    const now=new Date();
+    if(now.getHours()<4) now.setDate(now.getDate()-1);
+    return now.getFullYear()+"-"+(now.getMonth()+1)+"-"+now.getDate();
+}
+
+function seededRandom(seed){
+    let h=2166136261;
+    for(let i=0;i<seed.length;i++){
+        h^=seed.charCodeAt(i);
+        h=Math.imul(h,16777619);
+    }
+    return function(){
+        h+=h<<13;h^=h>>>7;
+        h+=h<<3;h^=h>>>17;
+        h+=h<<5;
+        return (h>>>0)/4294967295;
+    };
+}
+
+function shuffle(arr,rand){
+    const a=[...arr];
+    for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(rand()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+}
+
+function generateRanking(){
+
+    const seed=getDailySeedDate();
+    const rand=seededRandom(seed);
+
+    const data=zodiacSigns.map(sign=>({
+        sign,
+        score:Math.floor(rand()*101),
+        advice:advices[Math.floor(rand()*advices.length)],
+        lucky:luckyItems[Math.floor(rand()*luckyItems.length)]
+    }));
+
+    data.sort((a,b)=>b.score-a.score);
+    data.forEach((v,i)=>v.rank=i+1);
+
+    return data;
+}
+
+function render(){
+
+    const result=document.getElementById("result");
+    result.innerHTML="";
+
+    const ranking=generateRanking();
+
+    const mySign=localStorage.getItem("myZodiac");
+
+    if(mySign){
+        ranking.sort((a,b)=>{
+            if(a.sign===mySign) return -1;
+            if(b.sign===mySign) return 1;
+            return a.rank-b.rank;
+        });
+    }
+
+    ranking.forEach(item=>{
+        const div=document.createElement("div");
+
+        div.className="card"+(item.sign===mySign?" me":"");
+
+        div.innerHTML=`
+            <div class="rank">${item.rank}位</div>
+            <div class="name">${item.sign}</div>
+            <div class="score">今日の運勢：${item.score}点</div>
+            <div class="advice">${item.advice}</div>
+            <div class="lucky">ラッキーアイテム：${item.lucky}</div>
+        `;
+
+        result.appendChild(div);
+    });
+
+    track("render_horoscope");
+}
+
+const select=document.getElementById("zodiacSelect");
+
+select.innerHTML='<option value="">自分の星座を選択</option>';
+
+zodiacSigns.forEach(s=>{
+    const o=document.createElement("option");
+    o.value=s;
+    o.textContent=s;
+    select.appendChild(o);
+});
+
+const saved=localStorage.getItem("myZodiac");
+if(saved) select.value=saved;
+
+document.getElementById("saveBtn").onclick=()=>{
+    if(!select.value) return alert("星座を選択してください");
+    localStorage.setItem("myZodiac",select.value);
+    render();
+    alert("保存しました");
+};
+
+document.getElementById("date").textContent=
+new Date().getFullYear()+"年"+(new Date().getMonth()+1)+"月"+new Date().getDate()+"日";
+
+render();
+
+</script>
+
+</body>
+</html>
