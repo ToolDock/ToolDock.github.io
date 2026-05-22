@@ -18,7 +18,7 @@ window.TOOLS = [
   
   {
     id: "h_roulette",
-    title: "ギリギリまで結果が分からないヒリつくルーレット🔥",
+    title: "ギリギリまで結果が分からないヒリつくルーレット",
     desc: "急加速、急停止、跳ね返り、逆回転、停止時の揺れ...とにかく最後まで読めない無料の激アツルーレットツール。",
     category: "life",
     url: "/h_roulette/"
@@ -30,6 +30,14 @@ window.TOOLS = [
     desc: "細かな設定が豊富な複利計算・投資信託などの積立をシュミレーションするツール。",
     category: "life",
     url: "/fukuri/"
+  },
+
+  {
+    id: "seiza",
+    title: "星座占い |　12星座の運勢チェック",
+    desc: "簡潔で前向きな星座占い。毎日4時更新です。",
+    category: "life",
+    url: "/seiza/"
   },
 
   {
