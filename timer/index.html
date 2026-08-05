@@ -5,59 +5,206 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Webタイマー・ストップウォッチ | ToolDock</title>
-<meta name="description" content="シンプルなタイマー・ストップウォッチ。">
+<title>Webタイマー・ストップウォッチ｜1分・3分・5分をワンタッチで測れる無料タイマー | ToolDock</title>
+<meta name="description" content="ブラウザだけで使える無料のタイマーとストップウォッチ。1分・3分・5分・10分などよく使う時間はワンタッチで設定でき、終了時は音・バイブレーション・画面の点滅で知らせます。一時停止と再開にも対応。">
 <link rel="canonical" href="https://tooldock.github.io/timer/">
 
 <script> const CURRENT_TOOL = "timer"; </script>
 <script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
-  
+
+<meta name="keywords" content="タイマー,ストップウォッチ,3分タイマー,5分タイマー,10分タイマー,キッチンタイマー,ポモドーロ,無料,オンライン">
+
 <style>
 body {
-    font-family: sans-serif;
-    background: white;
-    color: black;
-    text-align: center;
+    font-family: "Yu Gothic", "Meiryo", sans-serif;
+    background: #f4f6f9;
+    color: #222;
     margin: 0;
-    padding: 30px;
+    padding: 20px;
+    line-height: 1.7;
 }
 
 .container {
-    max-width: 550px;
-    margin: auto;
+    max-width: 800px;
+    margin: 0 auto 24px;
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.container.tool {
+    text-align: center;
 }
 
 h1 {
-    margin-bottom: 20px;
+    margin-top: 0;
+    font-size: 1.8rem;
+}
+
+h2 {
+    margin-top: 32px;
+    font-size: 1.3rem;
+    border-left: 5px solid #2563eb;
+    padding-left: 12px;
+    text-align: left;
+}
+
+h3 {
+    margin-top: 24px;
+    font-size: 1.05rem;
+}
+
+p.description {
+    color: #555;
+    text-align: left;
 }
 
 .mode-buttons {
-    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.mode-buttons button {
+    padding: 10px 24px;
+    border: 2px solid #cbd5e1;
+    border-radius: 999px;
+    background: white;
+    color: #334155;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.mode-buttons button:hover {
+    border-color: #2563eb;
+}
+
+.mode-buttons button.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+    font-weight: bold;
 }
 
 .time {
-    font-size: 60px;
+    font-size: 4.5rem;
     font-weight: bold;
-    margin: 30px 0;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    margin: 24px 0;
+    color: #0f172a;
 }
 
-button {
-    font-size: 16px;
-    padding: 10px 16px;
-    margin: 5px;
+.time.finished {
+    color: #dc2626;
 }
 
-.active {
-    font-weight: bold;
+.presets {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.presets button {
+    padding: 8px 16px;
+    border: 2px solid #cbd5e1;
+    border-radius: 999px;
+    background: white;
+    color: #334155;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.presets button:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.timer-setting {
+    margin-bottom: 20px;
 }
 
 .timer-setting input {
-    width: 70px;
-    padding: 5px;
-    font-size: 16px;
+    width: 72px;
+    padding: 10px;
+    font-size: 1rem;
     text-align: center;
+    border: 2px solid #cbd5e1;
+    border-radius: 10px;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.controls button {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 999px;
+    font-size: 1rem;
+    cursor: pointer;
+    color: white;
+    background: #2563eb;
+}
+
+.controls button:hover {
+    background: #1d4ed8;
+}
+
+.controls button.sub {
+    background: #64748b;
+}
+
+.controls button.sub:hover {
+    background: #475569;
+}
+
+.hint {
+    margin-top: 16px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+table.guide {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+table.guide th,
+table.guide td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 10px;
+    text-align: left;
+}
+
+table.guide th {
+    background: #f8fafc;
+    white-space: nowrap;
+}
+
+table.guide td.num {
+    text-align: right;
+    font-family: "Consolas", monospace;
+    white-space: nowrap;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+footer {
+    color: #666;
+    font-size: 0.9rem;
 }
 
 .flash {
@@ -65,79 +212,232 @@ button {
 }
 
 @keyframes flash {
-    0% { background: white; }
-    50% { background: black; color: white; }
-    100% { background: white; color: black; }
+    0%   { background: #f4f6f9; }
+    50%  { background: #0f172a; }
+    100% { background: #f4f6f9; }
+}
+
+@media (max-width: 600px) {
+    .container { padding: 20px; }
+    .time { font-size: 3.2rem; }
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="container tool">
 
-<h1>ストップウォッチ＆タイマー</h1>
+<h1>Webタイマー・ストップウォッチ</h1>
+
+<p class="description">
+    ブラウザだけで使える無料のタイマーとストップウォッチです。
+    よく使う時間はワンタッチで設定でき、時間になったら音・振動・画面の点滅でお知らせします。
+    インストールや会員登録は必要ありません。
+</p>
 
 <div class="mode-buttons">
-    <button id="stopwatchBtn" class="active">ストップウォッチ</button>
-    <button id="timerBtn">タイマー</button>
+    <button type="button" id="stopwatchBtn" class="active">ストップウォッチ</button>
+    <button type="button" id="timerBtn">タイマー</button>
 </div>
 
 <div class="time" id="display">00:00:00</div>
 
-<div class="timer-setting" id="timerSetting" style="display:none;">
-    <input id="h" type="number" value="0">時
-    <input id="m" type="number" value="1">分
-    <input id="s" type="number" value="0">秒
+<div id="timerPanel" style="display:none">
+
+    <div class="presets" id="presets">
+        <button type="button" data-seconds="60">1分</button>
+        <button type="button" data-seconds="180">3分</button>
+        <button type="button" data-seconds="300">5分</button>
+        <button type="button" data-seconds="600">10分</button>
+        <button type="button" data-seconds="900">15分</button>
+        <button type="button" data-seconds="1500">25分</button>
+        <button type="button" data-seconds="1800">30分</button>
+        <button type="button" data-seconds="3600">60分</button>
+    </div>
+
+    <div class="timer-setting">
+        <input id="h" type="number" min="0" max="99" value="0">時
+        <input id="m" type="number" min="0" max="59" value="3">分
+        <input id="s" type="number" min="0" max="59" value="0">秒
+    </div>
+
 </div>
 
-<div>
-    <button id="start">開始</button>
-    <button id="pause">停止</button>
-    <button id="reset">リセット</button>
+<div class="controls">
+    <button type="button" id="start">開始</button>
+    <button type="button" class="sub" id="pause">一時停止</button>
+    <button type="button" class="sub" id="reset">リセット</button>
 </div>
+
+<p class="hint">
+    一時停止したあと「開始」を押すと、途中から再開します。
+</p>
 
 </div>
 
-<h2>Webタイマーについて</h2>
-    
-シンプルで使いやすいタイマー・ストップウォッチです。
-      
-上部タブからタイマー・ストップウォッチを切り替えられます。
-      
-タイマー終了時には、音が鳴ります。(消音モードでは鳴りません。)
-    
+<div class="container">
+
+    <h2>使い方</h2>
+
+    <h3>タイマー</h3>
+    <p>
+        「タイマー」タブに切り替えて、時間を選ぶか数値を直接入力し、「開始」を押します。
+        1分・3分・5分といったよく使う長さは、ボタンひとつで設定できます。
+        時間になると、電子音・スマートフォンの振動・画面の点滅の3つでお知らせします。
+    </p>
+
+    <h3>ストップウォッチ</h3>
+    <p>
+        「ストップウォッチ」タブで「開始」を押すと計測が始まります。
+        「一時停止」で止め、もう一度「開始」を押すと続きから計測を再開します。
+        「リセット」で0に戻ります。
+    </p>
+
+    <h2>音が鳴らないときは</h2>
+
+    <ul>
+        <li><strong>端末が消音（マナー）モードになっている。</strong>iPhoneの場合、本体側面のスイッチが消音側になっていると音は鳴りません。</li>
+        <li><strong>ページを開いてから一度も操作していない。</strong>ブラウザは、利用者が操作していないページから音を出すことを制限しています。一度「開始」を押していれば問題ありません。</li>
+        <li><strong>タブを閉じた、またはブラウザを終了した。</strong>ページが開かれている必要があります。別のタブを見ている分には問題ありません。</li>
+    </ul>
+
+    <p>
+        音が出せない場面では、画面の点滅とスマートフォンの振動でも知らせるようにしています。
+    </p>
+
+    <h2>よく使われる時間の目安</h2>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr>
+                    <th>用途</th>
+                    <th>時間</th>
+                    <th>補足</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>カップ麺</td><td class="num">3分</td><td>種類によっては5分のものもあります</td></tr>
+                <tr><td>歯みがき</td><td class="num">3分</td><td>歯科でも推奨される長さです</td></tr>
+                <tr><td>パスタの茹で時間</td><td class="num">7〜9分</td><td>袋の表示にあわせてください</td></tr>
+                <tr><td>ゆで卵（半熟）</td><td class="num">6〜7分</td><td>沸騰してからの時間です</td></tr>
+                <tr><td>お茶の蒸らし</td><td class="num">1〜2分</td><td>煎茶は短め、ほうじ茶は長めです</td></tr>
+                <tr><td>仮眠（パワーナップ）</td><td class="num">15〜20分</td><td>長すぎると目覚めが悪くなります</td></tr>
+                <tr><td>ポモドーロ・テクニック</td><td class="num">25分</td><td>作業25分＋休憩5分を1セット</td></tr>
+                <tr><td>筋トレのインターバル</td><td class="num">60〜180秒</td><td>目的によって変わります</td></tr>
+                <tr><td>プレゼンの持ち時間</td><td class="num">5〜15分</td><td>練習時の計測に</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>ポモドーロ・テクニックとは</h2>
+
+    <p>
+        25分の作業と5分の休憩を1セットとして繰り返す時間管理の方法です。
+        4セット終えたら、15〜30分の長めの休憩をとります。
+        「あと25分だけ」と区切ることで取りかかりやすくなり、
+        こまめに休憩を挟むため集中が続きやすいとされています。
+    </p>
+
+    <p>
+        このタイマーでは、プリセットの「25分」で作業時間を、「5分」で休憩時間を計れます。
+    </p>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 別のタブを開いていてもタイマーは動きますか？</strong><br>
+    A. 動きます。残り時間は時刻から計算しているため、タブが裏に回っていてもずれません。
+    ただしブラウザ自体を閉じると止まります。</p>
+
+    <p><strong>Q. 一時停止したあと、続きから再開できますか？</strong><br>
+    A. できます。「一時停止」で止めて「開始」を押すと、途中から続きます。
+    最初から測り直したいときは「リセット」を押してください。</p>
+
+    <p><strong>Q. 24時間を超える長さも設定できますか？</strong><br>
+    A. 「時」の欄に最大99まで入力できます。</p>
+
+    <p><strong>Q. アプリのインストールは必要ですか？</strong><br>
+    A. 不要です。ブラウザ上でそのまま動作します。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。計測した内容が外部に送信されることはありません。
+</footer>
+
 <script>
+/* =========================
+   状態
+   elapsed に停止までの経過を積み、
+   動作中は startedAt からの差分を足して現在値を求める
+========================= */
 
 let mode = "stopwatch";
 
-let timer = null;
+let running = false;
+let elapsed = 0;     // 一時停止までに積み上げた経過時間(ms)
+let startedAt = 0;   // 直近に開始した時刻
+let duration = 0;    // タイマーの設定時間(ms)
+let finished = false;
 
-let startTime = 0;
-let endTime = 0;
-
+let ticker = null;
 let audioCtx = null;
 
 const display = document.getElementById("display");
-const body = document.body;
-
 const stopwatchBtn = document.getElementById("stopwatchBtn");
 const timerBtn = document.getElementById("timerBtn");
-const timerSetting = document.getElementById("timerSetting");
+const timerPanel = document.getElementById("timerPanel");
+
+/* =========================
+   表示
+========================= */
 
 function format(ms) {
-    const s = Math.max(0, Math.floor(ms / 1000));
-    const h = String(Math.floor(s / 3600)).padStart(2,"0");
-    const m = String(Math.floor((s % 3600)/60)).padStart(2,"0");
-    const sec = String(s % 60).padStart(2,"0");
-    return `${h}:${m}:${sec}`;
+    const total = Math.max(0, Math.round(ms / 1000));
+
+    const h = String(Math.floor(total / 3600)).padStart(2, "0");
+    const m = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
+    const s = String(total % 60).padStart(2, "0");
+
+    return `${h}:${m}:${s}`;
 }
+
+function currentElapsed() {
+    return elapsed + (running ? Date.now() - startedAt : 0);
+}
+
+function readInputs() {
+    const h = Number(document.getElementById("h").value) || 0;
+    const m = Number(document.getElementById("m").value) || 0;
+    const s = Number(document.getElementById("s").value) || 0;
+
+    return (h * 3600 + m * 60 + s) * 1000;
+}
+
+function paint() {
+    if (mode === "stopwatch") {
+        display.textContent = format(currentElapsed());
+        return;
+    }
+
+    const remaining = duration - currentElapsed();
+
+    display.textContent = format(remaining);
+}
+
+/* =========================
+   音・振動・点滅
+========================= */
 
 function ensureAudio() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
-    if (audioCtx.state === "suspended") audioCtx.resume();
+
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+    }
 }
 
 function beep() {
@@ -162,117 +462,163 @@ function beep() {
 
 function vibrate() {
     if (navigator.vibrate) {
-        navigator.vibrate([200,100,200,100,300]);
+        navigator.vibrate([200, 100, 200, 100, 300]);
     }
 }
 
 function flash() {
-    body.classList.add("flash");
-    setTimeout(() => body.classList.remove("flash"), 900);
+    document.body.classList.add("flash");
+
+    setTimeout(() => document.body.classList.remove("flash"), 900);
 }
 
-function update() {
-    const now = Date.now();
+function notifyFinish() {
+    finished = true;
 
-    if (mode === "stopwatch") {
-        display.textContent = format(now - startTime);
-    } else {
-        display.textContent = format(endTime - now);
+    display.classList.add("finished");
+
+    flash();
+    vibrate();
+
+    for (let i = 0; i < 5; i++) {
+        setTimeout(beep, i * 150);
     }
 }
 
-function setMode(m) {
+/* =========================
+   操作
+========================= */
 
-    clearInterval(timer);
-    timer = null;
+function tick() {
+    paint();
 
-    mode = m;
+    if (mode === "timer" && duration - currentElapsed() <= 0) {
+        stopTicker();
 
-    if (mode === "stopwatch") {
-        stopwatchBtn.classList.add("active");
-        timerBtn.classList.remove("active");
-        timerSetting.style.display = "none";
-    } else {
-        timerBtn.classList.add("active");
-        stopwatchBtn.classList.remove("active");
-        timerSetting.style.display = "block";
+        elapsed = duration;
+        running = false;
+
+        display.textContent = "00:00:00";
+
+        notifyFinish();
     }
-
-    display.textContent = "00:00:00";
 }
 
-stopwatchBtn.onclick = () => setMode("stopwatch");
-timerBtn.onclick = () => setMode("timer");
-
-function startStopwatch() {
-    startTime = Date.now();
-    clearInterval(timer);
-    timer = setInterval(update, 30);
+function startTicker() {
+    stopTicker();
+    ticker = setInterval(tick, 100);
 }
 
-function startTimer() {
+function stopTicker() {
+    clearInterval(ticker);
+    ticker = null;
+}
 
-    const h = Number(document.getElementById("h").value);
-    const m = Number(document.getElementById("m").value);
-    const s = Number(document.getElementById("s").value);
+function start() {
+    if (running) return;
 
-    const duration = (h*3600 + m*60 + s) * 1000;
+    ensureAudio();
 
-    if (duration <= 0) return;
+    if (mode === "timer") {
 
-    startTime = Date.now();
-    endTime = startTime + duration;
-
-    clearInterval(timer);
-
-    timer = setInterval(() => {
-
-        const now = Date.now();
-        const remaining = endTime - now;
-
-        update();
-
-        if (remaining <= 0) {
-
-            clearInterval(timer);
-            timer = null;
-
-            display.textContent = "00:00:00";
-
-            flash();
-            vibrate();
-
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => beep(), i * 150);
-            }
-
+        /* 未開始、または前回が終わっているときは設定値を読み直す */
+        if (elapsed === 0 || elapsed >= duration) {
+            duration = readInputs();
+            elapsed = 0;
         }
 
-    }, 30);
+        if (duration <= 0) return;
+    }
+
+    finished = false;
+    display.classList.remove("finished");
+
+    running = true;
+    startedAt = Date.now();
+
+    startTicker();
+    paint();
 }
 
-document.getElementById("start").onclick = () => {
-    ensureAudio();
-    if (mode === "stopwatch") startStopwatch();
-    else startTimer();
-};
+function pause() {
+    if (!running) return;
 
-document.getElementById("pause").onclick = () => {
-    clearInterval(timer);
-    timer = null;
-};
+    elapsed += Date.now() - startedAt;
+    running = false;
 
-document.getElementById("reset").onclick = () => {
-    clearInterval(timer);
-    timer = null;
-    display.textContent = "00:00:00";
-};
+    stopTicker();
+    paint();
+}
+
+function reset() {
+    stopTicker();
+
+    running = false;
+    elapsed = 0;
+    finished = false;
+
+    display.classList.remove("finished");
+
+    if (mode === "timer") {
+        duration = readInputs();
+        display.textContent = format(duration);
+    } else {
+        display.textContent = "00:00:00";
+    }
+}
+
+function setMode(next) {
+    mode = next;
+
+    const isTimer = mode === "timer";
+
+    timerBtn.classList.toggle("active", isTimer);
+    stopwatchBtn.classList.toggle("active", !isTimer);
+    timerPanel.style.display = isTimer ? "block" : "none";
+
+    reset();
+}
+
+/* =========================
+   イベント
+========================= */
+
+stopwatchBtn.addEventListener("click", () => setMode("stopwatch"));
+timerBtn.addEventListener("click", () => setMode("timer"));
+
+document.getElementById("start").addEventListener("click", start);
+document.getElementById("pause").addEventListener("click", pause);
+document.getElementById("reset").addEventListener("click", reset);
+
+document.getElementById("presets").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-seconds]");
+
+    if (!button) return;
+
+    const total = Number(button.dataset.seconds);
+
+    document.getElementById("h").value = Math.floor(total / 3600);
+    document.getElementById("m").value = Math.floor((total % 3600) / 60);
+    document.getElementById("s").value = total % 60;
+
+    reset();
+});
+
+/* 設定を変えたら、動作していないときは表示に反映する */
+["h", "m", "s"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
+        if (mode === "timer" && !running && elapsed === 0) {
+            duration = readInputs();
+            display.textContent = format(duration);
+        }
+    });
+});
 
 setMode("stopwatch");
-
 </script>
 
 <div id="related-tools"></div>
 <script src="/js/related.js"></script>
+
 </body>
 </html>

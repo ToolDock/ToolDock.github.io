@@ -4,36 +4,970 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Todoリスト | ToolDock</title>
-<meta name="description" content="課題や業務の期限を管理できるシンプルなTodoリスト。">
+<title>Todoリスト｜期限・優先度で管理できる登録不要の無料タスク管理ツール | ToolDock</title>
+<meta name="description" content="期限と優先度をつけて、やることを管理できる無料のTodoリストです。期限切れや今日が期限のタスクを色分けして表示し、並べ替えや絞り込みもできます。登録不要、データはブラウザ内に保存されます。">
 <link rel="canonical" href="https://tooldock.github.io/todolist/">
 
 <script> const CURRENT_TOOL = "todolist"; </script>
 <script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
-  
+
+<meta name="keywords" content="Todoリスト,ToDo,やることリスト,タスク管理,チェックリスト,期限管理,優先度,無料,登録不要,ブラウザ">
+
+<style>
+    body {
+        font-family: "Yu Gothic", "Meiryo", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto 24px;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+        margin-top: 0;
+        font-size: 1.9rem;
+    }
+
+    h2 {
+        margin-top: 32px;
+        font-size: 1.3rem;
+        border-left: 5px solid #2563eb;
+        padding-left: 12px;
+    }
+
+    h3 {
+        margin-top: 24px;
+        font-size: 1.05rem;
+    }
+
+    p.description {
+        color: #555;
+    }
+
+    /* ===== 入力 ===== */
+
+    .add-form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .add-form input[type="text"] {
+        padding: 14px;
+        font-size: 1.05rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 10px;
+        grid-column: 1 / -1;
+    }
+
+    .add-form input[type="text"]:focus {
+        outline: none;
+        border-color: #2563eb;
+    }
+
+    .add-detail {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        grid-column: 1 / -1;
+    }
+
+    .add-detail input,
+    .add-detail select {
+        padding: 10px;
+        font-size: 0.95rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 10px;
+    }
+
+    button.action {
+        padding: 11px 22px;
+        border: none;
+        border-radius: 999px;
+        background: #2563eb;
+        color: white;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    button.action:hover {
+        background: #1d4ed8;
+    }
+
+    button.action.sub {
+        background: #64748b;
+    }
+
+    button.action.sub:hover {
+        background: #475569;
+    }
+
+    /* ===== 集計・絞り込み ===== */
+
+    .summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .summary .chip {
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        font-size: 0.9rem;
+        color: #475569;
+    }
+
+    .summary .chip strong {
+        font-size: 1.05rem;
+        color: #0f172a;
+    }
+
+    .summary .chip.alert {
+        background: #fef2f2;
+        color: #991b1b;
+    }
+
+    .summary .chip.alert strong {
+        color: #991b1b;
+    }
+
+    .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .filters button {
+        padding: 7px 14px;
+        border: 2px solid #cbd5e1;
+        border-radius: 999px;
+        background: white;
+        color: #334155;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    .filters button:hover {
+        border-color: #2563eb;
+    }
+
+    .filters button.active {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: white;
+        font-weight: bold;
+    }
+
+    .toolbar .spacer {
+        flex: 1;
+    }
+
+    .toolbar select {
+        padding: 8px;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+
+    /* ===== 一覧 ===== */
+
+    ul.todo-list {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0 0;
+    }
+
+    li.todo {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        border: 1px solid #e2e8f0;
+        border-left: 5px solid #cbd5e1;
+        border-radius: 12px;
+        background: white;
+    }
+
+    li.todo.priority-high { border-left-color: #dc2626; }
+    li.todo.priority-normal { border-left-color: #2563eb; }
+    li.todo.priority-low { border-left-color: #94a3b8; }
+
+    li.todo.done {
+        background: #f8fafc;
+        border-left-color: #cbd5e1;
+    }
+
+    li.todo.done .todo-text {
+        text-decoration: line-through;
+        color: #94a3b8;
+    }
+
+    li.todo input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-top: 3px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .todo-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .todo-text {
+        word-break: break-word;
+        cursor: text;
+    }
+
+    .todo-edit {
+        width: 100%;
+        padding: 8px;
+        font-size: 1rem;
+        border: 2px solid #2563eb;
+        border-radius: 8px;
+        box-sizing: border-box;
+    }
+
+    .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 6px;
+    }
+
+    .badge {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .badge.overdue {
+        background: #fee2e2;
+        color: #991b1b;
+        font-weight: bold;
+    }
+
+    .badge.today {
+        background: #ffedd5;
+        color: #9a3412;
+        font-weight: bold;
+    }
+
+    .badge.soon {
+        background: #fef9c3;
+        color: #854d0e;
+    }
+
+    .badge.high {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge.low {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+
+    .todo-delete {
+        border: none;
+        background: transparent;
+        color: #94a3b8;
+        font-size: 1.3rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 2px 6px;
+        flex-shrink: 0;
+    }
+
+    .todo-delete:hover {
+        color: #dc2626;
+    }
+
+    .empty {
+        padding: 40px 20px;
+        text-align: center;
+        color: #94a3b8;
+        border: 2px dashed #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .backup {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%) translateY(20px);
+        background: #1f2937;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 999px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s, transform 0.25s;
+        z-index: 10;
+    }
+
+    .toast.shown {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    footer {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+        .container { padding: 20px; }
+        .toolbar .spacer { display: none; }
+    }
+</style>
 </head>
+
 <body>
 
-  <h1>ToDoリスト</h1>
+<div class="container">
 
-  <input type="text" id="todoInput" placeholder="予定">
-　<input type="date" id="todoDate" placeholder="日付">
-　<input type="time" id="todoTime" placeholder="時間">
-　<button onclick="addTodo()">追加</button>
+    <h1>Todoリスト</h1>
 
-  <ul id="todoList"></ul>
+    <p class="description">
+        やることに<strong>期限と優先度</strong>をつけて管理できる無料のTodoリストです。
+        期限が過ぎたものや今日が期限のものを色分けして表示し、並べ替えや絞り込みもできます。
+        会員登録は不要で、入力した内容はブラウザの中だけに保存されます。
+    </p>
 
-   <h2>Todoリストについて</h2>
-  <p>
-  完全Webのみで使えるTodoリストです。
-  データはブラウザのみで管理され、サーバーには送信されません。
-  </p>
+    <div class="add-form">
+        <input type="text" id="todoInput" placeholder="やることを入力（例：レポートを提出する）" autocomplete="off">
 
-  <script src="todo.js"></script>
+        <div class="add-detail">
+            <label>期限 <input type="date" id="todoDate"></label>
+            <label>時刻 <input type="time" id="todoTime"></label>
+
+            <label>優先度
+                <select id="todoPriority">
+                    <option value="high">高</option>
+                    <option value="normal" selected>中</option>
+                    <option value="low">低</option>
+                </select>
+            </label>
+
+            <button type="button" class="action" id="addBtn">追加</button>
+        </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div class="toolbar">
+        <div class="filters" id="filters">
+            <button type="button" data-filter="all" class="active">すべて</button>
+            <button type="button" data-filter="active">未完了</button>
+            <button type="button" data-filter="overdue">期限切れ</button>
+            <button type="button" data-filter="today">今日</button>
+            <button type="button" data-filter="done">完了</button>
+        </div>
+
+        <div class="spacer"></div>
+
+        <select id="sortSelect">
+            <option value="due">期限が近い順</option>
+            <option value="priority">優先度順</option>
+            <option value="created">追加した順</option>
+        </select>
+    </div>
+
+    <ul class="todo-list" id="todoList"></ul>
+
+    <div class="backup">
+        <button type="button" class="action sub" id="clearDoneBtn">完了したものを削除</button>
+        <button type="button" class="action sub" id="exportBtn">バックアップを保存</button>
+        <button type="button" class="action sub" id="importBtn">バックアップを読み込む</button>
+        <input type="file" id="importFile" accept="application/json" hidden>
+    </div>
+
+</div>
+
+<div class="container">
+
+    <h2>使い方</h2>
+
+    <h3>追加する</h3>
+    <p>
+        やることを入力して「追加」を押すか、入力欄で <kbd>Enter</kbd> キーを押します。
+        期限と優先度は省略できます。期限だけを決めて時刻を空にした場合は、その日の終わりまでが期限として扱われます。
+    </p>
+
+    <h3>完了・編集・削除</h3>
+    <p>
+        左のチェックボックスで完了になります。取り消したいときはもう一度押してください。
+        文字の部分をクリックすると、その場で書き直せます。右端の「×」で削除します。
+    </p>
+
+    <h3>色の意味</h3>
+    <p>
+        左端の縦線は優先度を表し、<strong>高が赤・中が青・低がグレー</strong>です。
+        期限のバッジは、過ぎているものが赤、今日が期限のものがオレンジ、24時間以内のものが黄色になります。
+    </p>
+
+    <h2>データの保存について</h2>
+
+    <p>
+        入力した内容は、お使いのブラウザ内（localStorage）にのみ保存されます。
+        サーバーには一切送信されないため、他の人に見られる心配はありません。
+        その代わり、次の場合には内容が消えることがあります。
+    </p>
+
+    <ul>
+        <li>ブラウザの閲覧履歴やサイトデータを削除したとき</li>
+        <li>プライベートモード（シークレットモード）で使っていたとき</li>
+        <li>別の端末・別のブラウザで開いたとき（内容は共有されません）</li>
+    </ul>
+
+    <p>
+        大事な予定を入れている場合は、「バックアップを保存」でJSONファイルとして書き出しておけます。
+        別の端末に移したいときは、書き出したファイルを「バックアップを読み込む」から取り込んでください。
+    </p>
+
+    <h2>タスク管理のコツ</h2>
+
+    <ul>
+        <li><strong>やることは動詞で書く。</strong>「レポート」ではなく「レポートの結論を書く」と書くと、何をすればいいか迷わなくなります。</li>
+        <li><strong>大きすぎるタスクは分ける。</strong>1回で終わらない項目は、30分程度で終わる単位に割ってから登録します。</li>
+        <li><strong>優先度「高」は絞る。</strong>すべてを高にすると優先度の意味がなくなります。今日中に終える必要があるものだけを高にしてください。</li>
+        <li><strong>期限は自分との約束として入れる。</strong>締切そのものではなく、着手予定日を入れておくと期限切れになりにくくなります。</li>
+    </ul>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 会員登録やログインは必要ですか？</strong><br>
+    A. 不要です。ページを開いた時点ですぐ使えます。</p>
+
+    <p><strong>Q. スマートフォンとパソコンで同期できますか？</strong><br>
+    A. 同期はできません。データはブラウザごとに保存されるためです。
+    移したい場合はバックアップの書き出しと読み込みをご利用ください。</p>
+
+    <p><strong>Q. 期限が来たら通知は来ますか？</strong><br>
+    A. 通知機能はありません。ページを開いたときに、期限切れや今日が期限のタスクが色分けして表示されます。</p>
+
+    <p><strong>Q. 以前のバージョンで登録した内容は残りますか？</strong><br>
+    A. 残ります。以前のデータは自動的に新しい形式へ引き継がれ、優先度は「中」として扱われます。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================
+   データ
+   { id, text, due, priority, done, createdAt }
+   due は "YYYY-MM-DDTHH:mm" または null
+========================= */
+
+const STORAGE_KEY = "todos";
+
+let todos = [];
+let currentFilter = "all";
+
+const PRIORITY_ORDER = { high: 0, normal: 1, low: 2 };
+const PRIORITY_LABEL = { high: "優先度 高", normal: "優先度 中", low: "優先度 低" };
+
+function load() {
+    let raw;
+
+    try {
+        raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    } catch (e) {
+        raw = null;
+    }
+
+    if (!Array.isArray(raw)) {
+        todos = [];
+        return;
+    }
+
+    /* 旧形式 { id, text, date } からの移行 */
+    todos = raw.map(item => ({
+        id: item.id ?? Date.now() + Math.random(),
+        text: String(item.text ?? ""),
+        due: item.due !== undefined ? item.due : (item.date || null),
+        priority: item.priority || "normal",
+        done: item.done === true,
+        createdAt: item.createdAt ?? item.id ?? Date.now()
+    })).filter(item => item.text !== "");
+}
+
+function save() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    } catch (e) {
+        showToast("保存できませんでした");
+    }
+}
+
+/* =========================
+   期限の判定
+========================= */
+
+function dueDate(todo) {
+    if (!todo.due) return null;
+
+    /* 時刻が無い場合はその日の終わりを期限とみなす */
+    const value = todo.due.includes("T") ? todo.due : todo.due + "T23:59";
+
+    const d = new Date(value);
+
+    return isNaN(d.getTime()) ? null : d;
+}
+
+function isSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear()
+        && a.getMonth() === b.getMonth()
+        && a.getDate() === b.getDate();
+}
+
+function dueState(todo) {
+    const d = dueDate(todo);
+
+    if (!d || todo.done) return "none";
+
+    const now = new Date();
+
+    if (d < now) return "overdue";
+    if (isSameDay(d, now)) return "today";
+    if (d - now < 24 * 60 * 60 * 1000) return "soon";
+
+    return "future";
+}
+
+function formatDue(todo) {
+    const d = dueDate(todo);
+
+    if (!d) return "";
+
+    const hasTime = todo.due.includes("T") && !todo.due.endsWith("T23:59");
+
+    const base = `${d.getMonth() + 1}月${d.getDate()}日`;
+
+    if (!hasTime) return base;
+
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+
+    return `${base} ${hh}:${mm}`;
+}
+
+/* =========================
+   描画
+========================= */
+
+function escapeHTML(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+function visibleTodos() {
+    const list = todos.filter(todo => {
+        const state = dueState(todo);
+
+        switch (currentFilter) {
+            case "active": return !todo.done;
+            case "done": return todo.done;
+            case "overdue": return state === "overdue";
+            case "today": return state === "today";
+            default: return true;
+        }
+    });
+
+    const sort = document.getElementById("sortSelect").value;
+
+    return list.sort((a, b) => {
+        /* 完了したものは常に後ろへ */
+        if (a.done !== b.done) return a.done ? 1 : -1;
+
+        if (sort === "priority") {
+            const diff = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+            if (diff !== 0) return diff;
+        }
+
+        if (sort === "due" || sort === "priority") {
+            const da = dueDate(a);
+            const db = dueDate(b);
+
+            /* 期限なしは後ろ */
+            if (da && db && da - db !== 0) return da - db;
+            if (da && !db) return -1;
+            if (!da && db) return 1;
+        }
+
+        return a.createdAt - b.createdAt;
+    });
+}
+
+function render() {
+    const listEl = document.getElementById("todoList");
+
+    const list = visibleTodos();
+
+    if (list.length === 0) {
+        listEl.innerHTML = `
+            <li class="empty">
+                ${todos.length === 0
+                    ? "まだ何も登録されていません。上の入力欄から追加してください。"
+                    : "この条件に当てはまるものはありません。"}
+            </li>
+        `;
+    } else {
+        listEl.innerHTML = list.map(todo => {
+            const state = dueState(todo);
+
+            const dueBadge = todo.due
+                ? `<span class="badge ${state === "future" || state === "none" ? "" : state}">
+                     ${state === "overdue" ? "期限切れ " : ""}${escapeHTML(formatDue(todo))}
+                   </span>`
+                : "";
+
+            const priorityBadge = todo.priority === "normal"
+                ? ""
+                : `<span class="badge ${todo.priority}">${PRIORITY_LABEL[todo.priority]}</span>`;
+
+            const badges = dueBadge || priorityBadge
+                ? `<div class="badges">${dueBadge}${priorityBadge}</div>`
+                : "";
+
+            return `
+                <li class="todo priority-${todo.priority}${todo.done ? " done" : ""}" data-id="${todo.id}">
+                    <input type="checkbox" ${todo.done ? "checked" : ""} aria-label="完了">
+
+                    <div class="todo-body">
+                        <div class="todo-text">${escapeHTML(todo.text)}</div>
+                        ${badges}
+                    </div>
+
+                    <button type="button" class="todo-delete" aria-label="削除">×</button>
+                </li>
+            `;
+        }).join("");
+    }
+
+    renderSummary();
+}
+
+function renderSummary() {
+    const active = todos.filter(t => !t.done).length;
+    const done = todos.filter(t => t.done).length;
+    const overdue = todos.filter(t => dueState(t) === "overdue").length;
+    const today = todos.filter(t => dueState(t) === "today").length;
+
+    document.getElementById("summary").innerHTML = `
+        <span class="chip">未完了 <strong>${active}</strong></span>
+        <span class="chip${overdue > 0 ? " alert" : ""}">期限切れ <strong>${overdue}</strong></span>
+        <span class="chip">今日が期限 <strong>${today}</strong></span>
+        <span class="chip">完了 <strong>${done}</strong></span>
+    `;
+}
+
+/* =========================
+   操作
+========================= */
+
+function addTodo() {
+    const input = document.getElementById("todoInput");
+    const dateInput = document.getElementById("todoDate");
+    const timeInput = document.getElementById("todoTime");
+    const priority = document.getElementById("todoPriority").value;
+
+    const text = input.value.trim();
+
+    if (text === "") {
+        input.focus();
+        return;
+    }
+
+    let due = null;
+
+    if (dateInput.value) {
+        due = timeInput.value
+            ? `${dateInput.value}T${timeInput.value}`
+            : `${dateInput.value}T23:59`;
+    }
+
+    todos.push({
+        id: Date.now() + Math.random(),
+        text,
+        due,
+        priority,
+        done: false,
+        createdAt: Date.now()
+    });
+
+    input.value = "";
+    dateInput.value = "";
+    timeInput.value = "";
+
+    save();
+    render();
+
+    input.focus();
+}
+
+function findTodo(id) {
+    return todos.find(t => String(t.id) === String(id));
+}
+
+document.getElementById("addBtn").addEventListener("click", addTodo);
+
+document.getElementById("todoInput").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        addTodo();
+    }
+});
+
+document.getElementById("todoList").addEventListener("click", (event) => {
+    const li = event.target.closest("li.todo");
+
+    if (!li) return;
+
+    const todo = findTodo(li.dataset.id);
+
+    if (!todo) return;
+
+    if (event.target.matches('input[type="checkbox"]')) {
+        todo.done = event.target.checked;
+        save();
+        render();
+        return;
+    }
+
+    if (event.target.closest(".todo-delete")) {
+        todos = todos.filter(t => String(t.id) !== String(todo.id));
+        save();
+        render();
+        return;
+    }
+
+    if (event.target.closest(".todo-text")) {
+        startEdit(li, todo);
+    }
+});
+
+function startEdit(li, todo) {
+    const textEl = li.querySelector(".todo-text");
+
+    if (!textEl || li.querySelector(".todo-edit")) return;
+
+    const input = document.createElement("input");
+
+    input.type = "text";
+    input.className = "todo-edit";
+    input.value = todo.text;
+
+    textEl.replaceWith(input);
+
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+
+    /* Enter とフォーカス外れの両方で確定するが、二重に走らせない */
+    let settled = false;
+
+    const commit = () => {
+        if (settled) return;
+        settled = true;
+
+        const value = input.value.trim();
+
+        if (value !== "") {
+            todo.text = value;
+            save();
+        }
+
+        render();
+    };
+
+    const cancel = () => {
+        if (settled) return;
+        settled = true;
+
+        render();
+    };
+
+    input.addEventListener("blur", commit);
+
+    input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            commit();
+        }
+
+        if (event.key === "Escape") {
+            event.preventDefault();
+            cancel();
+        }
+    });
+}
+
+document.getElementById("filters").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-filter]");
+
+    if (!button) return;
+
+    currentFilter = button.dataset.filter;
+
+    document.querySelectorAll("#filters button").forEach(b => {
+        b.classList.toggle("active", b === button);
+    });
+
+    render();
+});
+
+document.getElementById("sortSelect").addEventListener("change", render);
+
+document.getElementById("clearDoneBtn").addEventListener("click", () => {
+    const count = todos.filter(t => t.done).length;
+
+    if (count === 0) {
+        showToast("完了したものはありません");
+        return;
+    }
+
+    todos = todos.filter(t => !t.done);
+
+    save();
+    render();
+
+    showToast(`${count}件を削除しました`);
+});
+
+/* =========================
+   バックアップ
+========================= */
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+    if (todos.length === 0) {
+        showToast("保存するものがありません");
+        return;
+    }
+
+    const blob = new Blob(
+        [JSON.stringify(todos, null, 2)],
+        { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    const today = new Date();
+
+    link.href = url;
+    link.download =
+        `todolist-${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}.json`;
+    link.click();
+
+    URL.revokeObjectURL(url);
+
+    showToast("バックアップを保存しました");
+});
+
+document.getElementById("importBtn").addEventListener("click", () => {
+    document.getElementById("importFile").click();
+});
+
+document.getElementById("importFile").addEventListener("change", (event) => {
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+        let data;
+
+        try {
+            data = JSON.parse(reader.result);
+        } catch (e) {
+            showToast("読み込めないファイルです");
+            return;
+        }
+
+        if (!Array.isArray(data)) {
+            showToast("読み込めないファイルです");
+            return;
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+        load();
+        render();
+
+        showToast(`${todos.length}件を読み込みました`);
+    };
+
+    reader.readAsText(file);
+
+    event.target.value = "";
+});
+
+/* =========================
+   その他
+========================= */
+
+function showToast(message) {
+    const el = document.getElementById("toast");
+
+    el.textContent = message;
+    el.classList.add("shown");
+
+    setTimeout(() => el.classList.remove("shown"), 1800);
+}
+
+load();
+render();
+</script>
 
 <div id="related-tools"></div>
 <script src="/js/related.js"></script>
+
 </body>
 </html>
