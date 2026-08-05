@@ -1,0 +1,2202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>論理回路図メーカー｜論理式・真理値表・状態遷移表から回路図を自動作成 | ToolDock</title>
+<meta name="description" content="論理式や真理値表、状態遷移表を入力すると、MIL記号の回路図を自動で描く無料ツール。クワイン・マクラスキー法での簡単化、D・JK・Tフリップフロップを使った順序回路の設計にも対応し、SVGとPNGで保存できます。">
+<link rel="canonical" href="https://tooldock.github.io/circuit/">
+
+<script> const CURRENT_TOOL = "circuit"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<meta name="keywords" content="論理回路,回路図,論理式,真理値表,状態遷移表,カルノー図,クワイン・マクラスキー,簡単化,フリップフロップ,順序回路,MIL記号,情報処理">
+
+<style>
+    body {
+        font-family: "Yu Gothic", "Meiryo", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 0 auto 24px;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 { margin-top: 0; font-size: 1.85rem; }
+
+    h2 {
+        margin-top: 32px;
+        font-size: 1.3rem;
+        border-left: 5px solid #2563eb;
+        padding-left: 12px;
+    }
+
+    h3 { margin-top: 24px; font-size: 1.05rem; }
+
+    p.description { color: #555; }
+
+    /* ===== タブ ===== */
+
+    .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 22px 0 20px;
+    }
+
+    .tabs button {
+        padding: 11px 22px;
+        border: 2px solid #cbd5e1;
+        border-radius: 999px;
+        background: white;
+        color: #334155;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    .tabs button:hover { border-color: #2563eb; }
+
+    .tabs button.active {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: white;
+        font-weight: bold;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ===== 入力 ===== */
+
+    .field { margin: 16px 0; }
+
+    .field > label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 6px;
+    }
+
+    input[type="text"].expr {
+        width: 100%;
+        padding: 14px;
+        font-size: 1.15rem;
+        font-family: "Consolas", "Courier New", monospace;
+        border: 2px solid #cbd5e1;
+        border-radius: 10px;
+        box-sizing: border-box;
+    }
+
+    input[type="text"].expr:focus { outline: none; border-color: #2563eb; }
+
+    input[type="number"], select {
+        padding: 9px;
+        font-size: 1rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+    }
+
+    .inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+    }
+
+    .samples {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .samples button {
+        padding: 6px 13px;
+        border: 2px solid #cbd5e1;
+        border-radius: 999px;
+        background: white;
+        color: #334155;
+        font-size: 0.85rem;
+        font-family: "Consolas", monospace;
+        cursor: pointer;
+    }
+
+    .samples button:hover { border-color: #2563eb; color: #2563eb; }
+
+    button.action {
+        padding: 12px 26px;
+        border: none;
+        border-radius: 999px;
+        background: #2563eb;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    button.action:hover { background: #1d4ed8; }
+
+    button.action.sub { background: #64748b; }
+    button.action.sub:hover { background: #475569; }
+
+    .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .hint { color: #666; font-size: 0.9rem; }
+
+    .error {
+        margin-top: 16px;
+        padding: 13px 16px;
+        border-radius: 10px;
+        background: #fef2f2;
+        border-left: 5px solid #dc2626;
+        color: #991b1b;
+    }
+
+    .error code {
+        background: rgba(0,0,0,0.06);
+        padding: 1px 5px;
+        border-radius: 4px;
+    }
+
+    /* ===== 結果 ===== */
+
+    .result-block {
+        margin-top: 26px;
+    }
+
+    .result-block > .label {
+        font-weight: bold;
+        color: #1e40af;
+        margin-bottom: 8px;
+    }
+
+    .svg-wrap {
+        overflow-x: auto;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 10px;
+    }
+
+    .svg-wrap svg { display: block; }
+
+    .formula {
+        font-size: 1.15rem;
+        font-family: "Consolas", "Courier New", monospace;
+        background: #f8fafc;
+        border-left: 5px solid #2563eb;
+        padding: 12px 16px;
+        border-radius: 8px;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .formula + .formula { margin-top: 8px; }
+
+    .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .stats .chip {
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        font-size: 0.88rem;
+        color: #475569;
+    }
+
+    .stats .chip strong { color: #0f172a; }
+
+    /* ===== 表 ===== */
+
+    table.tt {
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-family: "Consolas", monospace;
+    }
+
+    table.tt th, table.tt td {
+        border: 1px solid #d6dbe2;
+        padding: 6px 13px;
+        text-align: center;
+    }
+
+    table.tt th {
+        background: #eceff3;
+        font-family: "Yu Gothic", sans-serif;
+        white-space: nowrap;
+    }
+
+    table.tt td.out { background: #eff6ff; font-weight: bold; }
+    table.tt td.sep { border-left: 3px double #94a3b8; }
+
+    table.tt select, table.tt input {
+        width: 62px;
+        padding: 4px;
+        font-size: 0.92rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        text-align: center;
+    }
+
+    table.tt select.wide { width: 82px; }
+
+    .table-scroll { overflow-x: auto; }
+
+    table.guide {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+
+    table.guide th, table.guide td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    table.guide th { background: #f8fafc; white-space: nowrap; }
+
+    code {
+        background: #eef1f6;
+        padding: 2px 6px;
+        border-radius: 5px;
+        font-size: 0.94em;
+    }
+
+    .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%) translateY(20px);
+        background: #1f2937;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 999px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s, transform 0.25s;
+        z-index: 10;
+    }
+
+    .toast.shown { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    footer { color: #666; font-size: 0.9rem; }
+
+    @media (max-width: 600px) {
+        .container { padding: 20px; }
+        input[type="text"].expr { font-size: 1rem; }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>論理回路図メーカー</h1>
+
+    <p class="description">
+        論理式・真理値表・状態遷移表のいずれかを入力すると、
+        <strong>MIL記号の回路図</strong>を自動で描くツールです。
+        クワイン・マクラスキー法による簡単化、
+        D・JK・T フリップフロップを使った順序回路の設計にも対応しています。
+        描いた回路図は SVG と PNG で保存できます。
+    </p>
+
+    <div class="tabs" id="tabs">
+        <button type="button" data-tab="expr" class="active">論理式から</button>
+        <button type="button" data-tab="truth">真理値表から</button>
+        <button type="button" data-tab="state">状態遷移表から</button>
+    </div>
+
+    <!-- ===== 論理式モード ===== -->
+
+    <div class="panel active" id="panel-expr">
+
+        <div class="field">
+            <label for="exprInput">論理式</label>
+            <input type="text" class="expr" id="exprInput"
+                   value="Y = A·B + !C" autocomplete="off" spellcheck="false">
+
+            <div class="samples" id="exprSamples">
+                <button type="button" data-e="Y = A·B + !C">A·B + !C</button>
+                <button type="button" data-e="Y = (A + B) · (!A + C)">(A+B)(!A+C)</button>
+                <button type="button" data-e="S = A xor B xor Cin">半加算・全加算</button>
+                <button type="button" data-e="Y = !(A · B)">NAND</button>
+                <button type="button" data-e="Y = A·!B + !A·B">XOR展開</button>
+                <button type="button" data-e="Y = A·B·C + A·!B + !A·C">3変数</button>
+            </div>
+
+            <p class="hint">
+                <code>·</code> <code>*</code> <code>&amp;</code> <code>AND</code> が論理積、
+                <code>+</code> <code>|</code> <code>OR</code> が論理和、
+                <code>!</code> <code>~</code> <code>NOT</code> が否定、
+                <code>^</code> <code>xor</code> が排他的論理和です。
+                <code>Y =</code> は省略できます。
+            </p>
+        </div>
+
+        <div class="buttons">
+            <button type="button" class="action" id="exprRun">回路図を描く</button>
+            <button type="button" class="action sub" id="exprSimplify">簡単化してから描く</button>
+        </div>
+
+        <div id="exprOut"></div>
+    </div>
+
+    <!-- ===== 真理値表モード ===== -->
+
+    <div class="panel" id="panel-truth">
+
+        <div class="field inline">
+            <label style="margin:0">入力変数の数
+                <input type="number" id="ttVars" min="1" max="5" value="3">
+            </label>
+            <button type="button" class="action sub" id="ttBuild">表を作る</button>
+        </div>
+
+        <p class="hint">
+            出力欄は <code>0</code> / <code>1</code> のほか、
+            <code>x</code>（ドントケア＝どちらでもよい）が使えます。
+        </p>
+
+        <div class="table-scroll" id="ttTable"></div>
+
+        <div class="buttons">
+            <button type="button" class="action" id="ttRun">簡単化して回路図を描く</button>
+        </div>
+
+        <div id="ttOut"></div>
+    </div>
+
+    <!-- ===== 状態遷移表モード ===== -->
+
+    <div class="panel" id="panel-state">
+
+        <div class="field inline">
+            <label style="margin:0">状態の数
+                <input type="number" id="stStates" min="2" max="8" value="4">
+            </label>
+
+            <label style="margin:0">入力の数
+                <input type="number" id="stInputs" min="0" max="2" value="1">
+            </label>
+
+            <label style="margin:0">フリップフロップ
+                <select id="stFF">
+                    <option value="D">D-FF</option>
+                    <option value="JK">JK-FF</option>
+                    <option value="T">T-FF</option>
+                </select>
+            </label>
+
+            <label style="margin:0">出力の型
+                <select id="stModel">
+                    <option value="moore">ムーア型（状態で決まる）</option>
+                    <option value="mealy">ミーリ型（状態と入力で決まる）</option>
+                </select>
+            </label>
+
+            <button type="button" class="action sub" id="stBuild">表を作る</button>
+        </div>
+
+        <p class="hint">
+            次状態と出力を埋めてください。出力は <code>0</code> / <code>1</code> / <code>x</code> が使えます。
+        </p>
+
+        <div class="table-scroll" id="stTable"></div>
+
+        <div class="buttons">
+            <button type="button" class="action" id="stRun">順序回路を設計する</button>
+        </div>
+
+        <div id="stOut"></div>
+    </div>
+
+</div>
+
+<div class="container">
+
+    <h2>入力できる書き方</h2>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr><th>意味</th><th>使える記号</th><th>例</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>論理積（AND）</td><td><code>·</code> <code>*</code> <code>&amp;</code> <code>&amp;&amp;</code> <code>∧</code> <code>AND</code> 、または並べるだけ</td><td><code>A·B</code>、<code>AB</code></td></tr>
+                <tr><td>論理和（OR）</td><td><code>+</code> <code>|</code> <code>||</code> <code>∨</code> <code>OR</code></td><td><code>A + B</code></td></tr>
+                <tr><td>否定（NOT）</td><td><code>!</code> <code>~</code> <code>¬</code> <code>NOT</code>、後置の <code>'</code></td><td><code>!A</code>、<code>A'</code></td></tr>
+                <tr><td>排他的論理和（XOR）</td><td><code>^</code> <code>⊕</code> <code>XOR</code></td><td><code>A ^ B</code></td></tr>
+                <tr><td>NAND / NOR / XNOR</td><td><code>NAND</code> <code>NOR</code> <code>XNOR</code></td><td><code>A NAND B</code></td></tr>
+                <tr><td>定数</td><td><code>0</code> <code>1</code></td><td><code>A·1</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        優先順位は <strong>NOT &gt; AND &gt; XOR &gt; OR</strong> です。
+        括弧を使えば順序を明示できます。
+    </p>
+
+    <h3>変数名の決まり</h3>
+
+    <p>
+        <code>AB</code> のように大文字が続いている場合は、積の記号を省略したものとみなして
+        <code>A·B</code> と解釈します。
+        いっぽう <code>Cin</code> <code>Q0</code> <code>clk</code> のように
+        小文字・数字・アンダースコアを含むものは、まとめて1つの変数名として扱います。
+        大文字だけの名前を1つの変数として使いたいときは、<code>A_B</code> のように
+        アンダースコアを入れてください。
+    </p>
+
+    <h2>MIL記号の読み方</h2>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr><th>ゲート</th><th>形</th><th>働き</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>AND</td><td>右側が半円のD形</td><td>すべての入力が1のときだけ1</td></tr>
+                <tr><td>OR</td><td>先がとがった盾形</td><td>どれか1つでも1なら1</td></tr>
+                <tr><td>NOT</td><td>三角形＋先端の丸</td><td>0と1を反転する</td></tr>
+                <tr><td>XOR</td><td>OR形＋後ろにもう1本の弧</td><td>入力が異なるときだけ1</td></tr>
+                <tr><td>NAND / NOR / XNOR</td><td>それぞれの形＋出力の丸</td><td>出力を反転したもの</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        出力側についている小さな丸は「否定」を表します。
+        NAND は AND の出力に丸がついたもの、NOR は OR の出力に丸がついたものです。
+    </p>
+
+    <h2>簡単化について</h2>
+
+    <p>
+        「簡単化」では<strong>クワイン・マクラスキー法</strong>を使って、
+        主加法標準形（積和形）の最小の形を求めています。
+        カルノー図で手作業でまとめるのと同じ結果になりますが、
+        変数が5個あってもそのまま計算できます。
+    </p>
+
+    <p>
+        ドントケア（<code>x</code>）を指定すると、1として扱ったほうが式が短くなる場合に自動で利用します。
+        「この入力の組み合わせは起こり得ない」という条件があるときに使うと、回路が小さくなります。
+    </p>
+
+    <h2>順序回路の設計手順</h2>
+
+    <p>
+        状態遷移表から順序回路を作るとき、このツールは次の順に処理しています。
+    </p>
+
+    <ol>
+        <li><strong>状態割り当て</strong>：各状態に2進数を割り当てます（4状態なら Q1Q0 = 00, 01, 10, 11）</li>
+        <li><strong>次状態の論理を求める</strong>：状態ビットごとに、次の値が1になる組み合わせを集めます</li>
+        <li><strong>励起入力を求める</strong>：使うフリップフロップに応じて入力を逆算します</li>
+        <li><strong>簡単化</strong>：それぞれの式を最小の積和形にします</li>
+        <li><strong>回路図を描く</strong>：組み合わせ回路とフリップフロップをつなぎ、出力を状態に戻します</li>
+    </ol>
+
+    <h3>フリップフロップごとの励起入力</h3>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr>
+                    <th>今の値 Q</th><th>次の値 Q⁺</th>
+                    <th>D</th><th>J</th><th>K</th><th>T</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>0</td><td>0</td><td>0</td><td>0</td><td>×</td><td>0</td></tr>
+                <tr><td>0</td><td>1</td><td>1</td><td>1</td><td>×</td><td>1</td></tr>
+                <tr><td>1</td><td>0</td><td>0</td><td>×</td><td>1</td><td>1</td></tr>
+                <tr><td>1</td><td>1</td><td>1</td><td>×</td><td>0</td><td>0</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        × はドントケアです。JK-FF は × が多いぶん、簡単化したときに式が短くなりやすく、
+        使うゲートの数が減ることがよくあります。
+        D-FF は次状態をそのまま与えるだけなので、導出が最も単純です。
+    </p>
+
+    <h2>ムーア型とミーリ型の違い</h2>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr><th></th><th>ムーア型</th><th>ミーリ型</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>出力の決まり方</td><td>今の状態だけで決まる</td><td>今の状態と入力で決まる</td></tr>
+                <tr><td>入力が変わったとき</td><td>次のクロックまで出力は変わらない</td><td>すぐ出力が変わる</td></tr>
+                <tr><td>必要な状態数</td><td>多くなりやすい</td><td>少なくて済むことが多い</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 描いた回路図は保存できますか？</strong><br>
+    A. SVG と PNG で保存できます。SVG は拡大しても粗くならないため、レポートや資料に貼るときはこちらが向いています。</p>
+
+    <p><strong>Q. 入力した式や表は送信されますか？</strong><br>
+    A. されません。すべてブラウザ上で処理しています。</p>
+
+    <p><strong>Q. NANDだけで作る回路（NAND変換）は出せますか？</strong><br>
+    A. 現在は入力した式の形、または積和形での出力に対応しています。</p>
+
+    <p><strong>Q. カルノー図も見たいです。</strong><br>
+    A. 簡単化の結果として、まとめられた項（主項）を式の形で表示しています。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   1. 論理式のパーサ
+   優先順位： NOT > AND > XOR > OR
+========================================================= */
+
+const OP_WORDS = ["NAND", "NOR", "XNOR", "XOR", "AND", "OR", "NOT"];
+
+function tokenize(src) {
+    const tokens = [];
+    let i = 0;
+
+    const s = src
+        .replace(/[·∧＊*]/g, "&")
+        .replace(/[∨]/g, "|")
+        .replace(/[¬￢]/g, "!")
+        .replace(/[⊕]/g, "^")
+        .replace(/[（]/g, "(")
+        .replace(/[）]/g, ")");
+
+    while (i < s.length) {
+        const ch = s[i];
+
+        if (/\s/.test(ch)) { i++; continue; }
+
+        if (ch === "(" || ch === ")") {
+            tokens.push({ type: ch });
+            i++;
+            continue;
+        }
+
+        if (ch === "'") { tokens.push({ type: "POST_NOT" }); i++; continue; }
+
+        if (ch === "&") {
+            i += (s[i + 1] === "&") ? 2 : 1;
+            tokens.push({ type: "AND" });
+            continue;
+        }
+
+        if (ch === "|") {
+            i += (s[i + 1] === "|") ? 2 : 1;
+            tokens.push({ type: "OR" });
+            continue;
+        }
+
+        if (ch === "+") { tokens.push({ type: "OR" }); i++; continue; }
+        if (ch === "^") { tokens.push({ type: "XOR" }); i++; continue; }
+        if (ch === "!" || ch === "~") { tokens.push({ type: "NOT" }); i++; continue; }
+
+        if (/[A-Za-z_]/.test(ch)) {
+            let j = i;
+            while (j < s.length && /[A-Za-z0-9_]/.test(s[j])) j++;
+
+            const word = s.slice(i, j);
+            const upper = word.toUpperCase();
+
+            if (OP_WORDS.includes(upper)) {
+                tokens.push({ type: upper });
+            } else if (/^[A-Z]{2,}$/.test(word)) {
+                /* 大文字だけが続く場合は AB のような積の省略とみなして1文字ずつに分ける。
+                   Cin や Q0 のように小文字・数字・_ を含むものは1つの変数名として扱う */
+                [...word].forEach((ch, k) => {
+                    if (k > 0) tokens.push({ type: "AND" });
+                    tokens.push({ type: "VAR", name: ch });
+                });
+            } else {
+                tokens.push({ type: "VAR", name: word });
+            }
+
+            i = j;
+            continue;
+        }
+
+        if (/[01]/.test(ch)) {
+            tokens.push({ type: "CONST", value: Number(ch) });
+            i++;
+            continue;
+        }
+
+        throw new Error(`「${ch}」は使えない記号です。`);
+    }
+
+    return tokens;
+}
+
+function parseExpression(src) {
+    /* "Y = ..." の左辺を切り離す */
+    let outputName = "Y";
+    let body = src;
+
+    const eq = src.indexOf("=");
+
+    if (eq !== -1) {
+        const left = src.slice(0, eq).trim();
+
+        if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(left)) {
+            throw new Error("「=」の左側には出力の名前だけを書いてください。");
+        }
+
+        outputName = left;
+        body = src.slice(eq + 1);
+    }
+
+    if (body.trim() === "") throw new Error("式が入力されていません。");
+
+    const tokens = tokenize(body);
+    let pos = 0;
+
+    const peek = () => tokens[pos];
+    const next = () => tokens[pos++];
+
+    function parseOr() {
+        let node = parseXor();
+
+        while (peek() && (peek().type === "OR" || peek().type === "NOR")) {
+            const op = next().type;
+            const right = parseXor();
+
+            node = op === "OR"
+                ? { type: "or", inputs: [node, right] }
+                : { type: "nor", inputs: [node, right] };
+        }
+
+        return node;
+    }
+
+    function parseXor() {
+        let node = parseAnd();
+
+        while (peek() && (peek().type === "XOR" || peek().type === "XNOR")) {
+            const op = next().type;
+            const right = parseAnd();
+
+            node = { type: op.toLowerCase(), inputs: [node, right] };
+        }
+
+        return node;
+    }
+
+    function isAtomStart(t) {
+        return t && (t.type === "VAR" || t.type === "CONST"
+            || t.type === "(" || t.type === "NOT");
+    }
+
+    function parseAnd() {
+        let node = parseUnary();
+
+        for (;;) {
+            const t = peek();
+
+            if (!t) break;
+
+            if (t.type === "AND" || t.type === "NAND") {
+                const op = next().type;
+                const right = parseUnary();
+
+                node = op === "AND"
+                    ? { type: "and", inputs: [node, right] }
+                    : { type: "nand", inputs: [node, right] };
+
+                continue;
+            }
+
+            /* 並置による積（AB のような書き方） */
+            if (isAtomStart(t)) {
+                const right = parseUnary();
+                node = { type: "and", inputs: [node, right] };
+                continue;
+            }
+
+            break;
+        }
+
+        return node;
+    }
+
+    function parseUnary() {
+        const t = peek();
+
+        if (!t) throw new Error("式が途中で終わっています。");
+
+        if (t.type === "NOT") {
+            next();
+            return { type: "not", inputs: [parseUnary()] };
+        }
+
+        return parsePostfix();
+    }
+
+    function parsePostfix() {
+        let node = parseAtom();
+
+        while (peek() && peek().type === "POST_NOT") {
+            next();
+            node = { type: "not", inputs: [node] };
+        }
+
+        return node;
+    }
+
+    function parseAtom() {
+        const t = next();
+
+        if (!t) throw new Error("式が途中で終わっています。");
+
+        if (t.type === "VAR") return { type: "var", name: t.name };
+        if (t.type === "CONST") return { type: "const", value: t.value };
+
+        if (t.type === "(") {
+            const node = parseOr();
+            const close = next();
+
+            if (!close || close.type !== ")") {
+                throw new Error("閉じ括弧「)」が足りません。");
+            }
+
+            return node;
+        }
+
+        if (t.type === ")") throw new Error("対応する開き括弧「(」がありません。");
+
+        throw new Error(`「${t.type}」の位置が正しくありません。`);
+    }
+
+    const ast = parseOr();
+
+    if (pos < tokens.length) {
+        throw new Error("式の後ろに余分な記号があります。");
+    }
+
+    return { ast, outputName };
+}
+
+/* ---- AST から変数を集める ---- */
+
+function collectVars(ast, set = new Set()) {
+    if (ast.type === "var") set.add(ast.name);
+    (ast.inputs || []).forEach(child => collectVars(child, set));
+    return set;
+}
+
+/* ---- AST の評価 ---- */
+
+function evalAst(ast, env) {
+    switch (ast.type) {
+        case "var": return env[ast.name] ? 1 : 0;
+        case "const": return ast.value;
+        case "not": return evalAst(ast.inputs[0], env) ? 0 : 1;
+        case "and": return ast.inputs.every(c => evalAst(c, env)) ? 1 : 0;
+        case "or": return ast.inputs.some(c => evalAst(c, env)) ? 1 : 0;
+        case "nand": return ast.inputs.every(c => evalAst(c, env)) ? 0 : 1;
+        case "nor": return ast.inputs.some(c => evalAst(c, env)) ? 0 : 1;
+        case "xor": return ast.inputs.reduce((a, c) => a ^ evalAst(c, env), 0);
+        case "xnor": return ast.inputs.reduce((a, c) => a ^ evalAst(c, env), 0) ? 0 : 1;
+        default: throw new Error("不明なノードです：" + ast.type);
+    }
+}
+
+/* =========================================================
+   2. 真理値表とクワイン・マクラスキー法
+========================================================= */
+
+function truthTable(ast, vars) {
+    const rows = [];
+
+    for (let m = 0; m < (1 << vars.length); m++) {
+        const env = {};
+
+        vars.forEach((v, i) => {
+            env[v] = (m >> (vars.length - 1 - i)) & 1;
+        });
+
+        rows.push({ index: m, env, out: evalAst(ast, env) });
+    }
+
+    return rows;
+}
+
+/* minterms と don't care から最小の積和形を求める */
+function quineMcCluskey(minterms, dontCares, nVars) {
+    const all = [...new Set([...minterms, ...dontCares])].sort((a, b) => a - b);
+
+    if (minterms.length === 0) return { terms: [], constant: 0 };
+    if (minterms.length === (1 << nVars)) return { terms: [], constant: 1 };
+
+    /* 項は {mask, value, covers:Set} で表す。mask のビットが1＝その変数は消えている */
+    let groups = all.map(m => ({ mask: 0, value: m, covers: new Set([m]) }));
+
+    const primes = [];
+    const seen = new Set();
+
+    const key = t => `${t.mask}:${t.value & ~t.mask}`;
+
+    while (groups.length) {
+        const used = new Array(groups.length).fill(false);
+        const nextGroups = [];
+        const nextSeen = new Set();
+
+        for (let i = 0; i < groups.length; i++) {
+            for (let j = i + 1; j < groups.length; j++) {
+                const a = groups[i], b = groups[j];
+
+                if (a.mask !== b.mask) continue;
+
+                const diff = (a.value & ~a.mask) ^ (b.value & ~b.mask);
+
+                if (diff === 0 || (diff & (diff - 1)) !== 0) continue;
+
+                used[i] = true;
+                used[j] = true;
+
+                const merged = {
+                    mask: a.mask | diff,
+                    value: a.value & ~diff,
+                    covers: new Set([...a.covers, ...b.covers])
+                };
+
+                const k = key(merged);
+
+                if (!nextSeen.has(k)) {
+                    nextSeen.add(k);
+                    nextGroups.push(merged);
+                }
+            }
+        }
+
+        groups.forEach((g, i) => {
+            if (!used[i]) {
+                const k = key(g);
+                if (!seen.has(k)) { seen.add(k); primes.push(g); }
+            }
+        });
+
+        groups = nextGroups;
+    }
+
+    /* 主項からの被覆選択（必須主項＋貪欲法） */
+    const targets = minterms.slice();
+    const chosen = [];
+    const covered = new Set();
+
+    /* 必須主項 */
+    for (const m of targets) {
+        const owners = primes.filter(p => p.covers.has(m));
+
+        if (owners.length === 1 && !chosen.includes(owners[0])) {
+            chosen.push(owners[0]);
+            owners[0].covers.forEach(c => covered.add(c));
+        }
+    }
+
+    /* 残りを貪欲に */
+    for (;;) {
+        const remain = targets.filter(m => !covered.has(m));
+
+        if (remain.length === 0) break;
+
+        let best = null, bestCount = -1;
+
+        for (const p of primes) {
+            if (chosen.includes(p)) continue;
+
+            const count = remain.filter(m => p.covers.has(m)).length;
+
+            if (count > bestCount) { bestCount = count; best = p; }
+        }
+
+        if (!best || bestCount === 0) break;
+
+        chosen.push(best);
+        best.covers.forEach(c => covered.add(c));
+    }
+
+    return { terms: chosen, constant: null };
+}
+
+/* 項を AST に変換 */
+function termToAst(term, vars) {
+    const n = vars.length;
+    const lits = [];
+
+    for (let i = 0; i < n; i++) {
+        const bit = n - 1 - i;
+
+        if (term.mask & (1 << bit)) continue;
+
+        const positive = (term.value >> bit) & 1;
+        const v = { type: "var", name: vars[i] };
+
+        lits.push(positive ? v : { type: "not", inputs: [v] });
+    }
+
+    if (lits.length === 0) return { type: "const", value: 1 };
+    if (lits.length === 1) return lits[0];
+
+    return { type: "and", inputs: lits };
+}
+
+function sopToAst(result, vars) {
+    if (result.constant === 0) return { type: "const", value: 0 };
+    if (result.constant === 1) return { type: "const", value: 1 };
+    if (result.terms.length === 0) return { type: "const", value: 0 };
+
+    const termAsts = result.terms.map(t => termToAst(t, vars));
+
+    return termAsts.length === 1
+        ? termAsts[0]
+        : { type: "or", inputs: termAsts };
+}
+
+/* =========================================================
+   3. 式の文字列化
+========================================================= */
+
+const PREC = { or: 1, xor: 2, xnor: 2, nor: 1, and: 3, nand: 3, not: 4, var: 5, const: 5 };
+
+function astToString(ast, parentPrec = 0) {
+    const p = PREC[ast.type] || 5;
+    let s;
+
+    switch (ast.type) {
+        case "var": return ast.name;
+        case "const": return String(ast.value);
+
+        case "not": {
+            const inner = ast.inputs[0];
+            const needParen = (PREC[inner.type] || 5) < 4;
+            const body = astToString(inner, 4);
+            return needParen ? `!(${body})` : `!${body}`;
+        }
+
+        case "and":
+            s = ast.inputs.map(c => astToString(c, p)).join("·");
+            break;
+
+        case "or":
+            s = ast.inputs.map(c => astToString(c, p)).join(" + ");
+            break;
+
+        case "xor":
+            s = ast.inputs.map(c => astToString(c, p)).join(" ^ ");
+            break;
+
+        case "nand":
+            return `!(${ast.inputs.map(c => astToString(c, 0)).join("·")})`;
+
+        case "nor":
+            return `!(${ast.inputs.map(c => astToString(c, 0)).join(" + ")})`;
+
+        case "xnor":
+            return `!(${ast.inputs.map(c => astToString(c, 0)).join(" ^ ")})`;
+
+        default:
+            s = "?";
+    }
+
+    return p < parentPrec ? `(${s})` : s;
+}
+
+/* =========================================================
+   4. ネットリスト（回路のモデル）
+========================================================= */
+
+let nodeSeq = 0;
+
+function makeNetlist() {
+    return { nodes: new Map(), order: [] };
+}
+
+function addNode(net, node) {
+    const id = node.id || ("n" + (nodeSeq++));
+    node.id = id;
+    net.nodes.set(id, node);
+    net.order.push(id);
+    return id;
+}
+
+/* AST から回路を作る。同じ部分式は共有する */
+function astToNetlist(ast, outputName) {
+    const net = makeNetlist();
+    const inputIds = new Map();
+    const cache = new Map();
+
+    function build(node) {
+        const sig = astToString(node);
+
+        if (cache.has(sig)) return cache.get(sig);
+
+        let id;
+
+        if (node.type === "var") {
+            if (!inputIds.has(node.name)) {
+                inputIds.set(node.name, addNode(net, { type: "input", label: node.name, inputs: [] }));
+            }
+            id = inputIds.get(node.name);
+        } else if (node.type === "const") {
+            id = addNode(net, { type: "const", label: String(node.value), inputs: [] });
+        } else {
+            const childIds = node.inputs.map(build);
+            id = addNode(net, { type: node.type, label: node.type.toUpperCase(), inputs: childIds });
+        }
+
+        cache.set(sig, id);
+        return id;
+    }
+
+    const rootId = build(ast);
+
+    addNode(net, { type: "output", label: outputName, inputs: [rootId] });
+
+    return net;
+}
+
+/* =========================================================
+   5. レイアウト
+========================================================= */
+
+const GATE_W = 56;
+const GATE_H = 38;
+const H_GAP = 78;
+const V_GAP = 20;
+const MARGIN = 26;
+
+const NEGATED = new Set(["nand", "nor", "xnor", "not"]);
+const OR_FAMILY = new Set(["or", "nor", "xor", "xnor"]);
+
+function gateOutX(node) {
+    if (node.type === "input" || node.type === "const") return node.x + 26;
+    if (node.type === "output") return node.x;
+    if (node.type === "not") return node.x + 40 + 12;
+    return node.x + GATE_W + (NEGATED.has(node.type) ? 12 : 0);
+}
+
+function gateOutY(node) {
+    return node.y + GATE_H / 2;
+}
+
+/* ラベルも含めた、そのノードが実際に占める範囲 */
+function nodeBox(node) {
+    const textW = (node.label ? node.label.length : 1) * 8.8 + 6;
+
+    if (node.type === "input" || node.type === "const") {
+        return { x1: node.x + 20 - textW, y1: node.y, x2: node.x + 26, y2: node.y + GATE_H };
+    }
+
+    if (node.type === "output") {
+        return { x1: node.x - 3, y1: node.y, x2: node.x + 10 + textW, y2: node.y + GATE_H };
+    }
+
+    if (node.type === "not") {
+        return { x1: node.x, y1: node.y, x2: node.x + 52, y2: node.y + GATE_H };
+    }
+
+    if (node.type === "ff") {
+        return { x1: node.x, y1: node.y - 6, x2: node.x + GATE_W, y2: node.y + GATE_H + 6 };
+    }
+
+    const extra = NEGATED.has(node.type) ? 12 : 0;
+    const left = (node.type === "xor" || node.type === "xnor") ? 9 : 0;
+
+    return {
+        x1: node.x - left, y1: node.y,
+        x2: node.x + GATE_W + extra, y2: node.y + GATE_H
+    };
+}
+
+function gateInPoints(node) {
+    const n = node.inputs.length;
+
+    if (node.type === "output") return [{ x: node.x, y: node.y + GATE_H / 2 }];
+    if (node.type === "not") return [{ x: node.x, y: node.y + GATE_H / 2 }];
+
+    const inset = OR_FAMILY.has(node.type) ? 10 : 0;
+    const pts = [];
+
+    for (let i = 0; i < n; i++) {
+        const t = (i + 1) / (n + 1);
+        pts.push({ x: node.x + inset, y: node.y + GATE_H * t });
+    }
+
+    return pts;
+}
+
+function layout(net) {
+    const nodes = [...net.nodes.values()];
+
+    /* レベル（入力からの最長距離） */
+    const level = new Map();
+
+    function calcLevel(id, guard = new Set()) {
+        if (level.has(id)) return level.get(id);
+
+        if (guard.has(id)) return 0;   /* 帰還は0扱い */
+        guard.add(id);
+
+        const node = net.nodes.get(id);
+
+        let lv;
+
+        if (node.inputs.length === 0 || node.feedbackSource) {
+            lv = 0;
+        } else {
+            lv = 1 + Math.max(...node.inputs.map(c => calcLevel(c, guard)));
+        }
+
+        guard.delete(id);
+        level.set(id, lv);
+        return lv;
+    }
+
+    nodes.forEach(n => calcLevel(n.id));
+
+    /* 出力は最右へそろえる */
+    const maxLevel = Math.max(...nodes.map(n => level.get(n.id)));
+
+    nodes.forEach(n => {
+        if (n.type === "output") level.set(n.id, maxLevel);
+    });
+
+    /* レベルごとにまとめる */
+    const byLevel = [];
+
+    nodes.forEach(n => {
+        const lv = level.get(n.id);
+        (byLevel[lv] = byLevel[lv] || []).push(n);
+    });
+
+    /* 交差を減らすため、下流の位置の平均で並べ替える（数回繰り返す） */
+    byLevel.forEach(list => list.forEach((n, i) => { n.order = i; }));
+
+    for (let pass = 0; pass < 4; pass++) {
+        for (let lv = byLevel.length - 1; lv >= 0; lv--) {
+            const list = byLevel[lv] || [];
+
+            list.forEach(n => {
+                const parents = nodes.filter(p => p.inputs.includes(n.id));
+
+                if (parents.length) {
+                    n.bary = parents.reduce((s, p) => s + p.order, 0) / parents.length;
+                } else {
+                    n.bary = n.order;
+                }
+            });
+
+            list.sort((a, b) => a.bary - b.bary);
+            list.forEach((n, i) => { n.order = i; });
+        }
+
+        for (let lv = 0; lv < byLevel.length; lv++) {
+            const list = byLevel[lv] || [];
+
+            list.forEach(n => {
+                if (n.inputs.length) {
+                    const kids = n.inputs.map(id => net.nodes.get(id)).filter(Boolean);
+                    n.bary = kids.reduce((s, k) => s + (k.order ?? 0), 0) / kids.length;
+                } else {
+                    n.bary = n.order;
+                }
+            });
+
+            list.sort((a, b) => a.bary - b.bary);
+            list.forEach((n, i) => { n.order = i; });
+        }
+    }
+
+    /* 座標 */
+    let maxRows = 0;
+
+    byLevel.forEach(list => { if (list) maxRows = Math.max(maxRows, list.length); });
+
+    const rowPitch = GATE_H + V_GAP;
+    const totalH = Math.max(maxRows, 1) * rowPitch;
+
+    byLevel.forEach((list, lv) => {
+        if (!list) return;
+
+        const h = list.length * rowPitch;
+        const offset = (totalH - h) / 2;
+
+        /* 縦の通り道が重ならないよう、同じ段のノードごとに位置をずらす */
+        const spacing = Math.max(4, Math.min(9, (H_GAP - 26) / Math.max(1, list.length)));
+
+        list.forEach((n, i) => {
+            n.x = MARGIN + lv * (GATE_W + H_GAP);
+            n.y = MARGIN + offset + i * rowPitch;
+            n.channelOffset = 10 + i * spacing;
+        });
+    });
+
+    /* 実際に使われている範囲に合わせて余白を詰める */
+
+    const boxes = nodes.map(nodeBox);
+
+    const minX = Math.min(...boxes.map(b => b.x1));
+    const minY = Math.min(...boxes.map(b => b.y1));
+    const maxX = Math.max(...boxes.map(b => b.x2));
+    const maxY = Math.max(...boxes.map(b => b.y2));
+
+    const TOP_PAD = 30;   /* 見出しの文字の分 */
+
+    const dx = MARGIN - minX;
+    const dy = TOP_PAD - minY;
+
+    nodes.forEach(n => { n.x += dx; n.y += dy; });
+
+    return {
+        width: Math.max(Math.round(maxX - minX + MARGIN * 2), 300),
+        height: Math.max(Math.round(maxY - minY + TOP_PAD + MARGIN), 120)
+    };
+}
+
+/* =========================================================
+   6. SVG描画
+========================================================= */
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function svgEl(name, attrs = {}) {
+    const el = document.createElementNS(SVG_NS, name);
+
+    for (const [k, v] of Object.entries(attrs)) {
+        el.setAttribute(k, String(v));
+    }
+
+    return el;
+}
+
+function drawGateShape(g, node) {
+    const x = node.x, y = node.y;
+    const stroke = { fill: "#fff", stroke: "#1f2937", "stroke-width": 2 };
+
+    const base = node.type;
+
+    if (base === "not") {
+        g.appendChild(svgEl("path", {
+            d: `M ${x} ${y} L ${x} ${y + GATE_H} L ${x + 40} ${y + GATE_H / 2} Z`,
+            ...stroke
+        }));
+
+        g.appendChild(svgEl("circle", {
+            cx: x + 46, cy: y + GATE_H / 2, r: 6, ...stroke
+        }));
+
+        return;
+    }
+
+    if (base === "and" || base === "nand") {
+        const r = GATE_H / 2;
+
+        g.appendChild(svgEl("path", {
+            d: `M ${x} ${y} L ${x + GATE_W - r} ${y} A ${r} ${r} 0 0 1 ${x + GATE_W - r} ${y + GATE_H} L ${x} ${y + GATE_H} Z`,
+            ...stroke
+        }));
+    } else {
+        /* OR 系の盾形 */
+        const back = `M ${x} ${y} Q ${x + 14} ${y + GATE_H / 2} ${x} ${y + GATE_H}`;
+
+        g.appendChild(svgEl("path", {
+            d: `${back} Q ${x + GATE_W * 0.6} ${y + GATE_H} ${x + GATE_W} ${y + GATE_H / 2} `
+             + `Q ${x + GATE_W * 0.6} ${y} ${x} ${y} Z`,
+            ...stroke
+        }));
+
+        if (base === "xor" || base === "xnor") {
+            g.appendChild(svgEl("path", {
+                d: `M ${x - 9} ${y} Q ${x + 5} ${y + GATE_H / 2} ${x - 9} ${y + GATE_H}`,
+                fill: "none", stroke: "#1f2937", "stroke-width": 2
+            }));
+        }
+    }
+
+    if (NEGATED.has(base)) {
+        g.appendChild(svgEl("circle", {
+            cx: x + GATE_W + 6, cy: y + GATE_H / 2, r: 6, ...stroke
+        }));
+    }
+}
+
+function renderSvg(net, size, title) {
+    const svg = svgEl("svg", {
+        xmlns: SVG_NS,
+        width: size.width,
+        height: size.height,
+        viewBox: `0 0 ${size.width} ${size.height}`,
+        "font-family": "Yu Gothic, Meiryo, sans-serif"
+    });
+
+    svg.appendChild(svgEl("rect", {
+        x: 0, y: 0, width: size.width, height: size.height, fill: "#ffffff"
+    }));
+
+    if (title) {
+        const t = svgEl("text", {
+            x: size.width / 2, y: 16,
+            "text-anchor": "middle", "font-size": 13, fill: "#64748b"
+        });
+        t.textContent = title;
+        svg.appendChild(t);
+    }
+
+    const wires = svgEl("g");
+    const gates = svgEl("g");
+
+    svg.appendChild(wires);
+    svg.appendChild(gates);
+
+    const nodes = [...net.nodes.values()];
+
+    /* --- ゲート本体 --- */
+
+    nodes.forEach(node => {
+        const g = svgEl("g");
+
+        if (node.type === "input" || node.type === "const") {
+            const t = svgEl("text", {
+                x: node.x + 20, y: node.y + GATE_H / 2 + 5,
+                "text-anchor": "end", "font-size": 15,
+                "font-weight": "bold", fill: "#0f172a"
+            });
+            t.textContent = node.label;
+            g.appendChild(t);
+
+            g.appendChild(svgEl("circle", {
+                cx: node.x + 26, cy: node.y + GATE_H / 2, r: 3, fill: "#0f172a"
+            }));
+        } else if (node.type === "output") {
+            g.appendChild(svgEl("circle", {
+                cx: node.x, cy: node.y + GATE_H / 2, r: 3, fill: "#0f172a"
+            }));
+
+            const t = svgEl("text", {
+                x: node.x + 10, y: node.y + GATE_H / 2 + 5,
+                "font-size": 15, "font-weight": "bold", fill: "#1d4ed8"
+            });
+            t.textContent = node.label;
+            g.appendChild(t);
+        } else if (node.type === "ff") {
+            g.appendChild(svgEl("rect", {
+                x: node.x, y: node.y - 6, width: GATE_W, height: GATE_H + 12,
+                fill: "#fff", stroke: "#1f2937", "stroke-width": 2, rx: 3
+            }));
+
+            const label = svgEl("text", {
+                x: node.x + GATE_W / 2, y: node.y + GATE_H / 2 + 5,
+                "text-anchor": "middle", "font-size": 13,
+                "font-weight": "bold", fill: "#0f172a"
+            });
+            label.textContent = node.ffType + "-FF";
+            g.appendChild(label);
+
+            node.portLabels.forEach((pl, i) => {
+                const pts = gateInPoints(node);
+                const t = svgEl("text", {
+                    x: node.x + 5, y: pts[i].y + 4,
+                    "font-size": 11, fill: "#475569"
+                });
+                t.textContent = pl;
+                g.appendChild(t);
+            });
+
+            const q = svgEl("text", {
+                x: node.x + GATE_W - 5, y: node.y + GATE_H / 2 + 5,
+                "text-anchor": "end", "font-size": 11, fill: "#475569"
+            });
+            q.textContent = "Q";
+            g.appendChild(q);
+        } else {
+            drawGateShape(g, node);
+
+            if (node.inputs.length > 2 && (node.type === "and" || node.type === "nand")) {
+                /* 入力が多いときは記号を少し縦に伸ばさず、点で示す */
+            }
+        }
+
+        gates.appendChild(g);
+    });
+
+    /* --- 配線 --- */
+
+    const fanoutIndex = new Map();
+
+    nodes.forEach(node => {
+        const pts = gateInPoints(node);
+
+        node.inputs.forEach((srcId, i) => {
+            const src = net.nodes.get(srcId);
+
+            if (!src) return;
+
+            const sx = gateOutX(src);
+            const sy = gateOutY(src);
+            const tp = pts[i];
+
+            const k = srcId;
+            const idx = fanoutIndex.get(k) || 0;
+            fanoutIndex.set(k, idx + 1);
+
+            /* 折れ線：出力から少し右 → 縦 → 入力へ。
+               縦に走る位置は信号ごとに変えて、線が重ならないようにする */
+            const base = sx + (src.channelOffset ?? 10) + idx * 3;
+            const midX = Math.max(Math.min(base, tp.x - 8), sx + 8);
+
+            const d = (Math.abs(sy - tp.y) < 0.5)
+                ? `M ${sx} ${sy} L ${tp.x} ${tp.y}`
+                : `M ${sx} ${sy} L ${midX} ${sy} L ${midX} ${tp.y} L ${tp.x} ${tp.y}`;
+
+            wires.appendChild(svgEl("path", {
+                d, fill: "none", stroke: "#1f2937", "stroke-width": 1.6
+            }));
+
+            if (idx > 0) {
+                wires.appendChild(svgEl("circle", {
+                    cx: sx, cy: sy, r: 3.2, fill: "#1f2937"
+                }));
+            }
+        });
+    });
+
+    return svg;
+}
+
+/* =========================================================
+   7. 画面への出力
+========================================================= */
+
+function showToast(message) {
+    const el = document.getElementById("toast");
+    el.textContent = message;
+    el.classList.add("shown");
+    setTimeout(() => el.classList.remove("shown"), 1800);
+}
+
+function countGates(net) {
+    let gates = 0;
+
+    net.nodes.forEach(n => {
+        if (!["input", "output", "const", "ff"].includes(n.type)) gates++;
+    });
+
+    return gates;
+}
+
+function depthOf(net) {
+    const level = new Map();
+
+    function calc(id, guard = new Set()) {
+        if (level.has(id)) return level.get(id);
+        if (guard.has(id)) return 0;
+
+        guard.add(id);
+
+        const node = net.nodes.get(id);
+
+        const lv = node.inputs.length === 0
+            ? 0
+            : 1 + Math.max(...node.inputs.map(c => calc(c, guard)));
+
+        guard.delete(id);
+        level.set(id, lv);
+        return lv;
+    }
+
+    let max = 0;
+    net.nodes.forEach(n => { max = Math.max(max, calc(n.id)); });
+
+    return Math.max(0, max - 1);
+}
+
+function renderCircuitInto(container, net, caption) {
+    const size = layout(net);
+    const svg = renderSvg(net, size, caption);
+
+    const wrap = document.createElement("div");
+    wrap.className = "svg-wrap";
+    wrap.appendChild(svg);
+
+    container.appendChild(wrap);
+
+    const stats = document.createElement("div");
+    stats.className = "stats";
+    stats.innerHTML =
+        `<span class="chip">ゲート数 <strong>${countGates(net)}</strong></span>`
+        + `<span class="chip">段数 <strong>${depthOf(net)}</strong></span>`;
+
+    container.appendChild(stats);
+
+    const bar = document.createElement("div");
+    bar.className = "buttons";
+
+    const svgBtn = document.createElement("button");
+    svgBtn.className = "action sub";
+    svgBtn.textContent = "SVGで保存";
+    svgBtn.addEventListener("click", () => downloadSvg(svg));
+
+    const pngBtn = document.createElement("button");
+    pngBtn.className = "action sub";
+    pngBtn.textContent = "PNGで保存";
+    pngBtn.addEventListener("click", () => downloadPng(svg, size));
+
+    bar.appendChild(svgBtn);
+    bar.appendChild(pngBtn);
+    container.appendChild(bar);
+}
+
+function svgSource(svg) {
+    const clone = svg.cloneNode(true);
+    clone.setAttribute("xmlns", SVG_NS);
+    return new XMLSerializer().serializeToString(clone);
+}
+
+function downloadSvg(svg) {
+    const blob = new Blob([svgSource(svg)], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "circuit.svg";
+    a.click();
+
+    URL.revokeObjectURL(url);
+    showToast("SVGを保存しました");
+}
+
+function downloadPng(svg, size) {
+    const scale = 2;
+    const img = new Image();
+
+    const blob = new Blob([svgSource(svg)], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size.width * scale;
+        canvas.height = size.height * scale;
+
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        URL.revokeObjectURL(url);
+
+        canvas.toBlob(b => {
+            const u = URL.createObjectURL(b);
+            const a = document.createElement("a");
+            a.href = u;
+            a.download = "circuit.png";
+            a.click();
+            URL.revokeObjectURL(u);
+            showToast("PNGを保存しました");
+        }, "image/png");
+    };
+
+    img.onerror = () => {
+        URL.revokeObjectURL(url);
+        showToast("PNGに変換できませんでした");
+    };
+
+    img.src = url;
+}
+
+function truthTableHTML(vars, rows, outLabel) {
+    let html = `<table class="tt"><thead><tr>`;
+
+    vars.forEach(v => { html += `<th>${v}</th>`; });
+    html += `<th class="sep">${outLabel}</th></tr></thead><tbody>`;
+
+    rows.forEach(r => {
+        html += "<tr>";
+        vars.forEach(v => { html += `<td>${r.env[v]}</td>`; });
+        html += `<td class="out sep">${r.out}</td></tr>`;
+    });
+
+    return html + "</tbody></table>";
+}
+
+/* =========================================================
+   8. 論理式モード
+========================================================= */
+
+function runExpr(simplify) {
+    const out = document.getElementById("exprOut");
+    out.innerHTML = "";
+
+    let parsed;
+
+    try {
+        parsed = parseExpression(document.getElementById("exprInput").value);
+    } catch (e) {
+        out.innerHTML = `<div class="error">${e.message}</div>`;
+        return;
+    }
+
+    const vars = [...collectVars(parsed.ast)].sort();
+
+    if (vars.length === 0) {
+        out.innerHTML = `<div class="error">変数がありません。<code>A</code> のような文字を使ってください。</div>`;
+        return;
+    }
+
+    if (vars.length > 6) {
+        out.innerHTML = `<div class="error">変数が多すぎます（${vars.length}個）。6個までにしてください。</div>`;
+        return;
+    }
+
+    let ast = parsed.ast;
+    const rows = truthTable(ast, vars);
+
+    const blocks = [];
+
+    if (simplify) {
+        const minterms = rows.filter(r => r.out === 1).map(r => r.index);
+        const result = quineMcCluskey(minterms, [], vars.length);
+        const simplified = sopToAst(result, vars);
+
+        blocks.push({
+            label: "簡単化した式",
+            html: `<div class="formula">${parsed.outputName} = ${astToString(simplified)}</div>`
+        });
+
+        ast = simplified;
+    }
+
+    blocks.push({
+        label: simplify ? "簡単化後の回路図" : "回路図",
+        circuit: astToNetlist(ast, parsed.outputName)
+    });
+
+    blocks.push({
+        label: "真理値表",
+        html: `<div class="table-scroll">${truthTableHTML(vars, rows, parsed.outputName)}</div>`
+    });
+
+    blocks.forEach(b => {
+        const div = document.createElement("div");
+        div.className = "result-block";
+        div.innerHTML = `<div class="label">${b.label}</div>`;
+
+        if (b.html) {
+            div.innerHTML += b.html;
+        }
+
+        out.appendChild(div);
+
+        if (b.circuit) {
+            renderCircuitInto(div, b.circuit, `${parsed.outputName} = ${astToString(ast)}`);
+        }
+    });
+}
+
+/* =========================================================
+   9. 真理値表モード
+========================================================= */
+
+function ttVarNames(n) {
+    return ["A", "B", "C", "D", "E"].slice(0, n);
+}
+
+function buildTruthInput() {
+    const n = Math.min(5, Math.max(1, parseInt(document.getElementById("ttVars").value, 10) || 3));
+    document.getElementById("ttVars").value = n;
+
+    const vars = ttVarNames(n);
+
+    let html = `<table class="tt"><thead><tr>`;
+    vars.forEach(v => { html += `<th>${v}</th>`; });
+    html += `<th class="sep">Y</th></tr></thead><tbody>`;
+
+    for (let m = 0; m < (1 << n); m++) {
+        html += "<tr>";
+
+        vars.forEach((v, i) => {
+            html += `<td>${(m >> (n - 1 - i)) & 1}</td>`;
+        });
+
+        html += `<td class="sep"><select id="tt-${m}">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="x">x</option>
+        </select></td></tr>`;
+    }
+
+    document.getElementById("ttTable").innerHTML = html + "</tbody></table>";
+    document.getElementById("ttOut").innerHTML = "";
+}
+
+function runTruth() {
+    const out = document.getElementById("ttOut");
+    out.innerHTML = "";
+
+    const n = parseInt(document.getElementById("ttVars").value, 10);
+    const vars = ttVarNames(n);
+
+    const minterms = [], dontCares = [];
+
+    for (let m = 0; m < (1 << n); m++) {
+        const el = document.getElementById(`tt-${m}`);
+
+        if (!el) { out.innerHTML = `<div class="error">先に「表を作る」を押してください。</div>`; return; }
+
+        if (el.value === "1") minterms.push(m);
+        else if (el.value === "x") dontCares.push(m);
+    }
+
+    if (minterms.length === 0) {
+        out.innerHTML = `<div class="error">出力が1になる行がありません。どこかを 1 にしてください。</div>`;
+        return;
+    }
+
+    const result = quineMcCluskey(minterms, dontCares, n);
+    const ast = sopToAst(result, vars);
+
+    const div1 = document.createElement("div");
+    div1.className = "result-block";
+    div1.innerHTML = `<div class="label">簡単化した式</div>
+        <div class="formula">Y = ${astToString(ast)}</div>`;
+    out.appendChild(div1);
+
+    if (result.terms && result.terms.length > 1) {
+        const list = result.terms.map(t => astToString(termToAst(t, vars))).join("　／　");
+
+        const div2 = document.createElement("div");
+        div2.className = "result-block";
+        div2.innerHTML = `<div class="label">まとめられた項（主項）</div>
+            <div class="formula">${list}</div>`;
+        out.appendChild(div2);
+    }
+
+    const div3 = document.createElement("div");
+    div3.className = "result-block";
+    div3.innerHTML = `<div class="label">回路図</div>`;
+    out.appendChild(div3);
+
+    renderCircuitInto(div3, astToNetlist(ast, "Y"), `Y = ${astToString(ast)}`);
+}
+
+/* =========================================================
+   10. 状態遷移表モード
+========================================================= */
+
+function stConfig() {
+    const states = Math.min(8, Math.max(2, parseInt(document.getElementById("stStates").value, 10) || 4));
+    const inputs = Math.min(2, Math.max(0, parseInt(document.getElementById("stInputs").value, 10) || 0));
+
+    document.getElementById("stStates").value = states;
+    document.getElementById("stInputs").value = inputs;
+
+    return {
+        states,
+        inputs,
+        bits: Math.ceil(Math.log2(states)),
+        ff: document.getElementById("stFF").value,
+        model: document.getElementById("stModel").value
+    };
+}
+
+function inputNames(count) {
+    return ["X", "W"].slice(0, count);
+}
+
+function buildStateInput() {
+    const cfg = stConfig();
+    const ins = inputNames(cfg.inputs);
+    const combos = 1 << cfg.inputs;
+
+    let html = `<table class="tt"><thead><tr><th rowspan="2">現状態</th><th rowspan="2">符号<br>${
+        Array.from({ length: cfg.bits }, (_, i) => "Q" + (cfg.bits - 1 - i)).join("")
+    }</th>`;
+
+    if (cfg.inputs > 0) {
+        html += `<th colspan="${combos}" class="sep">次状態（入力 ${ins.join("")} ごと）</th>`;
+    } else {
+        html += `<th class="sep">次状態</th>`;
+    }
+
+    if (cfg.model === "moore") {
+        html += `<th rowspan="2" class="sep">出力 Z</th>`;
+    } else {
+        html += `<th colspan="${combos}" class="sep">出力 Z（入力ごと）</th>`;
+    }
+
+    html += `</tr><tr>`;
+
+    for (let c = 0; c < combos; c++) {
+        const bits = cfg.inputs === 0 ? "" : c.toString(2).padStart(cfg.inputs, "0");
+        html += `<th class="${c === 0 ? "sep" : ""}">${bits || "—"}</th>`;
+    }
+
+    if (cfg.model === "mealy") {
+        for (let c = 0; c < combos; c++) {
+            const bits = cfg.inputs === 0 ? "" : c.toString(2).padStart(cfg.inputs, "0");
+            html += `<th class="${c === 0 ? "sep" : ""}">${bits || "—"}</th>`;
+        }
+    }
+
+    html += `</tr></thead><tbody>`;
+
+    for (let s = 0; s < cfg.states; s++) {
+        html += `<tr><td><strong>S${s}</strong></td><td>${s.toString(2).padStart(cfg.bits, "0")}</td>`;
+
+        for (let c = 0; c < combos; c++) {
+            html += `<td class="${c === 0 ? "sep" : ""}"><select class="wide" id="st-next-${s}-${c}">`;
+
+            for (let t = 0; t < cfg.states; t++) {
+                const sel = (t === (s + 1) % cfg.states) ? " selected" : "";
+                html += `<option value="${t}"${sel}>S${t}</option>`;
+            }
+
+            html += `</select></td>`;
+        }
+
+        if (cfg.model === "moore") {
+            html += `<td class="sep"><select id="st-out-${s}">
+                <option value="0">0</option>
+                <option value="1"${s === cfg.states - 1 ? " selected" : ""}>1</option>
+                <option value="x">x</option>
+            </select></td>`;
+        } else {
+            for (let c = 0; c < combos; c++) {
+                html += `<td class="${c === 0 ? "sep" : ""}"><select id="st-out-${s}-${c}">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="x">x</option>
+                </select></td>`;
+            }
+        }
+
+        html += `</tr>`;
+    }
+
+    document.getElementById("stTable").innerHTML = html + "</tbody></table>";
+    document.getElementById("stOut").innerHTML = "";
+}
+
+/* 順序回路の設計 */
+function runState() {
+    const out = document.getElementById("stOut");
+    out.innerHTML = "";
+
+    const cfg = stConfig();
+    const combos = 1 << cfg.inputs;
+
+    if (!document.getElementById("st-next-0-0")) {
+        out.innerHTML = `<div class="error">先に「表を作る」を押してください。</div>`;
+        return;
+    }
+
+    /* 変数の並び：状態ビット（上位から）＋入力 */
+    const stateVars = Array.from({ length: cfg.bits }, (_, i) => "Q" + (cfg.bits - 1 - i));
+    const inVars = inputNames(cfg.inputs);
+    const vars = [...stateVars, ...inVars];
+    const nVars = vars.length;
+
+    /* 遷移表を読む */
+    const next = [];   /* next[s][c] = 次状態 */
+    const outv = [];   /* moore: outv[s], mealy: outv[s][c] */
+
+    for (let s = 0; s < cfg.states; s++) {
+        next[s] = [];
+
+        for (let c = 0; c < combos; c++) {
+            next[s][c] = parseInt(document.getElementById(`st-next-${s}-${c}`).value, 10);
+        }
+
+        if (cfg.model === "moore") {
+            outv[s] = document.getElementById(`st-out-${s}`).value;
+        } else {
+            outv[s] = [];
+            for (let c = 0; c < combos; c++) {
+                outv[s][c] = document.getElementById(`st-out-${s}-${c}`).value;
+            }
+        }
+    }
+
+    /* 使われていない符号はドントケア */
+    const usedMinterms = [];
+    const unusedMinterms = [];
+
+    for (let m = 0; m < (1 << nVars); m++) {
+        const s = m >> cfg.inputs;
+        (s < cfg.states ? usedMinterms : unusedMinterms).push(m);
+    }
+
+    const mintermOf = (s, c) => (s << cfg.inputs) | c;
+
+    /* --- 各FF入力の論理を求める --- */
+
+    const ffInputs = [];   /* {name, ast, text} */
+
+    for (let b = 0; b < cfg.bits; b++) {
+        const bit = cfg.bits - 1 - b;   /* stateVars[b] に対応するビット位置 */
+
+        const collect = (predicate) => {
+            const ones = [], dc = [...unusedMinterms];
+
+            for (let s = 0; s < cfg.states; s++) {
+                for (let c = 0; c < combos; c++) {
+                    const q = (s >> bit) & 1;
+                    const qn = (next[s][c] >> bit) & 1;
+                    const v = predicate(q, qn);
+
+                    const m = mintermOf(s, c);
+
+                    if (v === 1) ones.push(m);
+                    else if (v === "x") dc.push(m);
+                }
+            }
+
+            return { ones, dc };
+        };
+
+        const make = (name, predicate) => {
+            const { ones, dc } = collect(predicate);
+            const res = quineMcCluskey(ones, dc, nVars);
+            const ast = sopToAst(res, vars);
+
+            ffInputs.push({ name: `${name}${cfg.bits - 1 - b}`, ast, bit });
+        };
+
+        if (cfg.ff === "D") {
+            make("D", (q, qn) => qn);
+        } else if (cfg.ff === "T") {
+            make("T", (q, qn) => q ^ qn);
+        } else {
+            make("J", (q, qn) => (q === 0 ? qn : "x"));
+            make("K", (q, qn) => (q === 1 ? (qn ? 0 : 1) : "x"));
+        }
+    }
+
+    /* --- 出力の論理 --- */
+
+    const outOnes = [], outDc = [...unusedMinterms];
+
+    for (let s = 0; s < cfg.states; s++) {
+        for (let c = 0; c < combos; c++) {
+            const v = cfg.model === "moore" ? outv[s] : outv[s][c];
+            const m = mintermOf(s, c);
+
+            if (v === "1") outOnes.push(m);
+            else if (v === "x") outDc.push(m);
+        }
+    }
+
+    /* ムーア型は入力に依存しないので、入力変数はドントケア扱いにできる */
+    const outRes = quineMcCluskey(outOnes, outDc, nVars);
+    const outAst = sopToAst(outRes, vars);
+
+    /* --- 表示：状態割り当てと式 --- */
+
+    const assign = document.createElement("div");
+    assign.className = "result-block";
+
+    let assignHtml = `<div class="label">状態割り当て</div><div class="table-scroll"><table class="tt"><thead><tr><th>状態</th>`;
+    stateVars.forEach(v => { assignHtml += `<th>${v}</th>`; });
+    assignHtml += `</tr></thead><tbody>`;
+
+    for (let s = 0; s < cfg.states; s++) {
+        assignHtml += `<tr><td>S${s}</td>`;
+        for (let b = 0; b < cfg.bits; b++) {
+            assignHtml += `<td>${(s >> (cfg.bits - 1 - b)) & 1}</td>`;
+        }
+        assignHtml += `</tr>`;
+    }
+
+    assign.innerHTML = assignHtml + `</tbody></table></div>`;
+    out.appendChild(assign);
+
+    const formulas = document.createElement("div");
+    formulas.className = "result-block";
+
+    formulas.innerHTML = `<div class="label">簡単化した論理式</div>`
+        + ffInputs.map(f => `<div class="formula">${f.name} = ${astToString(f.ast)}</div>`).join("")
+        + `<div class="formula">Z = ${astToString(outAst)}</div>`;
+
+    out.appendChild(formulas);
+
+    /* --- 回路図 --- */
+
+    const net = buildSequentialNetlist(cfg, stateVars, inVars, ffInputs, outAst);
+
+    const circuit = document.createElement("div");
+    circuit.className = "result-block";
+    circuit.innerHTML = `<div class="label">順序回路図</div>`;
+    out.appendChild(circuit);
+
+    renderCircuitInto(circuit, net, `${cfg.ff}-FF による${cfg.model === "moore" ? "ムーア" : "ミーリ"}型順序回路`);
+
+    const note = document.createElement("p");
+    note.className = "hint";
+    note.textContent =
+        "フリップフロップの出力 Q は、左側の同じ名前の入力に戻ります（帰還）。"
+        + "図では見やすさのため、帰還の線は省略して信号名で対応させています。";
+
+    circuit.appendChild(note);
+}
+
+/* 順序回路のネットリストを組む */
+function buildSequentialNetlist(cfg, stateVars, inVars, ffInputs, outAst) {
+    const net = makeNetlist();
+    const sourceIds = new Map();
+    const cache = new Map();
+
+    /* 入力と、帰還してくる状態変数を左端に置く */
+    [...inVars, ...stateVars].forEach(name => {
+        sourceIds.set(name, addNode(net, {
+            type: "input", label: name, inputs: [], feedbackSource: stateVars.includes(name)
+        }));
+    });
+
+    function build(node) {
+        const sig = astToString(node);
+
+        if (cache.has(sig)) return cache.get(sig);
+
+        let id;
+
+        if (node.type === "var") {
+            id = sourceIds.get(node.name);
+
+            if (id === undefined) {
+                id = addNode(net, { type: "input", label: node.name, inputs: [] });
+                sourceIds.set(node.name, id);
+            }
+        } else if (node.type === "const") {
+            id = addNode(net, { type: "const", label: String(node.value), inputs: [] });
+        } else {
+            const childIds = node.inputs.map(build);
+            id = addNode(net, { type: node.type, label: node.type.toUpperCase(), inputs: childIds });
+        }
+
+        cache.set(sig, id);
+        return id;
+    }
+
+    /* フリップフロップごとに入力をまとめる */
+    const byBit = new Map();
+
+    ffInputs.forEach(f => {
+        const list = byBit.get(f.bit) || [];
+        list.push(f);
+        byBit.set(f.bit, list);
+    });
+
+    [...byBit.keys()].sort((a, b) => b - a).forEach(bit => {
+        const list = byBit.get(bit);
+        const driverIds = list.map(f => build(f.ast));
+
+        addNode(net, {
+            type: "ff",
+            ffType: cfg.ff,
+            label: "Q" + bit,
+            portLabels: list.map(f => f.name.replace(/\d+$/, "")),
+            inputs: driverIds
+        });
+    });
+
+    const outId = build(outAst);
+    addNode(net, { type: "output", label: "Z", inputs: [outId] });
+
+    return net;
+}
+
+/* =========================================================
+   11. UI
+========================================================= */
+
+document.getElementById("tabs").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-tab]");
+
+    if (!button) return;
+
+    document.querySelectorAll("#tabs button").forEach(b => {
+        b.classList.toggle("active", b === button);
+    });
+
+    document.querySelectorAll(".panel").forEach(p => {
+        p.classList.toggle("active", p.id === "panel-" + button.dataset.tab);
+    });
+});
+
+document.getElementById("exprRun").addEventListener("click", () => runExpr(false));
+document.getElementById("exprSimplify").addEventListener("click", () => runExpr(true));
+
+document.getElementById("exprInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") runExpr(false);
+});
+
+document.getElementById("exprSamples").addEventListener("click", (event) => {
+    const b = event.target.closest("button[data-e]");
+    if (!b) return;
+
+    document.getElementById("exprInput").value = b.dataset.e;
+    runExpr(false);
+});
+
+document.getElementById("ttBuild").addEventListener("click", buildTruthInput);
+document.getElementById("ttVars").addEventListener("change", buildTruthInput);
+document.getElementById("ttRun").addEventListener("click", runTruth);
+
+document.getElementById("stBuild").addEventListener("click", buildStateInput);
+["stStates", "stInputs", "stFF", "stModel"].forEach(id => {
+    document.getElementById(id).addEventListener("change", buildStateInput);
+});
+document.getElementById("stRun").addEventListener("click", runState);
+
+buildTruthInput();
+buildStateInput();
+runExpr(false);
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
