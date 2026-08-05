@@ -76,4 +76,98 @@ footer {
     text-align: center;
 }
 
+/* =========================
+   ツール解説セクション
+   各ツールページ下部の読み物部分で共通して使う。
+   背景が暗いページ（seiza など）は各ページ側で上書きする
+========================= */
+
+.tool-article {
+  box-sizing: border-box;
+  max-width: 900px;
+  margin: 40px auto 0;
+  padding: 28px;
+
+  background: #ffffff;
+  color: #222;
+
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  text-align: left;
+  line-height: 1.8;
+}
+
+.tool-article h2 {
+  margin-top: 32px;
+  font-size: 1.3rem;
+
+  border-left: 5px solid #2563eb;
+  padding-left: 12px;
+}
+
+.tool-article h2:first-child {
+  margin-top: 0;
+}
+
+.tool-article h3 {
+  margin-top: 24px;
+  font-size: 1.05rem;
+}
+
+/* * { margin:0 } を敷いているページでも余白が潰れないようにする */
+
+.tool-article p {
+  margin: 0 0 1em;
+}
+
+.tool-article ul,
+.tool-article ol {
+  margin: 0 0 1em;
+  padding-left: 1.5em;
+}
+
+.tool-article li {
+  margin-bottom: 0.4em;
+}
+
+.tool-article > :last-child {
+  margin-bottom: 0;
+}
+
+.tool-article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.tool-article th,
+.tool-article td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.tool-article th {
+  background: #f8fafc;
+  white-space: nowrap;
+}
+
+.tool-article .table-scroll {
+  overflow-x: auto;
+}
+
+.tool-article .note {
+  margin-top: 20px;
+  padding: 14px;
+
+  background: #f8fafc;
+  border-left: 4px solid #94a3b8;
+  border-radius: 8px;
+
+  font-size: 0.92rem;
+  color: #475569;
+}
+
 /* .breadcrumb 系のスタイルは js/head.js が注入する */
