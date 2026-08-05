@@ -1,3 +1,17 @@
+/* =========================
+   サイト全体のツール定義
+   title / desc  … パンくず・カード・一覧用の短い表記
+   seoTitle / seoDesc … <title>・meta description 用（省略時は title / desc）
+   themeColor    … 省略時は #ffffff
+========================= */
+
+window.CATEGORY_NAMES = {
+  life: "生活",
+  work: "業務",
+  math: "数学",
+  game: "ゲーム"
+};
+
 window.TOOLS = [
   {
     id: "roulette",
@@ -15,7 +29,6 @@ window.TOOLS = [
     url: "/i_roulette/"
   },
 
-  
   {
     id: "h_roulette",
     title: "ギリギリまで結果が分からないヒリつくルーレット",
@@ -26,16 +39,21 @@ window.TOOLS = [
 
   {
     id: "fukuri",
-    title: "複利計算・積立シュミレーター",
-    desc: "細かな設定が豊富な複利計算・投資信託などの積立をシュミレーションするツール。",
+    title: "複利計算・積立シミュレーター",
+    desc: "細かな設定が豊富な複利計算・投資信託などの積立をシミュレーションするツール。",
+    seoTitle: "複利計算・積立シミュレーター",
+    seoDesc: "初期投資・積立・リスクを設定し、モンテカルロ法で将来資産をシミュレーションできる複利計算ツールです。設定はブラウザに自動保存されます。",
     category: "life",
     url: "/fukuri/"
   },
 
   {
     id: "seiza",
-    title: "星座占い |　12星座の運勢チェック",
+    title: "星座占い｜12星座の運勢チェック",
     desc: "簡潔で前向きな星座占い。毎日4時更新です。",
+    seoTitle: "今日の星座占い｜12星座ランキング",
+    seoDesc: "毎日朝4時更新。12星座の今日の運勢ランキング、ラッキーアイテム、アドバイスをチェック。",
+    themeColor: "#111827",
     category: "life",
     url: "/seiza/"
   },
@@ -108,6 +126,8 @@ window.TOOLS = [
     id: "hakohige",
     title: "きれいな箱ひげ図を描写するツール",
     desc: "最小値・第一四分位数・中央値・第三四分位数・最大値を入力し、きれいに箱ひげ図を描くツールです。",
+    seoTitle: "箱ひげ図 作成ツール｜五数要約から画像出力",
+    seoDesc: "最大値・第三四分位数・中央値・第一四分位数・最小値・平均値から、きれいな箱ひげ図を作成できる無料ツールです。PNG画像として保存可能。",
     category: "math",
     url: "/hakohige/"
   },
@@ -120,10 +140,12 @@ window.TOOLS = [
     url: "/matrix/"
   },
 
-   {
+  {
     id: "hakidasi",
     title: "途中式付き・掃き出し法ツール",
     desc: "途中式を付けて、線形代数の行列における掃き出し法（ガウス・ジョルダン法）を行うツール。",
+    seoTitle: "掃き出し法ツール｜途中式つき・分数表示対応",
+    seoDesc: "行基本変形の途中式を分数のまま表示する無料の掃き出し法（ガウス・ジョルダン法）ツール。行列のランクも判定できます。",
     category: "math",
     url: "/hakidasi/"
   },
@@ -140,24 +162,19 @@ window.TOOLS = [
     id: "typing-game",
     title: "横文字ばっかりのタイピングゲーム",
     desc: "やたら横文字しか出てこない、無料のタイピングゲームです。",
+    seoTitle: "横文字ばっかりのタイピングゲーム｜無料英語タイピング練習ゲーム",
+    seoDesc: "横文字ばっかりの単語を高速入力する無料タイピングゲーム。IT・ビジネス・SNS用語などのカタカナ語をローマ字で入力してスコアを競おう。",
+    themeColor: "#00e5ff",
     category: "game",
     url: "/typing-game/"
   },
 
   {
     id: "kintoku",
-    title: "パワプロ2024-2025 金特研究所一覧と獲得できる金特まとめ",
-    desc: "パワプロ2024-2025の、マイライフの金特研究所一覧と獲得できる金特まとめです。",
+    title: "パワプロ2026-2027 金特研究所一覧と獲得できる金特まとめ",
+    desc: "パワプロ2026-2027の、マイライフの金特研究所一覧と獲得できる金特まとめです。",
     category: "game",
     url: "/kintoku/"
-  },
-
-  {
-    id: "category",
-    title: "カテゴリ",
-    desc: "カテゴリ表示用です",
-    category: " ",
-    url: "/category/"
   },
 
   {
@@ -166,5 +183,15 @@ window.TOOLS = [
     desc: "シンプルな文字数カウンタ。ブラウザだけで動作します。",
     category: "work",
     url: "/counter/"
+  },
+
+  /* 一覧・関連ツールには出さない内部ページ */
+  {
+    id: "category",
+    title: "カテゴリ",
+    desc: "カテゴリ別のツール一覧です。",
+    category: "",
+    url: "/category/",
+    hidden: true
   }
 ];

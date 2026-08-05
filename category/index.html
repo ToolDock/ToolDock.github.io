@@ -4,12 +4,16 @@
 
 <head>
 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <script>
     const CURRENT_TOOL = "category";
   </script>
 
   <script src="/js/tool-data.js"></script>
   <script src="/js/head.js"></script>
+  <script src="/js/analytics.js"></script>
 
   <style>
 
@@ -77,15 +81,8 @@
 
     const cat = params.get("cat");
 
-    const categoryNames = {
-      life: "生活",
-      math: "数学",
-      work: "業務",
-      game: "ゲーム"
-    };
-
     const categoryLabel =
-      categoryNames[cat] || cat;
+      CATEGORY_NAMES[cat] || cat;
 
     document.title =
       categoryLabel + "ツール | ToolDock";
@@ -97,7 +94,7 @@
 
     const list =
       TOOLS.filter(
-        t => t.category === cat
+        t => !t.hidden && t.category === cat
       );
 
     const container =

@@ -76,29 +76,4 @@ footer {
     text-align: center;
 }
 
-const style = document.createElement("style");
-
-style.textContent = `
-.breadcrumb{
-  font-size:14px;
-  color:#666;
-  padding:10px 20px;
-  margin-bottom:10px;
-}
-
-.breadcrumb a{
-  color:#2563eb;
-  text-decoration:none;
-}
-
-.breadcrumb a:hover{
-  text-decoration:underline;
-}
-
-.bc-sep{
-  margin:0 6px;
-  color:#999;
-}
-`;
-
-document.head.appendChild(style);
+/* .breadcrumb 系のスタイルは js/head.js が注入する */

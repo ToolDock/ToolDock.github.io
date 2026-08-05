@@ -1,31 +1,40 @@
-const currentTool = TOOLS.find(t => t.id === CURRENT_TOOL);
+/* =========================
+   同じカテゴリのツール一覧
+========================= */
 
-const relatedTools = TOOLS.filter(
-  t => t.category === currentTool.category && t.id !== currentTool.id
-);
+const currentTool = TOOLS.find(t => t.id === CURRENT_TOOL);
 
 const container = document.getElementById("related-tools");
 
-if (container && relatedTools.length > 0) {
+if (currentTool && container) {
 
-  container.innerHTML = `
+  const relatedTools = TOOLS.filter(
+    t => !t.hidden
+      && t.category === currentTool.category
+      && t.id !== currentTool.id
+  );
 
-    <section class="related-tools-section">
-      <h2>同じカテゴリのツール</h2>
+  if (relatedTools.length > 0) {
 
-      <div class="related-tools-grid">
+    container.innerHTML = `
 
-        ${relatedTools.map(tool => `
+      <section class="related-tools-section">
+        <h2>同じカテゴリのツール</h2>
 
-          <a href="${tool.url}" class="related-tool-card">
-            <h3>${tool.title}</h3>
-            <p>${tool.desc}</p>
-          </a>
+        <div class="related-tools-grid">
 
-        `).join("")}
+          ${relatedTools.map(tool => `
 
-      </div>
-    </section>
+            <a href="${tool.url}" class="related-tool-card">
+              <h3>${tool.title}</h3>
+              <p>${tool.desc}</p>
+            </a>
 
-  `;
+          `).join("")}
+
+        </div>
+      </section>
+
+    `;
+  }
 }

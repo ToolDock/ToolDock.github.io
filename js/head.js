@@ -1,76 +1,88 @@
+/* =========================
+   共通<head>生成
+   charset / viewport は各HTMLに静的記述、
+   gtag は analytics.js が担当。ここは
+   ページ固有のメタ情報だけを出力する。
+========================= */
+
+const SITE_NAME = "ToolDock";
+const SITE_ORIGIN = "https://tooldock.github.io";
+
 const tool = TOOLS.find(t => t.id === CURRENT_TOOL);
 
 if (!tool) {
   console.error("Tool not found:", CURRENT_TOOL);
 }
 
+function escapeAttr(str){
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 /* =========================
    HEAD
 ========================= */
 
-document.write(`
+if (tool) {
 
-  <!-- Google tag (gtag.js) -->
-  <script async
-    src="https://www.googletagmanager.com/gtag/js?id=G-CZ668PDGPM">
-  <\/script>
+  /* seoTitle / seoDesc があれば検索結果用にそちらを優先し、
+     title / desc はパンくず・カード表示用の短い名前として使う */
 
-  <script>
-    window.dataLayer = window.dataLayer || [];
+  const metaTitle =
+    `${tool.seoTitle || tool.title} | ${SITE_NAME}`;
 
-    function gtag(){
-      dataLayer.push(arguments);
-    }
+  const metaDesc = tool.seoDesc || tool.desc;
 
-    gtag('js', new Date());
+  const pageUrl = SITE_ORIGIN + tool.url;
 
-    gtag('config', 'G-CZ668PDGPM');
-  <\/script>
+  document.write(`
 
-  <meta charset="UTF-8">
+    <link rel="icon"
+          href="/favicon.ico">
 
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"
+          href="/style.css">
 
-  <link rel="icon"
-        href="/favicon.ico">
+    <title>${escapeAttr(metaTitle)}</title>
 
-  <link rel="stylesheet"
-        href="/style.css">
+    <meta name="description"
+          content="${escapeAttr(metaDesc)}">
 
-  <title>${tool.title} | ToolDock</title>
+    <meta property="og:type"
+          content="website">
 
-  <meta name="description"
-        content="${tool.desc}">
+    <meta property="og:site_name"
+          content="${SITE_NAME}">
 
-  <meta property="og:type"
-        content="website">
+    <meta property="og:title"
+          content="${escapeAttr(metaTitle)}">
 
-  <meta property="og:site_name"
-        content="ToolDock">
+    <meta property="og:description"
+          content="${escapeAttr(metaDesc)}">
 
-  <meta property="og:title"
-        content="${tool.title} | ToolDock">
+    <meta property="og:url"
+          content="${pageUrl}">
 
-  <meta property="og:description"
-        content="${tool.desc}">
+    <meta property="og:image"
+          content="${SITE_ORIGIN}/ogp.png">
 
-  <meta property="og:url"
-        content="https://tooldock.github.io${tool.url}">
+    <meta property="og:locale"
+          content="ja_JP">
 
-  <meta property="og:image"
-        content="https://tooldock.github.io/ogp.png">
+    <meta name="twitter:card"
+          content="summary_large_image">
 
-  <meta name="twitter:card"
-        content="summary_large_image">
+    <meta name="theme-color"
+          content="${tool.themeColor || "#ffffff"}">
 
-  <meta name="theme-color"
-        content="#ffffff">
+    <link rel="canonical"
+          href="${pageUrl}">
 
-  <link rel="canonical"
-        href="https://tooldock.github.io${tool.url}">
-
-`);
+  `);
+}
 
 /* =========================
    共通CSS
@@ -117,122 +129,103 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* =========================
      カテゴリ名
+     ※ category/index.html と同じ対応表
   ========================= */
 
-  const categoryNames = {
-    life: "生活",
-    math: "数学",
-    text: "文字列",
-    baseball: "野球"
-  };
-
   const categoryLabel =
-    categoryNames[tool.category]
+    CATEGORY_NAMES[tool.category]
     || tool.category;
 
   /* =========================
      パンくず
+     カテゴリを持たないページ（カテゴリ一覧など）では出さない
   ========================= */
 
-  const nav = document.createElement("nav");
+  if (!tool.hidden) {
 
-  nav.className = "breadcrumb";
+    const nav = document.createElement("nav");
 
-  nav.setAttribute(
-    "aria-label",
-    "パンくずリスト"
-  );
+    nav.className = "breadcrumb";
 
-  nav.innerHTML = `
-    <a href="/">ToolDock</a>
+    nav.setAttribute(
+      "aria-label",
+      "パンくずリスト"
+    );
 
-    <span class="bc-sep">›</span>
+    nav.innerHTML = `
+      <a href="/">${SITE_NAME}</a>
 
-    <a href="/category/?cat=${tool.category}">
-      ${categoryLabel}
-    </a>
+      <span class="bc-sep">›</span>
 
-    <span class="bc-sep">›</span>
+      <a href="/category/?cat=${encodeURIComponent(tool.category)}">
+        ${categoryLabel}
+      </a>
 
-    <span>${tool.title}</span>
-  `;
+      <span class="bc-sep">›</span>
 
-  document.body.prepend(nav);
+      <span>${tool.title}</span>
+    `;
 
-  /* =========================
-     Breadcrumb JSON-LD
-  ========================= */
+    document.body.prepend(nav);
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
+    /* =========================
+       Breadcrumb JSON-LD
+    ========================= */
 
-    "@type": "BreadcrumbList",
+    addJsonLd({
+      "@context": "https://schema.org",
 
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "ToolDock",
-        "item": "https://tooldock.github.io/"
-      },
+      "@type": "BreadcrumbList",
 
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": categoryLabel,
-        "item":
-          `https://tooldock.github.io/category/?cat=${tool.category}`
-      },
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": SITE_NAME,
+          "item": `${SITE_ORIGIN}/`
+        },
 
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": tool.title,
-        "item":
-          `https://tooldock.github.io${tool.url}`
-      }
-    ]
-  };
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": categoryLabel,
+          "item":
+            `${SITE_ORIGIN}/category/?cat=${encodeURIComponent(tool.category)}`
+        },
 
-  const breadcrumbScript =
-    document.createElement("script");
-
-  breadcrumbScript.type =
-    "application/ld+json";
-
-  breadcrumbScript.textContent =
-    JSON.stringify(breadcrumbJsonLd);
-
-  document.head.appendChild(
-    breadcrumbScript
-  );
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": tool.title,
+          "item": SITE_ORIGIN + tool.url
+        }
+      ]
+    });
+  }
 
   /* =========================
      WebSite JSON-LD
   ========================= */
 
-  const websiteJsonLd = {
+  addJsonLd({
     "@context": "https://schema.org",
 
     "@type": "WebSite",
 
-    "name": "ToolDock",
+    "name": SITE_NAME,
 
-    "url":
-      "https://tooldock.github.io/"
-  };
-
-  const websiteScript =
-    document.createElement("script");
-
-  websiteScript.type =
-    "application/ld+json";
-
-  websiteScript.textContent =
-    JSON.stringify(websiteJsonLd);
-
-  document.head.appendChild(
-    websiteScript
-  );
+    "url": `${SITE_ORIGIN}/`
+  });
 
 });
+
+function addJsonLd(data){
+  const script =
+    document.createElement("script");
+
+  script.type = "application/ld+json";
+
+  script.textContent = JSON.stringify(data);
+
+  document.head.appendChild(script);
+}

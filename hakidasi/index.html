@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<script> const CURRENT_TOOL = "hakidasi"; </script> <script src="/js/tool-data.js"></script> <script src="/js/head.js"></script>
-  
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script> const CURRENT_TOOL = "hakidasi"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
 <style>
     body {
         font-family: "Yu Gothic", sans-serif;
@@ -39,7 +45,7 @@
         align-items: center;
     }
 
-    input[type="number"] {
+    .controls input[type="number"] {
         width: 70px;
         padding: 8px;
         font-size: 1rem;
@@ -57,6 +63,12 @@
 
     button:hover {
         background: #1d4ed8;
+    }
+
+    .hint {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 4px 0 0;
     }
 
     .matrix-grid {
@@ -98,11 +110,39 @@
         background: white;
     }
 
+    /* 分数表示 */
+    .frac {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        vertical-align: middle;
+        line-height: 1.15;
+        font-size: 0.95em;
+    }
+
+    .frac .num {
+        border-bottom: 1px solid currentColor;
+        padding: 0 0.25em;
+    }
+
+    .frac .den {
+        padding: 0 0.25em;
+    }
+
     .rank-result {
         margin-top: 30px;
         font-size: 1.3rem;
         font-weight: bold;
         color: #0f172a;
+    }
+
+    .error {
+        margin-top: 20px;
+        padding: 14px;
+        border-radius: 10px;
+        background: #fef2f2;
+        border-left: 5px solid #dc2626;
+        color: #991b1b;
     }
 
     footer {
@@ -132,7 +172,8 @@
     <h1>掃き出し法計算ツール（途中式付き）</h1>
 
     <p class="description">
-        線形代数で用いられる掃き出し法（ガウスの消去法）を、途中式付きで表示する無料ツールです。
+        線形代数で用いられる掃き出し法（ガウス・ジョルダン法）を、途中式付きで表示する無料ツールです。
+        計算はすべて有理数のまま行うため、係数は小数に丸めず<strong>分数のまま正確に</strong>表示されます。
         行基本変形の流れを確認しながら、行列のランク（rank）を判定できます。
     </p>
 
@@ -149,7 +190,16 @@
 
         <button onclick="generateMatrix()">行列を作成</button>
         <button onclick="calculate()">掃き出し開始</button>
+
+        <label>
+            <input type="checkbox" id="useFraction" checked onchange="onDisplayModeChange()">
+            分数で表示
+        </label>
     </div>
+
+    <p class="hint">
+        各マスには整数・小数・分数が入力できます（例：<code>3</code>、<code>-1.5</code>、<code>2/3</code>）。
+    </p>
 
     <div id="matrixInput"></div>
 
@@ -158,6 +208,188 @@
 </div>
 
 <script>
+/* =========================
+   有理数（分数）演算
+   計算中は一切小数に丸めない
+========================= */
+
+function bigAbs(a) {
+    return a < 0n ? -a : a;
+}
+
+function bigGcd(a, b) {
+    a = bigAbs(a);
+    b = bigAbs(b);
+
+    while (b) {
+        [a, b] = [b, a % b];
+    }
+
+    return a;
+}
+
+class Frac {
+    constructor(num, den = 1n) {
+        if (den === 0n) {
+            throw new Error("分母が0の分数は扱えません。");
+        }
+
+        if (den < 0n) {
+            num = -num;
+            den = -den;
+        }
+
+        const g = bigGcd(num, den) || 1n;
+
+        this.n = num / g;
+        this.d = den / g;
+    }
+
+    static zero() {
+        return new Frac(0n, 1n);
+    }
+
+    add(o) {
+        return new Frac(this.n * o.d + o.n * this.d, this.d * o.d);
+    }
+
+    sub(o) {
+        return new Frac(this.n * o.d - o.n * this.d, this.d * o.d);
+    }
+
+    mul(o) {
+        return new Frac(this.n * o.n, this.d * o.d);
+    }
+
+    div(o) {
+        if (o.isZero()) {
+            throw new Error("0で割る操作が発生しました。");
+        }
+
+        return new Frac(this.n * o.d, this.d * o.n);
+    }
+
+    abs() {
+        return new Frac(bigAbs(this.n), this.d);
+    }
+
+    isZero() {
+        return this.n === 0n;
+    }
+
+    isOne() {
+        return this.n === this.d;
+    }
+
+    isInteger() {
+        return this.d === 1n;
+    }
+
+    isNegative() {
+        return this.n < 0n;
+    }
+
+    /* 分数としてのHTML表現（整数のときは分数にしない） */
+    toFractionHTML() {
+        if (this.isInteger()) {
+            return String(this.n);
+        }
+
+        const sign = this.isNegative() ? "-" : "";
+
+        return sign +
+            `<span class="frac">` +
+                `<span class="num">${bigAbs(this.n)}</span>` +
+                `<span class="den">${this.d}</span>` +
+            `</span>`;
+    }
+
+    /* 小数表示（表示専用。計算には使わない） */
+    toDecimalString(digits = 4) {
+        if (this.isInteger()) {
+            return String(this.n);
+        }
+
+        const value = Number(this.n) / Number(this.d);
+
+        if (!Number.isFinite(value)) {
+            return this.toFractionHTML();
+        }
+
+        return String(
+            Number(value.toFixed(digits))
+        );
+    }
+}
+
+/* =========================
+   入力のパース
+   "3" / "-1.5" / "2/3" を受け付ける
+========================= */
+
+function decimalToFrac(s) {
+    const m = s.match(/^([+-]?)(\d*)(?:\.(\d*))?$/);
+
+    const intPart = m ? m[2] : "";
+    const decPart = m && m[3] !== undefined ? m[3] : "";
+
+    if (!m || (intPart === "" && decPart === "")) {
+        throw new Error(`「${s}」は数値として読み取れません。`);
+    }
+
+    const sign = m[1] === "-" ? -1n : 1n;
+
+    const num = BigInt((intPart || "0") + decPart) * sign;
+    const den = 10n ** BigInt(decPart.length);
+
+    return new Frac(num, den);
+}
+
+function parseFrac(raw) {
+    const s = String(raw).trim().replace(/\s+/g, "");
+
+    if (s === "") {
+        return Frac.zero();
+    }
+
+    const parts = s.split("/");
+
+    if (parts.length === 2) {
+        return decimalToFrac(parts[0]).div(decimalToFrac(parts[1]));
+    }
+
+    if (parts.length > 2) {
+        throw new Error(`「${s}」は数値として読み取れません。`);
+    }
+
+    return decimalToFrac(s);
+}
+
+/* =========================
+   表示
+========================= */
+
+function useFraction() {
+    return document.getElementById("useFraction").checked;
+}
+
+function render(frac) {
+    return useFraction()
+        ? frac.toFractionHTML()
+        : frac.toDecimalString();
+}
+
+function onDisplayModeChange() {
+    /* 計算済みなら同じ入力で描き直す */
+    if (document.getElementById("output").innerHTML.trim() !== "") {
+        calculate();
+    }
+}
+
+/* =========================
+   行列の生成・取得
+========================= */
+
 function generateMatrix() {
     const rows = parseInt(document.getElementById("rows").value);
     const cols = parseInt(document.getElementById("cols").value);
@@ -168,13 +400,15 @@ function generateMatrix() {
 
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
-            html += `<input type="number" step="any" id="cell-${i}-${j}" value="0">`;
+            html += `<input type="text" inputmode="text" id="cell-${i}-${j}" value="0">`;
         }
     }
 
     html += `</div>`;
 
     container.innerHTML = html;
+
+    document.getElementById("output").innerHTML = "";
 }
 
 generateMatrix();
@@ -189,7 +423,13 @@ function getMatrix() {
         const row = [];
 
         for (let j = 0; j < cols; j++) {
-            row.push(parseFloat(document.getElementById(`cell-${i}-${j}`).value));
+            const cell = document.getElementById(`cell-${i}-${j}`);
+
+            if (!cell) {
+                throw new Error("先に「行列を作成」を押してください。");
+            }
+
+            row.push(parseFrac(cell.value));
         }
 
         matrix.push(row);
@@ -205,13 +445,7 @@ function matrixToHTML(matrix) {
         html += "<tr>";
 
         for (const val of row) {
-            let display = Math.abs(val) < 1e-10 ? 0 : val;
-
-            display = Number.isInteger(display)
-                ? display
-                : display.toFixed(3);
-
-            html += `<td>${display}</td>`;
+            html += `<td>${render(val)}</td>`;
         }
 
         html += "</tr>";
@@ -222,37 +456,53 @@ function matrixToHTML(matrix) {
     return html;
 }
 
+/* =========================
+   掃き出し法（ガウス・ジョルダン法）
+========================= */
+
 function calculate() {
-    let A = getMatrix();
-
-    const rows = A.length;
-    const cols = A[0].length;
-
     const output = document.getElementById("output");
 
     output.innerHTML = "";
 
+    let A;
+
+    try {
+        A = getMatrix();
+    } catch (e) {
+        output.innerHTML = `<div class="error">${e.message}</div>`;
+        return;
+    }
+
+    const rows = A.length;
+    const cols = A[0].length;
+
+    let steps = "";
     let rank = 0;
     let currentRow = 0;
 
     for (let col = 0; col < cols && currentRow < rows; col++) {
 
-        let pivotRow = currentRow;
+        /* ピボット選択：上から見て最初の非零成分
+           （有理数で厳密に計算するため、絶対値最大を選ぶ必要はない） */
+
+        let pivotRow = -1;
 
         for (let r = currentRow; r < rows; r++) {
-            if (Math.abs(A[r][col]) > Math.abs(A[pivotRow][col])) {
+            if (!A[r][col].isZero()) {
                 pivotRow = r;
+                break;
             }
         }
 
-        if (Math.abs(A[pivotRow][col]) < 1e-10) {
+        if (pivotRow === -1) {
             continue;
         }
 
         if (pivotRow !== currentRow) {
             [A[pivotRow], A[currentRow]] = [A[currentRow], A[pivotRow]];
 
-            output.innerHTML += `
+            steps += `
                 <div class="step">
                     <div class="step-title">
                         R${pivotRow + 1} ↔ R${currentRow + 1}
@@ -264,18 +514,20 @@ function calculate() {
 
         const pivot = A[currentRow][col];
 
-        for (let j = 0; j < cols; j++) {
-            A[currentRow][j] /= pivot;
-        }
+        if (!pivot.isOne()) {
+            for (let j = 0; j < cols; j++) {
+                A[currentRow][j] = A[currentRow][j].div(pivot);
+            }
 
-        output.innerHTML += `
-            <div class="step">
-                <div class="step-title">
-                    R${currentRow + 1} ÷ ${pivot.toFixed(3)}
+            steps += `
+                <div class="step">
+                    <div class="step-title">
+                        R${currentRow + 1} ÷ ${render(pivot)}
+                    </div>
+                    ${matrixToHTML(A)}
                 </div>
-                ${matrixToHTML(A)}
-            </div>
-        `;
+            `;
+        }
 
         for (let r = 0; r < rows; r++) {
 
@@ -283,16 +535,23 @@ function calculate() {
 
             const factor = A[r][col];
 
-            if (Math.abs(factor) < 1e-10) continue;
+            if (factor.isZero()) continue;
 
             for (let j = 0; j < cols; j++) {
-                A[r][j] -= factor * A[currentRow][j];
+                A[r][j] = A[r][j].sub(factor.mul(A[currentRow][j]));
             }
 
-            output.innerHTML += `
+            const sign = factor.isNegative() ? "+" : "-";
+            const absFactor = factor.abs();
+
+            const coefficient = absFactor.isOne()
+                ? ""
+                : `${render(absFactor)} × `;
+
+            steps += `
                 <div class="step">
                     <div class="step-title">
-                        R${r + 1} ← R${r + 1} - (${factor.toFixed(3)})R${currentRow + 1}
+                        R${r + 1} ← R${r + 1} ${sign} ${coefficient}R${currentRow + 1}
                     </div>
                     ${matrixToHTML(A)}
                 </div>
@@ -303,18 +562,21 @@ function calculate() {
         currentRow++;
     }
 
-    output.innerHTML += `
+    steps += `
         <div class="rank-result">
             行列のランク：${rank}
         </div>
     `;
+
+    output.innerHTML = steps;
 }
 </script>
 
 <footer class="container">
     <strong>掃き出し法とは？</strong><br>
     掃き出し法（ガウス・ジョルダン法）は、行列に対して行基本変形を行い、連立一次方程式の解やランクを求めるためのアルゴリズムです。
-    大学の線形代数では非常に重要な計算手法として扱われます。
+    大学の線形代数では非常に重要な計算手法として扱われます。<br>
+    このツールでは計算を有理数（分数）のまま進めるため、1/3 のような値も丸め誤差なしで表示されます。
 </footer>
 
 <div id="related-tools"></div>
