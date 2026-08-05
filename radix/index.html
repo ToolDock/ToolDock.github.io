@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script> const CURRENT_TOOL = "radix"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<meta name="keywords" content="n進数,n進法,基数変換,進数変換,2進数,8進数,10進数,16進数,2進法,16進法,ビット,バイト,基本情報技術者試験,プログラミング">
+
+<style>
+    body {
+        font-family: "Yu Gothic", "Meiryo", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto 24px;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+        margin-top: 0;
+        font-size: 2rem;
+    }
+
+    h2 {
+        margin-top: 32px;
+        font-size: 1.3rem;
+        border-left: 5px solid #2563eb;
+        padding-left: 12px;
+    }
+
+    p.description {
+        color: #555;
+    }
+
+    .field {
+        margin: 18px 0;
+    }
+
+    .field label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 6px;
+    }
+
+    #inputValue {
+        width: 100%;
+        padding: 14px;
+        font-size: 1.3rem;
+        font-family: "Consolas", "Courier New", monospace;
+        border: 2px solid #cbd5e1;
+        border-radius: 10px;
+        box-sizing: border-box;
+    }
+
+    #inputValue:focus {
+        outline: none;
+        border-color: #2563eb;
+    }
+
+    .base-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .base-buttons button {
+        padding: 8px 16px;
+        border: 2px solid #cbd5e1;
+        border-radius: 999px;
+        background: white;
+        color: #334155;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    .base-buttons button:hover {
+        border-color: #2563eb;
+    }
+
+    .base-buttons button.active {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: white;
+        font-weight: bold;
+    }
+
+    select, input[type="number"] {
+        padding: 8px;
+        font-size: 1rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+    }
+
+    .error {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: #fef2f2;
+        border-left: 5px solid #dc2626;
+        color: #991b1b;
+    }
+
+    table.result {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+
+    table.result th,
+    table.result td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 12px 10px;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    table.result th {
+        white-space: nowrap;
+        width: 130px;
+        color: #475569;
+        font-size: 0.95rem;
+    }
+
+    table.result td.value {
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 1.15rem;
+        word-break: break-all;
+    }
+
+    table.result td.copy {
+        width: 90px;
+        text-align: right;
+    }
+
+    .copy-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 8px;
+        background: #2563eb;
+        color: white;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .copy-btn:hover {
+        background: #1d4ed8;
+    }
+
+    .muted {
+        color: #94a3b8;
+    }
+
+    table.chart {
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-family: "Consolas", "Courier New", monospace;
+    }
+
+    table.chart th,
+    table.chart td {
+        border: 1px solid #d6dbe2;
+        padding: 6px 14px;
+        text-align: right;
+    }
+
+    table.chart th {
+        background: #eceff3;
+        font-family: "Yu Gothic", sans-serif;
+    }
+
+    .table-scroll {
+        overflow-x: auto;
+    }
+
+    .hint {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    footer {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+        .container {
+            padding: 20px;
+        }
+
+        table.result th {
+            width: 90px;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>n進数変換ツール｜2進数・8進数・10進数・16進数をまとめて変換</h1>
+
+    <p class="description">
+        入力した数値を <strong>2進数・8進数・10進数・16進数</strong> をはじめとする
+        2〜36進法へ同時に変換する無料ツールです。
+        小数点以下やマイナスの値、桁数の大きな整数にも対応しています。
+    </p>
+
+    <div class="field">
+        <label for="inputBase">入力する数値の基数（何進数で入力するか）</label>
+
+        <div class="base-buttons" id="baseButtons">
+            <button type="button" data-base="2">2進数</button>
+            <button type="button" data-base="8">8進数</button>
+            <button type="button" data-base="10" class="active">10進数</button>
+            <button type="button" data-base="16">16進数</button>
+        </div>
+
+        <select id="inputBase"></select>
+    </div>
+
+    <div class="field">
+        <label for="inputValue">数値</label>
+        <input type="text" id="inputValue" value="255"
+               inputmode="text" autocomplete="off" spellcheck="false"
+               placeholder="例：255、-1010.11、FF.8">
+        <p class="hint">
+            10〜35 は A〜Z で表します（16進数の <code>FF</code> など）。大文字・小文字どちらでも入力できます。
+        </p>
+    </div>
+
+    <div class="field">
+        <label for="fracDigits">小数点以下の最大桁数</label>
+        <input type="number" id="fracDigits" min="0" max="200" value="20">
+    </div>
+
+    <div id="error"></div>
+
+    <h2>変換結果</h2>
+
+    <table class="result">
+        <tbody id="resultBody"></tbody>
+    </table>
+
+    <div class="field" style="margin-top:24px">
+        <label for="customBase">その他の基数（2〜36進法）</label>
+        <select id="customBase"></select>
+    </div>
+
+    <table class="result">
+        <tbody id="customBody"></tbody>
+    </table>
+
+</div>
+
+<div class="container">
+
+    <h2>n進法とは？</h2>
+
+    <p>
+        n進法（n進数）とは、<strong>n個の数字を使って数を表す方法</strong>のことです。
+        普段わたしたちが使っている10進数は 0〜9 の10個の数字を使い、9の次で桁が上がります。
+        同じように2進数は 0 と 1 の2個だけを使い、1の次で桁が上がります。
+    </p>
+
+    <p>
+        コンピュータは内部で電気が流れているか（1）いないか（0）で情報を扱うため、
+        <strong>2進数</strong>と相性がよく、その2進数を人間が読みやすく短くまとめた
+        <strong>16進数</strong>や<strong>8進数</strong>がプログラミングの現場で広く使われます。
+        2進数4桁がちょうど16進数1桁、2進数3桁がちょうど8進数1桁に対応するのが理由です。
+    </p>
+
+    <h2>2進数・8進数・10進数・16進数の対応表</h2>
+
+    <div class="table-scroll">
+        <table class="chart">
+            <thead>
+                <tr>
+                    <th>10進数</th>
+                    <th>2進数</th>
+                    <th>8進数</th>
+                    <th>16進数</th>
+                </tr>
+            </thead>
+            <tbody id="chartBody"></tbody>
+        </table>
+    </div>
+
+    <h2>こんなときに使えます</h2>
+
+    <ul>
+        <li>基本情報技術者試験・情報Ⅰなどで基数変換を練習するとき</li>
+        <li>プログラミングでビット演算やフラグの値を確認したいとき</li>
+        <li>カラーコード（<code>#FF8800</code> など）の16進数を10進数のRGB値に直したいとき</li>
+        <li>ファイルのパーミッション（<code>755</code> など8進数）を2進数で確認したいとき</li>
+        <li>10進数の小数を2進数に変換し、丸め誤差の理由を確かめたいとき</li>
+    </ul>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 16進数の A〜F は何を表していますか？</strong><br>
+    A. 10進数の 10〜15 にあたります。16進数は0〜9の10個では数字が足りないため、
+    続きをA・B・C・D・E・Fで表します。このツールでは36進法まで対応しているので、Z（35）まで使えます。</p>
+
+    <p><strong>Q. 小数も変換できますか？</strong><br>
+    A. できます。たとえば10進数の <code>0.1</code> を2進数にすると
+    <code>0.0001100110011…</code> と循環し、割り切れません。
+    これがプログラムで <code>0.1 + 0.2</code> がぴったり <code>0.3</code> にならない原因です。
+    小数点以下の桁数は上の入力欄で変更できます。</p>
+
+    <p><strong>Q. 何桁くらいまで扱えますか？</strong><br>
+    A. 整数部分は多倍長整数で計算しているため、桁数の制限は実質ありません。</p>
+
+</div>
+
+<footer class="container">
+    このツールはすべてブラウザ上で動作し、入力した数値がサーバーに送信されることはありません。
+</footer>
+
+<script>
+/* =========================
+   n進数変換
+   整数部は BigInt、小数部は有理数で厳密に計算する
+========================= */
+
+const RADIX_DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+const MAIN_BASES = [
+    { base: 2,  label: "2進数" },
+    { base: 8,  label: "8進数" },
+    { base: 10, label: "10進数" },
+    { base: 16, label: "16進数" }
+];
+
+/* ---- 基数セレクタの初期化 ---- */
+
+function buildBaseOptions(select, selected) {
+    let html = "";
+
+    for (let b = 2; b <= 36; b++) {
+        const selectedAttr = b === selected ? " selected" : "";
+        html += `<option value="${b}"${selectedAttr}>${b}進法</option>`;
+    }
+
+    select.innerHTML = html;
+}
+
+buildBaseOptions(document.getElementById("inputBase"), 10);
+buildBaseOptions(document.getElementById("customBase"), 36);
+
+/* ---- パース ---- */
+
+function digitValue(ch) {
+    const index = RADIX_DIGITS.indexOf(ch.toUpperCase());
+    return index === -1 ? null : index;
+}
+
+/* 入力文字列を { negative, intPart, fracNum, fracDen } に分解する */
+function parseInBase(raw, base) {
+    const text = String(raw).trim().replace(/[\s,_]/g, "");
+
+    if (text === "") {
+        return null;
+    }
+
+    let body = text;
+    let negative = false;
+
+    if (body[0] === "+" || body[0] === "-") {
+        negative = body[0] === "-";
+        body = body.slice(1);
+    }
+
+    const parts = body.split(".");
+
+    if (parts.length > 2) {
+        throw new Error("小数点「.」が複数あります。");
+    }
+
+    const intText = parts[0];
+    const fracText = parts[1] || "";
+
+    if (intText === "" && fracText === "") {
+        throw new Error("数字が入力されていません。");
+    }
+
+    const bigBase = BigInt(base);
+
+    let intPart = 0n;
+
+    for (const ch of intText) {
+        const v = digitValue(ch);
+
+        if (v === null || v >= base) {
+            throw new Error(`「${ch}」は${base}進数では使えない文字です。`);
+        }
+
+        intPart = intPart * bigBase + BigInt(v);
+    }
+
+    let fracNum = 0n;
+
+    for (const ch of fracText) {
+        const v = digitValue(ch);
+
+        if (v === null || v >= base) {
+            throw new Error(`「${ch}」は${base}進数では使えない文字です。`);
+        }
+
+        fracNum = fracNum * bigBase + BigInt(v);
+    }
+
+    const fracDen = bigBase ** BigInt(fracText.length);
+
+    return { negative, intPart, fracNum, fracDen };
+}
+
+/* ---- 出力 ---- */
+
+function intToBase(value, base) {
+    if (value === 0n) {
+        return "0";
+    }
+
+    const bigBase = BigInt(base);
+
+    let out = "";
+    let n = value;
+
+    while (n > 0n) {
+        out = RADIX_DIGITS[Number(n % bigBase)] + out;
+        n = n / bigBase;
+    }
+
+    return out;
+}
+
+function fracToBase(num, den, base, maxDigits) {
+    if (num === 0n || maxDigits <= 0) {
+        return { text: "", truncated: false };
+    }
+
+    const bigBase = BigInt(base);
+
+    let out = "";
+    let n = num;
+
+    for (let i = 0; i < maxDigits; i++) {
+        n = n * bigBase;
+
+        out += RADIX_DIGITS[Number(n / den)];
+
+        n = n % den;
+
+        if (n === 0n) {
+            return { text: out, truncated: false };
+        }
+    }
+
+    return { text: out, truncated: true };
+}
+
+function formatInBase(parsed, base, maxDigits) {
+    const intText = intToBase(parsed.intPart, base);
+
+    const frac = fracToBase(parsed.fracNum, parsed.fracDen, base, maxDigits);
+
+    const sign =
+        parsed.negative && (parsed.intPart !== 0n || parsed.fracNum !== 0n)
+            ? "-"
+            : "";
+
+    const body = frac.text === "" ? intText : `${intText}.${frac.text}`;
+
+    return sign + body + (frac.truncated ? "…" : "");
+}
+
+/* ---- 描画 ---- */
+
+function escapeHTML(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+function rowHTML(label, value) {
+    return `
+        <tr>
+            <th>${escapeHTML(label)}</th>
+            <td class="value" data-value="${escapeHTML(value)}">${escapeHTML(value)}</td>
+            <td class="copy">
+                <button type="button" class="copy-btn">コピー</button>
+            </td>
+        </tr>
+    `;
+}
+
+function convert() {
+    const inputBase = parseInt(document.getElementById("inputBase").value, 10);
+    const customBase = parseInt(document.getElementById("customBase").value, 10);
+    const raw = document.getElementById("inputValue").value;
+
+    let maxDigits = parseInt(document.getElementById("fracDigits").value, 10);
+
+    if (!Number.isFinite(maxDigits) || maxDigits < 0) maxDigits = 0;
+    if (maxDigits > 200) maxDigits = 200;
+
+    const errorBox = document.getElementById("error");
+    const resultBody = document.getElementById("resultBody");
+    const customBody = document.getElementById("customBody");
+
+    let parsed;
+
+    try {
+        parsed = parseInBase(raw, inputBase);
+    } catch (e) {
+        errorBox.innerHTML = `<div class="error">${escapeHTML(e.message)}</div>`;
+        resultBody.innerHTML = "";
+        customBody.innerHTML = "";
+        return;
+    }
+
+    errorBox.innerHTML = "";
+
+    if (!parsed) {
+        resultBody.innerHTML =
+            `<tr><td class="muted">数値を入力してください。</td></tr>`;
+        customBody.innerHTML = "";
+        return;
+    }
+
+    resultBody.innerHTML = MAIN_BASES
+        .map(b => rowHTML(b.label, formatInBase(parsed, b.base, maxDigits)))
+        .join("");
+
+    customBody.innerHTML =
+        rowHTML(`${customBase}進法`, formatInBase(parsed, customBase, maxDigits));
+}
+
+/* ---- コピー ---- */
+
+document.addEventListener("click", (event) => {
+    const button = event.target.closest(".copy-btn");
+
+    if (!button) return;
+
+    const cell = button.closest("tr").querySelector(".value");
+
+    navigator.clipboard.writeText(cell.dataset.value).then(() => {
+        const original = button.textContent;
+
+        button.textContent = "コピー済";
+
+        setTimeout(() => {
+            button.textContent = original;
+        }, 1200);
+    });
+});
+
+/* ---- 入力基数のクイックボタン ---- */
+
+document.getElementById("baseButtons").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-base]");
+
+    if (!button) return;
+
+    document.getElementById("inputBase").value = button.dataset.base;
+
+    syncBaseButtons();
+    convert();
+});
+
+function syncBaseButtons() {
+    const current = document.getElementById("inputBase").value;
+
+    document
+        .querySelectorAll("#baseButtons button[data-base]")
+        .forEach(button => {
+            button.classList.toggle("active", button.dataset.base === current);
+        });
+}
+
+/* ---- イベント ---- */
+
+["inputValue", "inputBase", "customBase", "fracDigits"].forEach(id => {
+    const el = document.getElementById(id);
+
+    el.addEventListener("input", () => {
+        syncBaseButtons();
+        convert();
+    });
+
+    el.addEventListener("change", () => {
+        syncBaseButtons();
+        convert();
+    });
+});
+
+/* ---- 対応表 ---- */
+
+document.getElementById("chartBody").innerHTML =
+    Array.from({ length: 17 }, (_, i) => `
+        <tr>
+            <td>${i}</td>
+            <td>${i.toString(2)}</td>
+            <td>${i.toString(8)}</td>
+            <td>${i.toString(16).toUpperCase()}</td>
+        </tr>
+    `).join("");
+
+convert();
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>

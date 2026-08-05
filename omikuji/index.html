@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script> const CURRENT_TOOL = "omikuji"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<meta name="keywords" content="おみくじ,無料おみくじ,大吉,大凶,超大吉,運勢,占い,オンラインおみくじ,画像,共有">
+
+<style>
+    body {
+        font-family: "Yu Gothic", "Meiryo", sans-serif;
+        background: #f2ede3;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto 24px;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+        margin-top: 0;
+        font-size: 1.9rem;
+    }
+
+    h2 {
+        margin-top: 32px;
+        font-size: 1.3rem;
+        border-left: 5px solid #b3232c;
+        padding-left: 12px;
+    }
+
+    p.description {
+        color: #555;
+    }
+
+    .stage {
+        text-align: center;
+    }
+
+    .draw-area {
+        margin: 24px 0;
+    }
+
+    #paper {
+        max-width: 100%;
+        width: 340px;
+        height: auto;
+        border-radius: 4px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        display: none;
+    }
+
+    #paper.shown {
+        display: inline-block;
+        animation: slide-up 0.6s ease-out;
+    }
+
+    @keyframes slide-up {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .box {
+        width: 200px;
+        height: 240px;
+        margin: 0 auto;
+        border-radius: 12px 12px 6px 6px;
+        background:
+            linear-gradient(#c62b33 0 46%, #a81f27 46% 100%);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        color: #f7e9c8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.4rem;
+        letter-spacing: 0.4em;
+        writing-mode: vertical-rl;
+        padding-left: 0.4em;
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.15s;
+    }
+
+    .box:hover {
+        transform: translateY(-4px);
+    }
+
+    .box:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    button.action {
+        padding: 12px 22px;
+        border: none;
+        border-radius: 999px;
+        background: #b3232c;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    button.action:hover {
+        background: #931b23;
+    }
+
+    button.action.sub {
+        background: #475569;
+    }
+
+    button.action.sub:hover {
+        background: #334155;
+    }
+
+    .rare-banner {
+        display: none;
+        margin: 18px auto 0;
+        padding: 14px;
+        max-width: 420px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #fff6d5, #f7e2a1);
+        border: 2px solid #c9a227;
+        color: #7a5c0d;
+        font-weight: bold;
+    }
+
+    .rare-banner.shown {
+        display: block;
+    }
+
+    .stats {
+        margin-top: 18px;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%) translateY(20px);
+        background: #1f2937;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 999px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s, transform 0.25s;
+        z-index: 10;
+    }
+
+    .toast.shown {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    table.rates {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+
+    table.rates th,
+    table.rates td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 10px;
+        text-align: left;
+    }
+
+    table.rates th {
+        background: #f8f5ef;
+    }
+
+    table.rates td.rate {
+        text-align: right;
+        font-family: "Consolas", monospace;
+    }
+
+    footer {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+        .container { padding: 20px; }
+        #paper { width: 100%; }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container stage">
+
+    <h1>おみくじ｜大凶から超大吉まで引ける無料オンラインおみくじ</h1>
+
+    <p class="description">
+        大凶から大吉まで、そして <strong>0.1%でしか出ない「超大吉」</strong> を含む無料のおみくじです。
+        結果はおみくじ風の紙の画像になるので、そのまま保存・共有できます。
+    </p>
+
+    <div class="draw-area">
+        <div class="box" id="box" role="button" tabindex="0">おみくじ</div>
+        <canvas id="paper" width="1360" height="2160"></canvas>
+    </div>
+
+    <div class="rare-banner" id="rareBanner"></div>
+
+    <div class="buttons" id="buttons" style="display:none">
+        <button type="button" class="action" id="againBtn">もう一度引く</button>
+        <button type="button" class="action sub" id="shareBtn">共有する</button>
+        <button type="button" class="action sub" id="saveBtn">画像を保存</button>
+    </div>
+
+    <p class="stats" id="stats"></p>
+
+</div>
+
+<div class="container">
+
+    <h2>出現確率</h2>
+
+    <p>
+        このおみくじの運勢は、以下の確率で出るように作られています。
+        乱数はブラウザの暗号用乱数生成器を使っているため、偏りのない抽選になります。
+    </p>
+
+    <table class="rates">
+        <thead>
+            <tr>
+                <th>運勢</th>
+                <th>確率</th>
+            </tr>
+        </thead>
+        <tbody id="ratesBody"></tbody>
+    </table>
+
+    <h2>超大吉について</h2>
+
+    <p>
+        <strong>超大吉</strong>は、1000回に1回（0.1%）だけ出る特別な運勢です。
+        引いた回数は端末内に記録されるので、何回目で出せたかを確認できます。
+        記録はブラウザの中だけに保存され、サーバーには送信されません。
+    </p>
+
+    <h2>おみくじの運勢の順番</h2>
+
+    <p>
+        おみくじの吉凶の順番は神社によって異なりますが、
+        このツールでは
+        <strong>超大吉 &gt; 大吉 &gt; 中吉 &gt; 小吉 &gt; 吉 &gt; 末吉 &gt; 凶 &gt; 大凶</strong>
+        の順としています。
+        「末吉」は今はまだ運が開いていないものの、これから良くなっていくという意味を持ちます。
+    </p>
+
+</div>
+
+<footer class="container">
+    このおみくじは娯楽を目的としたもので、宗教的な効力を持つものではありません。
+    結果はすべてブラウザ上で生成され、サーバーには送信されません。
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================
+   運勢の定義
+   weight は 10000 分率（合計 10000）
+========================= */
+
+const FORTUNES = [
+    {
+        name: "超大吉",
+        weight: 10,
+        tier: 5,
+        color: "#a8791a",
+        gold: true,
+        messages: [
+            "千に一つの巡り合わせ。今日という日そのものが吉兆です。",
+            "求めずとも道は開かれます。驚くほど順調に事が運ぶでしょう。",
+            "長く続いた滞りが晴れる日。心のままに進んでよい時です。"
+        ]
+    },
+    {
+        name: "大吉",
+        weight: 1500,
+        tier: 4,
+        color: "#b3232c",
+        messages: [
+            "願い事は思いのほか早く叶います。素直に進みなさい。",
+            "何もかもが追い風。迷わず一歩を踏み出すとよいでしょう。",
+            "人との縁が実を結びます。感謝を伝えることを忘れずに。"
+        ]
+    },
+    {
+        name: "中吉",
+        weight: 1800,
+        tier: 3,
+        color: "#b3232c",
+        messages: [
+            "着実に運が向いています。焦らず今の歩みを続けなさい。",
+            "小さな幸運が重なる日。周りをよく見ると気づけます。",
+            "努力が形になり始めます。丁寧さを心がけて。"
+        ]
+    },
+    {
+        name: "小吉",
+        weight: 1800,
+        tier: 3,
+        color: "#c0453c",
+        messages: [
+            "穏やかな運勢。無理をしなければ大過なく過ごせます。",
+            "身近なところに喜びがあります。当たり前を見直して。",
+            "できることに心を注げば、道は静かに開けます。"
+        ]
+    },
+    {
+        name: "吉",
+        weight: 2000,
+        tier: 3,
+        color: "#c0453c",
+        messages: [
+            "平穏なうちに運が育っています。日々の習慣を大切に。",
+            "急がば回れ。遠回りに見える道が正解です。",
+            "人の言葉に耳を傾けると、思わぬ助けを得られます。"
+        ]
+    },
+    {
+        name: "末吉",
+        weight: 1600,
+        tier: 2,
+        color: "#8a6d3b",
+        messages: [
+            "今はまだ時ではありません。備えを整えて待ちなさい。",
+            "後になるほど運が開けます。目先の結果に惑わされぬよう。",
+            "種を蒔く時期です。実りを急がないこと。"
+        ]
+    },
+    {
+        name: "凶",
+        weight: 1000,
+        tier: 1,
+        color: "#4a5568",
+        messages: [
+            "無理を通せば災いを招きます。一度立ち止まりなさい。",
+            "言葉が災いのもとになりがち。口を慎むとよいでしょう。",
+            "守りを固める時。新しいことは今日でなくてよいのです。"
+        ]
+    },
+    {
+        name: "大凶",
+        weight: 290,
+        tier: 0,
+        color: "#2d3748",
+        messages: [
+            "底にいるということは、あとは上がるだけということ。",
+            "何事も控えめに。動かぬことが最善の策となります。",
+            "失うものがあっても嘆かぬこと。身軽さが次を運びます。"
+        ]
+    }
+];
+
+/* =========================
+   項目ごとの文言
+   tier が高いほど良い内容になる
+========================= */
+
+const ITEMS = [
+    {
+        label: "願望",
+        byTier: {
+            high: ["思いのままに叶う", "驚くほど早く叶う", "望み以上に叶う"],
+            mid:  ["叶う 焦らずに", "時をかけて叶う", "半ばまで叶う"],
+            low:  ["今は叶いがたし", "控えるがよし", "望みを改めよ"]
+        }
+    },
+    {
+        label: "待人",
+        byTier: {
+            high: ["来る 喜びあり", "すぐに来る", "思わぬ人が来る"],
+            mid:  ["遅れて来る", "便りあり", "音沙汰の後に来る"],
+            low:  ["来たらず", "来るが益なし", "待つだけ無駄なり"]
+        }
+    },
+    {
+        label: "失物",
+        byTier: {
+            high: ["出る 高き所にあり", "すぐ見つかる", "人の手より戻る"],
+            mid:  ["遅れて出る", "低き所を探せ", "身近にあり"],
+            low:  ["出がたし", "諦めるがよし", "見つからず"]
+        }
+    },
+    {
+        label: "旅立",
+        byTier: {
+            high: ["大いによし", "良き縁あり", "遠方ほどよし"],
+            mid:  ["さしつかえなし", "急がねばよし", "同行者を選べ"],
+            low:  ["見合わせよ", "災いあり 慎め", "近場にとどめよ"]
+        }
+    },
+    {
+        label: "商売",
+        byTier: {
+            high: ["大いに利あり", "買い時 売り時よし", "思わぬ益あり"],
+            mid:  ["利は薄けれど安し", "堅実にすればよし", "焦らねば損なし"],
+            low:  ["損あり 慎め", "手を広げるな", "見送るがよし"]
+        }
+    },
+    {
+        label: "学問",
+        byTier: {
+            high: ["成果あらわる", "実力を出しきれる", "努力が実を結ぶ"],
+            mid:  ["油断せねばよし", "続ければ伸びる", "基礎を固めよ"],
+            low:  ["身に入らず", "根を詰めすぎるな", "やり方を改めよ"]
+        }
+    },
+    {
+        label: "恋愛",
+        byTier: {
+            high: ["実る 心を伝えよ", "良縁あり", "思いは通じる"],
+            mid:  ["ゆっくり進めばよし", "誠実であれば実る", "焦りは禁物"],
+            low:  ["今は時にあらず", "深追いするな", "心を静めよ"]
+        }
+    },
+    {
+        label: "健康",
+        byTier: {
+            high: ["すこぶるよし", "気力充実す", "心身ともに軽し"],
+            mid:  ["ほどほどによし", "休めば戻る", "食を整えよ"],
+            low:  ["用心せよ", "疲れがたまる 休め", "無理を避けよ"]
+        }
+    }
+];
+
+/* =========================
+   抽選
+========================= */
+
+function randomInt(maxExclusive) {
+    const buf = new Uint32Array(1);
+    const limit = Math.floor(0xFFFFFFFF / maxExclusive) * maxExclusive;
+
+    let value;
+
+    do {
+        crypto.getRandomValues(buf);
+        value = buf[0];
+    } while (value >= limit);
+
+    return value % maxExclusive;
+}
+
+function pick(list) {
+    return list[randomInt(list.length)];
+}
+
+const TOTAL_WEIGHT = FORTUNES.reduce((sum, f) => sum + f.weight, 0);
+
+function drawFortune() {
+    let roll = randomInt(TOTAL_WEIGHT);
+
+    for (const fortune of FORTUNES) {
+        if (roll < fortune.weight) {
+            return fortune;
+        }
+
+        roll -= fortune.weight;
+    }
+
+    return FORTUNES[FORTUNES.length - 1];
+}
+
+function tierBucket(tier) {
+    if (tier >= 4) return "high";
+    if (tier >= 2) return "mid";
+    return "low";
+}
+
+function buildResult() {
+    const fortune = drawFortune();
+    const bucket = tierBucket(fortune.tier);
+
+    return {
+        fortune,
+        message: pick(fortune.messages),
+        items: ITEMS.map(item => ({
+            label: item.label,
+            value: pick(item.byTier[bucket])
+        }))
+    };
+}
+
+/* =========================
+   紙の描画
+========================= */
+
+const SCALE = 2;
+const PAPER_W = 680;
+const PAPER_H = 1080;
+
+const canvas = document.getElementById("paper");
+const ctx = canvas.getContext("2d");
+
+const MINCHO = '"Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "MS Mincho", serif';
+
+function drawPaper(result) {
+    ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
+
+    const { fortune } = result;
+
+    /* --- 紙地 --- */
+
+    ctx.fillStyle = fortune.gold ? "#fdf8e8" : "#faf6ec";
+    ctx.fillRect(0, 0, PAPER_W, PAPER_H);
+
+    /* 和紙の繊維風の点 */
+    for (let i = 0; i < 900; i++) {
+        const x = Math.random() * PAPER_W;
+        const y = Math.random() * PAPER_H;
+        const a = Math.random() * 0.05;
+
+        ctx.fillStyle = `rgba(120, 100, 60, ${a})`;
+        ctx.fillRect(x, y, Math.random() * 6 + 1, 1);
+    }
+
+    /* --- 枠 --- */
+
+    const frameColor = fortune.gold ? "#c9a227" : "#b3232c";
+
+    ctx.strokeStyle = frameColor;
+    ctx.lineWidth = 8;
+    ctx.strokeRect(26, 26, PAPER_W - 52, PAPER_H - 52);
+
+    ctx.lineWidth = 2;
+    ctx.strokeRect(42, 42, PAPER_W - 84, PAPER_H - 84);
+
+    /* --- 見出し --- */
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.fillStyle = frameColor;
+    ctx.font = `28px ${MINCHO}`;
+
+    ctx.fillText("御 神 籤", PAPER_W / 2, 104);
+
+    ctx.beginPath();
+    ctx.moveTo(PAPER_W / 2 - 90, 132);
+    ctx.lineTo(PAPER_W / 2 + 90, 132);
+    ctx.strokeStyle = frameColor;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    /* --- 運勢 --- */
+
+    const rankY = 268;
+
+    if (fortune.gold) {
+        const grad = ctx.createLinearGradient(0, rankY - 80, 0, rankY + 80);
+        grad.addColorStop(0, "#e8c35a");
+        grad.addColorStop(0.5, "#a8791a");
+        grad.addColorStop(1, "#e8c35a");
+        ctx.fillStyle = grad;
+    } else {
+        ctx.fillStyle = fortune.color;
+    }
+
+    /* 3文字の「超大吉」は少し縮めて収める */
+    const rankSize = fortune.name.length >= 3 ? 108 : 140;
+    ctx.font = `bold ${rankSize}px ${MINCHO}`;
+
+    ctx.fillText(fortune.name, PAPER_W / 2, rankY);
+
+    if (fortune.gold) {
+        drawSparkles(ctx, PAPER_W / 2, rankY);
+    }
+
+    /* --- 一言 --- */
+
+    ctx.fillStyle = "#3b3229";
+    ctx.font = `26px ${MINCHO}`;
+
+    const lines = wrapText(ctx, result.message, PAPER_W - 160);
+
+    /* 行数が変わっても以降のレイアウトがずれないよう、
+       一言は固定位置（MESSAGE_CENTER）を中心に上下へ振り分ける */
+
+    const MESSAGE_CENTER = 424;
+    const LINE_HEIGHT = 38;
+
+    const messageTop =
+        MESSAGE_CENTER - ((lines.length - 1) * LINE_HEIGHT) / 2;
+
+    lines.forEach((line, i) => {
+        ctx.fillText(line, PAPER_W / 2, messageTop + i * LINE_HEIGHT);
+    });
+
+    /* --- 区切り --- */
+
+    const tableTop = 502;
+
+    ctx.beginPath();
+    ctx.moveTo(80, tableTop);
+    ctx.lineTo(PAPER_W - 80, tableTop);
+    ctx.strokeStyle = "rgba(179, 35, 44, 0.35)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    /* --- 項目 --- */
+
+    const rowHeight = 46;
+
+    result.items.forEach((item, i) => {
+        const y = tableTop + 46 + i * rowHeight;
+
+        ctx.textAlign = "left";
+        ctx.fillStyle = frameColor;
+        ctx.font = `26px ${MINCHO}`;
+        ctx.fillText(item.label, 96, y);
+
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#3b3229";
+        ctx.font = `25px ${MINCHO}`;
+        ctx.fillText(item.value, PAPER_W - 96, y);
+
+        ctx.beginPath();
+        ctx.moveTo(96, y + 22);
+        ctx.lineTo(PAPER_W - 96, y + 22);
+        ctx.strokeStyle = "rgba(60, 50, 40, 0.12)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    });
+
+    /* --- 落款と日付 --- */
+
+    drawSeal(ctx, PAPER_W - 118, PAPER_H - 118, frameColor);
+
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#7a6a55";
+    ctx.font = `22px ${MINCHO}`;
+    ctx.fillText(formatDate(new Date()), 96, PAPER_H - 130);
+
+    ctx.font = `20px ${MINCHO}`;
+    ctx.fillText("tooldock.github.io/omikuji/", 96, PAPER_H - 96);
+}
+
+function wrapText(context, text, maxWidth) {
+    const lines = [];
+    let current = "";
+
+    for (const ch of text) {
+        const candidate = current + ch;
+
+        if (context.measureText(candidate).width > maxWidth && current !== "") {
+            lines.push(current);
+            current = ch;
+        } else {
+            current = candidate;
+        }
+    }
+
+    if (current !== "") {
+        lines.push(current);
+    }
+
+    return lines;
+}
+
+function drawSparkles(context, cx, cy) {
+    context.save();
+    context.fillStyle = "rgba(232, 195, 90, 0.85)";
+
+    const points = [
+        [cx - 150, cy - 60], [cx + 150, cy - 40],
+        [cx - 130, cy + 70], [cx + 138, cy + 66],
+        [cx - 168, cy + 10], [cx + 172, cy + 16]
+    ];
+
+    for (const [x, y] of points) {
+        const r = 6 + Math.random() * 6;
+
+        context.beginPath();
+
+        for (let i = 0; i < 4; i++) {
+            const angle = (Math.PI / 2) * i;
+
+            context.quadraticCurveTo(
+                x + Math.cos(angle + Math.PI / 4) * r * 0.35,
+                y + Math.sin(angle + Math.PI / 4) * r * 0.35,
+                x + Math.cos(angle + Math.PI / 2) * r,
+                y + Math.sin(angle + Math.PI / 2) * r
+            );
+        }
+
+        context.fill();
+    }
+
+    context.restore();
+}
+
+function drawSeal(context, cx, cy, color) {
+    context.save();
+
+    context.strokeStyle = color;
+    context.fillStyle = color;
+    context.globalAlpha = 0.85;
+    context.lineWidth = 3;
+
+    context.beginPath();
+    context.arc(cx, cy, 38, 0, Math.PI * 2);
+    context.stroke();
+
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.font = `20px ${MINCHO}`;
+
+    context.fillText("Tool", cx, cy - 11);
+    context.fillText("Dock", cx, cy + 12);
+
+    context.restore();
+}
+
+function formatDate(date) {
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+}
+
+/* =========================
+   画面制御
+========================= */
+
+let currentResult = null;
+
+const box = document.getElementById("box");
+const buttons = document.getElementById("buttons");
+const rareBanner = document.getElementById("rareBanner");
+const statsEl = document.getElementById("stats");
+
+const STORAGE_KEY = "tooldock-omikuji-stats";
+
+function loadStats() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { draws: 0, rare: 0 };
+    } catch (e) {
+        return { draws: 0, rare: 0 };
+    }
+}
+
+function saveStats(stats) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+    } catch (e) {
+        /* プライベートモードなどでは記録しない */
+    }
+}
+
+function renderStats() {
+    const stats = loadStats();
+
+    if (stats.draws === 0) {
+        statsEl.textContent = "";
+        return;
+    }
+
+    const rareText = stats.rare > 0
+        ? `／ 超大吉 ${stats.rare}回`
+        : "／ 超大吉 まだ出ていません";
+
+    statsEl.textContent = `これまでに引いた回数：${stats.draws}回 ${rareText}`;
+}
+
+function draw() {
+    currentResult = buildResult();
+
+    drawPaper(currentResult);
+
+    canvas.classList.add("shown");
+    box.style.display = "none";
+    buttons.style.display = "flex";
+
+    const stats = loadStats();
+
+    stats.draws += 1;
+
+    if (currentResult.fortune.gold) {
+        stats.rare += 1;
+    }
+
+    saveStats(stats);
+    renderStats();
+
+    if (currentResult.fortune.gold) {
+        rareBanner.textContent =
+            `超大吉！ 0.1%を引き当てました（${stats.draws}回目）`;
+        rareBanner.classList.add("shown");
+    } else {
+        rareBanner.classList.remove("shown");
+    }
+}
+
+box.addEventListener("click", draw);
+
+box.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        draw();
+    }
+});
+
+document.getElementById("againBtn").addEventListener("click", () => {
+    canvas.classList.remove("shown");
+
+    /* アニメーションを付け直すため一度描画を挟む */
+    requestAnimationFrame(() => requestAnimationFrame(draw));
+});
+
+/* =========================
+   保存・共有
+========================= */
+
+function toast(message) {
+    const el = document.getElementById("toast");
+
+    el.textContent = message;
+    el.classList.add("shown");
+
+    setTimeout(() => el.classList.remove("shown"), 2000);
+}
+
+function canvasToBlob() {
+    return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+}
+
+function fileName() {
+    const name = currentResult ? currentResult.fortune.name : "omikuji";
+    return `omikuji-${name}.png`;
+}
+
+function shareText() {
+    if (!currentResult) return "";
+
+    const name = currentResult.fortune.name;
+
+    return currentResult.fortune.gold
+        ? `おみくじで0.1%の「超大吉」を引きました！`
+        : `おみくじで「${name}」を引きました。`;
+}
+
+document.getElementById("saveBtn").addEventListener("click", async () => {
+    const blob = await canvasToBlob();
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = fileName();
+    link.click();
+
+    URL.revokeObjectURL(url);
+
+    toast("画像を保存しました");
+});
+
+document.getElementById("shareBtn").addEventListener("click", async () => {
+    const blob = await canvasToBlob();
+    const file = new File([blob], fileName(), { type: "image/png" });
+
+    const payload = {
+        files: [file],
+        text: `${shareText()} #おみくじ`,
+        title: "おみくじ | ToolDock"
+    };
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share(payload);
+        } catch (e) {
+            /* ユーザーが共有をキャンセルした場合は何もしない */
+        }
+
+        return;
+    }
+
+    /* 画像共有に対応していない環境では、Xの投稿画面を開き画像は保存してもらう */
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = fileName();
+    link.click();
+
+    URL.revokeObjectURL(url);
+
+    const intent =
+        "https://twitter.com/intent/tweet?text=" +
+        encodeURIComponent(`${shareText()} #おみくじ`) +
+        "&url=" +
+        encodeURIComponent("https://tooldock.github.io/omikuji/");
+
+    window.open(intent, "_blank", "noopener");
+
+    toast("画像を保存しました。投稿画面に添付してください");
+});
+
+/* =========================
+   確率表
+========================= */
+
+document.getElementById("ratesBody").innerHTML =
+    FORTUNES.map(f => `
+        <tr>
+            <td>${f.name}</td>
+            <td class="rate">${(f.weight / TOTAL_WEIGHT * 100).toFixed(1)}%</td>
+        </tr>
+    `).join("");
+
+renderStats();
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
