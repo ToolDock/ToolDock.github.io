@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>regex正規化ツール | ToolDock</title>
-<meta name="description" content="regexを正規化するツール。">
+<title>正規表現テスター｜Regexのマッチをリアルタイムで確認できる無料ツール | ToolDock</title>
+<meta name="description" content="正規表現（Regex）を入力すると、テスト文字列の一致箇所をその場でハイライト表示する無料ツール。g・i・mフラグに対応し、よく使うパターン集も掲載しています。">
 <link rel="canonical" href="https://tooldock.github.io/seiki/">
 
 <script> const CURRENT_TOOL = "seiki"; </script>
@@ -269,6 +269,94 @@
 
     updateRegex();
 </script>
+
+<article class="tool-article">
+
+<h2>使い方</h2>
+
+<p>
+上の「正規表現」の欄にパターンを入力し、「テスト文字列」に検索したい文章を入れると、
+一致した箇所がその場でハイライトされます。<code>/</code> で囲む必要はなく、パターンだけを入れてください。
+</p>
+
+<h2>フラグについて</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>フラグ</th><th>意味</th><th>付けないとどうなるか</th></tr>
+</thead>
+<tbody>
+<tr><td>g</td><td>文字列全体から、一致するものをすべて探す</td><td>最初の1件だけが対象になります</td></tr>
+<tr><td>i</td><td>大文字と小文字を区別しない</td><td><code>abc</code> は <code>ABC</code> に一致しません</td></tr>
+<tr><td>m</td><td><code>^</code> と <code>$</code> を行ごとに扱う</td><td>文字列全体の先頭と末尾だけを指します</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>よく使うパターン</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>目的</th><th>パターン</th></tr>
+</thead>
+<tbody>
+<tr><td>数字が1文字以上</td><td><code>\d+</code></td></tr>
+<tr><td>英字が1文字以上</td><td><code>[a-zA-Z]+</code></td></tr>
+<tr><td>ひらがな</td><td><code>[ぁ-ん]+</code></td></tr>
+<tr><td>カタカナ</td><td><code>[ァ-ヴー]+</code></td></tr>
+<tr><td>漢字</td><td><code>[一-龥]+</code></td></tr>
+<tr><td>郵便番号</td><td><code>\d{3}-\d{4}</code></td></tr>
+<tr><td>日付（2026-08-05 の形式）</td><td><code>\d{4}-\d{2}-\d{2}</code></td></tr>
+<tr><td>メールアドレスの簡易判定</td><td><code>[^@\s]+@[^@\s]+\.[^@\s]+</code></td></tr>
+<tr><td>URL</td><td><code>https?://[^\s]+</code></td></tr>
+<tr><td>行頭が # の行</td><td><code>^#.*</code>（mフラグと併用）</td></tr>
+<tr><td>連続する空白</td><td><code>\s{2,}</code></td></tr>
+<tr><td>全角スペース</td><td><code>　</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>記号をそのまま探したいとき</h2>
+
+<p>
+正規表現では、次の記号は特別な意味を持ちます。文字そのものとして探したい場合は、
+前に <code>\</code>（バックスラッシュ）を付けてください。
+</p>
+
+<p>
+<code>. * + ? ^ $ | ( ) [ ] { } \ /</code>
+</p>
+
+<p>
+たとえば「1.5」を探したいとき、<code>1.5</code> と書くと <code>.</code> が任意の1文字を意味するため
+「125」や「1a5」にも一致してしまいます。<code>1\.5</code> と書けば「1.5」だけに一致します。
+</p>
+
+<h2>思ったとおりに動かないとき</h2>
+
+<ul>
+<li><strong>1件しか一致しない</strong>— gフラグが外れていないか確認してください</li>
+<li><strong>欲張って一致しすぎる</strong>— <code>.+</code> は可能な限り長く一致します。最短で止めたい場合は <code>.+?</code> と書きます</li>
+<li><strong>行の先頭に一致しない</strong>— <code>^</code> は既定では文字列全体の先頭を指します。行ごとに扱うにはmフラグが必要です</li>
+<li><strong>エラーになる</strong>— かっこの対応が取れていないか、エスケープが足りない可能性があります</li>
+</ul>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. どの言語の正規表現に対応していますか？</strong><br>
+A. JavaScriptの正規表現です。書き方の大部分は他の言語と共通ですが、
+先読み・後読みなど一部の記法は言語によって差があります。</p>
+
+<p><strong>Q. 入力した文字列は送信されますか？</strong><br>
+A. 送信されません。判定はすべてブラウザ上で行われるため、
+実データを貼り付けて試しても外部には出ません。</p>
+
+<p><strong>Q. 置換もできますか？</strong><br>
+A. このツールは一致箇所の確認に特化しており、置換機能はありません。</p>
+
+</article>
 
 <div id="related-tools"></div>
 <script src="/js/related.js"></script>

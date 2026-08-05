@@ -377,6 +377,90 @@
 
 </script>
 
+<article class="tool-article">
+
+<h2>使い方</h2>
+
+<p>
+入力欄にJSONを貼り付けて、目的に応じてボタンを押します。
+文法に誤りがある場合は、エラーの内容がその場で表示されます。
+</p>
+
+<ul>
+<li><strong>整形する</strong>— 改行とインデントを入れて読みやすい形に直します</li>
+<li><strong>圧縮する</strong>— 改行と空白をすべて取り除き、1行にまとめます。通信量を減らしたいときに使います</li>
+<li><strong>コピー</strong>— 処理後の内容をクリップボードにコピーします</li>
+</ul>
+
+<p>
+入力欄の下には、文字数・行数・データサイズが表示されます。
+圧縮の前後で比べると、どれだけ小さくなったかが分かります。
+</p>
+
+<h2>JSONの書き方のルール</h2>
+
+<p>
+JSONは見た目がJavaScriptのオブジェクトに似ていますが、書ける内容はより厳格です。
+次の点でよくエラーになります。
+</p>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>ルール</th><th>正しい例</th><th>誤りの例</th></tr>
+</thead>
+<tbody>
+<tr><td>キーは必ずダブルクォートで囲む</td><td><code>{"name": "A"}</code></td><td><code>{name: "A"}</code></td></tr>
+<tr><td>文字列はシングルクォート不可</td><td><code>"A"</code></td><td><code>'A'</code></td></tr>
+<tr><td>末尾にカンマを置かない</td><td><code>[1, 2]</code></td><td><code>[1, 2,]</code></td></tr>
+<tr><td>コメントは書けない</td><td>—</td><td><code>// メモ</code></td></tr>
+<tr><td>真偽値・空値は小文字</td><td><code>true / false / null</code></td><td><code>True / NULL</code></td></tr>
+<tr><td>数値の先頭に + や 0 を付けない</td><td><code>5</code></td><td><code>+5</code> / <code>05</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>よくあるエラーと原因</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>メッセージ</th><th>よくある原因</th></tr>
+</thead>
+<tbody>
+<tr><td>Unexpected token …</td><td>その位置に想定外の文字があります。カンマの過不足やクォートの種類を確認してください</td></tr>
+<tr><td>Unexpected end of JSON input</td><td>かっこが閉じていません。コピー時に末尾が切れていないか確認してください</td></tr>
+<tr><td>Expected property name …</td><td>キーがクォートで囲まれていない可能性があります</td></tr>
+<tr><td>Unexpected non-whitespace character after JSON</td><td>JSONの後ろに余分な文字が残っています</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>整形と圧縮の使い分け</h2>
+
+<p>
+人が読んで確認するとき、差分を見比べるときは<strong>整形</strong>を使います。
+一方、APIへ送る、設定値として1行で埋め込む、通信量を抑えたい場合は<strong>圧縮</strong>が向いています。
+どちらもデータの中身は変わらないため、行き来しても情報は失われません。
+</p>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 貼り付けたJSONは送信されますか？</strong><br>
+A. 送信されません。処理はすべてブラウザ上で行われるため、
+業務データを貼り付けても外部には出ません。</p>
+
+<p><strong>Q. 日本語が含まれていても大丈夫ですか？</strong><br>
+A. 問題ありません。そのままの文字で保持されます。</p>
+
+<p><strong>Q. キーの順番を並べ替えられますか？</strong><br>
+A. このツールでは並べ替えは行わず、元の順序のまま整形します。</p>
+
+<p><strong>Q. どのくらいの大きさまで扱えますか？</strong><br>
+A. 明確な上限は設けていませんが、数MBを超えると動作が重くなることがあります。</p>
+
+</article>
+
 <div id="related-tools"></div>
 <script src="/js/related.js"></script>
     

@@ -41,11 +41,16 @@ h1 {
 .wrapper {
   position: relative;
   width: 400px;
-  height: 400px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
+/* 幅の狭い画面では盤面を縮めて、横スクロールが出ないようにする */
 canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+
   background: white;
   border-radius: 50%;
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);

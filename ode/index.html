@@ -637,6 +637,79 @@ changeForm();
 
 </script>
 
+<article class="tool-article">
+
+<h2>対応している微分方程式</h2>
+
+<p>
+上のプルダウンから型を選び、係数や式を入力すると、途中式つきで解が表示されます。
+対応しているのは次の10種類です。
+</p>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>型</th><th>形</th><th>解き方の考え方</th></tr>
+</thead>
+<tbody>
+<tr><td>変数分離形</td><td>dy/dx = f(x)g(y)</td><td>xとyを両辺に分けて、それぞれ積分します</td></tr>
+<tr><td>一階線形</td><td>y' + P(x)y = Q(x)</td><td>積分因子を掛けて、左辺を積の微分の形にまとめます</td></tr>
+<tr><td>ベルヌーイ型</td><td>y' + P(x)y = Q(x)yⁿ</td><td>u = y¹⁻ⁿ と置くと一階線形に帰着します</td></tr>
+<tr><td>同次形</td><td>dy/dx = f(y/x)</td><td>u = y/x と置くと変数分離形になります</td></tr>
+<tr><td>完全微分形</td><td>M dx + N dy = 0</td><td>∂M/∂y = ∂N/∂x を確認し、ポテンシャル関数を求めます</td></tr>
+<tr><td>クレロー型</td><td>y = xy' + f(y')</td><td>一般解のほかに特異解を持つのが特徴です</td></tr>
+<tr><td>二階定係数線形（斉次）</td><td>ay'' + by' + cy = 0</td><td>特性方程式の解によって形が3通りに分かれます</td></tr>
+<tr><td>二階定係数線形（非斉次）</td><td>ay'' + by' + cy = f(x)</td><td>斉次解と特殊解を足し合わせます</td></tr>
+<tr><td>オイラー型</td><td>ax²y'' + bxy' + cy = 0</td><td>x = eᵗ と置くと定係数の形になります</td></tr>
+<tr><td>定数変化法</td><td>—</td><td>斉次解の定数を関数に置き換えて特殊解を求めます</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>特性方程式による場合分け</h2>
+
+<p>
+二階定係数線形（斉次）<code>ay'' + by' + cy = 0</code> は、
+特性方程式 <code>aλ² + bλ + c = 0</code> の判別式によって解の形が変わります。
+つまずきやすいところなので、整理しておきます。
+</p>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>判別式</th><th>特性根</th><th>一般解</th></tr>
+</thead>
+<tbody>
+<tr><td>D &gt; 0</td><td>異なる2実数解 λ₁, λ₂</td><td>y = C₁e^(λ₁x) + C₂e^(λ₂x)</td></tr>
+<tr><td>D = 0</td><td>重解 λ</td><td>y = (C₁ + C₂x)e^(λx)</td></tr>
+<tr><td>D &lt; 0</td><td>共役複素数解 α ± βi</td><td>y = e^(αx)(C₁cos βx + C₂sin βx)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>使うときの注意</h2>
+
+<ul>
+<li><strong>積分定数を忘れずに。</strong>不定積分を行う型では、答えに任意定数（C）が付きます</li>
+<li><strong>型の見極めが先。</strong>同じ方程式が複数の型に当てはまることもあります。解きやすい型を選んでください</li>
+<li><strong>答え合わせに使う。</strong>表示される途中式は考え方の確認用です。提出物では、自分で立てた式を書くようにしてください</li>
+<li><strong>検算のしかた。</strong>得られた解を元の方程式に代入し、成り立つかを確かめると確実です</li>
+</ul>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 初期条件を入れて特殊解を求められますか？</strong><br>
+A. このツールは一般解を表示します。初期条件は、得られた一般解に代入して定数を決めてください。</p>
+
+<p><strong>Q. どの型か分かりません。</strong><br>
+A. まず「変数分離形にできるか」を確認するのが定石です。
+できない場合は、yについて1次かどうか（一階線形）、y/xの形で書けるか（同次形）と順に見ていきます。</p>
+
+<p><strong>Q. 行列の計算もしたいです。</strong><br>
+A. <a href="/matrix/">行列計算ツール</a>と<a href="/hakidasi/">掃き出し法ツール</a>をご利用ください。</p>
+
+</article>
+
 <div id="related-tools"></div>
 <script src="/js/related.js"></script>
 </body>

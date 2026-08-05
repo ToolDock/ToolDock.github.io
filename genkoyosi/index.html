@@ -56,9 +56,16 @@ textarea{
     display:flex;
     flex-wrap:wrap;
     gap:50px;
+
+    /* マス目を縮めると読めなくなるため、
+       画面が狭いときはこの領域だけ横スクロールさせる */
+    overflow-x:auto;
+    padding-bottom:10px;
 }
 
 .page{
+    flex-shrink:0;
+
     width:842px;
     height:842px;
 
@@ -104,6 +111,16 @@ textarea{
 
 .empty{
     color:transparent;
+}
+
+@media (max-width:600px){
+    body{
+        padding:16px;
+    }
+
+    #preview{
+        gap:24px;
+    }
 }
 
 /* 行末句読点 */
