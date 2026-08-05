@@ -47,6 +47,13 @@ if (tool) {
   const hasDesc = !!document.querySelector('meta[name="description"]');
   const hasCanonical = !!document.querySelector('link[rel="canonical"]');
 
+  /* OGP画像はツールごとに用意している（/ogp/<id>.png）。
+     一覧などの内部ページはサイト共通の既定画像を使う */
+
+  const ogImage = tool.hidden
+    ? `${SITE_ORIGIN}/ogp.png`
+    : `${SITE_ORIGIN}/ogp/${tool.id}.png`;
+
   document.write(`
 
     <link rel="icon"
@@ -76,7 +83,13 @@ if (tool) {
           content="${pageUrl}">
 
     <meta property="og:image"
-          content="${SITE_ORIGIN}/ogp.png">
+          content="${ogImage}">
+
+    <meta property="og:image:width"
+          content="1200">
+
+    <meta property="og:image:height"
+          content="630">
 
     <meta property="og:locale"
           content="ja_JP">
