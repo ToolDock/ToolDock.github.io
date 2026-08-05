@@ -4,61 +4,774 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>文字数カウント | ToolDock</title>
-<meta name="description" content="シンプルな文字数カウンタ。ブラウザだけで動作します。">
+<title>文字数カウント｜原稿用紙換算・全角半角・X(Twitter)対応の無料文字数カウンター | ToolDock</title>
+<meta name="description" content="入力した文章の文字数をリアルタイムで数える無料ツール。改行やスペースを含めるかを設定でき、原稿用紙の枚数、全角・半角の内訳、バイト数、行数、単語数、X(Twitter)の文字数、目標文字数までの残りも同時に確認できます。">
 <link rel="canonical" href="https://tooldock.github.io/counter/">
 
 <script> const CURRENT_TOOL = "counter"; </script>
 <script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
+
+<meta name="keywords" content="文字数カウント,文字数カウンター,文字数,原稿用紙,全角,半角,バイト数,行数,単語数,Twitter,X,文字数制限">
+
+<style>
+    body {
+        font-family: "Yu Gothic", "Meiryo", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto 24px;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+        margin-top: 0;
+        font-size: 1.9rem;
+    }
+
+    h2 {
+        margin-top: 32px;
+        font-size: 1.3rem;
+        border-left: 5px solid #2563eb;
+        padding-left: 12px;
+    }
+
+    h3 {
+        margin-top: 24px;
+        font-size: 1.05rem;
+    }
+
+    p.description {
+        color: #555;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 260px;
+        padding: 16px;
+        font-size: 1.05rem;
+        line-height: 1.8;
+        border: 2px solid #cbd5e1;
+        border-radius: 12px;
+        box-sizing: border-box;
+        resize: vertical;
+    }
+
+    textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+    }
+
+    /* ===== 設定パネル ===== */
+
+    .settings {
+        margin-top: 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+        padding: 0 18px;
+    }
+
+    .settings summary {
+        cursor: pointer;
+        padding: 14px 0;
+        font-weight: bold;
+        color: #334155;
+        user-select: none;
+    }
+
+    .settings-body {
+        padding-bottom: 18px;
+    }
+
+    .setting-group {
+        margin-bottom: 18px;
+    }
+
+    .setting-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .setting-group > .group-title {
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+
+    .checks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+    }
+
+    .checks label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+
+    .numbers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .numbers label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .numbers input[type="number"] {
+        width: 90px;
+        padding: 8px;
+        font-size: 1rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+    }
+
+    .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    button.action {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 999px;
+        background: #2563eb;
+        color: white;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    button.action:hover {
+        background: #1d4ed8;
+    }
+
+    button.action.sub {
+        background: #64748b;
+    }
+
+    button.action.sub:hover {
+        background: #475569;
+    }
+
+    /* ===== 結果 ===== */
+
+    .primary-count {
+        margin-top: 24px;
+        padding: 20px;
+        border-radius: 14px;
+        background: #eff6ff;
+        border: 2px solid #bfdbfe;
+        text-align: center;
+    }
+
+    .primary-count .value {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #1d4ed8;
+        line-height: 1.2;
+    }
+
+    .primary-count .label {
+        color: #475569;
+        font-size: 0.95rem;
+    }
+
+    .progress-wrap {
+        margin-top: 14px;
+    }
+
+    .progress-bar {
+        height: 10px;
+        border-radius: 999px;
+        background: #dbeafe;
+        overflow: hidden;
+    }
+
+    .progress-bar span {
+        display: block;
+        height: 100%;
+        background: #2563eb;
+        width: 0;
+        transition: width 0.15s;
+    }
+
+    .progress-bar.over span {
+        background: #dc2626;
+    }
+
+    .progress-text {
+        margin-top: 6px;
+        font-size: 0.9rem;
+        color: #475569;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .stat {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px;
+        background: white;
+    }
+
+    .stat .stat-label {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .stat .stat-value {
+        font-size: 1.35rem;
+        font-weight: bold;
+        margin-top: 4px;
+    }
+
+    .stat .stat-note {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-top: 2px;
+    }
+
+    /* ===== 表 ===== */
+
+    table.guide {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+
+    table.guide th,
+    table.guide td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 10px;
+        text-align: left;
+    }
+
+    table.guide th {
+        background: #f8fafc;
+        white-space: nowrap;
+    }
+
+    table.guide td.num {
+        text-align: right;
+        font-family: "Consolas", monospace;
+        white-space: nowrap;
+    }
+
+    .table-scroll {
+        overflow-x: auto;
+    }
+
+    .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%) translateY(20px);
+        background: #1f2937;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 999px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s, transform 0.25s;
+        z-index: 10;
+    }
+
+    .toast.shown {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    footer {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+        .container { padding: 20px; }
+        .primary-count .value { font-size: 2.4rem; }
+    }
+</style>
 </head>
+
 <body>
 
-  <h1>文字数カウント</h1>
+<div class="container">
 
-  <textarea placeholder="ここに文章を入力"
-            style="width: 90%; height: 300px;"></textarea>
+    <h1>文字数カウント</h1>
 
-  <button id="reset">リセット</button>
+    <p class="description">
+        入力した文章の文字数をリアルタイムで数える無料ツールです。
+        改行やスペースを数えるかどうかを設定でき、原稿用紙の枚数、全角・半角の内訳、
+        バイト数、行数、X（旧Twitter）の文字数なども同時に確認できます。
+        入力した文章がサーバーに送信されることはありません。
+    </p>
 
-  <p>文字数：<span id="count">0</span></p>
-  <p>文字数（改行・スペースを含めない）：<span id="count_ns">0</span></p>
+    <textarea id="input" placeholder="ここに文章を入力・貼り付けしてください"></textarea>
 
+    <details class="settings" id="settings" open>
+        <summary>カウントの設定</summary>
 
-  
-  <h2>文字数カウントツールについて</h2>
-  <p>
-  文章の文字数をリアルタイムで確認できる
-  無料ツールです。
-  レポート、SNS投稿、記事制作などに使えます。
-  </p>
+        <div class="settings-body">
+
+            <div class="setting-group">
+                <div class="group-title">文字数に含めるもの</div>
+
+                <div class="checks">
+                    <label><input type="checkbox" id="optNewline" checked> 改行</label>
+                    <label><input type="checkbox" id="optHalfSpace" checked> 半角スペース</label>
+                    <label><input type="checkbox" id="optFullSpace" checked> 全角スペース</label>
+                    <label><input type="checkbox" id="optTab" checked> タブ</label>
+                    <label><input type="checkbox" id="optPunct" checked> 句読点・記号</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="group-title">換算の設定</div>
+
+                <div class="numbers">
+                    <label>
+                        原稿用紙 1枚の字数
+                        <input type="number" id="optSheet" min="1" max="2000" value="400">
+                    </label>
+
+                    <label>
+                        1行の字数
+                        <input type="number" id="optRow" min="1" max="200" value="20">
+                    </label>
+
+                    <label>
+                        読む速さ（字/分）
+                        <input type="number" id="optSpeed" min="50" max="2000" value="500">
+                    </label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="group-title">目標文字数（0で無効）</div>
+
+                <div class="numbers">
+                    <label>
+                        目標
+                        <input type="number" id="optTarget" min="0" max="100000" value="0">
+                    </label>
+                </div>
+            </div>
+
+        </div>
+    </details>
+
+    <div class="buttons">
+        <button type="button" class="action" id="copyBtn">本文をコピー</button>
+        <button type="button" class="action sub" id="resetBtn">クリア</button>
+    </div>
+
+    <div class="primary-count">
+        <div class="value" id="mainCount">0</div>
+        <div class="label" id="mainLabel">文字（設定を反映した文字数）</div>
+
+        <div class="progress-wrap" id="progressWrap" style="display:none">
+            <div class="progress-bar" id="progressBar"><span></span></div>
+            <div class="progress-text" id="progressText"></div>
+        </div>
+    </div>
+
+    <div class="stat-grid" id="stats"></div>
+
+</div>
+
+<div class="container">
+
+    <h2>文字数の目安</h2>
+
+    <p>
+        提出物や投稿には、それぞれ目安となる文字数があります。
+        上の「目標文字数」に入れると、残り何文字かをその場で確認できます。
+    </p>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr>
+                    <th>用途</th>
+                    <th>目安の文字数</th>
+                    <th>補足</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>原稿用紙1枚</td><td class="num">400字</td><td>20字×20行。200字詰めもあります</td></tr>
+                <tr><td>X（旧Twitter）の投稿</td><td class="num">140字</td><td>日本語は全角1文字＝2カウント換算</td></tr>
+                <tr><td>meta description</td><td class="num">80〜120字</td><td>検索結果で省略されにくい長さ</td></tr>
+                <tr><td>履歴書の志望動機</td><td class="num">300〜400字</td><td>欄の大きさによります</td></tr>
+                <tr><td>エントリーシートの設問</td><td class="num">400〜800字</td><td>指定がある場合はその9割以上が目安</td></tr>
+                <tr><td>読書感想文（高校生）</td><td class="num">2000字</td><td>原稿用紙5枚</td></tr>
+                <tr><td>大学のレポート</td><td class="num">2000〜4000字</td><td>原稿用紙5〜10枚</td></tr>
+                <tr><td>卒業論文の要旨</td><td class="num">800〜1200字</td><td>大学によって規定が異なります</td></tr>
+                <tr><td>ブログ記事1本</td><td class="num">2000〜5000字</td><td>内容が十分であることが前提です</td></tr>
+                <tr><td>3分間のスピーチ</td><td class="num">900〜1000字</td><td>1分あたり300字前後で計算</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>数え方について</h2>
+
+    <h3>全角と半角の違い</h3>
+
+    <p>
+        「あ」「漢」のような日本語の文字は<strong>全角</strong>、
+        <code>a</code> や <code>1</code> のような英数字は<strong>半角</strong>です。
+        どちらも「1文字」として数えるのが一般的ですが、
+        文字数の制限がバイト数で決められている場合には、全角1文字が2バイト分として扱われることがあります。
+        このツールでは、全角と半角の内訳と、Shift_JIS換算のバイト数を分けて表示しています。
+    </p>
+
+    <h3>改行やスペースを含めるかどうか</h3>
+
+    <p>
+        提出先によって扱いが変わります。原稿用紙に換算する場合は改行も1マス分として扱うのが自然ですが、
+        「本文の文字数」を求められている場合は改行やスペースを除いて数えることが多いです。
+        上の設定でどちらにも切り替えられます。
+    </p>
+
+    <h3>X（旧Twitter）の文字数</h3>
+
+    <p>
+        Xでは、日本語・中国語・韓国語の文字が2カウント、英数字や記号が1カウントとして扱われ、
+        合計280カウントまで投稿できます。日本語だけなら140文字ということになります。
+        またURLは、実際の長さにかかわらず一律23カウント（全角換算で11.5文字）として計算されます。
+        このツールの「X（Twitter）」の数値は、このルールにあわせた概算です。
+    </p>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 入力した文章は保存されますか？</strong><br>
+    A. すべてブラウザ上で処理しており、サーバーには送信されません。
+    ページを閉じると入力内容は消えます。</p>
+
+    <p><strong>Q. 原稿用紙の枚数はどう計算していますか？</strong><br>
+    A. 設定した1枚あたりの字数で割って算出しています。初期値は400字（20字×20行）です。
+    200字詰めなど別の書式を使う場合は、設定から変更してください。</p>
+
+    <p><strong>Q. 単語数が0のままです。</strong><br>
+    A. 単語数は英数字の連なりを1語として数えています。日本語の文章では単語の区切りがないため、
+    英文を入力したときのみ意味のある数値になります。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。入力した文章が外部に送信されることはありません。
+</footer>
+
+<div class="toast" id="toast"></div>
 
 <script>
-  const textarea = document.querySelector("textarea");
-  const count = document.getElementById("count");
-  const count_ns = document.getElementById("count_ns");
-  const resetButton = document.getElementById("reset");
+/* =========================
+   文字種の判定
+========================= */
 
-  textarea.addEventListener("input", () => {
+/* 半角として扱う範囲：ASCII と半角カタカナ */
+const HALF_WIDTH = /[\x20-\x7E｡-ﾟ]/;
 
-    // 通常文字数
-    count.textContent = textarea.value.length;
+/* 句読点・記号（日本語と半角記号の両方）
+   長音符「ー」は「コーヒー」のように語の一部なので含めない */
+const PUNCTUATION =
+    /[、。，．・：；！？「」『』（）［］｛｝〈〉《》【】〔〕…‥—－～!-\/:-@\[-`{-~]/;
 
-    // 空白・改行なし文字数
-    const noSpace = textarea.value.replace(/\s/g, "");
-    count_ns.textContent = noSpace.length;
-  });
+const inputEl = document.getElementById("input");
+const statsEl = document.getElementById("stats");
 
-  resetButton.addEventListener("click", () => {
-    textarea.value = "";
-    count.textContent = 0;
-    count_ns.textContent = 0;
-  });
+const options = {
+    newline: document.getElementById("optNewline"),
+    halfSpace: document.getElementById("optHalfSpace"),
+    fullSpace: document.getElementById("optFullSpace"),
+    tab: document.getElementById("optTab"),
+    punct: document.getElementById("optPunct"),
+    sheet: document.getElementById("optSheet"),
+    row: document.getElementById("optRow"),
+    speed: document.getElementById("optSpeed"),
+    target: document.getElementById("optTarget")
+};
+
+/* =========================
+   集計
+========================= */
+
+function countConfigured(text) {
+    let total = 0;
+
+    for (const ch of text) {
+
+        if (ch === "\n" || ch === "\r") {
+            if (options.newline.checked) total++;
+            continue;
+        }
+
+        if (ch === "\t") {
+            if (options.tab.checked) total++;
+            continue;
+        }
+
+        if (ch === " ") {
+            if (options.halfSpace.checked) total++;
+            continue;
+        }
+
+        if (ch === "　") {
+            if (options.fullSpace.checked) total++;
+            continue;
+        }
+
+        if (!options.punct.checked && PUNCTUATION.test(ch)) {
+            continue;
+        }
+
+        total++;
+    }
+
+    return total;
+}
+
+function countWidths(text) {
+    let half = 0;
+    let full = 0;
+
+    for (const ch of text) {
+
+        if (ch === "\n" || ch === "\r" || ch === "\t") continue;
+
+        if (HALF_WIDTH.test(ch)) {
+            half++;
+        } else {
+            full++;
+        }
+    }
+
+    return { half, full };
+}
+
+/* X（旧Twitter）の重み付け。CJK は 2、それ以外は 1、URL は一律 23 */
+function countForX(text) {
+    const urlPattern = /https?:\/\/[^\s]+/g;
+
+    const urls = text.match(urlPattern) || [];
+
+    const rest = text.replace(urlPattern, "");
+
+    let weight = urls.length * 23;
+
+    for (const ch of rest) {
+        const code = ch.codePointAt(0);
+
+        const isCJK =
+            (code >= 0x1100 && code <= 0x11FF) ||
+            (code >= 0x2E80 && code <= 0xA4CF) ||
+            (code >= 0xAC00 && code <= 0xD7A3) ||
+            (code >= 0xF900 && code <= 0xFAFF) ||
+            (code >= 0xFF01 && code <= 0xFF60) ||
+            (code >= 0x20000 && code <= 0x3FFFD);
+
+        weight += isCJK ? 2 : 1;
+    }
+
+    return weight;
+}
+
+function formatSheets(chars, perSheet, perRow) {
+    if (chars === 0) return { text: "0枚", note: "" };
+
+    const sheets = Math.floor(chars / perSheet);
+    const remainder = chars % perSheet;
+
+    const rows = Math.floor(remainder / perRow);
+    const cols = remainder % perRow;
+
+    if (sheets === 0 && remainder === 0) {
+        return { text: "0枚", note: "" };
+    }
+
+    const main = remainder === 0
+        ? `${sheets}枚`
+        : `${sheets}枚と${rows}行${cols}字`;
+
+    return {
+        text: main,
+        note: `1枚 ${perSheet}字 / 1行 ${perRow}字`
+    };
+}
+
+function formatDuration(minutes) {
+    if (minutes <= 0) return "0分";
+
+    if (minutes < 1) return "1分未満";
+
+    const m = Math.round(minutes);
+
+    if (m < 60) return `約${m}分`;
+
+    return `約${Math.floor(m / 60)}時間${m % 60}分`;
+}
+
+/* =========================
+   描画
+========================= */
+
+function statHTML(label, value, note) {
+    return `
+        <div class="stat">
+            <div class="stat-label">${label}</div>
+            <div class="stat-value">${value}</div>
+            ${note ? `<div class="stat-note">${note}</div>` : ""}
+        </div>
+    `;
+}
+
+function update() {
+    const text = inputEl.value;
+
+    const configured = countConfigured(text);
+
+    document.getElementById("mainCount").textContent =
+        configured.toLocaleString();
+
+    /* --- 目標文字数 --- */
+
+    const target = Math.max(0, parseInt(options.target.value, 10) || 0);
+
+    const wrap = document.getElementById("progressWrap");
+    const bar = document.getElementById("progressBar");
+    const barFill = bar.querySelector("span");
+    const progressText = document.getElementById("progressText");
+
+    if (target > 0) {
+        wrap.style.display = "block";
+
+        const ratio = Math.min(1, configured / target);
+
+        barFill.style.width = (ratio * 100).toFixed(1) + "%";
+
+        bar.classList.toggle("over", configured > target);
+
+        progressText.textContent = configured <= target
+            ? `目標まであと ${(target - configured).toLocaleString()} 文字（${Math.floor(ratio * 100)}%）`
+            : `目標を ${(configured - target).toLocaleString()} 文字 超過`;
+    } else {
+        wrap.style.display = "none";
+    }
+
+    /* --- 各種の数値 --- */
+
+    const raw = [...text].length;
+
+    const noSpace = [...text.replace(/\s/g, "")].length;
+
+    const { half, full } = countWidths(text);
+
+    const lines = text === "" ? 0 : text.split("\n").length;
+
+    const paragraphs = text.trim() === ""
+        ? 0
+        : text.trim().split(/\n\s*\n/).filter(p => p.trim() !== "").length;
+
+    const words = (text.match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g) || []).length;
+
+    const utf8Bytes = new TextEncoder().encode(text).length;
+
+    const sjisBytes = full * 2 + half;
+
+    const perSheet = Math.max(1, parseInt(options.sheet.value, 10) || 400);
+    const perRow = Math.max(1, parseInt(options.row.value, 10) || 20);
+
+    const sheets = formatSheets(configured, perSheet, perRow);
+
+    const speed = Math.max(1, parseInt(options.speed.value, 10) || 500);
+
+    const xCount = countForX(text);
+
+    statsEl.innerHTML = [
+        statHTML("原稿用紙", sheets.text, sheets.note),
+        statHTML("すべての文字", raw.toLocaleString(), "設定を反映しない素の文字数"),
+        statHTML("空白・改行を除く", noSpace.toLocaleString(), ""),
+        statHTML("全角", full.toLocaleString(), "日本語の文字など"),
+        statHTML("半角", half.toLocaleString(), "英数字・半角カナなど"),
+        statHTML("行数", lines.toLocaleString(), ""),
+        statHTML("段落数", paragraphs.toLocaleString(), "空行で区切って判定"),
+        statHTML("英単語数", words.toLocaleString(), "英数字の連なりを1語として計算"),
+        statHTML("バイト数", utf8Bytes.toLocaleString(), "UTF-8"),
+        statHTML("バイト数", sjisBytes.toLocaleString(), "Shift_JIS換算（全角2・半角1）"),
+        statHTML(
+            "X（旧Twitter）",
+            `${xCount.toLocaleString()} / 280`,
+            xCount > 280 ? `${(xCount - 280).toLocaleString()} 超過` : "全角2・半角1・URLは23で計算"
+        ),
+        statHTML("読了時間", formatDuration(configured / speed), `${speed}字/分で計算`)
+    ].join("");
+}
+
+/* =========================
+   イベント
+========================= */
+
+inputEl.addEventListener("input", update);
+
+Object.values(options).forEach(el => {
+    el.addEventListener("change", update);
+    el.addEventListener("input", update);
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+    inputEl.value = "";
+    inputEl.focus();
+    update();
+});
+
+function showToast(message) {
+    const el = document.getElementById("toast");
+
+    el.textContent = message;
+    el.classList.add("shown");
+
+    setTimeout(() => el.classList.remove("shown"), 1800);
+}
+
+document.getElementById("copyBtn").addEventListener("click", () => {
+    if (inputEl.value === "") {
+        showToast("本文が空です");
+        return;
+    }
+
+    navigator.clipboard.writeText(inputEl.value).then(
+        () => showToast("本文をコピーしました"),
+        () => showToast("コピーできませんでした")
+    );
+});
+
+update();
 </script>
-  
+
 <div id="related-tools"></div>
 <script src="/js/related.js"></script>
-  
+
 </body>
 </html>
