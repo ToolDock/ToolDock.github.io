@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>連立方程式の計算｜途中式つき・加減法で解く無料ツール | ToolDock</title>
+<meta name="description" content="連立方程式を加減法の途中式つきで解く無料ツール。2元から5元まで対応し、係数は分数のまま正確に表示します。解なし（不能）や解が無数にある場合（不定）も判定します。">
+<link rel="canonical" href="https://tooldock.github.io/renritsu/">
+
+<script> const CURRENT_TOOL = "renritsu"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<meta name="keywords" content="連立方程式,加減法,代入法,途中式,計算,2元1次,3元1次,分数,不能,不定,中学数学,高校数学">
+
+<style>
+    body {
+        font-family: "Yu Gothic", "Meiryo", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto 24px;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 { margin-top: 0; font-size: 1.9rem; }
+
+    h2 {
+        margin-top: 32px;
+        font-size: 1.3rem;
+        border-left: 5px solid #2563eb;
+        padding-left: 12px;
+    }
+
+    h3 { margin-top: 24px; font-size: 1.05rem; }
+
+    p.description { color: #555; }
+
+    .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin: 20px 0;
+    }
+
+    .controls input[type="number"] {
+        width: 70px;
+        padding: 9px;
+        font-size: 1rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+    }
+
+    button.action {
+        padding: 11px 22px;
+        border: none;
+        border-radius: 999px;
+        background: #2563eb;
+        color: white;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    button.action:hover { background: #1d4ed8; }
+
+    button.action.sub { background: #64748b; }
+    button.action.sub:hover { background: #475569; }
+
+    /* 入力欄 */
+
+    .eq-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 10px;
+        font-size: 1.05rem;
+    }
+
+    .eq-label {
+        width: 2.2em;
+        color: #2563eb;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .eq-row input {
+        width: 62px;
+        padding: 8px;
+        text-align: center;
+        font-size: 1rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+    }
+
+    .eq-row input:focus { outline: none; border-color: #2563eb; }
+
+    .var { margin: 0 6px 0 2px; font-style: italic; }
+
+    .plus, .equals { margin: 0 4px; color: #64748b; }
+
+    .hint { color: #666; font-size: 0.9rem; }
+
+    /* 途中式 */
+
+    .step {
+        background: #f8fafc;
+        border-left: 5px solid #2563eb;
+        padding: 14px 18px;
+        margin: 16px 0;
+        border-radius: 10px;
+    }
+
+    .step-title {
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #1e40af;
+    }
+
+    .system { margin: 0; }
+
+    .system .line {
+        font-size: 1.1rem;
+        padding: 3px 0;
+        white-space: nowrap;
+        overflow-x: auto;
+    }
+
+    .line .tag {
+        display: inline-block;
+        width: 2.2em;
+        color: #2563eb;
+        font-weight: bold;
+    }
+
+    .answer {
+        margin-top: 26px;
+        padding: 20px;
+        border-radius: 14px;
+        background: #eff6ff;
+        border: 2px solid #bfdbfe;
+    }
+
+    .answer h3 {
+        margin: 0 0 10px;
+        color: #1e40af;
+        font-size: 1.1rem;
+    }
+
+    .answer .value {
+        font-size: 1.35rem;
+        padding: 3px 0;
+    }
+
+    .verdict {
+        margin-top: 26px;
+        padding: 18px;
+        border-radius: 12px;
+        font-size: 1.05rem;
+    }
+
+    .verdict.none {
+        background: #fef2f2;
+        border-left: 5px solid #dc2626;
+        color: #991b1b;
+    }
+
+    .verdict.many {
+        background: #fffbeb;
+        border-left: 5px solid #d97706;
+        color: #92400e;
+    }
+
+    .error {
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: #fef2f2;
+        border-left: 5px solid #dc2626;
+        color: #991b1b;
+    }
+
+    /* 分数 */
+
+    .frac {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        vertical-align: middle;
+        line-height: 1.15;
+        font-size: 0.95em;
+    }
+
+    .frac .num {
+        border-bottom: 1px solid currentColor;
+        padding: 0 0.25em;
+    }
+
+    .frac .den { padding: 0 0.25em; }
+
+    table.guide {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+
+    table.guide th, table.guide td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 10px;
+        text-align: left;
+    }
+
+    table.guide th { background: #f8fafc; white-space: nowrap; }
+
+    footer { color: #666; font-size: 0.9rem; }
+
+    @media (max-width: 600px) {
+        .container { padding: 20px; }
+        .eq-row input { width: 52px; }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>連立方程式の計算（途中式つき）</h1>
+
+    <p class="description">
+        連立方程式を<strong>加減法の途中式つき</strong>で解く無料ツールです。
+        2元から5元まで対応し、計算は分数のまま正確に行うため、割り切れない係数も丸めずに表示します。
+        解が存在しない場合（不能）や、解が無数にある場合（不定）も判定します。
+    </p>
+
+    <div class="controls">
+        <label>
+            元（未知数）の数
+            <input type="number" id="varCount" min="2" max="5" value="2">
+        </label>
+
+        <label>
+            式の数
+            <input type="number" id="eqCount" min="2" max="5" value="2">
+        </label>
+
+        <button type="button" class="action sub" id="buildBtn">入力欄を作る</button>
+        <button type="button" class="action" id="solveBtn">解く</button>
+    </div>
+
+    <p class="hint">
+        各マスには整数・小数・分数が入力できます（例：<code>3</code>、<code>-1.5</code>、<code>2/3</code>）。
+        空欄は 0 として扱います。
+    </p>
+
+    <div id="inputArea"></div>
+
+    <div id="output"></div>
+
+</div>
+
+<div class="container">
+
+    <h2>加減法とは</h2>
+
+    <p>
+        加減法は、2つの式を足したり引いたりして<strong>文字を1つ消す</strong>解き方です。
+        消したい文字の係数をそろえてから引くのが基本の手順になります。
+    </p>
+
+    <p>
+        たとえば次の連立方程式を考えます。
+    </p>
+
+    <div class="step">
+        <div class="line"><span class="tag">①</span>2<span class="var">x</span> + 3<span class="var">y</span> = 8</div>
+        <div class="line"><span class="tag">②</span><span class="var">x</span> − <span class="var">y</span> = −1</div>
+    </div>
+
+    <p>
+        <span class="var">x</span> を消すために、②を2倍して①と係数をそろえます。
+        すると <span class="var">x</span> の係数がどちらも2になるので、①から②′を引けば
+        <span class="var">x</span> が消えて <span class="var">y</span> だけの式になります。
+    </p>
+
+    <p>
+        このツールは、この「何倍して、どちらから引いたか」を1手ずつ表示します。
+        入力した係数が整数であれば、途中で分数が出ないように倍率を選ぶので、
+        手計算の手順とほぼ同じ流れになります。
+    </p>
+
+    <h2>代入法との違い</h2>
+
+    <div>
+        <table class="guide">
+            <thead>
+                <tr><th>解き方</th><th>向いている場面</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>加減法</td>
+                    <td>係数がそろえやすいとき。文字が3つ以上あるときも手順が同じで進めやすい</td>
+                </tr>
+                <tr>
+                    <td>代入法</td>
+                    <td><span class="var">y</span> = … の形が最初からあるとき。文字が2つのときは速い</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        どちらで解いても答えは同じです。文字が3つ以上になると代入法は式が複雑になりやすいため、
+        このツールでは加減法で統一しています。
+    </p>
+
+    <h2>解が1つに決まらない場合</h2>
+
+    <h3>解なし（不能）</h3>
+    <p>
+        計算を進めると <code>0 = 3</code> のような、成り立たない式が出てくることがあります。
+        これは条件が矛盾していることを意味し、解は存在しません。
+        グラフで言えば、2直線が平行で交わらない状態です。
+    </p>
+
+    <h3>解が無数にある（不定）</h3>
+    <p>
+        <code>0 = 0</code> という当たり前の式だけが残る場合、式が実質的に足りていません。
+        解は1つに決まらず、無数に存在します。
+        グラフで言えば、2直線が完全に重なっている状態です。
+    </p>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 分数や小数の係数でも解けますか？</strong><br>
+    A. 解けます。<code>2/3</code> や <code>-1.5</code> のように入力してください。
+    計算は内部で分数のまま行うため、丸め誤差は発生しません。</p>
+
+    <p><strong>Q. 式の数と文字の数が違っても大丈夫ですか？</strong><br>
+    A. 大丈夫です。式が足りなければ「解が無数にある」、
+    条件が矛盾していれば「解なし」と判定します。</p>
+
+    <p><strong>Q. 行列を使った解き方が見たいです。</strong><br>
+    A. <a href="/hakidasi/">掃き出し法ツール</a>をお使いください。
+    同じ計算を行列の形で、行基本変形の途中式つきで表示します。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+</footer>
+
+<script>
+/* =========================
+   有理数（分数）
+========================= */
+
+function bigAbs(a) { return a < 0n ? -a : a; }
+
+function bigGcd(a, b) {
+    a = bigAbs(a); b = bigAbs(b);
+    while (b) { [a, b] = [b, a % b]; }
+    return a;
+}
+
+class Frac {
+    constructor(num, den = 1n) {
+        if (den === 0n) throw new Error("分母が0の分数は扱えません。");
+
+        if (den < 0n) { num = -num; den = -den; }
+
+        const g = bigGcd(num, den) || 1n;
+
+        this.n = num / g;
+        this.d = den / g;
+    }
+
+    static zero() { return new Frac(0n, 1n); }
+    static one() { return new Frac(1n, 1n); }
+
+    add(o) { return new Frac(this.n * o.d + o.n * this.d, this.d * o.d); }
+    sub(o) { return new Frac(this.n * o.d - o.n * this.d, this.d * o.d); }
+    mul(o) { return new Frac(this.n * o.n, this.d * o.d); }
+
+    div(o) {
+        if (o.isZero()) throw new Error("0で割る操作が発生しました。");
+        return new Frac(this.n * o.d, this.d * o.n);
+    }
+
+    neg() { return new Frac(-this.n, this.d); }
+    abs() { return new Frac(bigAbs(this.n), this.d); }
+
+    isZero() { return this.n === 0n; }
+    isOne() { return this.n === this.d; }
+    isInteger() { return this.d === 1n; }
+    isNegative() { return this.n < 0n; }
+
+    equals(o) { return this.n === o.n && this.d === o.d; }
+
+    toHTML() {
+        if (this.isInteger()) return String(this.n);
+
+        return (this.isNegative() ? "−" : "")
+            + `<span class="frac"><span class="num">${bigAbs(this.n)}</span>`
+            + `<span class="den">${this.d}</span></span>`;
+    }
+}
+
+/* ---- 入力のパース ---- */
+
+function decimalToFrac(s) {
+    const m = s.match(/^([+-]?)(\d*)(?:\.(\d*))?$/);
+
+    const intPart = m ? m[2] : "";
+    const decPart = m && m[3] !== undefined ? m[3] : "";
+
+    if (!m || (intPart === "" && decPart === "")) {
+        throw new Error(`「${s}」は数値として読み取れません。`);
+    }
+
+    const sign = m[1] === "-" ? -1n : 1n;
+
+    return new Frac(
+        BigInt((intPart || "0") + decPart) * sign,
+        10n ** BigInt(decPart.length)
+    );
+}
+
+function parseFrac(raw) {
+    const s = String(raw).trim().replace(/\s+/g, "");
+
+    if (s === "") return Frac.zero();
+
+    const parts = s.split("/");
+
+    if (parts.length === 2) {
+        return decimalToFrac(parts[0]).div(decimalToFrac(parts[1]));
+    }
+
+    if (parts.length > 2) throw new Error(`「${s}」は数値として読み取れません。`);
+
+    return decimalToFrac(s);
+}
+
+/* =========================
+   表示
+========================= */
+
+const VARS = ["x", "y", "z", "w", "v"];
+const TAGS = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧"];
+
+function varHTML(i) {
+    return `<span class="var">${VARS[i]}</span>`;
+}
+
+/* 1本の式を "2x + 3y = 8" の形で組み立てる */
+function equationHTML(coeffs, rhs) {
+    let out = "";
+    let first = true;
+
+    coeffs.forEach((c, i) => {
+        if (c.isZero()) return;
+
+        const a = c.abs();
+
+        if (first) {
+            if (c.isNegative()) out += "−";
+            first = false;
+        } else {
+            out += c.isNegative() ? " − " : " + ";
+        }
+
+        out += (a.isOne() ? "" : a.toHTML()) + varHTML(i);
+    });
+
+    if (first) out = "0";
+
+    return `${out} <span class="equals">=</span> ${rhs.toHTML()}`;
+}
+
+function systemHTML(rowsData, tags) {
+    return rowsData.map((row, i) => `
+        <div class="line">
+            <span class="tag">${tags[i]}</span>${equationHTML(row.coeffs, row.rhs)}
+        </div>
+    `).join("");
+}
+
+function stepHTML(title, rowsData, tags) {
+    return `
+        <div class="step">
+            <div class="step-title">${title}</div>
+            <div class="system">${systemHTML(rowsData, tags)}</div>
+        </div>
+    `;
+}
+
+/* =========================
+   入力欄
+========================= */
+
+function buildInputs() {
+    const vars = clampInt("varCount", 2, 5);
+    const eqs = clampInt("eqCount", 2, 5);
+
+    let html = "";
+
+    for (let i = 0; i < eqs; i++) {
+        html += `<div class="eq-row"><span class="eq-label">${TAGS[i]}</span>`;
+
+        for (let j = 0; j < vars; j++) {
+            if (j > 0) html += `<span class="plus">+</span>`;
+
+            html += `<input type="text" id="a-${i}-${j}" value="0" autocomplete="off">`;
+            html += varHTML(j);
+        }
+
+        html += `<span class="equals">=</span>`;
+        html += `<input type="text" id="b-${i}" value="0" autocomplete="off">`;
+        html += `</div>`;
+    }
+
+    document.getElementById("inputArea").innerHTML = html;
+    document.getElementById("output").innerHTML = "";
+}
+
+function clampInt(id, min, max) {
+    const el = document.getElementById(id);
+
+    let v = parseInt(el.value, 10);
+
+    if (!Number.isFinite(v)) v = min;
+
+    v = Math.min(max, Math.max(min, v));
+    el.value = v;
+
+    return v;
+}
+
+/* =========================
+   解く
+========================= */
+
+function solve() {
+    const output = document.getElementById("output");
+
+    const vars = clampInt("varCount", 2, 5);
+    const eqs = clampInt("eqCount", 2, 5);
+
+    let rowsData;
+
+    try {
+        rowsData = [];
+
+        for (let i = 0; i < eqs; i++) {
+            const coeffs = [];
+
+            for (let j = 0; j < vars; j++) {
+                const el = document.getElementById(`a-${i}-${j}`);
+
+                if (!el) throw new Error("先に「入力欄を作る」を押してください。");
+
+                coeffs.push(parseFrac(el.value));
+            }
+
+            rowsData.push({
+                coeffs,
+                rhs: parseFrac(document.getElementById(`b-${i}`).value)
+            });
+        }
+    } catch (e) {
+        output.innerHTML = `<div class="error">${e.message}</div>`;
+        return;
+    }
+
+    let html = stepHTML("与えられた連立方程式", rowsData, TAGS);
+
+    const tags = TAGS.slice(0, eqs);
+
+    /* ---- 前進消去 ---- */
+
+    let pivotRow = 0;
+    const pivotCols = [];
+
+    for (let col = 0; col < vars && pivotRow < eqs; col++) {
+
+        let target = -1;
+
+        for (let r = pivotRow; r < eqs; r++) {
+            if (!rowsData[r].coeffs[col].isZero()) { target = r; break; }
+        }
+
+        if (target === -1) continue;
+
+        if (target !== pivotRow) {
+            [rowsData[target], rowsData[pivotRow]] = [rowsData[pivotRow], rowsData[target]];
+            [tags[target], tags[pivotRow]] = [tags[pivotRow], tags[target]];
+
+            html += stepHTML(
+                `${tags[pivotRow]} と ${tags[target]} を入れ替える`,
+                rowsData, tags
+            );
+        }
+
+        const pivot = rowsData[pivotRow].coeffs[col];
+
+        for (let r = 0; r < eqs; r++) {
+            if (r === pivotRow) continue;
+
+            const a = rowsData[r].coeffs[col];
+
+            if (a.isZero()) continue;
+
+            /* 整数のまま進むよう、両辺にかける倍率を約分して選ぶ。
+               消される式にかける倍率が正になるよう符号を寄せる */
+            let g = new Frac(
+                bigGcd(a.n * pivot.d, pivot.n * a.d),
+                a.d * pivot.d
+            );
+
+            if (pivot.isNegative()) g = g.neg();
+
+            const m1 = pivot.div(g);   // 消される式にかける（常に正）
+            const m2 = a.div(g);       // ピボット式にかける
+
+            const newCoeffs = rowsData[r].coeffs.map((c, j) =>
+                c.mul(m1).sub(rowsData[pivotRow].coeffs[j].mul(m2))
+            );
+
+            const newRhs = rowsData[r].rhs.mul(m1)
+                .sub(rowsData[pivotRow].rhs.mul(m2));
+
+            rowsData[r] = { coeffs: newCoeffs, rhs: newRhs };
+
+            /* 引く数が負なら「＋」と書いたほうが手順として自然 */
+            const m2abs = m2.abs();
+
+            const left = m1.isOne() ? tags[r] : `${tags[r]}×${m1.toHTML()}`;
+            const right = m2abs.isOne()
+                ? tags[pivotRow]
+                : `${tags[pivotRow]}×${m2abs.toHTML()}`;
+
+            const op = m2.isNegative() ? "＋" : "−";
+
+            html += stepHTML(
+                `${VARS[col]} を消す　${left} ${op} ${right}`,
+                rowsData, tags
+            );
+        }
+
+        pivotCols.push(col);
+        pivotRow++;
+    }
+
+    /* ---- 判定 ---- */
+
+    for (let r = 0; r < eqs; r++) {
+        const allZero = rowsData[r].coeffs.every(c => c.isZero());
+
+        if (allZero && !rowsData[r].rhs.isZero()) {
+            html += `
+                <div class="verdict none">
+                    <strong>解なし（不能）</strong><br>
+                    ${tags[r]} が「0 = ${rowsData[r].rhs.toHTML()}」となり、成り立たない式が出ました。
+                    条件が矛盾しているため、この連立方程式を満たす値は存在しません。
+                </div>
+            `;
+
+            output.innerHTML = html;
+            return;
+        }
+    }
+
+    if (pivotCols.length < vars) {
+        const freeVars = [];
+
+        for (let j = 0; j < vars; j++) {
+            if (!pivotCols.includes(j)) freeVars.push(VARS[j]);
+        }
+
+        html += `
+            <div class="verdict many">
+                <strong>解が無数にある（不定）</strong><br>
+                式が足りず、${freeVars.join("・")} の値が1つに定まりません。
+                ${freeVars.join("・")} を自由に決めると、それに応じて残りの値が決まります。
+            </div>
+        `;
+
+        output.innerHTML = html;
+        return;
+    }
+
+    /* ---- 各式を「文字 = 値」の形に整える ---- */
+
+    const answers = [];
+
+    for (let r = 0; r < pivotCols.length; r++) {
+        const col = pivotCols[r];
+        const pivot = rowsData[r].coeffs[col];
+
+        if (!pivot.isOne()) {
+            rowsData[r] = {
+                coeffs: rowsData[r].coeffs.map(c => c.div(pivot)),
+                rhs: rowsData[r].rhs.div(pivot)
+            };
+
+            html += stepHTML(
+                `${tags[r]} の両辺を ${pivot.toHTML()} で割る`,
+                rowsData, tags
+            );
+        }
+
+        answers[col] = rowsData[r].rhs;
+    }
+
+    html += `
+        <div class="answer">
+            <h3>答え</h3>
+            ${answers.map((v, i) =>
+                `<div class="value">${varHTML(i)} <span class="equals">=</span> ${v.toHTML()}</div>`
+            ).join("")}
+        </div>
+    `;
+
+    output.innerHTML = html;
+}
+
+/* =========================
+   イベント
+========================= */
+
+document.getElementById("buildBtn").addEventListener("click", buildInputs);
+document.getElementById("solveBtn").addEventListener("click", solve);
+
+["varCount", "eqCount"].forEach(id => {
+    document.getElementById(id).addEventListener("change", buildInputs);
+});
+
+buildInputs();
+
+/* 初期値として例を入れておく */
+document.getElementById("a-0-0").value = "2";
+document.getElementById("a-0-1").value = "3";
+document.getElementById("b-0").value = "8";
+document.getElementById("a-1-0").value = "1";
+document.getElementById("a-1-1").value = "-1";
+document.getElementById("b-1").value = "-1";
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>因数分解の計算｜たすき掛けの途中式つき無料ツール | ToolDock</title>
+<meta name="description" content="2次式の因数分解を、たすき掛けの過程つきで表示する無料ツール。共通因数のくくり出し、公式の判定、展開による検算まで自動で行います。因数分解できない場合はその理由も示します。">
+<link rel="canonical" href="https://tooldock.github.io/insubunkai/">
+
+<script> const CURRENT_TOOL = "insubunkai"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<meta name="keywords" content="因数分解,たすき掛け,途中式,2次式,共通因数,公式,展開,判別式,中学数学,高校数学">
+
+<style>
+    body {
+        font-family: "Yu Gothic", "Meiryo", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto 24px;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 { margin-top: 0; font-size: 1.9rem; }
+
+    h2 {
+        margin-top: 32px;
+        font-size: 1.3rem;
+        border-left: 5px solid #2563eb;
+        padding-left: 12px;
+    }
+
+    h3 { margin-top: 24px; font-size: 1.05rem; }
+
+    p.description { color: #555; }
+
+    .var { font-style: italic; }
+
+    /* 入力 */
+
+    .poly-input {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin: 22px 0 10px;
+        font-size: 1.15rem;
+    }
+
+    .poly-input input {
+        width: 76px;
+        padding: 10px;
+        text-align: center;
+        font-size: 1.05rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+    }
+
+    .poly-input input:focus { outline: none; border-color: #2563eb; }
+
+    .presets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0 20px;
+    }
+
+    .presets button {
+        padding: 7px 14px;
+        border: 2px solid #cbd5e1;
+        border-radius: 999px;
+        background: white;
+        color: #334155;
+        font-size: 0.88rem;
+        cursor: pointer;
+    }
+
+    .presets button:hover { border-color: #2563eb; color: #2563eb; }
+
+    button.action {
+        padding: 11px 24px;
+        border: none;
+        border-radius: 999px;
+        background: #2563eb;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    button.action:hover { background: #1d4ed8; }
+
+    .hint { color: #666; font-size: 0.9rem; }
+
+    /* 途中式 */
+
+    .step {
+        background: #f8fafc;
+        border-left: 5px solid #2563eb;
+        padding: 14px 18px;
+        margin: 16px 0;
+        border-radius: 10px;
+    }
+
+    .step-title {
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #1e40af;
+    }
+
+    .expr {
+        font-size: 1.2rem;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 4px 0;
+    }
+
+    /* たすき掛け */
+
+    .tasuki {
+        margin: 14px 0 4px;
+        border-collapse: collapse;
+        font-size: 1.15rem;
+    }
+
+    .tasuki td {
+        padding: 8px 18px;
+        text-align: center;
+        min-width: 54px;
+    }
+
+    .tasuki .lead { border-right: 2px solid #94a3b8; }
+
+    .tasuki .cross {
+        color: #64748b;
+        font-size: 0.95rem;
+        border-left: 2px solid #94a3b8;
+    }
+
+    .tasuki tr.total td {
+        border-top: 2px solid #94a3b8;
+        font-weight: bold;
+        color: #1e40af;
+    }
+
+    .answer {
+        margin-top: 24px;
+        padding: 20px;
+        border-radius: 14px;
+        background: #eff6ff;
+        border: 2px solid #bfdbfe;
+    }
+
+    .answer .label {
+        color: #1e40af;
+        font-weight: bold;
+        margin-bottom: 6px;
+    }
+
+    .answer .expr { font-size: 1.5rem; }
+
+    .verdict {
+        margin-top: 24px;
+        padding: 18px;
+        border-radius: 12px;
+        background: #fffbeb;
+        border-left: 5px solid #d97706;
+        color: #92400e;
+    }
+
+    .error {
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: #fef2f2;
+        border-left: 5px solid #dc2626;
+        color: #991b1b;
+    }
+
+    .check {
+        margin-top: 14px;
+        color: #475569;
+        font-size: 0.95rem;
+    }
+
+    table.guide {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+
+    table.guide th, table.guide td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 10px;
+        text-align: left;
+    }
+
+    table.guide th { background: #f8fafc; white-space: nowrap; }
+
+    .table-scroll { overflow-x: auto; }
+
+    footer { color: #666; font-size: 0.9rem; }
+
+    @media (max-width: 600px) {
+        .container { padding: 20px; }
+        .poly-input input { width: 62px; }
+        .tasuki td { padding: 6px 10px; }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>因数分解の計算（たすき掛けの途中式つき）</h1>
+
+    <p class="description">
+        2次式 <span class="var">ax</span>² + <span class="var">bx</span> + <span class="var">c</span> の因数分解を、
+        <strong>たすき掛けの過程つき</strong>で表示する無料ツールです。
+        共通因数のくくり出し、公式にあてはまるかの判定、展開による検算まで自動で行います。
+        因数分解できない場合は、その理由も示します。
+    </p>
+
+    <div class="poly-input">
+        <input type="text" id="coefA" value="1" autocomplete="off">
+        <span><span class="var">x</span>²</span>
+        <span>+</span>
+        <input type="text" id="coefB" value="5" autocomplete="off">
+        <span><span class="var">x</span></span>
+        <span>+</span>
+        <input type="text" id="coefC" value="6" autocomplete="off">
+    </div>
+
+    <p class="hint">
+        係数は整数で入力してください。負の数はそのまま <code>-3</code> のように入れられます。
+    </p>
+
+    <div class="presets" id="presets">
+        <button type="button" data-c="1,5,6">x²+5x+6</button>
+        <button type="button" data-c="2,7,3">2x²+7x+3</button>
+        <button type="button" data-c="6,-7,-3">6x²−7x−3</button>
+        <button type="button" data-c="1,0,-9">x²−9</button>
+        <button type="button" data-c="1,-6,9">x²−6x+9</button>
+        <button type="button" data-c="3,6,3">3x²+6x+3</button>
+        <button type="button" data-c="1,1,1">x²+x+1</button>
+    </div>
+
+    <button type="button" class="action" id="runBtn">因数分解する</button>
+
+    <div id="output"></div>
+
+</div>
+
+<div class="container">
+
+    <h2>たすき掛けのやり方</h2>
+
+    <p>
+        <span class="var">ax</span>² + <span class="var">bx</span> + <span class="var">c</span> を
+        (<span class="var">px</span> + <span class="var">q</span>)(<span class="var">rx</span> + <span class="var">s</span>)
+        の形にするとき、次の3つが同時に成り立つ組み合わせを探します。
+    </p>
+
+    <ul>
+        <li><span class="var">p</span> × <span class="var">r</span> = <span class="var">a</span>（2次の係数）</li>
+        <li><span class="var">q</span> × <span class="var">s</span> = <span class="var">c</span>（定数項）</li>
+        <li><span class="var">p</span> × <span class="var">s</span> + <span class="var">q</span> × <span class="var">r</span> = <span class="var">b</span>（1次の係数）</li>
+    </ul>
+
+    <p>
+        紙の上では、左に <span class="var">p</span> と <span class="var">r</span>、右に <span class="var">q</span> と <span class="var">s</span> を縦に並べ、
+        斜めに掛けた結果を足して <span class="var">b</span> になるかを確かめます。
+        この斜めの掛け算が「たすき」に見えることから、たすき掛けと呼ばれます。
+        このツールも同じ形で表示します。
+    </p>
+
+    <h2>因数分解の公式</h2>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr><th>形</th><th>因数分解した形</th><th>覚え方</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><span class="var">a</span>² − <span class="var">b</span>²</td><td>(<span class="var">a</span> + <span class="var">b</span>)(<span class="var">a</span> − <span class="var">b</span>)</td><td>和と差の積</td></tr>
+                <tr><td><span class="var">a</span>² + 2<span class="var">ab</span> + <span class="var">b</span>²</td><td>(<span class="var">a</span> + <span class="var">b</span>)²</td><td>完全平方</td></tr>
+                <tr><td><span class="var">a</span>² − 2<span class="var">ab</span> + <span class="var">b</span>²</td><td>(<span class="var">a</span> − <span class="var">b</span>)²</td><td>完全平方</td></tr>
+                <tr><td><span class="var">x</span>² + (<span class="var">a</span>+<span class="var">b</span>)<span class="var">x</span> + <span class="var">ab</span></td><td>(<span class="var">x</span> + <span class="var">a</span>)(<span class="var">x</span> + <span class="var">b</span>)</td><td>足して<span class="var">b</span>、掛けて<span class="var">c</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>因数分解できるかどうかの見分け方</h2>
+
+    <p>
+        <span class="var">ax</span>² + <span class="var">bx</span> + <span class="var">c</span> が整数の範囲で因数分解できるかどうかは、
+        <strong>判別式 <span class="var">D</span> = <span class="var">b</span>² − 4<span class="var">ac</span></strong> を計算すると判定できます。
+    </p>
+
+    <ul>
+        <li><span class="var">D</span> が平方数（0, 1, 4, 9, 16 …）なら、因数分解できます</li>
+        <li><span class="var">D</span> が平方数でなければ、整数や分数の範囲では因数分解できません</li>
+        <li><span class="var">D</span> が負なら、実数の範囲でも因数分解できません</li>
+    </ul>
+
+    <p>
+        たとえば <span class="var">x</span>² + <span class="var">x</span> + 1 は
+        <span class="var">D</span> = 1 − 4 = −3 となり、因数分解できません。
+        テストでどれだけ探しても組み合わせが見つからないときは、
+        先に判別式を確認すると時間を無駄にせずに済みます。
+    </p>
+
+    <h2>よくあるつまずき</h2>
+
+    <h3>共通因数を先にくくり忘れる</h3>
+    <p>
+        3<span class="var">x</span>² + 6<span class="var">x</span> + 3 のような式は、
+        まず 3 でくくって 3(<span class="var">x</span>² + 2<span class="var">x</span> + 1) にしてから考えます。
+        いきなりたすき掛けを始めると、数が大きくなって組み合わせを見つけにくくなります。
+    </p>
+
+    <h3>符号の取り違え</h3>
+    <p>
+        定数項が負のときは、掛けて負になる組み合わせ、つまり片方が正でもう片方が負になります。
+        定数項が正で1次の係数が負なら、両方とも負です。
+        ここを機械的に判断できるようにすると、探す手間がかなり減ります。
+    </p>
+
+    <h3>最後に展開して確かめない</h3>
+    <p>
+        因数分解は、展開すれば必ず元の式に戻ります。
+        1行で検算できるので、答案では必ず確かめる習慣をつけると失点が減ります。
+        このツールも、結果の下に展開して戻した式を表示しています。
+    </p>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 3次以上の式には対応していますか？</strong><br>
+    A. このツールは2次式に対応しています。3次以上は因数定理を使って1次の因数を見つけてから、
+    残りを2次式として分解する流れになります。</p>
+
+    <p><strong>Q. 係数に分数を入れられますか？</strong><br>
+    A. 整数のみに対応しています。分数を含む式は、両辺に分母の最小公倍数を掛けて整数に直してからお使いください。</p>
+
+    <p><strong>Q. 連立方程式や行列の計算もしたいです。</strong><br>
+    A. <a href="/renritsu/">連立方程式の計算</a>や<a href="/hakidasi/">掃き出し法ツール</a>もご利用ください。
+    どちらも途中式つきで表示します。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+</footer>
+
+<script>
+/* =========================
+   多項式の表示
+========================= */
+
+function gcd(a, b) {
+    a = Math.abs(a); b = Math.abs(b);
+    while (b) { [a, b] = [b, a % b]; }
+    return a;
+}
+
+/* 係数つきの項。first=true なら先頭の + を省く */
+function term(coef, body, first) {
+    if (coef === 0) return "";
+
+    const sign = coef < 0 ? "−" : "+";
+    const abs = Math.abs(coef);
+    const shown = (abs === 1 && body !== "") ? "" : String(abs);
+
+    if (first) {
+        return (coef < 0 ? "−" : "") + shown + body;
+    }
+
+    return ` ${sign} ${shown}${body}`;
+}
+
+function polyHTML(a, b, c) {
+    let out = "";
+
+    out += term(a, '<span class="var">x</span>²', true);
+    out += term(b, '<span class="var">x</span>', out === "");
+    out += term(c, "", out === "");
+
+    return out === "" ? "0" : out;
+}
+
+/* (px + q) の形。定数項が0のときは括弧を付けず px と書く */
+function linearHTML(p, q) {
+    if (q === 0) {
+        return term(p, '<span class="var">x</span>', true);
+    }
+
+    let inner = "";
+
+    inner += term(p, '<span class="var">x</span>', true);
+    inner += term(q, "", inner === "");
+
+    return `(${inner === "" ? "0" : inner})`;
+}
+
+/* =========================
+   因数分解
+========================= */
+
+function divisors(n) {
+    n = Math.abs(n);
+
+    const list = [];
+
+    for (let i = 1; i * i <= n; i++) {
+        if (n % i === 0) {
+            list.push(i);
+            if (i !== n / i) list.push(n / i);
+        }
+    }
+
+    return list.sort((x, y) => x - y);
+}
+
+/* a x^2 + b x + c = (p x + q)(r x + s) となる組を探す */
+function findFactors(a, b, c) {
+    if (c === 0) {
+        /* x でくくれる。x の因数を先に置く */
+        return { p: 1, q: 0, r: a, s: b };
+    }
+
+    for (const p of divisors(a)) {
+        const r = a / p;
+
+        for (const qAbs of divisors(c)) {
+            for (const sign of [1, -1]) {
+                const q = qAbs * sign;
+
+                if (c % q !== 0) continue;
+
+                const s = c / q;
+
+                if (p * s + q * r === b) {
+                    return { p, q, r, s };
+                }
+            }
+        }
+    }
+
+    return null;
+}
+
+function isPerfectSquare(n) {
+    if (n < 0) return false;
+    const r = Math.round(Math.sqrt(n));
+    return r * r === n;
+}
+
+/* =========================
+   実行
+========================= */
+
+function parseCoef(id, name) {
+    const raw = document.getElementById(id).value.trim();
+
+    if (raw === "") return 0;
+
+    if (!/^[+-]?\d+$/.test(raw)) {
+        throw new Error(`${name} は整数で入力してください（「${raw}」は使えません）。`);
+    }
+
+    const v = parseInt(raw, 10);
+
+    if (Math.abs(v) > 1000000) {
+        throw new Error(`${name} が大きすぎます。1000000 以下で入力してください。`);
+    }
+
+    return v;
+}
+
+function run() {
+    const output = document.getElementById("output");
+
+    let a, b, c;
+
+    try {
+        a = parseCoef("coefA", "x² の係数");
+        b = parseCoef("coefB", "x の係数");
+        c = parseCoef("coefC", "定数項");
+    } catch (e) {
+        output.innerHTML = `<div class="error">${e.message}</div>`;
+        return;
+    }
+
+    if (a === 0 && b === 0 && c === 0) {
+        output.innerHTML = `<div class="error">すべての係数が0です。式を入力してください。</div>`;
+        return;
+    }
+
+    let html = `
+        <div class="step">
+            <div class="step-title">与えられた式</div>
+            <div class="expr">${polyHTML(a, b, c)}</div>
+        </div>
+    `;
+
+    /* ---- 1次式・定数の場合 ---- */
+
+    if (a === 0) {
+        if (b === 0) {
+            output.innerHTML = html + `
+                <div class="verdict">
+                    定数だけの式なので、因数分解する部分がありません。
+                </div>`;
+            return;
+        }
+
+        const g0 = gcd(b, c) * (b < 0 ? -1 : 1);
+
+        html += `
+            <div class="answer">
+                <div class="label">答え</div>
+                <div class="expr">${
+                    Math.abs(g0) === 1 && g0 > 0
+                        ? polyHTML(0, b, c)
+                        : `${g0 === -1 ? "−" : g0}${linearHTML(b / g0, c / g0)}`
+                }</div>
+            </div>
+            <div class="check">1次式なので、共通因数をくくり出すところまでになります。</div>
+        `;
+
+        output.innerHTML = html;
+        return;
+    }
+
+    /* ---- 共通因数をくくり出す ---- */
+
+    let g = gcd(gcd(a, b), c);
+
+    if (a < 0) g = -g;   /* 先頭を正にそろえる */
+
+    let A = a, B = b, C = c;
+
+    if (g !== 1 && g !== 0) {
+        A = a / g; B = b / g; C = c / g;
+
+        html += `
+            <div class="step">
+                <div class="step-title">共通因数 ${g === -1 ? "−1" : g} をくくり出す</div>
+                <div class="expr">${g === -1 ? "−" : g}(${polyHTML(A, B, C)})</div>
+            </div>
+        `;
+    }
+
+    const outer = (g === 1) ? "" : (g === -1 ? "−" : String(g));
+
+    /* ---- 判別式 ---- */
+
+    const D = B * B - 4 * A * C;
+
+    html += `
+        <div class="step">
+            <div class="step-title">判別式で因数分解できるか確かめる</div>
+            <div class="expr">
+                <span class="var">D</span> = ${B}² − 4×${A}×${C} = ${D}
+            </div>
+        </div>
+    `;
+
+    if (!isPerfectSquare(D)) {
+        html += `
+            <div class="verdict">
+                <strong>整数・分数の範囲では因数分解できません。</strong><br>
+                判別式 <span class="var">D</span> = ${D} が
+                ${D < 0 ? "負の数である" : "平方数ではない"}ためです。
+                ${D < 0 ? "この式は実数の範囲でも因数分解できません。" : ""}
+                ${g !== 1 ? `共通因数をくくり出した ${outer}(${polyHTML(A, B, C)}) が答えになります。` : ""}
+            </div>
+        `;
+
+        output.innerHTML = html;
+        return;
+    }
+
+    /* ---- たすき掛け ---- */
+
+    const f = findFactors(A, B, C);
+
+    if (!f) {
+        html += `<div class="verdict">整数の範囲では組み合わせが見つかりませんでした。</div>`;
+        output.innerHTML = html;
+        return;
+    }
+
+    const { p, q, r, s } = f;
+
+    html += `
+        <div class="step">
+            <div class="step-title">たすき掛けで組み合わせを見つける</div>
+
+            <table class="tasuki">
+                <tr>
+                    <td class="lead">${p}</td>
+                    <td>${q}</td>
+                    <td class="cross">${q} × ${r} = ${q * r}</td>
+                </tr>
+                <tr>
+                    <td class="lead">${r}</td>
+                    <td>${s}</td>
+                    <td class="cross">${p} × ${s} = ${p * s}</td>
+                </tr>
+                <tr class="total">
+                    <td class="lead">${p * r}</td>
+                    <td>${q * s}</td>
+                    <td class="cross">合計 ${B}</td>
+                </tr>
+            </table>
+
+            <div class="check">
+                縦の積が ${p}×${r} = ${A}（2次の係数）、${q}×${s} = ${C}（定数項）、
+                斜めの和が ${q * r} + ${p * s} = ${B}（1次の係数）で一致します。
+            </div>
+        </div>
+    `;
+
+    /* ---- 答え ---- */
+
+    const sameFactor = (p === r && q === s);
+
+    const factored = sameFactor
+        ? `${linearHTML(p, q)}²`
+        : `${linearHTML(p, q)}${linearHTML(r, s)}`;
+
+    html += `
+        <div class="answer">
+            <div class="label">答え</div>
+            <div class="expr">${outer}${factored}</div>
+        </div>
+    `;
+
+    /* ---- 検算 ---- */
+
+    const ea = g * p * r;
+    const eb = g * (p * s + q * r);
+    const ec = g * q * s;
+
+    const ok = (ea === a && eb === b && ec === c);
+
+    html += `
+        <div class="check">
+            検算：展開すると ${polyHTML(ea, eb, ec)}
+            ${ok ? "となり、元の式に一致します。" : "。元の式と一致しません。"}
+        </div>
+    `;
+
+    if (sameFactor) {
+        html += `<div class="check">${p === 1 && q > 0 ? "" : ""}同じ因数が2つ並ぶため、完全平方の形になりました。</div>`;
+    }
+
+    output.innerHTML = html;
+}
+
+/* =========================
+   イベント
+========================= */
+
+document.getElementById("runBtn").addEventListener("click", run);
+
+document.getElementById("presets").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-c]");
+
+    if (!button) return;
+
+    const [a, b, c] = button.dataset.c.split(",");
+
+    document.getElementById("coefA").value = a;
+    document.getElementById("coefB").value = b;
+    document.getElementById("coefC").value = c;
+
+    run();
+});
+
+["coefA", "coefB", "coefC"].forEach(id => {
+    document.getElementById(id).addEventListener("keydown", (event) => {
+        if (event.key === "Enter") run();
+    });
+});
+
+run();
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>

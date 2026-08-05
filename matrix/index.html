@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>行列計算ツール | ToolDock</title>
-<meta name="description" content="行列の計算（逆行列・正規化・固有値など）を行うツール。">
+<title>行列計算ツール｜行列式・逆行列を途中式つきで求める無料ツール | ToolDock</title>
+<meta name="description" content="行列式・逆行列・転置行列を途中式つきで計算する無料ツール。行基本変形の1手ごとの行列を表示し、計算はすべて分数のまま行うため丸め誤差が出ません。2次・3次は公式による求め方も併記します。">
 <link rel="canonical" href="https://tooldock.github.io/matrix/">
 
 <script> const CURRENT_TOOL = "matrix"; </script>
@@ -13,622 +13,846 @@
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<meta name="keywords" content="行列,行列式,逆行列,転置行列,途中式,余因子,サラスの方法,行基本変形,分数,線形代数">
 
-    <style>
+<style>
+    * { box-sizing: border-box; }
 
-        * {
-            box-sizing: border-box;
-        }
+    body {
+        margin: 0;
+        padding: 20px;
+        font-family: "Yu Gothic", "Meiryo", sans-serif;
+        background: #f4f6f9;
+        color: #222;
+        line-height: 1.7;
+    }
 
-        body {
-            margin: 0;
-            padding: 30px 15px;
-            font-family: sans-serif;
-            background: #f5f7fb;
-            color: #222;
-        }
+    .container {
+        max-width: 1000px;
+        margin: 0 auto 24px;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: auto;
-        }
+    h1 { margin-top: 0; font-size: 1.9rem; }
 
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
+    h2 {
+        margin-top: 32px;
+        font-size: 1.3rem;
+        border-left: 5px solid #2563eb;
+        padding-left: 12px;
+    }
 
-        .description {
-            line-height: 1.7;
-            color: #555;
-            margin-bottom: 30px;
-        }
+    h3 { margin-top: 24px; font-size: 1.05rem; }
 
-        .card {
-            background: white;
-            border-radius: 14px;
-            padding: 22px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-        }
+    p.description { color: #555; }
 
-        .controls {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
+    .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin: 20px 0;
+    }
 
-        label {
-            font-weight: bold;
-        }
+    .controls input[type="number"] {
+        width: 72px;
+        padding: 9px;
+        font-size: 1rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+    }
 
-        input[type="number"] {
-            width: 80px;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
+    .matrix-grid {
+        display: grid;
+        gap: 6px;
+        margin: 20px 0;
+        width: fit-content;
+        max-width: 100%;
+        overflow-x: auto;
+    }
 
-        .generate-btn {
-            background: #2563eb;
-            color: white;
-        }
+    .matrix-grid input {
+        width: 72px;
+        padding: 9px;
+        text-align: center;
+        font-size: 1rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+    }
 
-        .buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 25px;
-        }
+    .matrix-grid input:focus { outline: none; border-color: #2563eb; }
 
-        button {
-            border: none;
-            border-radius: 10px;
-            padding: 12px 18px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: 0.2s;
-            color: white;
-        }
+    .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+    }
 
-        button:hover {
-            transform: translateY(-1px);
-        }
+    button.action {
+        padding: 11px 22px;
+        border: none;
+        border-radius: 999px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        color: white;
+        background: #2563eb;
+    }
 
-        .det-btn {
-            background: #0f766e;
-        }
+    button.action:hover { background: #1d4ed8; }
 
-        .inverse-btn {
-            background: #7c3aed;
-        }
+    button.action.sub { background: #64748b; }
+    button.action.sub:hover { background: #475569; }
 
-        .transpose-btn {
-            background: #ea580c;
-        }
+    .hint { color: #666; font-size: 0.9rem; }
 
-        .clear-btn {
-            background: #c62828;
-        }
+    /* 途中式 */
 
-        .matrix {
-            display: grid;
-            gap: 8px;
-            margin-top: 25px;
-            overflow-x: auto;
-            width: fit-content;
-            max-width: 100%;
-        }
+    .step {
+        background: #f8fafc;
+        border-left: 5px solid #2563eb;
+        padding: 14px 18px;
+        margin: 16px 0;
+        border-radius: 10px;
+        overflow-x: auto;
+    }
 
-        .matrix input {
-            width: 75px;
-            height: 50px;
-            text-align: center;
-            font-size: 1rem;
-        }
+    .step-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #1e40af;
+    }
 
-        .result {
-            margin-top: 30px;
-            overflow-x: auto;
-            line-height: 1.8;
-        }
+    table.matrix {
+        border-collapse: collapse;
+        margin-top: 6px;
+    }
 
-        .error {
-            color: #c62828;
-            font-weight: bold;
-        }
+    table.matrix td {
+        border: 1px solid #bbb;
+        padding: 9px 14px;
+        text-align: center;
+        min-width: 44px;
+        background: white;
+    }
 
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            color: #777;
-        }
+    table.matrix td.sep {
+        border-left: 3px double #64748b;
+    }
 
-        @media (max-width: 600px) {
+    .frac {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        vertical-align: middle;
+        line-height: 1.15;
+        font-size: 0.95em;
+    }
 
-            h1 {
-                font-size: 1.6rem;
-            }
+    .frac .num {
+        border-bottom: 1px solid currentColor;
+        padding: 0 0.25em;
+    }
 
-            .matrix input {
-                width: 60px;
-                height: 45px;
-            }
+    .frac .den { padding: 0 0.25em; }
 
-            .card {
-                padding: 16px;
-            }
-        }
+    .answer {
+        margin-top: 24px;
+        padding: 20px;
+        border-radius: 14px;
+        background: #eff6ff;
+        border: 2px solid #bfdbfe;
+    }
 
-    </style>
+    .answer .label {
+        color: #1e40af;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    .answer .value { font-size: 1.4rem; }
+
+    .verdict {
+        margin-top: 24px;
+        padding: 18px;
+        border-radius: 12px;
+        background: #fffbeb;
+        border-left: 5px solid #d97706;
+        color: #92400e;
+    }
+
+    .error {
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: #fef2f2;
+        border-left: 5px solid #dc2626;
+        color: #991b1b;
+    }
+
+    .formula {
+        font-size: 1.1rem;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 4px 0;
+    }
+
+    table.guide {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+
+    table.guide th, table.guide td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 10px;
+        text-align: left;
+    }
+
+    table.guide th { background: #f8fafc; white-space: nowrap; }
+
+    .table-scroll { overflow-x: auto; }
+
+    footer { color: #666; font-size: 0.9rem; }
+
+    @media (max-width: 600px) {
+        .container { padding: 20px; }
+        .matrix-grid input { width: 58px; }
+        table.matrix td { padding: 6px 9px; min-width: 32px; }
+    }
+</style>
 </head>
+
 <body>
 
 <div class="container">
 
-    <h1>行列計算ツール</h1>
+    <h1>行列計算ツール（途中式つき）</h1>
 
     <p class="description">
-        任意サイズの行列に対応した無料の行列計算ツールです。
-        行列式・逆行列・転置行列をブラウザ上で計算できます。
+        行列式・逆行列・転置行列を<strong>途中式つき</strong>で計算する無料ツールです。
+        行基本変形を1手ずつ表示し、計算はすべて分数のまま行うため、丸め誤差は発生しません。
+        2次・3次の行列式は、公式による求め方も併せて表示します。
     </p>
 
-    <div class="card">
+    <div class="controls">
+        <label>
+            行数
+            <input type="number" id="rows" min="1" max="6" value="3">
+        </label>
 
-        <div class="controls">
+        <label>
+            列数
+            <input type="number" id="cols" min="1" max="6" value="3">
+        </label>
 
-            <label>
-                行数
-                <input type="number" id="rows" min="1" max="10" value="3">
-            </label>
-
-            <label>
-                列数
-                <input type="number" id="cols" min="1" max="10" value="3">
-            </label>
-
-            <button class="generate-btn" onclick="generateMatrix()">
-                行列生成
-            </button>
-
-        </div>
-
-        <div id="matrixContainer"></div>
-
-        <div class="buttons">
-
-            <button class="det-btn" onclick="calculateDeterminant()">
-                行列式
-            </button>
-
-            <button class="inverse-btn" onclick="calculateInverse()">
-                逆行列
-            </button>
-
-            <button class="transpose-btn" onclick="calculateTranspose()">
-                転置行列
-            </button>
-
-            <button class="clear-btn" onclick="clearMatrix()">
-                クリア
-            </button>
-
-        </div>
-
-        <div class="result" id="result"></div>
-
+        <button type="button" class="action sub" id="buildBtn">行列を作る</button>
     </div>
 
-    <footer>
-        © ToolDock
-    </footer>
+    <p class="hint">
+        各マスには整数・小数・分数が入力できます（例：<code>3</code>、<code>-1.5</code>、<code>2/3</code>）。
+    </p>
+
+    <div id="matrixContainer"></div>
+
+    <div class="buttons">
+        <button type="button" class="action" id="detBtn">行列式</button>
+        <button type="button" class="action" id="invBtn">逆行列</button>
+        <button type="button" class="action sub" id="transBtn">転置行列</button>
+        <button type="button" class="action sub" id="clearBtn">クリア</button>
+    </div>
+
+    <div id="output"></div>
 
 </div>
+
+<div class="container">
+
+    <h2>行列式の求め方</h2>
+
+    <h3>2次の行列式</h3>
+
+    <p>
+        2×2 の行列式は、たすきに掛けて引くだけで求まります。
+    </p>
+
+    <div class="formula">
+        |A| = <em>ad</em> − <em>bc</em>
+    </div>
+
+    <h3>3次の行列式（サラスの方法）</h3>
+
+    <p>
+        3×3 では、右下がりの3本の積を足し、右上がりの3本の積を引きます。
+        この並べ方を<strong>サラスの方法</strong>と呼びます。
+        ただしこの方法は3次までしか使えません。
+    </p>
+
+    <h3>4次以上（行基本変形）</h3>
+
+    <p>
+        4次以上では、行基本変形で<strong>上三角行列</strong>に変形し、
+        対角成分をすべて掛け合わせて求めます。
+        このとき、行を入れ替えるたびに符号が反転する点に注意が必要です。
+        このツールは、どの次数でもこの方法で計算し、途中の行列を1手ずつ表示します。
+    </p>
+
+    <h2>逆行列の求め方</h2>
+
+    <p>
+        逆行列は、元の行列 A の右に単位行列 I を並べた
+        <strong>[ A | I ]</strong> を作り、左側が単位行列になるまで行基本変形を行う方法で求めます。
+        変形が終わったとき、右側に現れているのが逆行列です。
+    </p>
+
+    <div class="formula">
+        [ A | I ] → 行基本変形 → [ I | A<sup>−1</sup> ]
+    </div>
+
+    <p>
+        途中で左側の対角成分に 0 しか残らなくなった場合、その行列に逆行列は存在しません。
+        これは行列式が 0 になる場合と一致します。
+    </p>
+
+    <h2>逆行列が存在しない条件</h2>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr><th>条件</th><th>意味</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>正方行列でない</td><td>行数と列数が違う行列に逆行列は定義されません</td></tr>
+                <tr><td>行列式が 0</td><td>ある行が他の行の組み合わせで作れてしまう状態です</td></tr>
+                <tr><td>同じ行・列がある</td><td>行列式が 0 になるため、逆行列は存在しません</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 答えが分数のまま表示されるのはなぜですか？</strong><br>
+    A. 小数に直すと誤差が入るためです。たとえば 1/3 を 0.333 とすると、
+    計算を重ねるうちに本来 0 になるはずの値がわずかにずれます。
+    このツールは内部でも分数のまま計算しています。</p>
+
+    <p><strong>Q. 連立方程式を解きたいです。</strong><br>
+    A. <a href="/renritsu/">連立方程式の計算</a>、または行列で解く
+    <a href="/hakidasi/">掃き出し法ツール</a>をお使いください。</p>
+
+    <p><strong>Q. 固有値は求められますか？</strong><br>
+    A. 現在は行列式・逆行列・転置行列に対応しています。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+</footer>
 
 <script>
+/* =========================
+   有理数
+========================= */
 
-    const matrixContainer =
-        document.getElementById("matrixContainer");
+function bigAbs(a) { return a < 0n ? -a : a; }
 
-    const resultDiv =
-        document.getElementById("result");
+function bigGcd(a, b) {
+    a = bigAbs(a); b = bigAbs(b);
+    while (b) { [a, b] = [b, a % b]; }
+    return a;
+}
 
-    function generateMatrix() {
+class Frac {
+    constructor(num, den = 1n) {
+        if (den === 0n) throw new Error("分母が0の分数は扱えません。");
+        if (den < 0n) { num = -num; den = -den; }
 
-        const rows =
-            parseInt(document.getElementById("rows").value);
+        const g = bigGcd(num, den) || 1n;
 
-        const cols =
-            parseInt(document.getElementById("cols").value);
-
-        matrixContainer.innerHTML = "";
-
-        const matrix =
-            document.createElement("div");
-
-        matrix.className = "matrix";
-
-        matrix.style.gridTemplateColumns =
-            `repeat(${cols}, 75px)`;
-
-        for (let i = 0; i < rows * cols; i++) {
-
-            const input =
-                document.createElement("input");
-
-            input.type = "number";
-            input.step = "any";
-            input.value = "0";
-
-            matrix.appendChild(input);
-        }
-
-        matrixContainer.appendChild(matrix);
-
-        resultDiv.innerHTML = "";
+        this.n = num / g;
+        this.d = den / g;
     }
 
-    function getMatrix() {
+    static zero() { return new Frac(0n, 1n); }
+    static one() { return new Frac(1n, 1n); }
 
-        const rows =
-            parseInt(document.getElementById("rows").value);
+    add(o) { return new Frac(this.n * o.d + o.n * this.d, this.d * o.d); }
+    sub(o) { return new Frac(this.n * o.d - o.n * this.d, this.d * o.d); }
+    mul(o) { return new Frac(this.n * o.n, this.d * o.d); }
 
-        const cols =
-            parseInt(document.getElementById("cols").value);
-
-        const inputs =
-            matrixContainer.querySelectorAll("input");
-
-        let matrix = [];
-
-        for (let i = 0; i < rows; i++) {
-
-            let row = [];
-
-            for (let j = 0; j < cols; j++) {
-
-                row.push(
-                    parseFloat(
-                        inputs[i * cols + j].value
-                    )
-                );
-            }
-
-            matrix.push(row);
-        }
-
-        return matrix;
+    div(o) {
+        if (o.isZero()) throw new Error("0で割る操作が発生しました。");
+        return new Frac(this.n * o.d, this.d * o.n);
     }
 
-    function determinant(matrix) {
+    neg() { return new Frac(-this.n, this.d); }
+    abs() { return new Frac(bigAbs(this.n), this.d); }
 
-        const n = matrix.length;
+    isZero() { return this.n === 0n; }
+    isOne() { return this.n === this.d; }
+    isInteger() { return this.d === 1n; }
+    isNegative() { return this.n < 0n; }
 
-        if (n === 1) {
-            return matrix[0][0];
-        }
+    toHTML() {
+        if (this.isInteger()) return String(this.n);
 
-        if (n === 2) {
-
-            return matrix[0][0] * matrix[1][1]
-                 - matrix[0][1] * matrix[1][0];
-        }
-
-        let det = 0;
-
-        for (let col = 0; col < n; col++) {
-
-            let subMatrix = [];
-
-            for (let i = 1; i < n; i++) {
-
-                let row = [];
-
-                for (let j = 0; j < n; j++) {
-
-                    if (j !== col) {
-                        row.push(matrix[i][j]);
-                    }
-                }
-
-                subMatrix.push(row);
-            }
-
-            det +=
-                ((col % 2 === 0) ? 1 : -1)
-                * matrix[0][col]
-                * determinant(subMatrix);
-        }
-
-        return det;
+        return (this.isNegative() ? "−" : "")
+            + `<span class="frac"><span class="num">${bigAbs(this.n)}</span>`
+            + `<span class="den">${this.d}</span></span>`;
     }
 
-    function calculateDeterminant() {
+    toPlain() {
+        return this.isInteger() ? String(this.n) : `${this.n}/${this.d}`;
+    }
+}
 
-        const matrix = getMatrix();
+function decimalToFrac(s) {
+    const m = s.match(/^([+-]?)(\d*)(?:\.(\d*))?$/);
 
-        const rows = matrix.length;
-        const cols = matrix[0].length;
+    const intPart = m ? m[2] : "";
+    const decPart = m && m[3] !== undefined ? m[3] : "";
 
-        if (rows !== cols) {
-
-            resultDiv.innerHTML =
-                `<p class="error">
-                    行列式は正方行列のみ計算できます
-                </p>`;
-
-            return;
-        }
-
-        const det =
-            determinant(matrix);
-
-        resultDiv.innerHTML =
-            `<h2>行列式</h2>
-            <p>
-            \\[
-            \\det(A) = ${det}
-            \\]
-            </p>`;
-
-        MathJax.typesetPromise();
+    if (!m || (intPart === "" && decPart === "")) {
+        throw new Error(`「${s}」は数値として読み取れません。`);
     }
 
-    function calculateTranspose() {
+    const sign = m[1] === "-" ? -1n : 1n;
 
-        const matrix = getMatrix();
+    return new Frac(
+        BigInt((intPart || "0") + decPart) * sign,
+        10n ** BigInt(decPart.length)
+    );
+}
 
-        const rows = matrix.length;
-        const cols = matrix[0].length;
+function parseFrac(raw) {
+    const s = String(raw).trim().replace(/\s+/g, "");
 
-        let result = [];
+    if (s === "") return Frac.zero();
 
-        for (let i = 0; i < cols; i++) {
+    const parts = s.split("/");
 
-            result[i] = [];
-
-            for (let j = 0; j < rows; j++) {
-
-                result[i][j] = matrix[j][i];
-            }
-        }
-
-        showMatrix("転置行列", result);
+    if (parts.length === 2) {
+        return decimalToFrac(parts[0]).div(decimalToFrac(parts[1]));
     }
 
-    function calculateInverse() {
+    if (parts.length > 2) throw new Error(`「${s}」は数値として読み取れません。`);
 
-        const matrix = getMatrix();
+    return decimalToFrac(s);
+}
 
-        const n = matrix.length;
+/* =========================
+   表示
+========================= */
 
-        if (n !== matrix[0].length) {
+function matrixHTML(M, splitAt) {
+    let html = `<table class="matrix">`;
 
-            resultDiv.innerHTML =
-                `<p class="error">
-                    逆行列は正方行列のみ計算できます
-                </p>`;
+    for (const row of M) {
+        html += "<tr>";
 
-            return;
-        }
-
-        let augmented = [];
-
-        for (let i = 0; i < n; i++) {
-
-            augmented[i] = [];
-
-            for (let j = 0; j < n; j++) {
-                augmented[i][j] = matrix[i][j];
-            }
-
-            for (let j = 0; j < n; j++) {
-                augmented[i][j + n] = (i === j) ? 1 : 0;
-            }
-        }
-
-        for (let i = 0; i < n; i++) {
-
-            let pivot = augmented[i][i];
-
-            if (pivot === 0) {
-
-                let swapped = false;
-
-                for (let j = i + 1; j < n; j++) {
-
-                    if (augmented[j][i] !== 0) {
-
-                        [augmented[i], augmented[j]] =
-                        [augmented[j], augmented[i]];
-
-                        pivot = augmented[i][i];
-
-                        swapped = true;
-
-                        break;
-                    }
-                }
-
-                if (!swapped) {
-
-                    resultDiv.innerHTML =
-                        `<p class="error">
-                            逆行列は存在しません
-                        </p>`;
-
-                    return;
-                }
-            }
-
-            for (let j = 0; j < 2 * n; j++) {
-                augmented[i][j] /= pivot;
-            }
-
-            for (let k = 0; k < n; k++) {
-
-                if (k !== i) {
-
-                    let factor =
-                        augmented[k][i];
-
-                    for (let j = 0; j < 2 * n; j++) {
-
-                        augmented[k][j] -=
-                            factor * augmented[i][j];
-                    }
-                }
-            }
-        }
-
-        let inverse = [];
-
-        for (let i = 0; i < n; i++) {
-
-            inverse[i] = [];
-
-            for (let j = 0; j < n; j++) {
-
-                inverse[i][j] =
-                    Number(
-                        augmented[i][j + n]
-                        .toFixed(6)
-                    );
-            }
-        }
-
-        showMatrix("逆行列", inverse);
-    }
-
-    function showMatrix(title, matrix) {
-
-        let latex = "\\begin{bmatrix}";
-
-        for (let i = 0; i < matrix.length; i++) {
-
-            latex += matrix[i].join(" & ");
-
-            if (i !== matrix.length - 1) {
-                latex += "\\\\";
-            }
-        }
-
-        latex += "\\end{bmatrix}";
-
-        resultDiv.innerHTML =
-            `<h2>${title}</h2>
-            <p>
-            \\[
-            ${latex}
-            \\]
-            </p>`;
-
-        MathJax.typesetPromise();
-    }
-
-    function clearMatrix() {
-
-        const inputs =
-            matrixContainer.querySelectorAll("input");
-
-        inputs.forEach(input => {
-            input.value = 0;
+        row.forEach((v, j) => {
+            const sep = (splitAt !== undefined && j === splitAt) ? " class=\"sep\"" : "";
+            html += `<td${sep}>${v.toHTML()}</td>`;
         });
 
-        resultDiv.innerHTML = "";
+        html += "</tr>";
     }
 
-    generateMatrix();
+    return html + "</table>";
+}
 
+function stepHTML(title, M, splitAt) {
+    return `
+        <div class="step">
+            <div class="step-title">${title}</div>
+            ${matrixHTML(M, splitAt)}
+        </div>
+    `;
+}
+
+/* =========================
+   入力欄
+========================= */
+
+function clampInt(id, min, max) {
+    const el = document.getElementById(id);
+
+    let v = parseInt(el.value, 10);
+
+    if (!Number.isFinite(v)) v = min;
+
+    v = Math.min(max, Math.max(min, v));
+    el.value = v;
+
+    return v;
+}
+
+function buildMatrix() {
+    const rows = clampInt("rows", 1, 6);
+    const cols = clampInt("cols", 1, 6);
+
+    let html = `<div class="matrix-grid" style="grid-template-columns: repeat(${cols}, auto)">`;
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            html += `<input type="text" id="m-${i}-${j}" value="0" autocomplete="off">`;
+        }
+    }
+
+    document.getElementById("matrixContainer").innerHTML = html + "</div>";
+    document.getElementById("output").innerHTML = "";
+}
+
+function readMatrix() {
+    const rows = clampInt("rows", 1, 6);
+    const cols = clampInt("cols", 1, 6);
+
+    const M = [];
+
+    for (let i = 0; i < rows; i++) {
+        const row = [];
+
+        for (let j = 0; j < cols; j++) {
+            const el = document.getElementById(`m-${i}-${j}`);
+
+            if (!el) throw new Error("先に「行列を作る」を押してください。");
+
+            row.push(parseFrac(el.value));
+        }
+
+        M.push(row);
+    }
+
+    return M;
+}
+
+function clone(M) {
+    return M.map(row => row.slice());
+}
+
+function showError(message) {
+    document.getElementById("output").innerHTML =
+        `<div class="error">${message}</div>`;
+}
+
+/* =========================
+   行列式
+========================= */
+
+function determinant() {
+    let M;
+
+    try {
+        M = readMatrix();
+    } catch (e) {
+        showError(e.message);
+        return;
+    }
+
+    const n = M.length;
+
+    if (n !== M[0].length) {
+        showError("行列式は正方行列でのみ定義されます。行数と列数を同じにしてください。");
+        return;
+    }
+
+    let html = stepHTML("元の行列", M);
+
+    /* 2次・3次は公式でも示す */
+
+    if (n === 2) {
+        const [[a, b], [c, d]] = M;
+
+        html += `
+            <div class="step">
+                <div class="step-title">公式で求める</div>
+                <div class="formula">
+                    |A| = ${a.toHTML()}×${d.toHTML()} − ${b.toHTML()}×${c.toHTML()}
+                    = ${a.mul(d).toHTML()} − ${b.mul(c).toHTML()}
+                    = ${a.mul(d).sub(b.mul(c)).toHTML()}
+                </div>
+            </div>
+        `;
+    }
+
+    if (n === 3) {
+        const m = M;
+
+        const plus = [
+            m[0][0].mul(m[1][1]).mul(m[2][2]),
+            m[0][1].mul(m[1][2]).mul(m[2][0]),
+            m[0][2].mul(m[1][0]).mul(m[2][1])
+        ];
+
+        const minus = [
+            m[0][2].mul(m[1][1]).mul(m[2][0]),
+            m[0][0].mul(m[1][2]).mul(m[2][1]),
+            m[0][1].mul(m[1][0]).mul(m[2][2])
+        ];
+
+        const total = plus.reduce((s, v) => s.add(v), Frac.zero())
+            .sub(minus.reduce((s, v) => s.add(v), Frac.zero()));
+
+        html += `
+            <div class="step">
+                <div class="step-title">サラスの方法で求める</div>
+                <div class="formula">
+                    右下がり：${plus.map(v => v.toHTML()).join(" + ")}
+                </div>
+                <div class="formula">
+                    右上がり：${minus.map(v => v.toHTML()).join(" + ")}
+                </div>
+                <div class="formula">
+                    |A| = ${plus.reduce((s, v) => s.add(v), Frac.zero()).toHTML()}
+                    − ${minus.reduce((s, v) => s.add(v), Frac.zero()).toHTML()}
+                    = ${total.toHTML()}
+                </div>
+            </div>
+        `;
+    }
+
+    /* 行基本変形で上三角化 */
+
+    const A = clone(M);
+
+    let det = Frac.one();
+    let swaps = 0;
+
+    for (let col = 0; col < n; col++) {
+        let pivot = -1;
+
+        for (let r = col; r < n; r++) {
+            if (!A[r][col].isZero()) { pivot = r; break; }
+        }
+
+        if (pivot === -1) {
+            html += `
+                <div class="step">
+                    <div class="step-title">${col + 1}列目に使える成分がありません</div>
+                    <div class="formula">対角成分に0が現れるため、行列式は 0 です。</div>
+                </div>
+            `;
+
+            det = Frac.zero();
+            break;
+        }
+
+        if (pivot !== col) {
+            [A[pivot], A[col]] = [A[col], A[pivot]];
+            swaps++;
+
+            html += stepHTML(`R${pivot + 1} ↔ R${col + 1}（入れ替えるので符号が反転）`, A);
+        }
+
+        for (let r = col + 1; r < n; r++) {
+            if (A[r][col].isZero()) continue;
+
+            const factor = A[r][col].div(A[col][col]);
+
+            for (let j = 0; j < n; j++) {
+                A[r][j] = A[r][j].sub(factor.mul(A[col][j]));
+            }
+
+            const sign = factor.isNegative() ? "＋" : "−";
+            const abs = factor.abs();
+            const coef = abs.isOne() ? "" : `${abs.toHTML()} × `;
+
+            html += stepHTML(`R${r + 1} ← R${r + 1} ${sign} ${coef}R${col + 1}`, A);
+        }
+    }
+
+    if (!det.isZero()) {
+        const diag = [];
+
+        for (let i = 0; i < n; i++) {
+            diag.push(A[i][i]);
+            det = det.mul(A[i][i]);
+        }
+
+        if (swaps % 2 === 1) det = det.neg();
+
+        html += `
+            <div class="step">
+                <div class="step-title">対角成分を掛け合わせる</div>
+                <div class="formula">
+                    ${diag.map(v => v.toHTML()).join(" × ")}
+                    ${swaps > 0 ? `　（行の入れ替え ${swaps} 回により符号は ${swaps % 2 === 1 ? "反転" : "そのまま"}）` : ""}
+                </div>
+            </div>
+        `;
+    }
+
+    html += `
+        <div class="answer">
+            <div class="label">行列式</div>
+            <div class="value">|A| = ${det.toHTML()}</div>
+        </div>
+    `;
+
+    if (det.isZero()) {
+        html += `<div class="verdict">行列式が 0 なので、この行列に逆行列は存在しません。</div>`;
+    }
+
+    document.getElementById("output").innerHTML = html;
+}
+
+/* =========================
+   逆行列
+========================= */
+
+function inverse() {
+    let M;
+
+    try {
+        M = readMatrix();
+    } catch (e) {
+        showError(e.message);
+        return;
+    }
+
+    const n = M.length;
+
+    if (n !== M[0].length) {
+        showError("逆行列は正方行列でのみ定義されます。行数と列数を同じにしてください。");
+        return;
+    }
+
+    /* [ A | I ] を作る */
+    const A = M.map((row, i) =>
+        row.concat(
+            Array.from({ length: n }, (_, j) => (i === j ? Frac.one() : Frac.zero()))
+        )
+    );
+
+    let html = stepHTML("右に単位行列を並べる　[ A | I ]", A, n);
+
+    for (let col = 0; col < n; col++) {
+        let pivot = -1;
+
+        for (let r = col; r < n; r++) {
+            if (!A[r][col].isZero()) { pivot = r; break; }
+        }
+
+        if (pivot === -1) {
+            html += `
+                <div class="verdict">
+                    <strong>逆行列は存在しません。</strong><br>
+                    ${col + 1}列目に使える成分が残っておらず、左側を単位行列にできません。
+                    これは行列式が 0 であることを意味します。
+                </div>
+            `;
+
+            document.getElementById("output").innerHTML = html;
+            return;
+        }
+
+        if (pivot !== col) {
+            [A[pivot], A[col]] = [A[col], A[pivot]];
+            html += stepHTML(`R${pivot + 1} ↔ R${col + 1}`, A, n);
+        }
+
+        const p = A[col][col];
+
+        if (!p.isOne()) {
+            for (let j = 0; j < 2 * n; j++) {
+                A[col][j] = A[col][j].div(p);
+            }
+
+            html += stepHTML(`R${col + 1} ÷ ${p.toHTML()}`, A, n);
+        }
+
+        for (let r = 0; r < n; r++) {
+            if (r === col || A[r][col].isZero()) continue;
+
+            const factor = A[r][col];
+
+            for (let j = 0; j < 2 * n; j++) {
+                A[r][j] = A[r][j].sub(factor.mul(A[col][j]));
+            }
+
+            const sign = factor.isNegative() ? "＋" : "−";
+            const abs = factor.abs();
+            const coef = abs.isOne() ? "" : `${abs.toHTML()} × `;
+
+            html += stepHTML(`R${r + 1} ← R${r + 1} ${sign} ${coef}R${col + 1}`, A, n);
+        }
+    }
+
+    const inv = A.map(row => row.slice(n));
+
+    html += `
+        <div class="answer">
+            <div class="label">逆行列 A<sup>−1</sup></div>
+            ${matrixHTML(inv)}
+        </div>
+    `;
+
+    document.getElementById("output").innerHTML = html;
+}
+
+/* =========================
+   転置行列
+========================= */
+
+function transpose() {
+    let M;
+
+    try {
+        M = readMatrix();
+    } catch (e) {
+        showError(e.message);
+        return;
+    }
+
+    const T = M[0].map((_, j) => M.map(row => row[j]));
+
+    document.getElementById("output").innerHTML = `
+        ${stepHTML("元の行列", M)}
+        <div class="answer">
+            <div class="label">転置行列 A<sup>T</sup></div>
+            ${matrixHTML(T)}
+        </div>
+        <div class="step">
+            <div class="step-title">考え方</div>
+            <div class="formula">
+                ${M.length}×${M[0].length} の行列の行と列を入れ替えて、
+                ${M[0].length}×${M.length} の行列にします。
+            </div>
+        </div>
+    `;
+}
+
+/* =========================
+   イベント
+========================= */
+
+document.getElementById("buildBtn").addEventListener("click", buildMatrix);
+document.getElementById("detBtn").addEventListener("click", determinant);
+document.getElementById("invBtn").addEventListener("click", inverse);
+document.getElementById("transBtn").addEventListener("click", transpose);
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+    document.querySelectorAll("#matrixContainer input").forEach(el => el.value = "0");
+    document.getElementById("output").innerHTML = "";
+});
+
+["rows", "cols"].forEach(id => {
+    document.getElementById(id).addEventListener("change", buildMatrix);
+});
+
+buildMatrix();
+
+/* 初期値として例を入れておく */
+[[2, 1, 1], [1, 3, 2], [1, 0, 0]].forEach((row, i) =>
+    row.forEach((v, j) => {
+        const el = document.getElementById(`m-${i}-${j}`);
+        if (el) el.value = String(v);
+    })
+);
 </script>
-
-<div class="retro-counter">
-
-    🌐 あなたは
-    <span id="total-counter">...</span>
-    人目のお客様です。
-
-    <br>
-
-    📄 このページは
-    <span id="page-counter">...</span>
-    回閲覧されました。
-
-</div>
-
-<article class="tool-article">
-
-<h2>使い方</h2>
-
-<p>
-行数と列数を指定して「行列生成」を押すと、入力用のマス目が現れます。
-数値を入れてから、求めたい計算のボタンを押してください。小数も入力できます。
-</p>
-
-<h2>それぞれの計算について</h2>
-
-<h3>行列式（determinant）</h3>
-<p>
-正方行列（行数と列数が等しい行列）に対して定まる値です。
-行列式が<strong>0でなければ逆行列が存在し</strong>、0のときは存在しません。
-連立一次方程式が「ただ一つの解を持つかどうか」の判定にも使われます。
-</p>
-
-<h3>逆行列（inverse matrix）</h3>
-<p>
-掛けると単位行列になる行列のことです。数でいう「逆数」にあたります。
-連立一次方程式を <code>Ax = b</code> と書いたとき、<code>x = A⁻¹b</code> として解を求められます。
-正方行列であり、かつ行列式が0でない場合にのみ存在します。
-</p>
-
-<h3>転置行列（transpose）</h3>
-<p>
-行と列を入れ替えた行列です。3行2列の行列を転置すると2行3列になります。
-正方行列でなくても求められます。
-</p>
-
-<h2>逆行列が求められないとき</h2>
-
-<ul>
-<li><strong>正方行列ではない</strong>— 行数と列数が異なる行列に逆行列はありません</li>
-<li><strong>行列式が0</strong>— ある行（列）が他の行（列）の定数倍になっている、またはすべてが0の行があるといった場合です</li>
-<li><strong>数値が極端に大きい・小さい</strong>— 計算上の誤差が大きくなり、結果が不正確になることがあります</li>
-</ul>
-
-<h2>用語の整理</h2>
-
-<div class="table-scroll">
-<table>
-<thead>
-<tr><th>用語</th><th>意味</th></tr>
-</thead>
-<tbody>
-<tr><td>正方行列</td><td>行数と列数が等しい行列</td></tr>
-<tr><td>単位行列</td><td>対角線上が1、それ以外が0の正方行列。掛けても相手が変わらない</td></tr>
-<tr><td>零行列</td><td>すべての成分が0の行列</td></tr>
-<tr><td>対角行列</td><td>対角線上以外がすべて0の正方行列</td></tr>
-<tr><td>ランク</td><td>互いに独立な行の本数。行列が持つ情報量の目安</td></tr>
-</tbody>
-</table>
-</div>
-
-<h2>よくある質問</h2>
-
-<p><strong>Q. 途中の計算過程は見られますか？</strong><br>
-A. このツールは結果のみを表示します。
-行基本変形の過程を追いたい場合は、<a href="/hakidasi/">掃き出し法ツール</a>をご利用ください。
-分数のまま途中式が表示されます。</p>
-
-<p><strong>Q. 固有値は求められますか？</strong><br>
-A. 現在は行列式・逆行列・転置行列に対応しています。</p>
-
-<p><strong>Q. 結果が 0.9999… のようになります。</strong><br>
-A. 小数で計算しているため、丸め誤差が出ることがあります。
-本来1になるべき値が 0.9999… と表示された場合は、1とみなして差し支えありません。</p>
-
-</article>
 
 <div id="related-tools"></div>
 <script src="/js/related.js"></script>

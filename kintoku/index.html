@@ -147,7 +147,153 @@ footer{
     }
 }
 
+/* =========================
+   絞り込みパネル
+========================= */
+
+.filter-panel{
+    position:sticky;
+    top:0;
+    z-index:20;
+
+    background:white;
+    border-radius:14px;
+    box-shadow:0 3px 12px rgba(0,0,0,0.1);
+
+    padding:16px 20px;
+    margin-bottom:28px;
+}
+
+.filter-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+}
+
+.filter-row + .filter-row{
+    margin-top:10px;
+}
+
+#skillSearch{
+    flex:1;
+    min-width:220px;
+    padding:11px 14px;
+    font-size:1rem;
+    border:2px solid #d6dbe2;
+    border-radius:10px;
+}
+
+#skillSearch:focus{
+    outline:none;
+    border-color:#222;
+}
+
+.filter-panel select{
+    padding:10px;
+    font-size:0.95rem;
+    border:2px solid #d6dbe2;
+    border-radius:10px;
+    background:white;
+}
+
+.type-buttons{
+    display:flex;
+    gap:6px;
+}
+
+.type-buttons button{
+    padding:9px 18px;
+    border:2px solid #d6dbe2;
+    border-radius:999px;
+    background:white;
+    color:#444;
+    font-size:0.9rem;
+    cursor:pointer;
+}
+
+.type-buttons button:hover{
+    border-color:#222;
+}
+
+.type-buttons button.active{
+    background:#222;
+    border-color:#222;
+    color:white;
+    font-weight:bold;
+}
+
+.filter-panel label.toggle{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.9rem;
+    color:#555;
+    cursor:pointer;
+}
+
+.filter-count{
+    margin-left:auto;
+    font-size:0.9rem;
+    color:#666;
+}
+
+.filter-count strong{
+    font-size:1.1rem;
+    color:#111;
+}
+
+.reset-btn{
+    padding:9px 16px;
+    border:none;
+    border-radius:999px;
+    background:#eceff3;
+    color:#444;
+    font-size:0.9rem;
+    cursor:pointer;
+}
+
+.reset-btn:hover{
+    background:#dfe4ea;
+}
+
+/* 取得済みチェック */
+
+.done-cell{
+    width:1%;
+    white-space:nowrap;
+}
+
+.done-check{
+    width:20px;
+    height:20px;
+    cursor:pointer;
+}
+
+tr.acquired{
+    opacity:0.5;
+}
+
+tr.acquired .skill{
+    text-decoration:line-through;
+}
+
+.no-result{
+    padding:40px 20px;
+    text-align:center;
+    color:#888;
+}
+
 @media(max-width:700px){
+
+    .filter-panel{
+        position:static;
+        padding:14px;
+    }
+
+    .filter-count{
+        margin-left:0;
+    }
 
     table,
     thead,
@@ -173,12 +319,19 @@ footer{
         color:#444;
     }
 
-    td:nth-child(1)::before{
+    /* 1列目は取得済みチェック欄なのでラベルを出さない */
+
+    td:nth-child(2)::before{
         content:"金特";
     }
 
-    td:nth-child(2)::before{
+    td:nth-child(3)::before{
         content:"取得条件";
+    }
+
+    td.done-cell{
+        width:auto;
+        padding-bottom:0;
     }
 }
 
@@ -195,6 +348,41 @@ footer{
 </header>
 
 <div class="container">
+
+<div class="filter-panel">
+
+    <div class="filter-row">
+        <input type="text" id="skillSearch"
+               placeholder="金特名・取得条件で検索（例：捕手、チャンス、パワーヒッター）"
+               autocomplete="off">
+
+        <select id="regionFilter">
+            <option value="">すべての地域</option>
+        </select>
+    </div>
+
+    <div class="filter-row">
+        <div class="type-buttons" id="typeButtons">
+            <button type="button" data-type="all" class="active">すべて</button>
+            <button type="button" data-type="pitcher">投手</button>
+            <button type="button" data-type="batter">野手</button>
+        </div>
+
+        <label class="toggle">
+            <input type="checkbox" id="hideAcquired">
+            取得済みを隠す
+        </label>
+
+        <button type="button" class="reset-btn" id="resetFilter">条件をクリア</button>
+
+        <span class="filter-count" id="filterCount"></span>
+    </div>
+
+</div>
+
+<div class="no-result" id="noResult" style="display:none">
+    条件に当てはまる金特が見つかりませんでした。
+</div>
 
 <!-- 東京 巨人 -->
 <section class="region">
@@ -720,6 +908,203 @@ footer{
 </footer>
 
 </div>
+
+<script>
+/* =========================
+   金特の絞り込み
+   既存の表をそのまま読み取って動かす。
+   データはHTML側が唯一の情報源で、ここでは複製しない
+========================= */
+
+const STORAGE_KEY = "tooldock-kintoku-acquired";
+
+/* 投手専用かどうかは取得条件の文面から判定する */
+const PITCHER_PATTERN = /先発投手|中継ぎ|抑え/;
+
+const searchInput = document.getElementById("skillSearch");
+const regionSelect = document.getElementById("regionFilter");
+const typeButtons = document.getElementById("typeButtons");
+const hideAcquiredEl = document.getElementById("hideAcquired");
+const countEl = document.getElementById("filterCount");
+const noResultEl = document.getElementById("noResult");
+
+let currentType = "all";
+
+/* ---- 取得済みの保存 ---- */
+
+function loadAcquired() {
+    try {
+        return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY)) || []);
+    } catch (e) {
+        return new Set();
+    }
+}
+
+function saveAcquired(set) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
+    } catch (e) {
+        /* プライベートモードなどでは保存しない */
+    }
+}
+
+const acquired = loadAcquired();
+
+/* ---- 各行の情報を組み立てる ---- */
+
+const rows = [];
+
+document.querySelectorAll("section.region").forEach(section => {
+    const region = section.querySelector(".region-title").textContent.trim();
+
+    /* 見出し行がある表は、増やす列に合わせて空のセルを足す */
+    section.querySelectorAll("thead tr").forEach(headRow => {
+        const th = document.createElement("th");
+        th.className = "done-cell";
+        th.setAttribute("aria-label", "取得済み");
+        headRow.insertBefore(th, headRow.firstElementChild);
+    });
+
+    section.querySelectorAll("tbody tr").forEach(tr => {
+        const skillCell = tr.querySelector(".skill");
+        const conditionCell = tr.querySelector(".condition");
+
+        if (!skillCell || !conditionCell) return;
+
+        /* 金特名はミッションメモを除いた先頭のテキスト */
+        const name = [...skillCell.childNodes]
+            .filter(n => n.nodeType === Node.TEXT_NODE)
+            .map(n => n.textContent)
+            .join("")
+            .trim();
+
+        const condition = conditionCell.textContent.replace(/\s+/g, " ").trim();
+        const memo = (skillCell.querySelector(".placeholder")?.textContent || "").trim();
+
+        /* 取得済みチェック欄を先頭に足す */
+        const cell = document.createElement("td");
+        cell.className = "done-cell";
+
+        const check = document.createElement("input");
+        check.type = "checkbox";
+        check.className = "done-check";
+        check.setAttribute("aria-label", `${name} を取得済みにする`);
+        check.checked = acquired.has(name);
+
+        cell.appendChild(check);
+        tr.insertBefore(cell, tr.firstElementChild);
+
+        tr.classList.toggle("acquired", check.checked);
+
+        const entry = {
+            tr,
+            section,
+            name,
+            region,
+            type: PITCHER_PATTERN.test(condition) ? "pitcher" : "batter",
+            haystack: `${name} ${condition} ${memo}`.toLowerCase()
+        };
+
+        check.addEventListener("change", () => {
+            if (check.checked) {
+                acquired.add(name);
+            } else {
+                acquired.delete(name);
+            }
+
+            tr.classList.toggle("acquired", check.checked);
+
+            saveAcquired(acquired);
+            apply();
+        });
+
+        rows.push(entry);
+    });
+});
+
+/* ---- 地域の選択肢 ---- */
+
+[...new Set(rows.map(r => r.region))].forEach(region => {
+    const option = document.createElement("option");
+
+    option.value = region;
+    option.textContent = region;
+
+    regionSelect.appendChild(option);
+});
+
+/* ---- 絞り込みの実行 ---- */
+
+function apply() {
+    const query = searchInput.value.trim().toLowerCase();
+    const region = regionSelect.value;
+    const hideDone = hideAcquiredEl.checked;
+
+    let visible = 0;
+
+    rows.forEach(row => {
+        const match =
+            (query === "" || row.haystack.includes(query))
+            && (region === "" || row.region === region)
+            && (currentType === "all" || row.type === currentType)
+            && !(hideDone && acquired.has(row.name));
+
+        row.tr.style.display = match ? "" : "none";
+
+        if (match) visible++;
+    });
+
+    /* 中身が全部消えた地域は見出しごと隠す */
+    document.querySelectorAll("section.region").forEach(section => {
+        const anyVisible = rows.some(
+            r => r.section === section && r.tr.style.display !== "none"
+        );
+
+        section.style.display = anyVisible ? "" : "none";
+    });
+
+    countEl.innerHTML =
+        `<strong>${visible}</strong> / ${rows.length} 件`
+        + (acquired.size > 0 ? `（取得済み ${acquired.size}）` : "");
+
+    noResultEl.style.display = visible === 0 ? "block" : "none";
+}
+
+/* ---- イベント ---- */
+
+searchInput.addEventListener("input", apply);
+regionSelect.addEventListener("change", apply);
+hideAcquiredEl.addEventListener("change", apply);
+
+typeButtons.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-type]");
+
+    if (!button) return;
+
+    currentType = button.dataset.type;
+
+    typeButtons.querySelectorAll("button").forEach(b => {
+        b.classList.toggle("active", b === button);
+    });
+
+    apply();
+});
+
+document.getElementById("resetFilter").addEventListener("click", () => {
+    searchInput.value = "";
+    regionSelect.value = "";
+    hideAcquiredEl.checked = false;
+    currentType = "all";
+
+    typeButtons.querySelectorAll("button").forEach(b => {
+        b.classList.toggle("active", b.dataset.type === "all");
+    });
+
+    apply();
+});
+
+apply();
+</script>
 
 <div id="related-tools"></div>
 <script src="/js/related.js"></script>
