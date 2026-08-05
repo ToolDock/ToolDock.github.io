@@ -7,6 +7,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>カテゴリ | ToolDock</title>
+  <meta name="description" content="カテゴリ別のツール一覧です。">
+  <link rel="canonical" href="https://tooldock.github.io/category/">
+
   <script>
     const CURRENT_TOOL = "category";
   </script>
@@ -81,20 +85,27 @@
 
     const cat = params.get("cat");
 
-    const categoryLabel =
-      CATEGORY_NAMES[cat] || cat;
+    /* cat 未指定、または未知のカテゴリ名のときは全ツールを並べる。
+       静的な <title> をそのまま活かすため上書きしない */
 
-    document.title =
-      categoryLabel + "ツール | ToolDock";
+    const isKnownCategory =
+      cat !== null && Object.hasOwn(CATEGORY_NAMES, cat);
+
+    const heading = isKnownCategory
+      ? CATEGORY_NAMES[cat] + "ツール"
+      : "すべてのツール";
+
+    if (isKnownCategory) {
+      document.title = heading + " | ToolDock";
+    }
 
     document.getElementById(
       "category-title"
-    ).textContent =
-      categoryLabel + "ツール";
+    ).textContent = heading;
 
     const list =
       TOOLS.filter(
-        t => !t.hidden && t.category === cat
+        t => !t.hidden && (!isKnownCategory || t.category === cat)
       );
 
     const container =

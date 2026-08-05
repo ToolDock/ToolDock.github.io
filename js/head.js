@@ -38,6 +38,15 @@ if (tool) {
 
   const pageUrl = SITE_ORIGIN + tool.url;
 
+  /* title / description / canonical は各HTMLに静的記述してある。
+     Googlebot が最初のクロール（JS実行前）で読めるようにするためで、
+     ここでは既に無い場合だけ補う。この判定が成立するよう、
+     静的タグは必ずこのスクリプトより前に置くこと。 */
+
+  const hasTitle = !!document.querySelector("title");
+  const hasDesc = !!document.querySelector('meta[name="description"]');
+  const hasCanonical = !!document.querySelector('link[rel="canonical"]');
+
   document.write(`
 
     <link rel="icon"
@@ -46,10 +55,10 @@ if (tool) {
     <link rel="stylesheet"
           href="/style.css">
 
-    <title>${escapeAttr(metaTitle)}</title>
+    ${hasTitle ? "" : `<title>${escapeAttr(metaTitle)}</title>`}
 
-    <meta name="description"
-          content="${escapeAttr(metaDesc)}">
+    ${hasDesc ? "" : `<meta name="description"
+          content="${escapeAttr(metaDesc)}">`}
 
     <meta property="og:type"
           content="website">
@@ -78,8 +87,8 @@ if (tool) {
     <meta name="theme-color"
           content="${tool.themeColor || "#ffffff"}">
 
-    <link rel="canonical"
-          href="${pageUrl}">
+    ${hasCanonical ? "" : `<link rel="canonical"
+          href="${pageUrl}">`}
 
   `);
 }
