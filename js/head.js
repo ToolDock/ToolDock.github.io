@@ -251,3 +251,20 @@ function addJsonLd(data){
 
   document.head.appendChild(script);
 }
+
+/* =========================
+   共通パーツの読み込み
+   右レールと広告枠。各HTMLに書かず、ここから1回だけ読み込む
+========================= */
+
+for (const src of ["/js/sidebar.js", "/js/ads.js"]) {
+  const partScript = document.createElement("script");
+
+  partScript.src = src;
+
+  /* 動的に足したスクリプトは既定で非同期になるため、
+     順序を保つために明示的に切っておく */
+  partScript.async = false;
+
+  document.head.appendChild(partScript);
+}
