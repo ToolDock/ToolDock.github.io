@@ -7,30 +7,38 @@
    - 審査に通るまでは ENABLED を false にしておき、
      AdSense のコードを一切読み込まない
 
-   審査通過後にやること
-   1. ENABLED を true にする
-   2. CLIENT に発行された「ca-pub-」で始まる番号を入れる
-   3. SLOT_STICKY / SLOT_END に、AdSense で作成した
-      広告ユニットのスロットIDを入れる
+   設定は2段階に分かれている
+
+   【審査に出すとき】
+     CLIENT に、AdSense が発行した「ca-pub-」で始まる番号を入れる。
+     これだけで審査用のスクリプトが読み込まれる。
+     広告の枠はまだ出ない（審査中に空枠を出しても意味がないため）。
+
+   【承認されたあと】
+     UNITS_ENABLED を true にし、AdSense で作成した広告ユニットの
+     スロットIDを SLOT_STICKY / SLOT_END に入れる。
 ========================= */
 
 (() => {
 
   "use strict";
 
-  const ENABLED = false;
+  /* 「ca-pub-」で始まる番号。空のあいだは何も読み込まない */
+  const CLIENT = "";
 
-  const CLIENT = "ca-pub-0000000000000000";
+  /* 広告の枠を出すかどうか。承認後に true にする */
+  const UNITS_ENABLED = false;
 
-  const SLOT_STICKY = "0000000000";
-  const SLOT_END = "0000000000";
+  const SLOT_STICKY = "";
+  const SLOT_END = "";
 
   /* 下のバーを出し始めるスクロール量 */
   const STICKY_AFTER = 600;
 
   const DISMISS_KEY = "tooldock-ad-sticky-closed";
 
-  if (!ENABLED) return;
+  /* 番号が未設定のうちは、審査用スクリプトも枠も出さない */
+  if (!CLIENT) return;
 
   /* ---- AdSense 本体を1回だけ読み込む ---- */
 
@@ -196,8 +204,13 @@
   /* ---- 起動 ---- */
 
   function start() {
-    injectStyle();
+    /* 審査用のスクリプトは、番号さえ入っていれば読み込む */
     loadAdSense();
+
+    /* 枠を出すのは承認後だけ */
+    if (!UNITS_ENABLED) return;
+
+    injectStyle();
     mountEndSlot();
     mountStickySlot();
   }
