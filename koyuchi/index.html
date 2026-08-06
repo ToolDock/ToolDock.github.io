@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>固有値・固有ベクトルの計算｜特性方程式からの途中式つき無料ツール | ToolDock</title>
+<meta name="description" content="行列の固有値と固有ベクトルを途中式つきで求める無料ツール。特性方程式の展開、因数分解、掃き出し法による固有ベクトルの導出までを1手ずつ表示します。重複度や対角化可能かの判定にも対応。">
+<link rel="canonical" href="https://tooldock.github.io/koyuchi/">
+
+<script> const CURRENT_TOOL = "koyuchi"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<meta name="keywords" content="固有値,固有ベクトル,特性方程式,対角化,重複度,線形代数,途中式,行列,計算,無料">
+
+<style>
+    body {
+        font-family: "Yu Gothic", "Meiryo", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto 24px;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 { margin-top: 0; font-size: 1.9rem; }
+
+    h2 {
+        margin-top: 32px;
+        font-size: 1.3rem;
+        border-left: 5px solid #2563eb;
+        padding-left: 12px;
+    }
+
+    h3 { margin-top: 24px; font-size: 1.05rem; }
+
+    p.description { color: #555; }
+
+    .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin: 20px 0 10px;
+    }
+
+    .controls input[type="number"] {
+        width: 70px;
+        padding: 8px;
+        font-size: 1rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+    }
+
+    button.action {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 999px;
+        background: #2563eb;
+        color: white;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    button.action:hover { background: #1d4ed8; }
+
+    button.action.sub { background: #64748b; }
+    button.action.sub:hover { background: #475569; }
+
+    .samples {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .samples button {
+        padding: 7px 14px;
+        border: 2px solid #cbd5e1;
+        border-radius: 999px;
+        background: white;
+        color: #334155;
+        font-size: 0.88rem;
+        cursor: pointer;
+    }
+
+    .samples button:hover { border-color: #2563eb; color: #2563eb; }
+
+    .hint { color: #666; font-size: 0.9rem; margin: 4px 0 0; }
+
+    .matrix-grid {
+        display: grid;
+        gap: 6px;
+        margin: 16px 0;
+        width: fit-content;
+        max-width: 100%;
+    }
+
+    .matrix-grid input {
+        width: 76px;
+        padding: 9px;
+        text-align: center;
+        font-size: 1rem;
+        border: 2px solid #cbd5e1;
+        border-radius: 8px;
+    }
+
+    .matrix-grid input:focus { outline: none; border-color: #2563eb; }
+
+    .step {
+        background: #f8fafc;
+        border-left: 5px solid #2563eb;
+        padding: 15px 18px;
+        margin: 18px 0;
+        border-radius: 10px;
+    }
+
+    .step-title { font-weight: bold; margin-bottom: 10px; }
+
+    .eigen-block {
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 20px;
+        margin: 22px 0;
+    }
+
+    .eigen-head {
+        font-size: 1.15rem;
+        font-weight: bold;
+        color: #1d4ed8;
+        margin-bottom: 4px;
+    }
+
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
+    .badge {
+        font-size: 0.82rem;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    table.matrix { border-collapse: collapse; margin: 10px 0; }
+
+    table.matrix td {
+        border: 1px solid #bbb;
+        padding: 9px 13px;
+        text-align: center;
+        min-width: 40px;
+        background: white;
+    }
+
+    /* 分数 */
+    .frac {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        vertical-align: middle;
+        line-height: 1.15;
+        font-size: 0.95em;
+    }
+
+    .frac .num { border-bottom: 1px solid currentColor; padding: 0 0.25em; }
+    .frac .den { padding: 0 0.25em; }
+
+    /* 縦ベクトル */
+    .vec {
+        display: inline-block;
+        border-left: 2px solid #334155;
+        border-right: 2px solid #334155;
+        border-radius: 4px;
+        padding: 6px 12px;
+        margin: 0 6px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .vec div { line-height: 1.6; }
+
+    .formula {
+        font-size: 1.15rem;
+        margin: 10px 0;
+        word-break: break-word;
+    }
+
+    .verdict {
+        margin-top: 24px;
+        padding: 16px 18px;
+        border-radius: 12px;
+        font-weight: bold;
+    }
+
+    .verdict.ok { background: #ecfdf5; border-left: 5px solid #059669; color: #065f46; }
+    .verdict.ng { background: #fff7ed; border-left: 5px solid #ea580c; color: #9a3412; }
+
+    .error {
+        margin-top: 18px;
+        padding: 14px;
+        border-radius: 10px;
+        background: #fef2f2;
+        border-left: 5px solid #dc2626;
+        color: #991b1b;
+    }
+
+    .note {
+        margin-top: 14px;
+        padding: 12px 14px;
+        background: #f8fafc;
+        border-left: 4px solid #94a3b8;
+        border-radius: 8px;
+        font-size: 0.92rem;
+        color: #475569;
+    }
+
+    table.guide { width: 100%; border-collapse: collapse; margin-top: 12px; }
+
+    table.guide th, table.guide td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    table.guide th { background: #f8fafc; white-space: nowrap; }
+
+    .table-scroll { overflow-x: auto; }
+
+    footer { color: #666; font-size: 0.9rem; }
+
+    @media (max-width: 600px) {
+        .container { padding: 20px; }
+        .matrix-grid input { width: 60px; padding: 7px; }
+        table.matrix td { padding: 6px 8px; }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>固有値・固有ベクトルの計算</h1>
+
+    <p class="description">
+        正方行列の<strong>固有値</strong>と<strong>固有ベクトル</strong>を、途中式つきで求める無料ツールです。
+        特性方程式 <em>det(A − λE) = 0</em> の展開から、因数分解、
+        掃き出し法による固有ベクトルの導出までを1手ずつ表示します。
+        計算はすべて分数のまま行うため、丸め誤差は発生しません。
+    </p>
+
+    <div class="samples" id="samples">
+        <button type="button" data-m="2|4,1,2,3">2次・相異なる固有値</button>
+        <button type="button" data-m="2|3,1,0,3">2次・重解</button>
+        <button type="button" data-m="2|1,1,1,0">2次・無理数</button>
+        <button type="button" data-m="2|0,-1,1,0">2次・複素数</button>
+        <button type="button" data-m="3|2,0,0,0,3,4,0,4,9">3次・対称行列</button>
+        <button type="button" data-m="3|2,1,0,0,2,0,0,0,3">3次・重解で対角化不可</button>
+    </div>
+
+    <div class="controls">
+        <label>
+            次数 n
+            <input type="number" id="size" min="2" max="4" value="2">
+        </label>
+
+        <button type="button" class="action sub" id="makeBtn">行列を作る</button>
+        <button type="button" class="action" id="calcBtn">固有値を求める</button>
+    </div>
+
+    <p class="hint">
+        各マスには整数・小数・分数が入力できます（例：<code>3</code>、<code>-1.5</code>、<code>2/3</code>）。
+    </p>
+
+    <div id="matrixInput"></div>
+
+    <div id="output"></div>
+
+</div>
+
+<div class="container">
+
+    <h2>固有値・固有ベクトルとは</h2>
+
+    <p>
+        正方行列 <em>A</em> に対して、あるスカラー <em>λ</em> と
+        <strong>零ベクトルでない</strong>ベクトル <em>x</em> が
+    </p>
+
+    <p class="formula" style="text-align:center"><em>A x = λ x</em></p>
+
+    <p>
+        を満たすとき、<em>λ</em> を <em>A</em> の<strong>固有値</strong>、
+        <em>x</em> を <em>λ</em> に対する<strong>固有ベクトル</strong>といいます。
+        「行列を掛けても向きが変わらず、長さだけが λ 倍になるベクトル」と考えると分かりやすいです。
+    </p>
+
+    <h2>求め方の手順</h2>
+
+    <h3>1. 特性方程式を立てる</h3>
+
+    <p>
+        <em>A x = λ x</em> を移項すると <em>(A − λE) x = 0</em> となります。
+        <em>x</em> が零ベクトル以外にも存在するためには、<em>A − λE</em> が逆行列を持ってはいけません。
+        つまり行列式が0になる必要があり、ここから
+    </p>
+
+    <p class="formula" style="text-align:center"><em>det(A − λE) = 0</em></p>
+
+    <p>
+        という <em>λ</em> についての方程式が得られます。これを<strong>特性方程式</strong>（固有方程式）と呼びます。
+        n次の正方行列なら、λ についてn次の方程式になります。
+    </p>
+
+    <h3>2. 特性方程式を解いて固有値を求める</h3>
+
+    <p>
+        因数分解や解の公式で <em>λ</em> を求めます。この解が固有値です。
+        重解になることもあり、その重なりの回数を<strong>代数的重複度</strong>といいます。
+    </p>
+
+    <h3>3. 各固有値について固有ベクトルを求める</h3>
+
+    <p>
+        求めた <em>λ</em> を <em>(A − λE) x = 0</em> に代入し、
+        この同次連立方程式を<a href="/hakidasi/">掃き出し法</a>で解きます。
+        解は必ず無数にあるので、自由変数を使って基本となるベクトル（基底）の形で表します。
+        この基底の本数を<strong>幾何的重複度</strong>といいます。
+    </p>
+
+    <h2>対角化できるかの判定</h2>
+
+    <p>
+        n次の行列 <em>A</em> が対角化可能であるのは、
+        <strong>すべての固有値について、幾何的重複度の合計が n に一致するとき</strong>です。
+        言いかえると、一次独立な固有ベクトルを n 本そろえられるときです。
+    </p>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr>
+                    <th>状況</th>
+                    <th>対角化</th>
+                    <th>補足</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>固有値がすべて相異なる</td><td>できる</td><td>重複度がすべて1なので必ず対角化可能</td></tr>
+                <tr><td>重解があり、幾何的重複度＝代数的重複度</td><td>できる</td><td>足りる本数の固有ベクトルが取れる</td></tr>
+                <tr><td>重解があり、幾何的重複度＜代数的重複度</td><td>できない</td><td>固有ベクトルが不足する。ジョルダン標準形を使う</td></tr>
+                <tr><td>実対称行列</td><td>できる</td><td>直交行列で対角化できることが知られています</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>検算のしかた</h2>
+
+    <p>
+        求めた固有値と固有ベクトルが正しいかは、次の2つで確かめられます。
+    </p>
+
+    <ul>
+        <li><strong>定義に戻す</strong> — <em>A x</em> を計算して、<em>λ x</em> と一致するか見る。もっとも確実です</li>
+        <li><strong>トレースと行列式</strong> — 固有値の総和は対角成分の和（トレース）に、固有値の積は行列式に一致します</li>
+    </ul>
+
+    <p>
+        このツールでは、固有値の和と積がトレース・行列式と一致しているかを自動で確認し、結果に表示します。
+    </p>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 固有値が無理数や複素数になりました。固有ベクトルは出ませんか？</strong><br>
+    A. 固有値そのものは <em>(p ± √D) / q</em> のような正確な形で表示します。
+    ただし固有ベクトルについては、分数のまま厳密に計算できるのは固有値が有理数のときに限られるため、
+    無理数・複素数の固有値では固有ベクトルの導出を行いません。</p>
+
+    <p><strong>Q. 固有ベクトルは何倍しても固有ベクトルですか？</strong><br>
+    A. そのとおりです。<em>x</em> が固有ベクトルなら、0でない定数倍もすべて固有ベクトルになります。
+    このツールでは、成分がなるべく簡単な整数になる形で表示しています。
+    教科書と見た目が違っても、定数倍の関係になっていれば同じ答えです。</p>
+
+    <p><strong>Q. 零ベクトルは固有ベクトルに入りますか？</strong><br>
+    A. 入りません。<em>A·0 = λ·0</em> はどんな λ でも成り立ってしまい、固有値が定まらないためです。</p>
+
+    <p><strong>Q. 何次まで計算できますか？</strong><br>
+    A. 2次から4次までに対応しています。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+</footer>
+
+<script>
+/* =========================
+   有理数
+========================= */
+
+function bigAbs(a) { return a < 0n ? -a : a; }
+
+function bigGcd(a, b) {
+    a = bigAbs(a); b = bigAbs(b);
+    while (b) { [a, b] = [b, a % b]; }
+    return a;
+}
+
+class Frac {
+    constructor(num, den = 1n) {
+        if (den === 0n) throw new Error("分母が0になりました。");
+        if (den < 0n) { num = -num; den = -den; }
+        const g = bigGcd(num, den) || 1n;
+        this.n = num / g;
+        this.d = den / g;
+    }
+
+    static of(n) { return new Frac(BigInt(n), 1n); }
+    static zero() { return new Frac(0n, 1n); }
+    static one() { return new Frac(1n, 1n); }
+
+    add(o) { return new Frac(this.n * o.d + o.n * this.d, this.d * o.d); }
+    sub(o) { return new Frac(this.n * o.d - o.n * this.d, this.d * o.d); }
+    mul(o) { return new Frac(this.n * o.n, this.d * o.d); }
+    div(o) {
+        if (o.isZero()) throw new Error("0で割る操作が発生しました。");
+        return new Frac(this.n * o.d, this.d * o.n);
+    }
+    neg() { return new Frac(-this.n, this.d); }
+    abs() { return new Frac(bigAbs(this.n), this.d); }
+
+    isZero() { return this.n === 0n; }
+    isOne() { return this.n === this.d; }
+    isInt() { return this.d === 1n; }
+    isNeg() { return this.n < 0n; }
+    eq(o) { return this.n === o.n && this.d === o.d; }
+
+    toNumber() { return Number(this.n) / Number(this.d); }
+
+    toHTML() {
+        if (this.isInt()) return String(this.n);
+        const sign = this.isNeg() ? "-" : "";
+        return sign + `<span class="frac"><span class="num">${bigAbs(this.n)}</span><span class="den">${this.d}</span></span>`;
+    }
+
+    toPlain() {
+        return this.isInt() ? String(this.n) : `${this.n}/${this.d}`;
+    }
+}
+
+function parseFrac(raw) {
+    const s = String(raw).trim().replace(/\s+/g, "");
+    if (s === "") return Frac.zero();
+
+    const parts = s.split("/");
+    if (parts.length > 2) throw new Error(`「${s}」は数値として読み取れません。`);
+
+    const dec = (t) => {
+        const m = t.match(/^([+-]?)(\d*)(?:\.(\d*))?$/);
+        const ip = m ? m[2] : "";
+        const dp = m && m[3] !== undefined ? m[3] : "";
+        if (!m || (ip === "" && dp === "")) throw new Error(`「${t}」は数値として読み取れません。`);
+        const sign = m[1] === "-" ? -1n : 1n;
+        return new Frac(BigInt((ip || "0") + dp) * sign, 10n ** BigInt(dp.length));
+    };
+
+    return parts.length === 2 ? dec(parts[0]).div(dec(parts[1])) : dec(s);
+}
+
+/* =========================
+   多項式（係数は Frac、昇べき順）
+========================= */
+
+const Poly = {
+    zero: () => [Frac.zero()],
+
+    trim(p) {
+        const q = p.slice();
+        while (q.length > 1 && q[q.length - 1].isZero()) q.pop();
+        return q;
+    },
+
+    add(a, b) {
+        const out = [];
+        for (let i = 0; i < Math.max(a.length, b.length); i++) {
+            out.push((a[i] || Frac.zero()).add(b[i] || Frac.zero()));
+        }
+        return Poly.trim(out);
+    },
+
+    sub(a, b) {
+        const out = [];
+        for (let i = 0; i < Math.max(a.length, b.length); i++) {
+            out.push((a[i] || Frac.zero()).sub(b[i] || Frac.zero()));
+        }
+        return Poly.trim(out);
+    },
+
+    mul(a, b) {
+        const out = Array.from({ length: a.length + b.length - 1 }, Frac.zero);
+        for (let i = 0; i < a.length; i++) {
+            for (let j = 0; j < b.length; j++) {
+                out[i + j] = out[i + j].add(a[i].mul(b[j]));
+            }
+        }
+        return Poly.trim(out);
+    },
+
+    deg(p) { return Poly.trim(p).length - 1; },
+
+    evalAt(p, x) {
+        let acc = Frac.zero();
+        for (let i = p.length - 1; i >= 0; i--) acc = acc.mul(x).add(p[i]);
+        return acc;
+    },
+
+    /* (λ - r) で割る（余りは0の前提） */
+    divideByRoot(p, r) {
+        const n = p.length - 1;
+        const out = Array(n).fill(null);
+        let carry = p[n];
+        for (let i = n - 1; i >= 0; i--) {
+            out[i] = carry;
+            carry = p[i].add(carry.mul(r));
+        }
+        return Poly.trim(out);
+    }
+};
+
+/* =========================
+   特性多項式 det(A - λE)
+   Poly を要素とする行列の余因子展開
+========================= */
+
+function polyMatrixDet(m) {
+    const n = m.length;
+
+    if (n === 1) return m[0][0];
+
+    let acc = Poly.zero();
+
+    for (let c = 0; c < n; c++) {
+        const minor = [];
+        for (let i = 1; i < n; i++) {
+            const row = [];
+            for (let j = 0; j < n; j++) if (j !== c) row.push(m[i][j]);
+            minor.push(row);
+        }
+
+        const term = Poly.mul(m[0][c], polyMatrixDet(minor));
+
+        acc = (c % 2 === 0) ? Poly.add(acc, term) : Poly.sub(acc, term);
+    }
+
+    return acc;
+}
+
+function characteristicPoly(A) {
+    const n = A.length;
+
+    const m = A.map((row, i) =>
+        row.map((v, j) => i === j ? [v, Frac.of(-1)] : [v])
+    );
+
+    return polyMatrixDet(m);
+}
+
+/* =========================
+   有理根の探索
+========================= */
+
+function divisors(n) {
+    const out = [];
+    const limit = bigAbs(n);
+
+    for (let i = 1n; i * i <= limit; i++) {
+        if (limit % i === 0n) {
+            out.push(i);
+            if (i !== limit / i) out.push(limit / i);
+        }
+        if (out.length > 4000) break;
+    }
+
+    return out;
+}
+
+/* 係数を整数化して返す */
+function toIntegerCoeffs(p) {
+    let lcm = 1n;
+    for (const c of p) lcm = lcm / bigGcd(lcm, c.d) * c.d;
+
+    const ints = p.map(c => c.n * (lcm / c.d));
+
+    let g = 0n;
+    for (const v of ints) g = bigGcd(g, v);
+    if (g === 0n) g = 1n;
+
+    return ints.map(v => v / g);
+}
+
+function rationalRoots(p) {
+    const roots = [];
+    let cur = p.slice();
+
+    while (Poly.deg(cur) > 0) {
+        const ints = toIntegerCoeffs(cur);
+
+        const a0 = ints[0];
+        const an = ints[ints.length - 1];
+
+        let found = null;
+
+        if (a0 === 0n) {
+            found = Frac.zero();
+        } else {
+            const ps = divisors(a0);
+            const qs = divisors(an);
+
+            outer:
+            for (const q of qs) {
+                for (const pp of ps) {
+                    for (const sign of [1n, -1n]) {
+                        const cand = new Frac(sign * pp, q);
+                        if (Poly.evalAt(cur, cand).isZero()) { found = cand; break outer; }
+                    }
+                }
+            }
+        }
+
+        if (!found) break;
+
+        roots.push(found);
+        cur = Poly.divideByRoot(cur, found);
+    }
+
+    return { roots, remainder: cur };
+}
+
+/* =========================
+   2次の解（厳密）
+========================= */
+
+function simplifySurd(d) {
+    /* √d から平方因子を外に出す： d = out^2 * inner */
+    let out = 1n, inner = d;
+
+    for (let i = 2n; i * i <= inner; i++) {
+        while (inner % (i * i) === 0n) { inner /= i * i; out *= i; }
+        if (i > 100000n) break;
+    }
+
+    return { out, inner };
+}
+
+/* a λ^2 + b λ + c = 0 を解く */
+function solveQuadratic(a, b, c) {
+    const disc = b.mul(b).sub(Frac.of(4).mul(a).mul(c));
+
+    if (disc.isZero()) {
+        return [{ kind: "rational", value: b.neg().div(Frac.of(2).mul(a)) }];
+    }
+
+    /* disc を整数比に直す: disc = n/d = (n*d)/d^2 → √disc = √(n*d)/d */
+    const nd = disc.n * disc.d;
+    const dd = disc.d;
+
+    const negative = nd < 0n;
+    const { out, inner } = simplifySurd(bigAbs(nd));
+
+    const denom = Frac.of(2).mul(a);
+    const base = b.neg().div(denom);
+    const coef = new Frac(out, dd).div(denom);
+
+    if (!negative && inner === 1n) {
+        /* 完全平方 → 有理数2つ */
+        return [
+            { kind: "rational", value: base.add(coef) },
+            { kind: "rational", value: base.sub(coef) }
+        ];
+    }
+
+    return [{
+        kind: negative ? "complex" : "irrational",
+        base, coef, inner
+    }];
+}
+
+/* =========================
+   掃き出し法（手順つき）
+========================= */
+
+function rref(M, cols) {
+    const A = M.map(r => r.slice());
+    const rows = A.length;
+    const steps = [];
+    const pivots = [];
+
+    let r = 0;
+
+    for (let c = 0; c < cols && r < rows; c++) {
+        let pr = -1;
+        for (let i = r; i < rows; i++) if (!A[i][c].isZero()) { pr = i; break; }
+        if (pr === -1) continue;
+
+        if (pr !== r) {
+            [A[pr], A[r]] = [A[r], A[pr]];
+            steps.push({ label: `R${pr + 1} ↔ R${r + 1}`, snapshot: A.map(x => x.slice()) });
+        }
+
+        const pivot = A[r][c];
+
+        if (!pivot.isOne()) {
+            for (let j = 0; j < cols; j++) A[r][j] = A[r][j].div(pivot);
+            steps.push({ label: `R${r + 1} ÷ ${pivot.toHTML()}`, snapshot: A.map(x => x.slice()) });
+        }
+
+        for (let i = 0; i < rows; i++) {
+            if (i === r) continue;
+            const f = A[i][c];
+            if (f.isZero()) continue;
+
+            for (let j = 0; j < cols; j++) A[i][j] = A[i][j].sub(f.mul(A[r][j]));
+
+            const sign = f.isNeg() ? "+" : "-";
+            const co = f.abs().isOne() ? "" : `${f.abs().toHTML()} × `;
+            steps.push({ label: `R${i + 1} ← R${i + 1} ${sign} ${co}R${r + 1}`, snapshot: A.map(x => x.slice()) });
+        }
+
+        pivots.push(c);
+        r++;
+    }
+
+    return { A, steps, pivots };
+}
+
+/* 同次系 Mx = 0 の解空間の基底 */
+function nullSpaceBasis(M, n) {
+    const { A, steps, pivots } = rref(M, n);
+
+    const free = [];
+    for (let c = 0; c < n; c++) if (!pivots.includes(c)) free.push(c);
+
+    const basis = free.map(fc => {
+        const v = Array.from({ length: n }, Frac.zero);
+        v[fc] = Frac.one();
+
+        pivots.forEach((pc, i) => { v[pc] = A[i][fc].neg(); });
+
+        /* 分母を払い、符号と大きさを整える */
+        let lcm = 1n;
+        for (const x of v) lcm = lcm / bigGcd(lcm, x.d) * x.d;
+
+        const ints = v.map(x => x.n * (lcm / x.d));
+
+        let g = 0n;
+        for (const x of ints) g = bigGcd(g, x);
+        if (g === 0n) g = 1n;
+
+        const scaled = ints.map(x => x / g);
+
+        const firstNonZero = scaled.find(x => x !== 0n);
+        const flip = firstNonZero !== undefined && firstNonZero < 0n ? -1n : 1n;
+
+        return scaled.map(x => new Frac(x * flip, 1n));
+    });
+
+    return { basis, steps, rrefMatrix: A, rank: pivots.length };
+}
+
+/* =========================
+   表示
+========================= */
+
+function matrixHTML(M) {
+    return `<table class="matrix">${
+        M.map(r => `<tr>${r.map(v => `<td>${v.toHTML()}</td>`).join("")}</tr>`).join("")
+    }</table>`;
+}
+
+function vectorHTML(v) {
+    return `<span class="vec">${v.map(x => `<div>${x.toHTML()}</div>`).join("")}</span>`;
+}
+
+function polyHTML(p) {
+    const terms = [];
+
+    for (let i = p.length - 1; i >= 0; i--) {
+        const c = p[i];
+        if (c.isZero()) continue;
+
+        const a = c.abs();
+        const sign = c.isNeg() ? "−" : "+";
+
+        let body;
+        if (i === 0) body = a.toHTML();
+        else {
+            const coef = a.isOne() ? "" : a.toHTML();
+            body = coef + (i === 1 ? "λ" : `λ<sup>${i}</sup>`);
+        }
+
+        terms.push(terms.length === 0
+            ? (c.isNeg() ? "−" + body : body)
+            : ` ${sign} ${body}`);
+    }
+
+    return terms.length ? terms.join("") : "0";
+}
+
+function eigenValueHTML(ev) {
+    if (ev.kind === "rational") return ev.value.toHTML();
+
+    const sq = ev.inner === 1n ? "" : `√${ev.inner}`;
+
+    /* 係数が1のときは書かない（1i ではなく i と表示する） */
+    const c = ev.coef.isOne() ? "" : ev.coef.toHTML();
+
+    if (ev.kind === "irrational") {
+        return `${ev.base.toHTML()} ± ${c}${sq}`;
+    }
+
+    return `${ev.base.toHTML()} ± ${c}${sq}<em>i</em>`;
+}
+
+/* =========================
+   入力
+========================= */
+
+function buildMatrix() {
+    const n = Math.max(2, Math.min(4, parseInt(document.getElementById("size").value, 10) || 2));
+    document.getElementById("size").value = n;
+
+    let html = `<div class="matrix-grid" style="grid-template-columns: repeat(${n}, auto)">`;
+
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            html += `<input type="text" inputmode="text" id="c-${i}-${j}" value="${i === j ? 1 : 0}">`;
+        }
+    }
+
+    document.getElementById("matrixInput").innerHTML = html + "</div>";
+    document.getElementById("output").innerHTML = "";
+}
+
+function readMatrix() {
+    const n = parseInt(document.getElementById("size").value, 10);
+    const A = [];
+
+    for (let i = 0; i < n; i++) {
+        const row = [];
+        for (let j = 0; j < n; j++) {
+            const el = document.getElementById(`c-${i}-${j}`);
+            if (!el) throw new Error("先に「行列を作る」を押してください。");
+            row.push(parseFrac(el.value));
+        }
+        A.push(row);
+    }
+
+    return A;
+}
+
+/* =========================
+   本体
+========================= */
+
+function calculate() {
+    const out = document.getElementById("output");
+    out.innerHTML = "";
+
+    let A;
+    try {
+        A = readMatrix();
+    } catch (e) {
+        out.innerHTML = `<div class="error">${e.message}</div>`;
+        return;
+    }
+
+    const n = A.length;
+
+    let html = "";
+
+    /* --- 特性方程式 --- */
+
+    const cp = characteristicPoly(A);
+
+    html += `
+        <div class="step">
+            <div class="step-title">1. 特性方程式 det(A − λE) = 0 を立てる</div>
+            <div class="formula">det(A − λE) = ${polyHTML(cp)} = 0</div>
+        </div>
+    `;
+
+    /* --- 因数分解と固有値 --- */
+
+    const { roots, remainder } = rationalRoots(cp);
+
+    const eigen = [];
+
+    /* 有理数解をまとめる（重複度つき） */
+    const seen = [];
+    for (const r of roots) {
+        const hit = seen.find(s => s.value.eq(r));
+        if (hit) hit.mult++;
+        else seen.push({ value: r, mult: 1 });
+    }
+    for (const s of seen) eigen.push({ kind: "rational", value: s.value, algebraic: s.mult });
+
+    let extra = [];
+    const remDeg = Poly.deg(remainder);
+
+    if (remDeg === 2) {
+        const sols = solveQuadratic(remainder[2], remainder[1], remainder[0]);
+
+        for (const s of sols) {
+            if (s.kind === "rational") {
+                const hit = eigen.find(e => e.kind === "rational" && e.value.eq(s.value));
+                if (hit) hit.algebraic++;
+                else eigen.push({ kind: "rational", value: s.value, algebraic: sols.length === 1 ? 2 : 1 });
+            } else {
+                extra.push(s);
+            }
+        }
+    } else if (remDeg > 0) {
+        extra.push({ kind: "unsolved", degree: remDeg, poly: remainder });
+    }
+
+    const factorParts = seen.map(s => {
+        const r = s.value;
+        const inside = r.isZero() ? "λ" : (r.isNeg() ? `λ + ${r.abs().toHTML()}` : `λ − ${r.toHTML()}`);
+        return s.mult === 1 ? `(${inside})` : `(${inside})<sup>${s.mult}</sup>`;
+    });
+
+    if (remDeg > 0) factorParts.push(`(${polyHTML(remainder)})`);
+
+    const lead = cp[cp.length - 1];
+    const leadStr = lead.eq(Frac.one()) ? "" : (lead.eq(Frac.of(-1)) ? "−" : lead.toHTML());
+
+    if (factorParts.length) {
+        html += `
+            <div class="step">
+                <div class="step-title">2. 特性方程式を因数分解する</div>
+                <div class="formula">${leadStr}${factorParts.join("")} = 0</div>
+            </div>
+        `;
+    }
+
+    const eigenList = eigen.map(e => `λ = ${eigenValueHTML(e)}`)
+        .concat(extra.filter(e => e.kind !== "unsolved").map(e => `λ = ${eigenValueHTML(e)}`));
+
+    html += `
+        <div class="step">
+            <div class="step-title">3. 固有値</div>
+            <div class="formula">${eigenList.length ? eigenList.join("　,　") : "有理数の範囲では求まりませんでした"}</div>
+        </div>
+    `;
+
+    /* --- 固有ベクトル --- */
+
+    let geometricTotal = 0;
+
+    for (const e of eigen) {
+        const lam = e.value;
+
+        const M = A.map((row, i) => row.map((v, j) => i === j ? v.sub(lam) : v));
+
+        const { basis, steps, rank } = nullSpaceBasis(M, n);
+
+        geometricTotal += basis.length;
+
+        let block = `
+            <div class="eigen-block">
+                <div class="eigen-head">固有値 λ = ${lam.toHTML()}</div>
+
+                <div class="badges">
+                    <span class="badge">代数的重複度 ${e.algebraic}</span>
+                    <span class="badge">幾何的重複度 ${basis.length}</span>
+                    <span class="badge">rank(A − λE) = ${rank}</span>
+                </div>
+
+                <p>(A − λE) x = 0 を解きます。</p>
+
+                <div class="formula">A − λE =</div>
+                ${matrixHTML(M)}
+        `;
+
+        if (steps.length === 0) {
+            block += `<p>すでに簡約された形になっています。</p>`;
+        } else {
+            for (const s of steps) {
+                block += `
+                    <div class="step">
+                        <div class="step-title">${s.label}</div>
+                        ${matrixHTML(s.snapshot)}
+                    </div>
+                `;
+            }
+        }
+
+        block += `<p><strong>固有ベクトル</strong>（任意の定数倍を含む）</p><div class="formula">`;
+
+        block += basis.length
+            ? basis.map((b, i) => `${basis.length > 1 ? `c<sub>${i + 1}</sub>` : "c"} ${vectorHTML(b)}`).join(" ＋ ")
+            : "求まりませんでした";
+
+        block += `</div></div>`;
+
+        html += block;
+    }
+
+    for (const e of extra) {
+        if (e.kind === "unsolved") {
+            html += `
+                <div class="eigen-block">
+                    <div class="eigen-head">${e.degree}次の因数が残りました</div>
+                    <div class="formula">${polyHTML(e.poly)} = 0</div>
+                    <div class="note">
+                        この部分は有理数の範囲で因数分解できず、3次以上のため厳密な解を表示していません。
+                    </div>
+                </div>
+            `;
+        } else {
+            html += `
+                <div class="eigen-block">
+                    <div class="eigen-head">固有値 λ = ${eigenValueHTML(e)}</div>
+                    <div class="note">
+                        固有値が${e.kind === "complex" ? "複素数" : "無理数"}のため、
+                        固有ベクトルは分数のまま厳密に表せません。このツールでは導出を省略しています。
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    /* --- 検算 --- */
+
+    let trace = Frac.zero();
+    for (let i = 0; i < n; i++) trace = trace.add(A[i][i]);
+
+    /* 固有値の総和 = -a_{n-1}/a_n、総積 = (-1)^n a_0 / a_n */
+    const an = cp[n];
+    const sumRoots = cp[n - 1].neg().div(an);
+    const prodRoots = (n % 2 === 0 ? cp[0] : cp[0].neg()).div(an);
+
+    const detA = polyMatrixDet(A.map(r => r.map(v => [v])))[0];
+
+    const sumOk = sumRoots.eq(trace);
+    const prodOk = prodRoots.eq(detA);
+
+    html += `
+        <div class="step">
+            <div class="step-title">検算</div>
+            <p>固有値の総和 = ${sumRoots.toHTML()}　／　トレース tr(A) = ${trace.toHTML()}　${sumOk ? "✓ 一致" : "✗ 不一致"}</p>
+            <p>固有値の総積 = ${prodRoots.toHTML()}　／　行列式 det(A) = ${detA.toHTML()}　${prodOk ? "✓ 一致" : "✗ 不一致"}</p>
+        </div>
+    `;
+
+    /* --- 対角化の判定 --- */
+
+    const hasNonRational = extra.length > 0;
+
+    if (hasNonRational) {
+        html += `
+            <div class="verdict ng">
+                有理数でない固有値を含むため、対角化可能かの判定は行っていません。
+            </div>
+        `;
+    } else if (geometricTotal === n) {
+        html += `
+            <div class="verdict ok">
+                対角化可能です。一次独立な固有ベクトルが ${n} 本そろっています。
+            </div>
+        `;
+    } else {
+        html += `
+            <div class="verdict ng">
+                対角化できません。固有ベクトルが ${geometricTotal} 本しか取れず、${n} 本に足りません。
+            </div>
+        `;
+    }
+
+    out.innerHTML = html;
+}
+
+/* =========================
+   イベント
+========================= */
+
+document.getElementById("makeBtn").addEventListener("click", buildMatrix);
+document.getElementById("calcBtn").addEventListener("click", calculate);
+
+document.getElementById("samples").addEventListener("click", (event) => {
+    const b = event.target.closest("button[data-m]");
+    if (!b) return;
+
+    const [size, values] = b.dataset.m.split("|");
+    const vals = values.split(",");
+
+    document.getElementById("size").value = size;
+    buildMatrix();
+
+    const n = Number(size);
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            document.getElementById(`c-${i}-${j}`).value = vals[i * n + j];
+        }
+    }
+
+    calculate();
+});
+
+buildMatrix();
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>

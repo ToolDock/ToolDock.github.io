@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>有効数字の計算｜足し算・掛け算のルールを途中式つきで表示する無料ツール | ToolDock</title>
+<meta name="description" content="有効数字を考慮した計算を、途中式つきで表示する無料ツール。加減算は末位、乗除算は桁数というルールの適用箇所と、どこで丸めたかを1手ずつ示します。有効数字の桁数の数え方も自動判定します。">
+<link rel="canonical" href="https://tooldock.github.io/yukosuji/">
+
+<script> const CURRENT_TOOL = "yukosuji"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<meta name="keywords" content="有効数字,有効数字の計算,有効数字 足し算,有効数字 掛け算,末位,四捨五入,指数表記,実験レポート,物理,化学">
+
+<style>
+    body {
+        font-family: "Yu Gothic", "Meiryo", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto 24px;
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 { margin-top: 0; font-size: 1.9rem; }
+
+    h2 {
+        margin-top: 32px;
+        font-size: 1.3rem;
+        border-left: 5px solid #2563eb;
+        padding-left: 12px;
+    }
+
+    h3 { margin-top: 24px; font-size: 1.05rem; }
+
+    p.description { color: #555; }
+
+    .tabs { display: flex; gap: 8px; margin: 20px 0 16px; }
+
+    .tabs button {
+        padding: 10px 22px;
+        border: 2px solid #cbd5e1;
+        border-radius: 999px;
+        background: white;
+        color: #334155;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    .tabs button:hover { border-color: #2563eb; }
+
+    .tabs button.active {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: white;
+        font-weight: bold;
+    }
+
+    .samples { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
+    .samples button {
+        padding: 7px 14px;
+        border: 2px solid #cbd5e1;
+        border-radius: 999px;
+        background: white;
+        color: #334155;
+        font-size: 0.88rem;
+        cursor: pointer;
+        font-family: "Consolas", monospace;
+    }
+
+    .samples button:hover { border-color: #2563eb; color: #2563eb; }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 14px;
+        font-size: 1.25rem;
+        font-family: "Consolas", "Courier New", monospace;
+        border: 2px solid #cbd5e1;
+        border-radius: 10px;
+        box-sizing: border-box;
+    }
+
+    input[type="text"]:focus { outline: none; border-color: #2563eb; }
+
+    .hint { color: #666; font-size: 0.9rem; margin: 6px 0 0; }
+
+    .field { margin: 18px 0; }
+
+    .field label { display: block; font-weight: bold; margin-bottom: 6px; }
+
+    .result-main {
+        margin-top: 22px;
+        padding: 22px;
+        border-radius: 14px;
+        background: #eff6ff;
+        border: 2px solid #bfdbfe;
+        text-align: center;
+    }
+
+    .result-main .value {
+        font-size: 2.6rem;
+        font-weight: bold;
+        color: #1d4ed8;
+        font-family: "Consolas", monospace;
+        line-height: 1.2;
+        word-break: break-all;
+    }
+
+    .result-main .label { color: #475569; font-size: 0.95rem; margin-top: 6px; }
+
+    .step {
+        background: #f8fafc;
+        border-left: 5px solid #2563eb;
+        padding: 15px 18px;
+        margin: 16px 0;
+        border-radius: 10px;
+    }
+
+    .step-title { font-weight: bold; margin-bottom: 8px; }
+
+    .step .rule {
+        display: inline-block;
+        font-size: 0.82rem;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: #dbeafe;
+        color: #1e40af;
+        margin-left: 8px;
+    }
+
+    .mono { font-family: "Consolas", "Courier New", monospace; }
+
+    table.analysis { width: 100%; border-collapse: collapse; margin-top: 12px; }
+
+    table.analysis th, table.analysis td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 10px;
+        text-align: left;
+    }
+
+    table.analysis th { background: #f8fafc; white-space: nowrap; }
+
+    table.analysis td.num { font-family: "Consolas", monospace; }
+
+    .digits { font-family: "Consolas", monospace; font-size: 1.6rem; letter-spacing: 0.08em; }
+
+    .digits .sig { color: #1d4ed8; font-weight: bold; border-bottom: 3px solid #1d4ed8; }
+    .digits .insig { color: #cbd5e1; }
+
+    .warn {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: #fffbeb;
+        border-left: 5px solid #f59e0b;
+        color: #92400e;
+        font-size: 0.92rem;
+    }
+
+    .error {
+        margin-top: 16px;
+        padding: 14px;
+        border-radius: 10px;
+        background: #fef2f2;
+        border-left: 5px solid #dc2626;
+        color: #991b1b;
+    }
+
+    .note {
+        margin-top: 14px;
+        padding: 12px 14px;
+        background: #f8fafc;
+        border-left: 4px solid #94a3b8;
+        border-radius: 8px;
+        font-size: 0.92rem;
+        color: #475569;
+    }
+
+    table.guide { width: 100%; border-collapse: collapse; margin-top: 12px; }
+
+    table.guide th, table.guide td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    table.guide th { background: #f8fafc; white-space: nowrap; }
+
+    table.guide td.mono { font-family: "Consolas", monospace; white-space: nowrap; }
+
+    .table-scroll { overflow-x: auto; }
+
+    footer { color: #666; font-size: 0.9rem; }
+
+    @media (max-width: 600px) {
+        .container { padding: 20px; }
+        .result-main .value { font-size: 1.9rem; }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>有効数字の計算</h1>
+
+    <p class="description">
+        有効数字を考慮した計算を、<strong>途中式つき</strong>で表示する無料ツールです。
+        「加減算は末位をそろえる」「乗除算は桁数の少ない方にそろえる」という2つのルールが
+        どこで適用され、どの位で丸めたのかを1手ずつ示します。
+        実験レポートの検算や、有効数字のルールの確認に使えます。
+    </p>
+
+    <div class="tabs" id="tabs">
+        <button type="button" data-tab="calc" class="active">式を計算する</button>
+        <button type="button" data-tab="check">数値を調べる</button>
+    </div>
+
+    <!-- ===== 計算モード ===== -->
+    <div id="panel-calc">
+
+        <div class="samples" id="samples">
+            <button type="button" data-v="12.3 + 4.56">12.3 + 4.56</button>
+            <button type="button" data-v="1.23 × 4.5">1.23 × 4.5</button>
+            <button type="button" data-v="(12.34 + 5.6) × 2.0">(12.34 + 5.6) × 2.0</button>
+            <button type="button" data-v="6.02e23 × 1.50">6.02e23 × 1.50</button>
+            <button type="button" data-v="100.0 ÷ 3.0">100.0 ÷ 3.0</button>
+            <button type="button" data-v="9.81 × 2!">9.81 × 2!（2は厳密値）</button>
+        </div>
+
+        <div class="field">
+            <label for="exprInput">式</label>
+            <input type="text" id="exprInput" value="12.3 + 4.56 × 2.0"
+                   autocomplete="off" spellcheck="false"
+                   placeholder="例：12.3 + 4.56 × 2.0">
+            <p class="hint">
+                <code>+ − × ÷ ( )</code> が使えます（<code>*</code> <code>/</code> でも可）。
+                指数表記は <code>6.02e23</code> の形で書きます。
+                個数や定義値など<strong>厳密な数</strong>は <code>2!</code> のように末尾に <code>!</code> を付けると、桁数の判定から除外されます。
+            </p>
+        </div>
+
+        <div id="calcOutput"></div>
+
+    </div>
+
+    <!-- ===== 数値チェックモード ===== -->
+    <div id="panel-check" style="display:none">
+
+        <div class="samples" id="samples2">
+            <button type="button" data-v="0.00120">0.00120</button>
+            <button type="button" data-v="1200">1200</button>
+            <button type="button" data-v="10.500">10.500</button>
+            <button type="button" data-v="3.0e-4">3.0e-4</button>
+        </div>
+
+        <div class="field">
+            <label for="numInput">数値</label>
+            <input type="text" id="numInput" value="0.00120"
+                   autocomplete="off" spellcheck="false"
+                   placeholder="例：0.00120">
+        </div>
+
+        <div id="checkOutput"></div>
+
+    </div>
+
+</div>
+
+<div class="container">
+
+    <h2>有効数字とは</h2>
+
+    <p>
+        測定によって得られた数値のうち、<strong>信頼できる桁</strong>のことを有効数字といいます。
+        たとえば1mm目盛りのものさしで測って「12.3cm」と読んだなら、
+        末尾の「3」は目分量で読み取った1桁で、そこまでが意味のある数字ということになります。
+    </p>
+
+    <p>
+        測定値どうしを計算すると、もとの測定より精度が上がることはありません。
+        そのため計算結果も、もとの数値の精度に合わせて桁を落とす必要があります。
+        そのときの決まりが、次の2つのルールです。
+    </p>
+
+    <h2>計算の2つのルール</h2>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr>
+                    <th>演算</th>
+                    <th>そろえるもの</th>
+                    <th>例</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>足し算・引き算</strong></td>
+                    <td>末位（最後の桁の位）が<strong>もっとも粗い</strong>ものに合わせる</td>
+                    <td class="mono">12.3 + 4.56 = 16.86 → <strong>16.9</strong><br>（12.3 の末位が小数第1位）</td>
+                </tr>
+                <tr>
+                    <td><strong>掛け算・割り算</strong></td>
+                    <td>有効数字の<strong>桁数がもっとも少ない</strong>ものに合わせる</td>
+                    <td class="mono">1.23 × 4.5 = 5.535 → <strong>5.5</strong><br>（4.5 が2桁）</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        混同しやすいのですが、<strong>足し算では「桁数」ではなく「位」をそろえる</strong>点が重要です。
+        <span class="mono">12.3 + 4.56</span> では、桁数の少ない <span class="mono">12.3</span>（3桁）ではなく、
+        末位が粗い <span class="mono">12.3</span>（小数第1位まで）に合わせます。
+        たまたま同じ数を見ることになりますが、根拠が違います。
+    </p>
+
+    <h2>有効数字の桁数の数え方</h2>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr>
+                    <th>ルール</th>
+                    <th>例</th>
+                    <th>桁数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>0以外の数字は必ず有効</td><td class="mono">123</td><td>3桁</td></tr>
+                <tr><td>数字にはさまれた0は有効</td><td class="mono">1.02</td><td>3桁</td></tr>
+                <tr><td>先頭の0は有効ではない（位取りのため）</td><td class="mono">0.00120</td><td>3桁</td></tr>
+                <tr><td>小数点以下の末尾の0は有効</td><td class="mono">10.500</td><td>5桁</td></tr>
+                <tr><td>整数の末尾の0はあいまい</td><td class="mono">1200</td><td>2〜4桁</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        最後の「あいまい」を避けるために使うのが<strong>指数表記</strong>です。
+        <span class="mono">1200</span> を有効数字2桁として示したいなら <span class="mono">1.2×10<sup>3</sup></span>、
+        3桁なら <span class="mono">1.20×10<sup>3</sup></span> と書きます。
+        実験レポートでは、この書き方を求められることが多いです。
+    </p>
+
+    <h2>厳密な数の扱い</h2>
+
+    <p>
+        個数を数えた値（「3個」など）や、定義で決まっている換算係数（1km = 1000m など）は、
+        測定値ではないため<strong>桁数の制限を受けません</strong>。これらを「厳密な数」といいます。
+    </p>
+
+    <p>
+        たとえば「9.81 m/s² × 2」の2が個数なら、結果は9.81の3桁のままで
+        <span class="mono">19.6</span> となります。2を有効数字1桁として扱って
+        <span class="mono">20</span> としてはいけません。
+        このツールでは、<span class="mono">2!</span> のように <code>!</code> を付けることで厳密な数として計算できます。
+    </p>
+
+    <h2>丸めるタイミング</h2>
+
+    <p>
+        途中で丸めると誤差が積み重なるため、<strong>計算は最後まで進めてから丸める</strong>のが原則です。
+        このツールでも内部では正確な値のまま計算を進め、各段階では「この時点での精度」を示すにとどめ、
+        最後にまとめて丸めています。
+    </p>
+
+    <div class="note">
+        丸め方は四捨五入で計算しています。分野によっては、丸める桁が5ちょうどのときに
+        偶数側へ寄せる方法（銀行丸め）を使うことがあります。提出先の指定を確認してください。
+    </div>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 「12.3 + 4.56」の答えが16.86ではなく16.9になるのはなぜですか？</strong><br>
+    A. 12.3 は小数第1位までしか信頼できない数値だからです。
+    小数第2位が不明な数に、小数第2位まで分かっている数を足しても、
+    答えの小数第2位は決められません。そのため小数第1位で丸めます。</p>
+
+    <p><strong>Q. 途中式でも毎回丸めるべきですか？</strong><br>
+    A. 原則として最後だけです。途中で丸めると誤差が蓄積します。
+    ただし手計算では扱う桁数を減らすため、有効数字より1〜2桁多く残して途中計算する方法がよく使われます。</p>
+
+    <p><strong>Q. 平方根や三角関数はどう扱いますか？</strong><br>
+    A. 一般に、もとの数値の有効数字の桁数をそのまま引き継ぎます。
+    このツールは四則演算のみに対応しています。</p>
+
+    <p><strong>Q. 0はどう数えますか？</strong><br>
+    A. 0そのものには有効数字の桁数を定義しません。計算に0が現れた場合、
+    このツールでは桁数の判定から除外して扱います。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+</footer>
+
+<script>
+/* =========================
+   有理数（内部計算は丸めない）
+========================= */
+
+function bigAbs(a) { return a < 0n ? -a : a; }
+
+function bigGcd(a, b) {
+    a = bigAbs(a); b = bigAbs(b);
+    while (b) { [a, b] = [b, a % b]; }
+    return a;
+}
+
+class Rat {
+    constructor(n, d = 1n) {
+        if (d === 0n) throw new Error("0で割ることはできません。");
+        if (d < 0n) { n = -n; d = -d; }
+        const g = bigGcd(n, d) || 1n;
+        this.n = n / g;
+        this.d = d / g;
+    }
+
+    static zero() { return new Rat(0n, 1n); }
+
+    add(o) { return new Rat(this.n * o.d + o.n * this.d, this.d * o.d); }
+    sub(o) { return new Rat(this.n * o.d - o.n * this.d, this.d * o.d); }
+    mul(o) { return new Rat(this.n * o.n, this.d * o.d); }
+    div(o) {
+        if (o.n === 0n) throw new Error("0で割ることはできません。");
+        return new Rat(this.n * o.d, this.d * o.n);
+    }
+
+    isZero() { return this.n === 0n; }
+    isNeg() { return this.n < 0n; }
+}
+
+/* 10^e <= |x| < 10^(e+1) となる e */
+function magnitude(r) {
+    if (r.isZero()) return 0;
+
+    let num = bigAbs(r.n);
+    let den = r.d;
+    let e = 0;
+
+    while (num >= den * 10n) { den *= 10n; e++; }
+    while (num < den) { num *= 10n; e--; }
+
+    return e;
+}
+
+/* 小数第 -pow 位（pow は10のべき）で四捨五入した値を返す */
+function roundToPow(r, pow) {
+    /* value / 10^pow を整数に丸める */
+    let num = r.n;
+    let den = r.d;
+
+    if (pow >= 0) den *= 10n ** BigInt(pow);
+    else num *= 10n ** BigInt(-pow);
+
+    const neg = (num < 0n) !== (den < 0n);
+    const a = bigAbs(num), b = bigAbs(den);
+
+    /* 四捨五入 */
+    let q = a / b;
+    if ((a % b) * 2n >= b) q += 1n;
+
+    return { scaled: neg ? -q : q, pow };
+}
+
+/* 丸めた結果を文字列にする（末尾の0も残す） */
+function formatRounded(scaled, pow) {
+    const neg = scaled < 0n;
+    let s = bigAbs(scaled).toString();
+
+    if (pow >= 0) {
+        s = s + "0".repeat(pow);
+        return (neg ? "-" : "") + s;
+    }
+
+    const decimals = -pow;
+
+    if (s.length <= decimals) s = "0".repeat(decimals - s.length + 1) + s;
+
+    const head = s.slice(0, s.length - decimals);
+    const tail = s.slice(s.length - decimals);
+
+    return (neg ? "-" : "") + head + "." + tail;
+}
+
+/* 参考用の十進表示（丸めずに最大 digits 桁） */
+function toDecimalString(r, digits = 12) {
+    const neg = r.isNeg();
+    let num = bigAbs(r.n);
+    const den = r.d;
+
+    const ip = num / den;
+    let rem = num % den;
+
+    let s = ip.toString();
+
+    if (rem !== 0n) {
+        s += ".";
+        for (let i = 0; i < digits && rem !== 0n; i++) {
+            rem *= 10n;
+            s += (rem / den).toString();
+            rem %= den;
+        }
+        if (rem !== 0n) s += "…";
+    }
+
+    return (neg ? "-" : "") + s;
+}
+
+/* 指数表記 */
+function toScientific(scaled, pow) {
+    if (scaled === 0n) return "0";
+
+    const neg = scaled < 0n;
+    const digits = bigAbs(scaled).toString();
+
+    const exp = pow + digits.length - 1;
+
+    let mant = digits[0];
+    if (digits.length > 1) mant += "." + digits.slice(1);
+
+    return `${neg ? "-" : ""}${mant} × 10<sup>${exp}</sup>`;
+}
+
+/* 丸めた値を「普通の表記」と「指数表記」の両方で用意し、
+   桁が大きく離れているときは指数表記を主に使う */
+function present(rat, lastPow) {
+    const r = roundToPow(rat, lastPow);
+
+    const fixed = formatRounded(r.scaled, r.pow);
+    const sci = toScientific(r.scaled, r.pow);
+
+    const exp = rat.isZero() ? 0 : magnitude(rat);
+    const useSci = exp >= 7 || exp <= -5;
+
+    return { fixed, sci, useSci, main: useSci ? sci : fixed, alt: useSci ? fixed : sci };
+}
+
+/* =========================
+   数値の解析
+   { rat, sig, lastPow, exact, raw, ambiguous }
+========================= */
+
+function analyzeLiteral(raw) {
+    const text = raw.trim();
+
+    const m = text.match(/^([+-]?)(\d+)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/);
+
+    if (!m) throw new Error(`「${raw}」は数値として読み取れません。`);
+
+    const sign = m[1] === "-" ? -1n : 1n;
+    const ip = m[2];
+    const dp = m[3] === undefined ? null : m[3];
+    const exp = m[4] ? parseInt(m[4], 10) : 0;
+
+    const digitsAll = ip + (dp || "");
+
+    const value = new Rat(
+        BigInt(digitsAll) * sign * (exp >= 0 ? 10n ** BigInt(exp) : 1n),
+        (dp ? 10n ** BigInt(dp.length) : 1n) * (exp < 0 ? 10n ** BigInt(-exp) : 1n)
+    );
+
+    /* 末位（10のべき） */
+    const lastPow = exp - (dp ? dp.length : 0);
+
+    /* 有効数字の桁数：先頭の0を除いた桁数 */
+    const stripped = digitsAll.replace(/^0+/, "");
+
+    let ambiguous = false;
+    let sig;
+
+    if (stripped === "") {
+        sig = null;               /* 0 は桁数を定義しない */
+    } else if (dp === null && /0$/.test(ip) && exp === 0) {
+        /* 小数点のない整数の末尾の0はあいまい */
+        sig = stripped.length;
+        ambiguous = true;
+    } else {
+        sig = stripped.length;
+    }
+
+    return { rat: value, sig, lastPow, exact: false, raw: text, ambiguous };
+}
+
+/* =========================
+   式のパース（再帰下降）
+========================= */
+
+function tokenize(src) {
+    const s = src
+        .replace(/×/g, "*").replace(/✕/g, "*").replace(/・/g, "*")
+        .replace(/÷/g, "/")
+        .replace(/−/g, "-").replace(/–/g, "-")
+        .replace(/（/g, "(").replace(/）/g, ")")
+        .replace(/\s+/g, "");
+
+    const tokens = [];
+    let i = 0;
+
+    while (i < s.length) {
+        const c = s[i];
+
+        if ("+-*/()".includes(c)) { tokens.push({ t: c }); i++; continue; }
+
+        const m = s.slice(i).match(/^\d+(?:\.\d*)?(?:[eE][+-]?\d+)?!?/);
+
+        if (!m) throw new Error(`「${c}」は使えない文字です。`);
+
+        let lit = m[0];
+        const exact = lit.endsWith("!");
+        if (exact) lit = lit.slice(0, -1);
+
+        const info = analyzeLiteral(lit);
+
+        if (exact) { info.exact = true; info.sig = null; info.lastPow = null; }
+
+        tokens.push({ t: "num", info });
+        i += m[0].length;
+    }
+
+    return tokens;
+}
+
+function parseExpr(tokens) {
+    let pos = 0;
+    const steps = [];
+
+    const peek = () => tokens[pos];
+    const eat = (t) => {
+        if (!tokens[pos] || tokens[pos].t !== t) throw new Error("式の形が正しくありません。");
+        return tokens[pos++];
+    };
+
+    function primary() {
+        const tk = peek();
+
+        if (!tk) throw new Error("式が途中で終わっています。");
+
+        if (tk.t === "(") {
+            eat("(");
+            const v = expr();
+            if (!peek() || peek().t !== ")") throw new Error("閉じ括弧「)」がありません。");
+            eat(")");
+            return v;
+        }
+
+        if (tk.t === "-") { eat("-"); const v = primary(); return negate(v); }
+        if (tk.t === "+") { eat("+"); return primary(); }
+
+        if (tk.t === "num") { pos++; return tk.info; }
+
+        throw new Error("式の形が正しくありません。");
+    }
+
+    function term() {
+        let left = primary();
+
+        while (peek() && (peek().t === "*" || peek().t === "/")) {
+            const op = eat(peek().t).t;
+            const right = primary();
+            left = applyMulDiv(left, right, op, steps);
+        }
+
+        return left;
+    }
+
+    function expr() {
+        let left = term();
+
+        while (peek() && (peek().t === "+" || peek().t === "-")) {
+            const op = eat(peek().t).t;
+            const right = term();
+            left = applyAddSub(left, right, op, steps);
+        }
+
+        return left;
+    }
+
+    const value = expr();
+
+    if (pos !== tokens.length) throw new Error("式の形が正しくありません。余分な文字があります。");
+
+    return { value, steps };
+}
+
+function negate(v) {
+    return { ...v, rat: Rat.zero().sub(v.rat) };
+}
+
+function describe(v) {
+    if (v.exact) return "厳密値";
+    if (v.sig === null) return "0";
+    return `有効数字 ${v.sig}桁・末位 ${placeName(v.lastPow)}`;
+}
+
+function placeName(pow) {
+    if (pow === null) return "—";
+    if (pow === 0) return "1の位";
+    if (pow > 0) return `10<sup>${pow}</sup>の位`;
+    return `小数第${-pow}位`;
+}
+
+function applyAddSub(a, b, op, steps) {
+    const rat = op === "+" ? a.rat.add(b.rat) : a.rat.sub(b.rat);
+
+    /* 末位がもっとも粗い（pow が大きい）方にそろえる。厳密値と0は無視 */
+    const pows = [a, b].filter(x => !x.exact && x.lastPow !== null).map(x => x.lastPow);
+
+    const lastPow = pows.length ? Math.max(...pows) : null;
+
+    const exact = a.exact && b.exact;
+
+    const sig = (lastPow === null || rat.isZero())
+        ? null
+        : Math.max(1, magnitude(rat) - lastPow + 1);
+
+    const out = { rat, sig, lastPow, exact, raw: null, ambiguous: a.ambiguous || b.ambiguous };
+
+    steps.push({
+        kind: "addsub",
+        op,
+        a, b, out,
+        detail: lastPow === null
+            ? "どちらも厳密値なので、桁の制限はありません。"
+            : `末位がもっとも粗いのは <strong>${placeName(lastPow)}</strong>。結果もその位までとします。`
+    });
+
+    return out;
+}
+
+function applyMulDiv(a, b, op, steps) {
+    const rat = op === "*" ? a.rat.mul(b.rat) : a.rat.div(b.rat);
+
+    /* 有効数字の桁数が最小のものにそろえる。厳密値と0は無視 */
+    const sigs = [a, b].filter(x => !x.exact && x.sig !== null).map(x => x.sig);
+
+    const sig = sigs.length ? Math.min(...sigs) : null;
+
+    const exact = a.exact && b.exact;
+
+    const lastPow = (sig === null || rat.isZero()) ? null : magnitude(rat) - sig + 1;
+
+    const out = { rat, sig, lastPow, exact, raw: null, ambiguous: a.ambiguous || b.ambiguous };
+
+    steps.push({
+        kind: "muldiv",
+        op,
+        a, b, out,
+        detail: sig === null
+            ? "どちらも厳密値なので、桁の制限はありません。"
+            : `有効数字がもっとも少ないのは <strong>${sig}桁</strong>。結果も${sig}桁にそろえます。`
+    });
+
+    return out;
+}
+
+/* =========================
+   計算モードの描画
+========================= */
+
+const OP_SIGN = { "+": "＋", "-": "−", "*": "×", "/": "÷" };
+
+function valueText(v) {
+    return toDecimalString(v.rat, 10);
+}
+
+function runCalc() {
+    const out = document.getElementById("calcOutput");
+    const src = document.getElementById("exprInput").value;
+
+    if (src.trim() === "") { out.innerHTML = ""; return; }
+
+    let parsed;
+
+    try {
+        parsed = parseExpr(tokenize(src));
+    } catch (e) {
+        out.innerHTML = `<div class="error">${e.message}</div>`;
+        return;
+    }
+
+    const { value, steps } = parsed;
+
+    let html = "";
+
+    /* --- 入力の解析 --- */
+
+    const literals = tokenize(src).filter(t => t.t === "num").map(t => t.info);
+
+    html += `
+        <h2 style="margin-top:26px">入力した数値</h2>
+        <table class="analysis">
+            <thead><tr><th>数値</th><th>有効数字</th><th>末位</th></tr></thead>
+            <tbody>
+                ${literals.map(v => `
+                    <tr>
+                        <td class="num">${v.raw}${v.exact ? " !" : ""}</td>
+                        <td>${v.exact ? "厳密値（制限なし）" : (v.sig === null ? "—" : `${v.sig}桁`)}</td>
+                        <td>${v.exact ? "—" : placeName(v.lastPow)}</td>
+                    </tr>
+                `).join("")}
+            </tbody>
+        </table>
+    `;
+
+    if (literals.some(v => v.ambiguous)) {
+        html += `
+            <div class="warn">
+                小数点のない整数で末尾に0がある数値は、有効数字の桁数があいまいです。
+                ここでは0も有効として数えていますが、意図と違う場合は
+                <span class="mono">1.2e3</span> のような指数表記で入力してください。
+            </div>
+        `;
+    }
+
+    /* --- 途中式 --- */
+
+    if (steps.length) {
+        html += `<h2>計算の手順</h2>`;
+
+        steps.forEach((s, i) => {
+            const rule = s.kind === "addsub" ? "加減算のルール" : "乗除算のルール";
+
+            const rounded = s.out.exact || s.out.lastPow === null
+                ? null
+                : present(s.out.rat, s.out.lastPow);
+
+            html += `
+                <div class="step">
+                    <div class="step-title">
+                        ${i + 1}. ${valueText(s.a)} ${OP_SIGN[s.op]} ${valueText(s.b)}
+                        <span class="rule">${rule}</span>
+                    </div>
+
+                    <p>${s.detail}</p>
+
+                    <p class="mono">正確な値： ${valueText(s.out)}</p>
+
+                    <p>この時点での精度： ${describe(s.out)}${
+                        rounded ? `（この位で表すと <strong class="mono">${rounded.main}</strong>）` : ""
+                    }</p>
+                </div>
+            `;
+        });
+    }
+
+    /* --- 最終結果 --- */
+
+    let mainValue, sub;
+
+    if (value.exact || value.lastPow === null) {
+        mainValue = valueText(value);
+        sub = value.exact ? "厳密値のみの計算なので、桁の制限はありません" : "有効数字を定めていません";
+    } else {
+        const p = present(value.rat, value.lastPow);
+
+        mainValue = p.main;
+
+        /* 結果が0のときは桁数を定義しないので、末位だけを示す */
+        const precision = value.sig === null
+            ? `末位 ${placeName(value.lastPow)}`
+            : `有効数字 ${value.sig}桁`;
+
+        sub = `${precision}　／　${p.alt}`;
+    }
+
+    html += `
+        <div class="result-main">
+            <div class="value">${mainValue}</div>
+            <div class="label">${sub}</div>
+        </div>
+    `;
+
+    if (!value.exact && value.lastPow !== null) {
+        html += `<div class="note">丸める前の正確な値は <span class="mono">${valueText(value)}</span> です。途中では丸めず、最後にまとめて四捨五入しています。</div>`;
+    }
+
+    out.innerHTML = html;
+}
+
+/* =========================
+   数値チェックモードの描画
+========================= */
+
+function runCheck() {
+    const out = document.getElementById("checkOutput");
+    const src = document.getElementById("numInput").value.trim();
+
+    if (src === "") { out.innerHTML = ""; return; }
+
+    let info;
+
+    try {
+        info = analyzeLiteral(src.replace(/!$/, ""));
+    } catch (e) {
+        out.innerHTML = `<div class="error">${e.message}</div>`;
+        return;
+    }
+
+    /* どの桁が有効かを色分けする */
+    const m = src.match(/^([+-]?)(\d+)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/);
+
+    let visual = "";
+
+    if (m) {
+        const ip = m[2];
+        const dp = m[3];
+        const exp = m[4];
+
+        let seenNonZero = false;
+        const paint = (digits) => digits.split("").map(ch => {
+            if (!seenNonZero && ch === "0") return `<span class="insig">${ch}</span>`;
+            seenNonZero = true;
+            return `<span class="sig">${ch}</span>`;
+        }).join("");
+
+        visual = paint(ip);
+        if (dp !== undefined) visual += "." + paint(dp);
+        if (exp !== undefined) visual += `<span class="insig">e${exp}</span>`;
+    }
+
+    const r = roundToPow(info.rat, info.lastPow);
+
+    let html = `
+        <div class="step">
+            <div class="step-title">有効な桁</div>
+            <div class="digits">${visual}</div>
+            <p style="margin-top:10px">色のついた桁が有効数字です。位取りのための先頭の0は数えません。</p>
+        </div>
+
+        <table class="analysis">
+            <tbody>
+                <tr><th>有効数字の桁数</th><td class="num">${info.sig === null ? "—（0のため定義しません）" : info.sig + " 桁"}</td></tr>
+                <tr><th>末位</th><td class="num">${placeName(info.lastPow)}</td></tr>
+                <tr><th>指数表記</th><td class="num">${toScientific(r.scaled, r.pow)}</td></tr>
+                <tr><th>有効数字を保った表記</th><td class="num">${formatRounded(r.scaled, r.pow)}</td></tr>
+            </tbody>
+        </table>
+    `;
+
+    if (info.ambiguous) {
+        html += `
+            <div class="warn">
+                小数点のない整数で末尾が0のため、有効数字の桁数があいまいです。
+                ここでは ${info.sig}桁として扱っていますが、
+                ${info.sig}桁なら <span class="mono">${toScientific(r.scaled, r.pow)}</span> のように
+                指数表記で書くと誤解がありません。
+            </div>
+        `;
+    }
+
+    /* 桁数を指定して丸めた場合 */
+    if (info.sig !== null && info.sig > 1) {
+        html += `<h2 style="margin-top:26px">桁数を減らすと</h2><table class="analysis"><tbody>`;
+
+        for (let s = info.sig - 1; s >= 1; s--) {
+            const pow = magnitude(info.rat) - s + 1;
+            const rr = roundToPow(info.rat, pow);
+            html += `<tr><th>${s}桁</th><td class="num">${formatRounded(rr.scaled, rr.pow)}　（${toScientific(rr.scaled, rr.pow)}）</td></tr>`;
+        }
+
+        html += `</tbody></table>`;
+    }
+
+    out.innerHTML = html;
+}
+
+/* =========================
+   イベント
+========================= */
+
+document.getElementById("tabs").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-tab]");
+    if (!b) return;
+
+    document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("active", x === b));
+
+    const calc = b.dataset.tab === "calc";
+    document.getElementById("panel-calc").style.display = calc ? "block" : "none";
+    document.getElementById("panel-check").style.display = calc ? "none" : "block";
+});
+
+document.getElementById("exprInput").addEventListener("input", runCalc);
+document.getElementById("numInput").addEventListener("input", runCheck);
+
+document.getElementById("samples").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-v]");
+    if (!b) return;
+    document.getElementById("exprInput").value = b.dataset.v;
+    runCalc();
+});
+
+document.getElementById("samples2").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-v]");
+    if (!b) return;
+    document.getElementById("numInput").value = b.dataset.v;
+    runCheck();
+});
+
+runCalc();
+runCheck();
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
