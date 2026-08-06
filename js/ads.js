@@ -24,7 +24,7 @@
   "use strict";
 
   /* 「ca-pub-」で始まる番号。空のあいだは何も読み込まない */
-  const CLIENT = "";
+  const CLIENT = "ca-pub-8349615939902537";
 
   /* 広告の枠を出すかどうか。承認後に true にする */
   const UNITS_ENABLED = false;
