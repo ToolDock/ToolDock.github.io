@@ -8,7 +8,10 @@
 
    使い方
    PRODUCTS に、ページのパスをキーとして商品を並べる。
-   url には楽天アフィリエイトで生成したリンクをそのまま入れる。
+   url と image には、楽天アフィリエイトが生成したHTMLに含まれる
+   リンクと画像のURLをそのまま入れる。
+   画像は楽天が配信するもの（hbb.afl.rakuten.co.jp）を使うこと。
+   自前で保存した画像を使うのは楽天の規約で認められていない。
    商品が登録されていないページには、何も表示されない。
 ========================= */
 
@@ -22,7 +25,8 @@
       {
         title: "実況パワフルプロ野球2026-2027（Nintendo Switch）",
         note: "このページで扱っているマイライフを収録したゲーム本体",
-        url: "https://hb.afl.rakuten.co.jp/ichiba/5680a356.7b82b269.5680a357.a3a58194/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fyamada-denki%2F2821431018%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D"
+        url: "https://hb.afl.rakuten.co.jp/ichiba/5680a356.7b82b269.5680a357.a3a58194/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fyamada-denki%2F2821431018%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D",
+        image: "https://hbb.afl.rakuten.co.jp/hgb/5680a356.7b82b269.5680a357.a3a58194/?me_id=1357621&item_id=10680956&pc=https%3A%2F%2Fthumbnail.image.rakuten.co.jp%2F%400_mall%2Fyamada-denki%2Fcabinet%2Fa07000513%2F2821431018.jpg%3F_ex%3D240x240&s=240x240&t=picttext"
       }
     ]
 
@@ -42,9 +46,10 @@
         max-width: 1000px;
         margin: 40px auto 0;
         padding: 20px 22px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #e7d3cd;
+        border-top: 3px solid #bf0000;
         border-radius: 14px;
-        background: #fbfcfe;
+        background: #fffaf8;
         box-sizing: border-box;
       }
 
@@ -60,21 +65,22 @@
         padding: 0;
         border: 0;
         font-size: 1.05rem;
-        color: #334155;
+        color: #7c2d12;
       }
 
       .td-shop-tag {
         font-size: 0.72rem;
+        font-weight: bold;
         letter-spacing: 0.08em;
-        padding: 3px 9px;
+        padding: 3px 10px;
         border-radius: 999px;
-        background: #e2e8f0;
-        color: #475569;
+        background: #bf0000;
+        color: #ffffff;
       }
 
       .td-shop-list {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         gap: 12px;
         margin: 0;
         padding: 0;
@@ -82,9 +88,11 @@
       }
 
       .td-shop-list a {
-        display: block;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
         padding: 14px 16px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #ecdcd7;
         border-radius: 12px;
         background: white;
         text-decoration: none;
@@ -94,7 +102,22 @@
 
       .td-shop-list a:hover {
         border-color: #bf0000;
+        box-shadow: 0 3px 10px rgba(191, 0, 0, 0.12);
         transform: translateY(-1px);
+      }
+
+      .td-shop-img {
+        flex-shrink: 0;
+        width: 96px;
+        height: 96px;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #fafafa;
+      }
+
+      .td-shop-body {
+        flex: 1;
+        min-width: 0;
       }
 
       .td-shop-title {
@@ -106,6 +129,17 @@
         margin-top: 4px;
         font-size: 0.85rem;
         color: #64748b;
+      }
+
+      .td-shop-btn {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 6px 16px;
+        border-radius: 999px;
+        background: #bf0000;
+        color: #ffffff;
+        font-size: 0.85rem;
+        font-weight: bold;
       }
 
       .td-shop-foot {
@@ -144,8 +178,19 @@
         ${items.map(item => `
           <li>
             <a href="${escape(item.url)}" target="_blank" rel="nofollow sponsored noopener">
-              <div class="td-shop-title">${escape(item.title)}</div>
-              ${item.note ? `<div class="td-shop-note">${escape(item.note)}</div>` : ""}
+              ${item.image ? `
+                <img class="td-shop-img"
+                     src="${escape(item.image)}"
+                     alt="${escape(item.title)}"
+                     width="96" height="96"
+                     onerror="this.remove()">
+              ` : ""}
+
+              <div class="td-shop-body">
+                <div class="td-shop-title">${escape(item.title)}</div>
+                ${item.note ? `<div class="td-shop-note">${escape(item.note)}</div>` : ""}
+                <span class="td-shop-btn">楽天市場で見る</span>
+              </div>
             </a>
           </li>
         `).join("")}
