@@ -4,26 +4,21 @@
    方針
    - 本文を覆う大きな広告は置かない
    - 下から小さく出るバー（閉じられる）と、ページ末尾の1枠だけ
-   - 審査に通るまでは ENABLED を false にしておき、
-     AdSense のコードを一切読み込まない
 
-   設定は2段階に分かれている
+   AdSense 本体のスクリプトは、各HTMLの <head> に静的に記述してある。
+   所有権の確認クローラは JavaScript を実行する前のソースを見るため、
+   ここから動的に差し込む方式では検出されない。
+   このファイルが受け持つのは広告枠の描画だけ。
 
-   【審査に出すとき】
-     CLIENT に、AdSense が発行した「ca-pub-」で始まる番号を入れる。
-     これだけで審査用のスクリプトが読み込まれる。
-     広告の枠はまだ出ない（審査中に空枠を出しても意味がないため）。
-
-   【承認されたあと】
-     UNITS_ENABLED を true にし、AdSense で作成した広告ユニットの
-     スロットIDを SLOT_STICKY / SLOT_END に入れる。
+   承認されたら UNITS_ENABLED を true にし、AdSense で作成した
+   広告ユニットのスロットIDを SLOT_STICKY / SLOT_END に入れる。
 ========================= */
 
 (() => {
 
   "use strict";
 
-  /* 「ca-pub-」で始まる番号。空のあいだは何も読み込まない */
+  /* 各HTMLに書いてある番号と揃えること */
   const CLIENT = "ca-pub-8349615939902537";
 
   /* 広告の枠を出すかどうか。承認後に true にする */
@@ -37,22 +32,7 @@
 
   const DISMISS_KEY = "tooldock-ad-sticky-closed";
 
-  /* 番号が未設定のうちは、審査用スクリプトも枠も出さない */
   if (!CLIENT) return;
-
-  /* ---- AdSense 本体を1回だけ読み込む ---- */
-
-  function loadAdSense() {
-    if (document.querySelector('script[src*="adsbygoogle"]')) return;
-
-    const s = document.createElement("script");
-
-    s.async = true;
-    s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + CLIENT;
-    s.crossOrigin = "anonymous";
-
-    document.head.appendChild(s);
-  }
 
   function pushAd() {
     (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -204,10 +184,7 @@
   /* ---- 起動 ---- */
 
   function start() {
-    /* 審査用のスクリプトは、番号さえ入っていれば読み込む */
-    loadAdSense();
-
-    /* 枠を出すのは承認後だけ */
+    /* 枠を出すのは承認後だけ。それまでは何もしない */
     if (!UNITS_ENABLED) return;
 
     injectStyle();
