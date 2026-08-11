@@ -18,15 +18,13 @@
 
   const PRODUCTS = {
 
-    /* 例）
     "/kintoku/": [
       {
-        title: "eBASEBALLパワフルプロ野球2026-2027",
-        note: "本記事で扱っているゲーム本体",
-        url: "https://hb.afl.rakuten.co.jp/..."
+        title: "実況パワフルプロ野球2026-2027（Nintendo Switch）",
+        note: "このページで扱っているマイライフを収録したゲーム本体",
+        url: "https://hb.afl.rakuten.co.jp/ichiba/5680a356.7b82b269.5680a357.a3a58194/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fyamada-denki%2F2821431018%2F&link_type=picttext&ut=eyJwYWdlIjoiaXRlbSIsInR5cGUiOiJwaWN0dGV4dCIsInNpemUiOiIyNDB4MjQwIiwibmFtIjoxLCJuYW1wIjoicmlnaHQiLCJjb20iOjEsImNvbXAiOiJkb3duIiwicHJpY2UiOjEsImJvciI6MSwiY29sIjoxLCJiYnRuIjoxLCJwcm9kIjowLCJhbXAiOmZhbHNlfQ%3D%3D"
       }
-    ],
-    */
+    ]
 
   };
 
