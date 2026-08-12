@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Web原稿用紙エディタ｜文章を400字詰め原稿用紙の書式で表示 | ToolDock</title>
-<meta name="description" content="入力した文章を400字詰め原稿用紙（20字×20行）の書式に起こして表示する無料ツール。字下げや行頭の句読点も自動で処理され、原稿用紙で何枚になるかがその場で分かります。書き方のルールも掲載。">
+<title>Web原稿用紙エディタ｜縦書き・400字詰めで表示して印刷 | ToolDock</title>
+<meta name="description" content="入力した文章を原稿用紙の書式に起こして表示・印刷できる無料ツール。縦書きと横書き、400字詰め（20×20）と200字詰め（20×10）に対応。字下げや行頭の句読点は自動で処理され、原稿用紙で何枚になるかがその場で分かります。題名・氏名欄と下書きの自動保存つき。">
 <link rel="canonical" href="https://tooldock.github.io/genkoyosi/">
 
 <script> const CURRENT_TOOL = "genkoyosi"; </script>
@@ -16,6 +16,15 @@
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
 <style>
+:root{
+    /* マス1つの大きさ。表示サイズの切り替えと印刷でこの値だけを差し替える */
+    --cell:40px;
+
+    --paper:#fffaf0;
+    --rule:#c6a98b;
+    --frame:#7a4f2a;
+}
+
 body{
     margin:0;
     padding:30px;
@@ -26,17 +35,213 @@ body{
 
 h1{
     margin-top:0;
-    margin-bottom:10px;
+    margin-bottom:8px;
     font-size:30px;
 }
 
-#counter{
-    margin-bottom:18px;
-    font-size:18px;
+.lead{
+    margin:0 0 22px;
+    max-width:760px;
+    line-height:1.8;
 }
+
+/* =========================
+   操作パネル
+========================= */
+
+.panel{
+    max-width:900px;
+
+    margin-bottom:22px;
+    padding:16px 18px;
+
+    border:1px solid #dcc9ac;
+    border-radius:12px;
+
+    background:#fffdf8;
+
+    box-sizing:border-box;
+}
+
+.panel-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px 18px;
+
+    margin-bottom:12px;
+}
+
+.panel-row:last-child{
+    margin-bottom:0;
+}
+
+.panel-label{
+    flex-shrink:0;
+
+    width:88px;
+
+    font-size:14px;
+    font-weight:bold;
+    color:#6b4a2b;
+}
+
+/* 縦書き / 横書き の切り替えボタン */
+
+.seg{
+    display:inline-flex;
+
+    border:1px solid #a97c4e;
+    border-radius:999px;
+
+    overflow:hidden;
+}
+
+.seg input{
+    position:absolute;
+
+    width:1px;
+    height:1px;
+
+    opacity:0;
+
+    pointer-events:none;
+}
+
+.seg label{
+    padding:7px 20px;
+
+    font-size:15px;
+
+    background:#fff;
+    color:#6b4a2b;
+
+    cursor:pointer;
+
+    user-select:none;
+}
+
+.seg label + label{
+    border-left:1px solid #a97c4e;
+}
+
+.seg input:checked + label{
+    background:#7a4f2a;
+    color:#fff;
+    font-weight:bold;
+}
+
+.seg input:focus-visible + label{
+    outline:2px solid #2563eb;
+    outline-offset:-2px;
+}
+
+.panel select{
+    padding:6px 10px;
+
+    font-size:15px;
+
+    border:1px solid #a97c4e;
+    border-radius:8px;
+
+    background:#fff;
+    color:#222;
+}
+
+.panel .check{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+
+    font-size:15px;
+
+    cursor:pointer;
+}
+
+.panel button{
+    padding:7px 18px;
+
+    font-size:15px;
+
+    border:1px solid #a97c4e;
+    border-radius:8px;
+
+    background:#fff;
+    color:#6b4a2b;
+
+    cursor:pointer;
+}
+
+.panel button:hover{
+    background:#f3e7d8;
+}
+
+.panel button.primary{
+    background:#7a4f2a;
+    border-color:#7a4f2a;
+    color:#fff;
+    font-weight:bold;
+}
+
+.panel button.primary:hover{
+    background:#63401f;
+}
+
+/* =========================
+   題名・氏名
+========================= */
+
+.meta-inputs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+
+    max-width:900px;
+
+    margin-bottom:14px;
+}
+
+.meta-field{
+    flex:1 1 220px;
+
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.meta-field label{
+    font-size:13px;
+    font-weight:bold;
+    color:#6b4a2b;
+}
+
+.meta-field input{
+    padding:10px 12px;
+
+    font-size:16px;
+
+    border:2px solid #c8a87f;
+    border-radius:10px;
+
+    background:#fffdf8;
+
+    box-sizing:border-box;
+}
+
+.hint{
+    margin:0 0 18px;
+
+    font-size:13px;
+    color:#7a6a55;
+}
+
+/* =========================
+   入力欄
+========================= */
 
 textarea{
     width:100%;
+    max-width:900px;
     height:220px;
 
     font-size:18px;
@@ -52,8 +257,91 @@ textarea{
 
     background:#fffdf8;
 
-    margin-bottom:40px;
+    margin-bottom:16px;
 }
+
+/* =========================
+   集計
+========================= */
+
+.stats{
+    max-width:900px;
+
+    margin-bottom:10px;
+}
+
+.stat-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+
+    margin:0 0 10px;
+    padding:0;
+
+    list-style:none;
+}
+
+.stat-list li{
+    padding:8px 16px;
+
+    border:1px solid #dcc9ac;
+    border-radius:10px;
+
+    background:#fffdf8;
+
+    font-size:15px;
+}
+
+.stat-list b{
+    font-size:20px;
+    color:#7a4f2a;
+}
+
+.goal-line{
+    font-size:14px;
+    color:#5b4a33;
+}
+
+.bar{
+    height:8px;
+
+    margin-top:6px;
+
+    border-radius:999px;
+
+    background:#e5d8c3;
+
+    overflow:hidden;
+}
+
+.bar > span{
+    display:block;
+    height:100%;
+
+    border-radius:999px;
+
+    background:#7a4f2a;
+
+    transition:width 0.2s;
+}
+
+.limit-note{
+    max-width:900px;
+
+    margin:0 0 10px;
+    padding:10px 14px;
+
+    border-left:4px solid #bf7a00;
+    border-radius:6px;
+
+    background:#fff5e0;
+
+    font-size:14px;
+}
+
+/* =========================
+   原稿用紙
+========================= */
 
 #preview{
     display:flex;
@@ -63,33 +351,42 @@ textarea{
     /* マス目を縮めると読めなくなるため、
        画面が狭いときはこの領域だけ横スクロールさせる */
     overflow-x:auto;
-    padding-bottom:10px;
+    padding:10px 0;
 }
 
 .page{
     flex-shrink:0;
 
-    width:842px;
-    height:842px;
-
     display:grid;
-    grid-template-columns:repeat(20, 40px);
-    grid-template-rows:repeat(20, 40px);
 
-    border:3px solid #7a4f2a;
+    /* --cols / --rows は描画時にインラインで入れる */
+    grid-template-columns:repeat(var(--cols), var(--cell));
+    grid-template-rows:repeat(var(--rows), var(--cell));
 
-    background:#fffaf0;
+    /* 行末からはみ出した句読点を置くための余白。
+       実際の原稿用紙も、マス目の外側に同じだけの余白がある。
+       句読点が2つ続けてはみ出しても収まる幅にしてある */
+    padding:calc(var(--cell) * 0.9);
+
+    border:3px solid var(--frame);
+
+    background:var(--paper);
 
     box-shadow:0 4px 14px rgba(0,0,0,0.08);
 
     position:relative;
 }
 
-.cell{
-    width:40px;
-    height:40px;
+/* 縦書きは、行を右から左へ、1行を上から下へ並べる。
+   direction:rtl で列の並びを右起点にし、
+   grid-auto-flow:column で1列ずつ埋めていく */
+.page.tate{
+    grid-auto-flow:column;
+    direction:rtl;
+}
 
-    border:1px solid #c6a98b;
+.cell{
+    border:1px solid var(--rule);
 
     box-sizing:border-box;
 
@@ -97,7 +394,8 @@ textarea{
     align-items:center;
     justify-content:center;
 
-    font-size:24px;
+    font-size:calc(var(--cell) * 0.62);
+    line-height:1;
 
     font-family:
         "Yu Mincho",
@@ -112,8 +410,51 @@ textarea{
     overflow:visible;
 }
 
-.empty{
-    color:transparent;
+/* 縦書きのマス。句読点・かぎかっこ・長音は
+   writing-mode に任せると縦組みの字形で表示される */
+.page.tate .cell{
+    writing-mode:vertical-rl;
+    direction:ltr;
+}
+
+/* 行頭に置けない文字を、前の行の最後のマスの外に出す */
+/* はみ出す文字は1文字ずつ別の要素にし、--i 番目として並べる。
+   1つの要素にまとめると、マスの幅に合わせて折り返されてしまう。
+   余白に収める必要があるため、本文よりやや小さく置いている */
+.hanging{
+    position:absolute;
+
+    z-index:10;
+
+    font-size:calc(var(--cell) * 0.5);
+    line-height:1;
+
+    pointer-events:none;
+}
+
+/* 1文字目がマスの外に出るよう 0.85 から始め、以降0.5ずつ送る */
+.page:not(.tate) .hanging{
+    left:calc(var(--cell) * (0.85 + 0.5 * var(--i)));
+    top:50%;
+    transform:translateY(-50%);
+}
+
+.page.tate .hanging{
+    top:calc(var(--cell) * (0.85 + 0.5 * var(--i)));
+    left:50%;
+    transform:translateX(-50%);
+}
+
+.page-no{
+    position:absolute;
+
+    left:0;
+    bottom:calc(var(--cell) * -1.05);
+
+    font-size:13px;
+    color:#8a6b4a;
+
+    direction:ltr;
 }
 
 @media (max-width:600px){
@@ -121,38 +462,205 @@ textarea{
         padding:16px;
     }
 
+    h1{
+        font-size:24px;
+    }
+
     #preview{
         gap:24px;
     }
+
+    .panel-label{
+        width:100%;
+    }
 }
 
-/* 行末句読点 */
-.hanging{
-    position:absolute;
+/* =========================
+   印刷
+   画面の部品をすべて隠し、原稿用紙だけをA4に載せる。
+   マスの大きさを mm で指定し直すことで、
+   400字詰めが1枚に収まるようにしている
+========================= */
 
-    right:-11px;
-    top:50%;
+@media print{
+    @page{
+        size:A4 portrait;
+        margin:12mm;
+    }
 
-    transform:translateY(-50%);
+    body{
+        padding:0 !important;
+        background:#fff;
+    }
 
-    z-index:10;
+    h1,
+    .lead,
+    .panel,
+    .meta-inputs,
+    .hint,
+    textarea,
+    .stats,
+    .limit-note,
+    .tool-article,
+    .breadcrumb,
+    #related-tools,
+    .td-rail,
+    .td-rail-inline,
+    .td-shop,
+    .td-ad-end,
+    .td-ad-sticky{
+        display:none !important;
+    }
 
-    background:#fffaf0;
+    #preview{
+        display:block;
+        overflow:visible;
+        gap:0;
+        padding:0;
+    }
 
-    pointer-events:none;
+    .page{
+        /* マス20個＋左右の余白で約173mm。
+           A4縦（余白12mm）の印字幅186mmに収まる大きさ */
+        --cell:8mm;
+
+        /* #preview を block に戻すため、
+           マスの合計幅まで縮めないと用紙いっぱいに広がってしまう */
+        width:fit-content;
+
+        margin:0 auto 8mm;
+
+        border-color:#000;
+        box-shadow:none;
+
+        break-inside:avoid;
+        page-break-inside:avoid;
+    }
+
+    .cell{
+        border-color:#999;
+    }
+
+    .hanging{
+        background:#fff;
+    }
+
+    .page-no{
+        display:none;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<h1>原稿用紙風エディタ</h1>
+<h1>Web原稿用紙エディタ</h1>
 
-<div id="counter">
-文字数：0 ／ 400
+<p class="lead">
+入力した文章を、そのまま原稿用紙の書式に起こして表示します。
+縦書き・横書き、400字詰め・200字詰めを切り替えられ、そのまま印刷もできます。
+字下げと行頭の句読点は自動で処理されます。
+</p>
+
+<div class="panel">
+
+  <div class="panel-row">
+    <span class="panel-label">書き方</span>
+
+    <span class="seg">
+      <input type="radio" name="dir" id="dir-tate" value="tate" checked>
+      <label for="dir-tate">縦書き</label>
+
+      <input type="radio" name="dir" id="dir-yoko" value="yoko">
+      <label for="dir-yoko">横書き</label>
+    </span>
+  </div>
+
+  <div class="panel-row">
+    <span class="panel-label">用紙</span>
+
+    <select id="paper" aria-label="用紙の種類">
+      <option value="20">400字詰め（20字×20行）</option>
+      <option value="10">200字詰め（20字×10行）</option>
+    </select>
+
+    <select id="size" aria-label="マスの大きさ">
+      <option value="44">マス大</option>
+      <option value="40" selected>マス中</option>
+      <option value="30">マス小</option>
+    </select>
+  </div>
+
+  <div class="panel-row">
+    <span class="panel-label">書式</span>
+
+    <label class="check">
+      <input type="checkbox" id="indent" checked>
+      段落の先頭を1字下げる
+    </label>
+
+    <label class="check">
+      <input type="checkbox" id="zenkaku">
+      英数字・記号を全角にする
+    </label>
+  </div>
+
+  <div class="panel-row">
+    <span class="panel-label">目標</span>
+
+    <select id="goal" aria-label="目標の枚数">
+      <option value="0">指定なし</option>
+      <option value="1">1枚</option>
+      <option value="2">2枚</option>
+      <option value="3">3枚</option>
+      <option value="4">4枚</option>
+      <option value="5">5枚</option>
+      <option value="8">8枚</option>
+      <option value="10">10枚</option>
+    </select>
+
+    <button type="button" id="print" class="primary">印刷する</button>
+    <button type="button" id="clear">入力を消す</button>
+  </div>
+
 </div>
 
-<textarea id="editor" placeholder="ここに文章を入力してください。"></textarea>
+<div class="meta-inputs">
+
+  <div class="meta-field">
+    <label for="title">題名</label>
+    <input type="text" id="title" placeholder="例：走れメロスを読んで">
+  </div>
+
+  <div class="meta-field">
+    <label for="author">氏名</label>
+    <input type="text" id="author" placeholder="例：山田　太郎">
+  </div>
+
+</div>
+
+<p class="hint">
+題名と氏名は、入力すると1枚目の1行目・2行目に決まりどおりの位置で入ります。空欄なら本文だけが表示されます。
+</p>
+
+<textarea id="editor" placeholder="ここに文章を入力してください。&#10;改行すると、原稿用紙でも新しい段落になります。"></textarea>
+
+<div class="stats">
+
+  <ul class="stat-list">
+    <li>文字数 <b id="stat-chars">0</b> 字</li>
+    <li>行数 <b id="stat-lines">0</b> 行</li>
+    <li>枚数 <b id="stat-pages">0</b> 枚</li>
+  </ul>
+
+  <div class="goal-line" id="goal-line" hidden>
+    <span id="goal-text"></span>
+    <div class="bar"><span id="goal-bar" style="width:0%"></span></div>
+  </div>
+
+</div>
+
+<p class="limit-note" id="limit-note" hidden></p>
 
 <div id="preview"></div>
 
@@ -162,9 +670,20 @@ textarea{
 
 <p>
 書いたテキストを、そのまま原稿用紙の書式に起こして表示するツールです。
-上の入力欄に文章を入れると、下に400字詰め（20字×20行）の原稿用紙として表示されます。
-字下げ・改行・行頭の句読点の処理は自動で行われるため、
-提出前に「原稿用紙にすると何枚になるか」をその場で確認できます。
+上の入力欄に文章を入れると、下に原稿用紙として表示されます。
+</p>
+
+<ul>
+<li><strong>縦書き・横書き</strong>を切り替えられます。読書感想文や作文は縦書きが基本です</li>
+<li><strong>400字詰め（20字×20行）</strong>と<strong>200字詰め（20字×10行）</strong>に対応しています</li>
+<li>字下げ・改行・行頭の句読点の処理は<strong>自動</strong>で行われます</li>
+<li><strong>題名と氏名</strong>を、決まりどおりの位置に入れられます</li>
+<li>ブラウザの印刷機能で、<strong>マス目ごとそのまま印刷</strong>できます</li>
+<li>入力内容はお使いのブラウザに<strong>自動保存</strong>され、次に開いたときに復元されます</li>
+</ul>
+
+<p>
+文字はすべてブラウザの中だけで処理され、サーバーに送信されることはありません。
 </p>
 
 <h2>原稿用紙の書き方の基本</h2>
@@ -186,9 +705,10 @@ textarea{
 <tr><td>段落の始め</td><td>段落が変わるたびに、行の最初を1マス空けます</td></tr>
 <tr><td>句読点（、。）</td><td>それぞれ1マスを使います。他の文字と同じマスには入れません</td></tr>
 <tr><td>行頭の句読点</td><td>行の最初には置きません。前の行の最後のマスに一緒に入れるか、マスの外に出します</td></tr>
-<tr><td>かぎかっこ（「」）</td><td>1マスずつ使います。会話文は行を変えて書くのが一般的です</td></tr>
-<tr><td>小さい文字（っ ゃ ゅ ょ）</td><td>1マスを使い、マスの右上に書きます</td></tr>
-<tr><td>長音符（ー）</td><td>1マスを使います</td></tr>
+<tr><td>かぎかっこ（「」）</td><td>1マスずつ使います。会話文は行を変え、「を1マス目から書きます（字下げしません）</td></tr>
+<tr><td>閉じかっこ（」）</td><td>句読点と同じく、行の最初には置きません</td></tr>
+<tr><td>小さい文字（っ ゃ ゅ ょ）</td><td>1マスを使い、縦書きではマスの右上に書きます</td></tr>
+<tr><td>長音符（ー）</td><td>1マスを使います。縦書きでは縦向きに書きます</td></tr>
 <tr><td>数字（縦書き）</td><td>漢数字で書きます。「二〇二六年」のように書くのが基本です</td></tr>
 <tr><td>数字（横書き）</td><td>算用数字を使い、2桁までは1マスに収めます</td></tr>
 <tr><td>アルファベット</td><td>大文字は1マスに1字、小文字は1マスに2字が目安です</td></tr>
@@ -197,6 +717,52 @@ textarea{
 </tbody>
 </table>
 </div>
+
+<p class="note">
+このツールでは、行の最初に来てしまう「、」「。」「）」「」」などを、自動で前の行の最後のマスの外に出しています。
+また「「」で始まる行は会話文とみなし、字下げをしません。
+</p>
+
+<h2>縦書きと横書きの使い分け</h2>
+
+<p>
+どちらで書くかは、提出先の指定に従うのが原則です。指定がない場合の目安は次のとおりです。
+</p>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr>
+<th>書き方</th>
+<th>主な用途</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>縦書き</td><td>読書感想文、作文、小論文、志望理由書、国語の課題。原稿用紙といえば通常はこちらです</td></tr>
+<tr><td>横書き</td><td>理科・数学のレポート、算用数字や英数字・数式が多く出てくる文章</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>
+縦書きでは数字を漢数字で書くのが基本です。
+「2026年」ではなく「二〇二六年」と書きます。
+英数字がどうしても必要な場合は、縦書きでは横に倒して表示されます。
+</p>
+
+<h2>印刷して使うには</h2>
+
+<p>
+「印刷する」ボタンを押すと、入力欄や解説などの画面の部品は消え、原稿用紙のマス目だけがA4用紙に印刷されます。
+400字詰め1枚がA4縦1枚にちょうど収まる大きさで出力されます。
+</p>
+
+<ul>
+<li>印刷設定で<strong>「背景のグラフィック」を有効</strong>にすると、マス目の罫線がはっきり出ます</li>
+<li>用紙の向きは<strong>縦（ポートレート）</strong>のままにしてください</li>
+<li>PDFとして保存したい場合は、印刷先に「PDFに保存」を選びます</li>
+<li>マス目だけの白紙が欲しい場合は、入力欄を空にしたまま印刷してください</li>
+</ul>
 
 <h2>原稿用紙の枚数の目安</h2>
 
@@ -227,22 +793,54 @@ textarea{
 <p>
 指定がある場合、<strong>指定枚数の8割以上</strong>は書くようにと言われることが多いです。
 たとえば「5枚以内」なら1600字以上が目安になります。
+上の「目標」で枚数を選ぶと、残りの文字数が表示されます。
 </p>
 
+<h2>文字数が足りないときは</h2>
+
+<p>
+書くことが尽きたときは、次の観点を足すと自然に増やせます。水増しの言い回しを重ねるより、内容を1つ増やすほうが読みやすい文章になります。
+</p>
+
+<ul>
+<li><strong>具体例をひとつ足す</strong>：「感動した」で終えず、どの場面のどの一文かまで書く</li>
+<li><strong>自分の経験と結ぶ</strong>：似た出来事、正反対の出来事を思い出して並べる</li>
+<li><strong>逆の立場から考える</strong>：登場人物の別の一人だったらどうしたかを書く</li>
+<li><strong>読む前と読んだ後を比べる</strong>：考えがどう変わったかを書く</li>
+<li><strong>これからどうするかを書く</strong>：締めくくりで自分の行動に落とす</li>
+</ul>
+
 <h2>よくある質問</h2>
+
+<p><strong>Q. 縦書きで表示できますか？</strong><br>
+A. できます。上の「書き方」で「縦書き」を選んでください。初期状態も縦書きです。
+行は右から左へ進み、句読点・かぎかっこ・長音符は縦書き用の字形で表示されます。</p>
+
+<p><strong>Q. 印刷やPDF保存はできますか？</strong><br>
+A. できます。「印刷する」ボタンを押すと、原稿用紙のマス目だけがA4縦1枚に収まる大きさで印刷されます。
+印刷先に「PDFに保存」を選べばPDFになります。罫線が薄い場合は、印刷設定の「背景のグラフィック」を有効にしてください。</p>
 
 <p><strong>Q. 句読点が行の最初に来てしまいます。</strong><br>
 A. 原稿用紙では、行の最初に句読点を置きません。
 前の行の最後のマスに文字と一緒に入れるか、マスの外にはみ出させて書きます。
-このツールでは自動的に前の行に寄せて表示しています。</p>
+このツールでは自動的に前の行に寄せて表示しています。閉じかっこ（」）や「！」「？」も同じ扱いです。</p>
 
 <p><strong>Q. 書いた内容は保存されますか？</strong><br>
-A. 保存されません。ページを閉じると消えるため、必要な文章は別途コピーして保管してください。
-入力した内容がサーバーに送信されることはありません。</p>
+A. お使いのブラウザに自動で保存され、次に同じ端末・同じブラウザで開いたときに復元されます。
+サーバーに送信されることはありません。消したいときは「入力を消す」を押してください。
+なお、ブラウザの履歴を消去したり、シークレットモードで使ったりした場合は残りません。
+大事な文章は別途コピーして保管することをおすすめします。</p>
 
 <p><strong>Q. 200字詰めの原稿用紙にも対応していますか？</strong><br>
-A. このツールは400字詰め（20字×20行）で表示します。
-200字詰めが必要な場合は、表示された枚数を2倍にして考えてください。</p>
+A. 対応しています。「用紙」で「200字詰め（20字×10行）」を選んでください。</p>
+
+<p><strong>Q. 会話文はどう書けばよいですか？</strong><br>
+A. 会話は行を変えて、かぎかっこ（「）を1マス目から書きます。この行は字下げしません。
+このツールでは「「」で始まる行を自動的に会話文として扱い、字下げを行いません。</p>
+
+<p><strong>Q. 題名と氏名はどこに書きますか？</strong><br>
+A. 1行目に題名を上から2〜3マス空けて、2行目に氏名を下を1〜2マス空けて書きます。
+上の「題名」「氏名」欄に入力すると、この位置に自動で配置されます。</p>
 
 <p><strong>Q. 文字数だけを詳しく知りたいです。</strong><br>
 A. <a href="/counter/">文字数カウント</a>をお使いください。
@@ -250,156 +848,479 @@ A. <a href="/counter/">文字数カウント</a>をお使いください。
 
 </article>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "原稿用紙を縦書きで表示できますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "できます。「書き方」で「縦書き」を選んでください。初期状態も縦書きです。行は右から左へ進み、句読点・かぎかっこ・長音符は縦書き用の字形で表示されます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "原稿用紙を印刷やPDF保存できますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "できます。「印刷する」ボタンを押すと、原稿用紙のマス目だけがA4縦1枚に収まる大きさで印刷されます。印刷先に「PDFに保存」を選べばPDFになります。罫線が薄い場合は印刷設定の「背景のグラフィック」を有効にしてください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "句読点が行の最初に来てしまいます。",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "原稿用紙では行の最初に句読点を置きません。前の行の最後のマスに文字と一緒に入れるか、マスの外にはみ出させて書きます。このツールでは自動的に前の行に寄せて表示します。閉じかっこや感嘆符・疑問符も同じ扱いです。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "200字詰めの原稿用紙にも対応していますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "対応しています。「用紙」で「200字詰め（20字×10行）」を選んでください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "会話文はどう書けばよいですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "会話は行を変えて、かぎかっこを1マス目から書きます。この行は字下げしません。このツールでは「で始まる行を自動的に会話文として扱い、字下げを行いません。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "題名と氏名はどこに書きますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "1行目に題名を上から2〜3マス空けて、2行目に氏名を下を1〜2マス空けて書きます。「題名」「氏名」欄に入力すると、この位置に自動で配置されます。"
+      }
+    }
+  ]
+}
+</script>
+
 <script>
-const editor = document.getElementById("editor");
-const preview = document.getElementById("preview");
-const counter = document.getElementById("counter");
+(() => {
 
-const ROWS = 20;
-const COLS = 20;
-const PAGE_SIZE = ROWS * COLS;
+"use strict";
 
-editor.addEventListener("input", render);
+/* =========================
+   原稿用紙の組版
 
-function render(){
+   1行あたりのマス数は縦書き・横書きとも20で固定。
+   用紙の種類で変わるのは1枚あたりの行数だけ（20行=400字 / 10行=200字）。
+========================= */
 
-    let text = editor.value;
+const CHARS_PER_LINE = 20;
 
-    // 原稿用紙上の文字数
-    let count = 0;
+/* 描画するページ数の上限。これを超える入力でも
+   ブラウザが固まらないよう、途中で打ち切る */
+const MAX_PAGES = 60;
 
-    for(let ch of text){
+/* 行の最初に置けない文字。前の行の最後のマスの外に出す */
+const HEAD_NG = "、。，．）］｝〉》」』】〙〗’”！？!?ヽヾゝゞ々ー";
 
-        if(ch !== "\n"){
-            count++;
-        }
-    }
+/* 行の最後に置けない文字。次の行に送る */
+const TAIL_NG = "（［｛〈《「『【〘〖‘“";
 
-    counter.textContent =
-        `文字数：${count} ／ ${PAGE_SIZE}`;
+const STORE_KEY = "tooldock-genkoyosi";
 
-    // 行ごとに字下げ
-    let lines = text.split("\n");
+/* =========================
+   要素
+========================= */
 
-    for(let i=0;i<lines.length;i++){
+const el = {
+  editor: document.getElementById("editor"),
+  title: document.getElementById("title"),
+  author: document.getElementById("author"),
+  preview: document.getElementById("preview"),
 
-        if(lines[i].length > 0){
+  paper: document.getElementById("paper"),
+  size: document.getElementById("size"),
+  indent: document.getElementById("indent"),
+  zenkaku: document.getElementById("zenkaku"),
+  goal: document.getElementById("goal"),
 
-            if(!lines[i].startsWith("　")){
-                lines[i] = "　" + lines[i];
-            }
-        }
-    }
+  print: document.getElementById("print"),
+  clear: document.getElementById("clear"),
 
-    text = lines.join("\n");
+  chars: document.getElementById("stat-chars"),
+  lines: document.getElementById("stat-lines"),
+  pages: document.getElementById("stat-pages"),
 
-    preview.innerHTML = "";
+  goalLine: document.getElementById("goal-line"),
+  goalText: document.getElementById("goal-text"),
+  goalBar: document.getElementById("goal-bar"),
 
-    let pages = [];
-    let current = [];
+  limitNote: document.getElementById("limit-note")
+};
 
-    for(let i=0;i<text.length;i++){
-
-        let ch = text[i];
-
-        // 改行
-        if(ch === "\n"){
-
-            while(current.length % COLS !== 0){
-
-                current.push({
-                    char:"",
-                    empty:true
-                });
-            }
-
-            continue;
-        }
-
-        // 行頭禁則
-        if((ch === "。" || ch === "、") &&
-           current.length % COLS === 0 &&
-           current.length > 0){
-
-            let prev = current[current.length - 1];
-
-            prev.hanging = ch;
-
-            continue;
-        }
-
-        current.push({
-            char:ch
-        });
-
-        // ページ送り
-        if(current.length >= PAGE_SIZE){
-
-            pages.push(current);
-            current = [];
-        }
-    }
-
-    if(current.length > 0){
-        pages.push(current);
-    }
-
-    if(pages.length === 0){
-        pages.push([]);
-    }
-
-    // 描画
-    for(let p=0;p<pages.length;p++){
-
-        let page = document.createElement("div");
-        page.className = "page";
-
-        let data = pages[p];
-
-        for(let i=0;i<PAGE_SIZE;i++){
-
-            let cell = document.createElement("div");
-            cell.className = "cell";
-
-            if(i < data.length){
-
-                let item = data[i];
-
-                if(item.empty){
-
-                    cell.classList.add("empty");
-                    cell.textContent = "　";
-
-                }else{
-
-                    cell.textContent = item.char || "";
-
-                    // 行末ぶら下げ句読点
-                    if(item.hanging){
-
-                        let span = document.createElement("span");
-
-                        span.className = "hanging";
-                        span.textContent = item.hanging;
-
-                        cell.appendChild(span);
-                    }
-                }
-
-            }else{
-
-                cell.classList.add("empty");
-                cell.textContent = "　";
-            }
-
-            page.appendChild(cell);
-        }
-
-        preview.appendChild(page);
-    }
+function isTate() {
+  return document.getElementById("dir-tate").checked;
 }
 
+/* =========================
+   文字の加工
+========================= */
+
+/* 英数字と記号を全角にする。原稿用紙は全角1文字＝1マスが基本 */
+function toFullWidth(str) {
+  return str
+    .replace(/[!-~]/g, c => String.fromCharCode(c.charCodeAt(0) + 0xFEE0))
+    .replace(/ /g, "　");
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/* =========================
+   行の組み立て
+
+   1行 = マスの配列。マスは { ch } か { empty:true }。
+   前の行にぶら下げた文字は、その行の最後のマスの hanging に入る。
+========================= */
+
+function layoutParagraph(chars, lines) {
+
+  let line = [];
+
+  const flush = () => {
+    lines.push(line);
+    line = [];
+  };
+
+  for (const ch of chars) {
+
+    /* 行頭禁則。前の行の最後のマスの外に出す。
+       はみ出しは2文字までとし、それ以上は用紙からあふれるため行頭に置く */
+    if (line.length === 0 && HEAD_NG.includes(ch)) {
+
+      const prev = lines[lines.length - 1];
+
+      if (prev && prev.length > 0) {
+        const last = prev[prev.length - 1];
+
+        if ((last.hanging || "").length < 2) {
+          last.hanging = (last.hanging || "") + ch;
+          continue;
+        }
+      }
+    }
+
+    /* 行末禁則。開きかっこが行の最後のマスに来る場合、
+       そのマスは空けたまま次の行へ送る */
+    if (line.length === CHARS_PER_LINE - 1 && TAIL_NG.includes(ch)) {
+      line.push({ empty: true });
+      flush();
+    }
+
+    line.push({ ch });
+
+    if (line.length >= CHARS_PER_LINE) flush();
+  }
+
+  if (line.length > 0) {
+    flush();
+  } else if (chars.length === 0) {
+    /* 空行（段落の区切り）はそのまま1行分空ける */
+    lines.push([]);
+  }
+}
+
+/* 題名は上を3マス空ける */
+function makeTitleLine(title) {
+
+  const line = [];
+
+  for (let i = 0; i < 3; i++) line.push({ empty: true });
+
+  for (const ch of [...title].slice(0, CHARS_PER_LINE - 3)) {
+    line.push({ ch });
+  }
+
+  return line;
+}
+
+/* 氏名は下を1マス空けた右詰め（縦書きでは下端から1マス上） */
+function makeAuthorLine(author) {
+
+  const chars = [...author].slice(0, CHARS_PER_LINE - 1);
+
+  const line = [];
+
+  for (let i = 0; i < CHARS_PER_LINE - 1 - chars.length; i++) {
+    line.push({ empty: true });
+  }
+
+  for (const ch of chars) line.push({ ch });
+
+  line.push({ empty: true });
+
+  return line;
+}
+
+function buildLines() {
+
+  let text = el.editor.value;
+  let title = el.title.value;
+  let author = el.author.value;
+
+  if (el.zenkaku.checked) {
+    text = toFullWidth(text);
+    title = toFullWidth(title);
+    author = toFullWidth(author);
+  }
+
+  const lines = [];
+
+  if (title.trim() !== "" || author.trim() !== "") {
+    lines.push(makeTitleLine(title));
+    lines.push(makeAuthorLine(author));
+  }
+
+  for (const paragraph of text.split("\n")) {
+
+    let body = paragraph;
+
+    /* 字下げ。会話文（「で始まる行）は下げないのが決まり */
+    if (el.indent.checked &&
+        body.length > 0 &&
+        !body.startsWith("　") &&
+        !body.startsWith("「")) {
+
+      body = "　" + body;
+    }
+
+    layoutParagraph([...body], lines);
+  }
+
+  return lines;
+}
+
+/* =========================
+   描画
+========================= */
+
+function renderPages(lines, linesPerPage) {
+
+  const tate = isTate();
+
+  const cols = tate ? linesPerPage : CHARS_PER_LINE;
+  const rows = tate ? CHARS_PER_LINE : linesPerPage;
+
+  const total = Math.max(1, Math.ceil(lines.length / linesPerPage));
+  const shown = Math.min(total, MAX_PAGES);
+
+  let html = "";
+
+  for (let p = 0; p < shown; p++) {
+
+    html += `<div class="page${tate ? " tate" : ""}" style="--cols:${cols};--rows:${rows}">`;
+
+    for (let li = 0; li < linesPerPage; li++) {
+
+      const line = lines[p * linesPerPage + li] || [];
+
+      for (let ci = 0; ci < CHARS_PER_LINE; ci++) {
+
+        const cell = line[ci];
+
+        if (!cell || cell.empty || !cell.ch) {
+          html += `<div class="cell empty"></div>`;
+          continue;
+        }
+
+        const hanging = cell.hanging
+          ? [...cell.hanging].map((c, i) =>
+              `<span class="hanging" style="--i:${i}">${escapeHtml(c)}</span>`).join("")
+          : "";
+
+        html += `<div class="cell">${escapeHtml(cell.ch)}${hanging}</div>`;
+      }
+    }
+
+    html += `<span class="page-no">${p + 1} / ${total}</span>`;
+    html += `</div>`;
+  }
+
+  el.preview.innerHTML = html;
+
+  if (total > shown) {
+    el.limitNote.hidden = false;
+    el.limitNote.textContent =
+      `文章が長いため、${MAX_PAGES}枚目までを表示しています（全${total}枚）。`;
+  } else {
+    el.limitNote.hidden = true;
+  }
+
+  return total;
+}
+
+/* =========================
+   集計
+========================= */
+
+function updateStats(lines, pageCount, linesPerPage) {
+
+  const chars = [...el.editor.value].filter(c => c !== "\n").length;
+
+  el.chars.textContent = chars;
+  el.lines.textContent = lines.length;
+  el.pages.textContent = pageCount;
+
+  const goalPages = Number(el.goal.value);
+
+  if (!goalPages) {
+    el.goalLine.hidden = true;
+    return;
+  }
+
+  const goalChars = goalPages * CHARS_PER_LINE * linesPerPage;
+  const rate = Math.min(100, Math.round(chars / goalChars * 100));
+
+  el.goalLine.hidden = false;
+
+  el.goalText.textContent = chars >= goalChars
+    ? `目標の${goalPages}枚（${goalChars}字）に到達しました。`
+    : `目標 ${goalPages}枚（${goalChars}字）まで、あと ${goalChars - chars} 字（達成率 ${rate}％）`;
+
+  el.goalBar.style.width = rate + "%";
+}
+
+/* =========================
+   保存
+========================= */
+
+function save() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      text: el.editor.value,
+      title: el.title.value,
+      author: el.author.value,
+      tate: isTate(),
+      paper: el.paper.value,
+      size: el.size.value,
+      indent: el.indent.checked,
+      zenkaku: el.zenkaku.checked,
+      goal: el.goal.value
+    }));
+  } catch (e) {
+    /* 保存できない設定でも、ツール自体は問題なく使える */
+  }
+}
+
+function restore() {
+
+  let saved = null;
+
+  try {
+    saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+  } catch (e) {
+    saved = null;
+  }
+
+  if (!saved) return;
+
+  if (typeof saved.text === "string") el.editor.value = saved.text;
+  if (typeof saved.title === "string") el.title.value = saved.title;
+  if (typeof saved.author === "string") el.author.value = saved.author;
+
+  if (saved.tate === false) document.getElementById("dir-yoko").checked = true;
+
+  if (saved.paper) el.paper.value = saved.paper;
+  if (saved.size) el.size.value = saved.size;
+  if (saved.goal) el.goal.value = saved.goal;
+
+  if (typeof saved.indent === "boolean") el.indent.checked = saved.indent;
+  if (typeof saved.zenkaku === "boolean") el.zenkaku.checked = saved.zenkaku;
+}
+
+/* =========================
+   起動と再描画
+========================= */
+
+function render() {
+
+  document.documentElement.style.setProperty("--cell", el.size.value + "px");
+
+  const linesPerPage = Number(el.paper.value);
+
+  const lines = buildLines();
+  const pageCount = renderPages(lines, linesPerPage);
+
+  updateStats(lines, pageCount, linesPerPage);
+}
+
+/* 入力のたびに数千のマスを作り直すため、
+   1フレームに1回だけ描画するようまとめる */
+let queued = false;
+
+function scheduleRender() {
+
+  if (queued) return;
+
+  queued = true;
+
+  requestAnimationFrame(() => {
+    queued = false;
+    render();
+  });
+}
+
+let saveTimer = null;
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 400);
+}
+
+function onChange() {
+  scheduleRender();
+  scheduleSave();
+}
+
+for (const node of [
+  el.editor, el.title, el.author,
+  el.paper, el.size, el.indent, el.zenkaku, el.goal,
+  document.getElementById("dir-tate"),
+  document.getElementById("dir-yoko")
+]) {
+  node.addEventListener("input", onChange);
+  node.addEventListener("change", onChange);
+}
+
+el.print.addEventListener("click", () => window.print());
+
+el.clear.addEventListener("click", () => {
+
+  if (el.editor.value === "" && el.title.value === "" && el.author.value === "") return;
+
+  if (!confirm("入力した文章・題名・氏名を消します。よろしいですか？")) return;
+
+  el.editor.value = "";
+  el.title.value = "";
+  el.author.value = "";
+
+  onChange();
+
+  el.editor.focus();
+});
+
+restore();
 render();
+
+})();
 </script>
 
 <div id="related-tools"></div>
