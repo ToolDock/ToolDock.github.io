@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>QRコード作成ツール | ToolDock</title>
-  <meta name="description" content="URLやWi-fiをQRコードに変換するツール。">
+  <title>QRコード作成｜URL・Wi-Fi・メール・電話・連絡先を無料で作成 | ToolDock</title>
+  <meta name="description" content="URL・テキスト・Wi-Fi・メール・電話番号・SMS・連絡先（vCard）・地図のQRコードを無料で作成できます。サイズ、余白、色、誤り訂正レベルを指定でき、PNGとSVGで保存可能。入力内容はブラウザ内だけで処理され送信されません。登録不要。">
   <link rel="canonical" href="https://tooldock.github.io/qr/">
 
   <script>
@@ -15,6 +15,9 @@
   <script src="/js/tool-data.js"></script>
   <script src="/js/head.js"></script>
   <script src="/js/analytics.js"></script>
+
+  <!-- QRコード生成ライブラリ（自前で配信。CDNに依存しない） -->
+  <script src="/js/vendor/qrcode.min.js"></script>
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
@@ -106,6 +109,73 @@
       background: #15803d;
     }
 
+    .pane label.inline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: normal;
+      margin-bottom: 16px;
+    }
+
+    .pane label.inline input {
+      width: auto;
+      margin: 0;
+    }
+
+    .options summary {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 4px 0;
+    }
+
+    .opt-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0 16px;
+      margin-top: 18px;
+    }
+
+    .opt-grid input[type="color"] {
+      height: 46px;
+      padding: 4px;
+    }
+
+    button.ghost {
+      background: #eef2f7;
+      color: #334155;
+    }
+
+    button.ghost:hover {
+      background: #dfe6ef;
+    }
+
+    .save-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .save-row button {
+      flex: 1 1 140px;
+      width: auto;
+    }
+
+    .qr-error {
+      padding: 14px;
+      border-radius: 10px;
+      background: #fef2f2;
+      border-left: 5px solid #dc2626;
+      color: #991b1b;
+      text-align: left;
+    }
+
+    .qr-meta {
+      margin-top: 12px;
+      font-size: 0.88rem;
+      color: #64748b;
+    }
+
     .note {
       margin-top: 15px;
       font-size: 0.9rem;
@@ -143,7 +213,8 @@
     <h1>QRコード作成ツール</h1>
 
     <p class="description">
-      URL・テキスト・Wi-Fi情報などをQRコード化できます。
+      URL・Wi-Fi・メール・電話・SMS・連絡先（vCard）・地図のQRコードを作成できます。<br>
+      入力するとその場で反映され、PNGとSVGで保存できます。
     </p>
 
     <div class="card">
@@ -152,14 +223,19 @@
       <select id="type">
         <option value="text">テキスト / URL</option>
         <option value="wifi">Wi-Fi</option>
+        <option value="mail">メール</option>
+        <option value="tel">電話番号</option>
+        <option value="sms">SMS</option>
+        <option value="vcard">連絡先（vCard）</option>
+        <option value="geo">地図（緯度・経度）</option>
       </select>
 
-      <div id="text-area">
+      <div class="pane" id="pane-text">
         <label for="content">内容</label>
         <textarea id="content" rows="5" placeholder="https://example.com"></textarea>
       </div>
 
-      <div id="wifi-area" style="display:none;">
+      <div class="pane" id="pane-wifi" hidden>
         <label for="ssid">Wi-Fi名（SSID）</label>
         <input type="text" id="ssid" placeholder="MyWiFi">
 
@@ -172,12 +248,104 @@
           <option value="WEP">WEP</option>
           <option value="nopass">なし</option>
         </select>
+
+        <label class="inline">
+          <input type="checkbox" id="hidden-ssid">
+          ステルス（SSIDを隠している）
+        </label>
       </div>
 
-      <button id="generate-btn">QRコード生成</button>
+      <div class="pane" id="pane-mail" hidden>
+        <label for="mail-to">宛先</label>
+        <input type="email" id="mail-to" placeholder="info@example.com">
 
+        <label for="mail-subject">件名（任意）</label>
+        <input type="text" id="mail-subject" placeholder="お問い合わせ">
+
+        <label for="mail-body">本文（任意）</label>
+        <textarea id="mail-body" rows="3"></textarea>
+      </div>
+
+      <div class="pane" id="pane-tel" hidden>
+        <label for="tel-number">電話番号</label>
+        <input type="tel" id="tel-number" placeholder="03-1234-5678">
+      </div>
+
+      <div class="pane" id="pane-sms" hidden>
+        <label for="sms-number">宛先の電話番号</label>
+        <input type="tel" id="sms-number" placeholder="090-1234-5678">
+
+        <label for="sms-body">本文（任意）</label>
+        <textarea id="sms-body" rows="3"></textarea>
+      </div>
+
+      <div class="pane" id="pane-vcard" hidden>
+        <label for="vc-name">氏名</label>
+        <input type="text" id="vc-name" placeholder="山田 太郎">
+
+        <label for="vc-org">会社・所属（任意）</label>
+        <input type="text" id="vc-org" placeholder="株式会社サンプル">
+
+        <label for="vc-tel">電話番号（任意）</label>
+        <input type="tel" id="vc-tel" placeholder="090-1234-5678">
+
+        <label for="vc-mail">メールアドレス（任意）</label>
+        <input type="email" id="vc-mail" placeholder="taro@example.com">
+
+        <label for="vc-url">URL（任意）</label>
+        <input type="url" id="vc-url" placeholder="https://example.com">
+      </div>
+
+      <div class="pane" id="pane-geo" hidden>
+        <label for="geo-lat">緯度</label>
+        <input type="text" id="geo-lat" placeholder="35.681236">
+
+        <label for="geo-lng">経度</label>
+        <input type="text" id="geo-lng" placeholder="139.767125">
+      </div>
+
+    </div>
+
+    <details class="card options">
+      <summary>見た目の設定（サイズ・色・余白・誤り訂正）</summary>
+
+      <div class="opt-grid">
+        <div>
+          <label for="opt-size">大きさ（px）</label>
+          <input type="number" id="opt-size" min="120" max="1200" step="20" value="320">
+        </div>
+
+        <div>
+          <label for="opt-margin">余白（セル数）</label>
+          <input type="number" id="opt-margin" min="0" max="10" value="2">
+        </div>
+
+        <div>
+          <label for="opt-level">誤り訂正レベル</label>
+          <select id="opt-level">
+            <option value="L">L（約7%復元・模様が粗い）</option>
+            <option value="M" selected>M（約15%・標準）</option>
+            <option value="Q">Q（約25%）</option>
+            <option value="H">H（約30%・汚れに強い）</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="opt-dark">コードの色</label>
+          <input type="color" id="opt-dark" value="#000000">
+        </div>
+
+        <div>
+          <label for="opt-light">背景の色</label>
+          <input type="color" id="opt-light" value="#ffffff">
+        </div>
+      </div>
+
+      <button type="button" id="reset-opt" class="ghost">見た目を初期値に戻す</button>
+    </details>
+
+    <div class="card">
       <div id="qrcode-container"></div>
-
     </div>
 
     <footer>
@@ -187,138 +355,341 @@
   </div>
 
   <script>
-    const typeSelect = document.getElementById("type");
-    const textArea = document.getElementById("text-area");
-    const wifiArea = document.getElementById("wifi-area");
-    const generateBtn = document.getElementById("generate-btn");
-    const qrContainer = document.getElementById("qrcode-container");
+  (() => {
 
-    let currentCanvas = null;
+    "use strict";
 
-    // localStorage復元
-    window.addEventListener("load", () => {
-      const savedType = localStorage.getItem("qr_type");
-      const savedContent = localStorage.getItem("qr_content");
+    const $ = (id) => document.getElementById(id);
 
-      if (savedType) {
-        typeSelect.value = savedType;
-        updateMode();
-      }
+    const typeSelect = $("type");
+    const qrContainer = $("qrcode-container");
 
-      if (savedContent) {
-        document.getElementById("content").value = savedContent;
-      }
-    });
+    const STORE_KEY = "qr_state";
 
-    typeSelect.addEventListener("change", updateMode);
+    /* 現在のQRの元データ。保存ボタンから参照する */
+    let current = { text: "", opts: null };
 
-    function updateMode() {
-      if (typeSelect.value === "wifi") {
-        textArea.style.display = "none";
-        wifiArea.style.display = "block";
-      } else {
-        textArea.style.display = "block";
-        wifiArea.style.display = "none";
-      }
+    /* =========================
+       各方式の文字列を組み立てる
+    ========================= */
+
+    /* WIFI: と MECARD 系は「\ ; , : "」を \ で escape する決まり。
+       SSIDやパスワードに記号が入ると、これがないと読み取れない */
+    function escapeWifi(str) {
+      return String(str).replace(/([\;,:"])/g, "\\$1");
     }
 
-    generateBtn.addEventListener("click", async () => {
+    /* vCard は「\ ; , 改行」を escape する */
+    function escapeVCard(str) {
+      return String(str)
+        .replace(/\\/g, "\\\\")
+        .replace(/;/g, "\\;")
+        .replace(/,/g, "\\,")
+        .replace(/\n/g, "\\n");
+    }
+
+    function buildText() {
+
+      const type = typeSelect.value;
+
+      if (type === "wifi") {
+        const ssid = $("ssid").value;
+        if (!ssid) return "";
+
+        const enc = $("encryption").value;
+        const pass = enc === "nopass" ? "" : $("password").value;
+        const hidden = $("hidden-ssid").checked ? "H:true;" : "";
+
+        return `WIFI:T:${enc};S:${escapeWifi(ssid)};P:${escapeWifi(pass)};${hidden};`;
+      }
+
+      if (type === "mail") {
+        const to = $("mail-to").value.trim();
+        if (!to) return "";
+
+        const params = [];
+        const subject = $("mail-subject").value.trim();
+        const body = $("mail-body").value.trim();
+
+        if (subject) params.push("subject=" + encodeURIComponent(subject));
+        if (body) params.push("body=" + encodeURIComponent(body));
+
+        return "mailto:" + to + (params.length ? "?" + params.join("&") : "");
+      }
+
+      if (type === "tel") {
+        const n = $("tel-number").value.trim();
+        return n ? "tel:" + n.replace(/[\s-()]/g, "") : "";
+      }
+
+      if (type === "sms") {
+        const n = $("sms-number").value.trim();
+        if (!n) return "";
+
+        const body = $("sms-body").value.trim();
+        return "sms:" + n.replace(/[\s-()]/g, "") +
+               (body ? "?body=" + encodeURIComponent(body) : "");
+      }
+
+      if (type === "vcard") {
+        const name = $("vc-name").value.trim();
+        if (!name) return "";
+
+        const lines = ["BEGIN:VCARD", "VERSION:3.0", "FN:" + escapeVCard(name)];
+
+        const org = $("vc-org").value.trim();
+        const tel = $("vc-tel").value.trim();
+        const mail = $("vc-mail").value.trim();
+        const url = $("vc-url").value.trim();
+
+        if (org) lines.push("ORG:" + escapeVCard(org));
+        if (tel) lines.push("TEL;TYPE=CELL:" + escapeVCard(tel));
+        if (mail) lines.push("EMAIL:" + escapeVCard(mail));
+        if (url) lines.push("URL:" + escapeVCard(url));
+
+        lines.push("END:VCARD");
+
+        /* vCard の改行は CRLF */
+        return lines.join("\r\n");
+      }
+
+      if (type === "geo") {
+        const lat = $("geo-lat").value.trim();
+        const lng = $("geo-lng").value.trim();
+        return (lat && lng) ? `geo:${lat},${lng}` : "";
+      }
+
+      return $("content").value;
+    }
+
+    function buildOptions() {
+      return {
+        width: Math.min(1200, Math.max(120, Number($("opt-size").value) || 320)),
+        margin: Math.min(10, Math.max(0, Number($("opt-margin").value))),
+        errorCorrectionLevel: $("opt-level").value,
+        color: {
+          dark: $("opt-dark").value,
+          light: $("opt-light").value
+        }
+      };
+    }
+
+    /* =========================
+       描画
+    ========================= */
+
+    async function render() {
+
+      const text = buildText();
+      const opts = buildOptions();
 
       qrContainer.innerHTML = "";
+      current = { text: "", opts: null };
 
-      let qrText = "";
-
-      if (typeSelect.value === "wifi") {
-
-        const ssid = document.getElementById("ssid").value;
-        const password = document.getElementById("password").value;
-        const encryption = document.getElementById("encryption").value;
-
-        qrText = `WIFI:T:${encryption};S:${ssid};P:${password};;`;
-
-      } else {
-
-        qrText = document.getElementById("content").value;
-
-      }
-
-      if (!qrText.trim()) {
-        alert("内容を入力してください。");
+      if (!text.trim()) {
+        qrContainer.innerHTML =
+          '<div class="note">内容を入力すると、ここにQRコードが表示されます。</div>';
         return;
       }
-
-      localStorage.setItem("qr_type", typeSelect.value);
-      localStorage.setItem("qr_content", qrText);
 
       const canvas = document.createElement("canvas");
 
       try {
-
-        await QRCode.toCanvas(canvas, qrText, {
-          width: 320,
-          margin: 2
-        });
-
-        qrContainer.appendChild(canvas);
-
-        currentCanvas = canvas;
-
-        const saveButton = document.createElement("button");
-        saveButton.textContent = "PNG保存";
-        saveButton.className = "save-button";
-
-        saveButton.addEventListener("click", saveImage);
-
-        qrContainer.appendChild(saveButton);
-
-        const note = document.createElement("div");
-        note.className = "note";
-        note.innerHTML = `
-          iPhoneで保存できない場合は、画像を長押しするかスクリーンショットをご利用ください。
-        `;
-
-        qrContainer.appendChild(note);
-
+        await QRCode.toCanvas(canvas, text, opts);
       } catch (err) {
-
-        console.error(err);
-        alert("QRコード生成に失敗しました。");
-
+        qrContainer.innerHTML =
+          '<div class="qr-error"><strong>QRコードを作成できませんでした。</strong><br>' +
+          '内容が長すぎる可能性があります。文字数を減らすか、' +
+          '誤り訂正レベルを下げてお試しください。</div>';
+        return;
       }
 
+      current = { text, opts };
+
+      qrContainer.appendChild(canvas);
+
+      const meta = document.createElement("div");
+      meta.className = "qr-meta";
+      meta.textContent =
+        `${[...text].length}文字 ／ ${opts.width}px ／ 誤り訂正 ${opts.errorCorrectionLevel}`;
+      qrContainer.appendChild(meta);
+
+      const row = document.createElement("div");
+      row.className = "save-row";
+
+      const png = document.createElement("button");
+      png.type = "button";
+      png.className = "save-button";
+      png.textContent = "PNGで保存";
+      png.addEventListener("click", () => savePng(canvas));
+
+      const svg = document.createElement("button");
+      svg.type = "button";
+      svg.className = "save-button";
+      svg.textContent = "SVGで保存";
+      svg.addEventListener("click", saveSvg);
+
+      row.appendChild(png);
+      row.appendChild(svg);
+      qrContainer.appendChild(row);
+
+      const note = document.createElement("div");
+      note.className = "note";
+      note.textContent =
+        "iPhoneで保存できない場合は、画像を長押しするかスクリーンショットをご利用ください。";
+      qrContainer.appendChild(note);
+
+      save();
+    }
+
+    function download(href, filename) {
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = filename;
+      a.click();
+    }
+
+    function savePng(canvas) {
+      download(canvas.toDataURL("image/png"), "qrcode.png");
+    }
+
+    /* SVGは拡大しても粗くならないため、印刷やチラシ向き */
+    async function saveSvg() {
+      if (!current.text) return;
+
+      try {
+        const svg = await QRCode.toString(current.text, {
+          ...current.opts,
+          type: "svg"
+        });
+
+        download(
+          "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg),
+          "qrcode.svg"
+        );
+      } catch (err) {
+        alert("SVGの作成に失敗しました。");
+      }
+    }
+
+    /* =========================
+       表示の切り替えと保存
+    ========================= */
+
+    function updateMode() {
+      const type = typeSelect.value;
+
+      for (const pane of document.querySelectorAll(".pane")) {
+        pane.hidden = pane.id !== "pane-" + (type === "text" ? "text" : type);
+      }
+    }
+
+    function save() {
+      try {
+        const data = { type: typeSelect.value, opt: {} };
+
+        for (const id of ["content", "ssid", "password", "encryption",
+                          "mail-to", "mail-subject", "mail-body",
+                          "tel-number", "sms-number", "sms-body",
+                          "vc-name", "vc-org", "vc-tel", "vc-mail", "vc-url",
+                          "geo-lat", "geo-lng",
+                          "opt-size", "opt-margin", "opt-level", "opt-dark", "opt-light"]) {
+          data[id] = $(id).value;
+        }
+
+        data["hidden-ssid"] = $("hidden-ssid").checked;
+
+        localStorage.setItem(STORE_KEY, JSON.stringify(data));
+      } catch (e) {
+        /* 保存できない設定でも動作に支障はない */
+      }
+    }
+
+    function restore() {
+      let data = null;
+
+      try {
+        data = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+      } catch (e) {
+        return;
+      }
+
+      if (!data) return;
+
+      if (data.type) typeSelect.value = data.type;
+
+      for (const [k, v] of Object.entries(data)) {
+        if (k === "type" || k === "opt") continue;
+
+        const el = $(k);
+        if (!el) continue;
+
+        if (el.type === "checkbox") el.checked = !!v;
+        else if (typeof v === "string") el.value = v;
+      }
+    }
+
+    /* =========================
+       起動
+    ========================= */
+
+    let timer = null;
+
+    function schedule() {
+      clearTimeout(timer);
+      timer = setTimeout(render, 250);
+    }
+
+    document.querySelector(".container").addEventListener("input", schedule);
+
+    typeSelect.addEventListener("change", () => {
+      updateMode();
+      render();
     });
 
-    function saveImage() {
+    $("reset-opt").addEventListener("click", () => {
+      $("opt-size").value = 320;
+      $("opt-margin").value = 2;
+      $("opt-level").value = "M";
+      $("opt-dark").value = "#000000";
+      $("opt-light").value = "#ffffff";
+      render();
+    });
 
-      if (!currentCanvas) return;
+    restore();
+    updateMode();
+    render();
 
-      const link = document.createElement("a");
-
-      link.href = currentCanvas.toDataURL("image/png");
-      link.download = "qrcode.png";
-
-      link.click();
-
-    }
+  })();
   </script>
 
 <article class="tool-article">
 
 <h2>使い方</h2>
 
-<h3>URL・テキストから作る</h3>
 <p>
-「種類」で「テキスト / URL」を選び、内容を入力して「QRコード生成」を押します。
-URLを入れれば読み取った人がそのページを開けるようになり、
-文章を入れればその文章がそのまま表示されます。
+「種類」を選んで内容を入力すると、その場でQRコードが表示されます。
+生成ボタンを押す必要はありません。
 </p>
 
-<h3>Wi-Fiの接続情報から作る</h3>
-<p>
-「種類」で「Wi-Fi」を選ぶと、SSID（Wi-Fi名）・パスワード・暗号化方式の入力欄が現れます。
-生成したQRコードをスマートフォンのカメラで読み取ると、
-パスワードを手で入力せずにWi-Fiへ接続できます。
-</p>
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>種類</th><th>読み取ったときの動作</th></tr>
+</thead>
+<tbody>
+<tr><td>テキスト / URL</td><td>URLならそのページが開き、文章ならそのまま表示されます</td></tr>
+<tr><td>Wi-Fi</td><td>パスワードを打たずにWi-Fiへ接続できます</td></tr>
+<tr><td>メール</td><td>宛先・件名・本文が入った状態でメールが立ち上がります</td></tr>
+<tr><td>電話番号</td><td>発信画面がその番号で開きます</td></tr>
+<tr><td>SMS</td><td>宛先と本文が入った状態でSMSが立ち上がります</td></tr>
+<tr><td>連絡先（vCard）</td><td>連絡先として端末に保存できます</td></tr>
+<tr><td>地図</td><td>指定した緯度・経度が地図アプリで開きます</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Wi-Fiの暗号化方式の選び方</h3>
 
 <div class="table-scroll">
 <table>
@@ -332,6 +703,52 @@ URLを入れれば読み取った人がそのページを開けるようにな�
 </tbody>
 </table>
 </div>
+
+<p class="note">
+SSIDやパスワードに <code>; : , "</code> などの記号が入っていても、
+正しく読み取れる形に自動で変換しています。
+SSIDを隠している（ステルス）ルーターの場合は、
+「ステルス」にチェックを入れてください。これがないと接続できないことがあります。
+</p>
+
+<h3>見た目の設定</h3>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>項目</th><th>説明</th></tr>
+</thead>
+<tbody>
+<tr><td>大きさ</td><td>書き出す画像の一辺の長さです。印刷用途なら大きめにします</td></tr>
+<tr><td>余白</td><td>周囲の白い縁の幅。<strong>2以上を推奨</strong>します。0にすると読み取りにくくなります</td></tr>
+<tr><td>誤り訂正レベル</td><td>汚れや欠けにどれだけ耐えるか。高いほど模様が細かくなります（後述）</td></tr>
+<tr><td>色</td><td>コードと背景の色。<strong>コード側を必ず暗い色</strong>にしてください</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>誤り訂正レベルの選び方</h3>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>レベル</th><th>復元できる割合</th><th>向いている場面</th></tr>
+</thead>
+<tbody>
+<tr><td>L</td><td>約7%</td><td>画面表示など、汚れる心配がないとき。模様が最も粗くなります</td></tr>
+<tr><td>M</td><td>約15%</td><td>標準。迷ったらこれで問題ありません</td></tr>
+<tr><td>Q</td><td>約25%</td><td>屋外の掲示など、多少の汚れが想定されるとき</td></tr>
+<tr><td>H</td><td>約30%</td><td>中央にロゴを重ねたいとき、傷みやすい場所に貼るとき</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>PNGとSVGの使い分け</h3>
+
+<ul>
+<li><strong>PNG</strong>— 画面での利用、SNS、資料への貼り付けに。指定した大きさの画像になります</li>
+<li><strong>SVG</strong>— <strong>印刷向き</strong>。図形として保存されるため、名刺やポスターなどどれだけ拡大しても粗くなりません</li>
+</ul>
 
 <h2>こんなときに使えます</h2>
 
@@ -367,6 +784,27 @@ A. 生成したQRコードは自由にお使いいただけます。
 
 <p><strong>Q. 読み取った人の数を計測できますか？</strong><br>
 A. このツールではできません。計測したい場合は、計測用のパラメータを付けたURLをQRコード化してください。</p>
+
+<p><strong>Q. 作った後で中身を変更できますか？</strong><br>
+A. できません。QRコードは内容そのものを模様にしたもので、変更するには作り直しが必要です。
+あとで差し替える可能性があるなら、転送用のURLを1つ用意し、
+そのURLをQRコード化しておくと、転送先だけを変えれば済みます。</p>
+
+<p><strong>Q. 印刷したら読み取れませんでした。</strong><br>
+A. 「余白」を2以上にし、2cm四方以上の大きさで印刷してください。
+拡大しても粗くならない<strong>SVGでの保存</strong>もお試しください。
+屋外に貼るなど汚れが想定される場合は、誤り訂正レベルをQかHに上げると読み取りやすくなります。</p>
+
+<p><strong>Q. 色を変えたら読み取れなくなりました。</strong><br>
+A. コードの色と背景の色の明暗差が足りていない可能性があります。
+コード側は必ず背景より暗い色にしてください。
+明るい色のコードや、白黒を反転させたものは読み取れない機種があります。</p>
+
+<p><strong>Q. Wi-FiのQRコードで接続できません。</strong><br>
+A. 暗号化方式がルーターの設定と一致しているか確認してください。
+またSSIDを隠している場合は「ステルス」にチェックが必要です。
+なお、Wi-FiのQRコードはAndroidとiOS（iOS 11以降）のカメラで対応していますが、
+一部の機種では専用アプリが必要な場合があります。</p>
 
 </article>
 
