@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- sitemap-tools.xml と同じ内容です。両方を更新してください -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-  <url><loc>https://tooldock.github.io/</loc><lastmod>2026-08-05</lastmod><priority>1.0</priority></url>
-
+  <url><loc>https://tooldock.github.io/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/counter/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/genkoyosi/</loc><lastmod>2026-08-12</lastmod></url>
   <url><loc>https://tooldock.github.io/todolist/</loc><lastmod>2026-08-05</lastmod></url>
@@ -11,7 +8,6 @@
   <url><loc>https://tooldock.github.io/qr/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/makejson/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/seiki/</loc><lastmod>2026-08-05</lastmod></url>
-
   <url><loc>https://tooldock.github.io/roulette/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/i_roulette/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/h_roulette/</loc><lastmod>2026-08-05</lastmod></url>
@@ -20,7 +16,6 @@
   <url><loc>https://tooldock.github.io/fukuri/</loc><lastmod>2026-08-13</lastmod></url>
   <url><loc>https://tooldock.github.io/seiza/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/omikuji/</loc><lastmod>2026-08-05</lastmod></url>
-
   <url><loc>https://tooldock.github.io/hakohige/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/matrix/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/circuit/</loc><lastmod>2026-08-05</lastmod></url>
@@ -31,12 +26,9 @@
   <url><loc>https://tooldock.github.io/yukosuji/</loc><lastmod>2026-08-06</lastmod></url>
   <url><loc>https://tooldock.github.io/ode/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/radix/</loc><lastmod>2026-08-05</lastmod></url>
-
   <url><loc>https://tooldock.github.io/typing-game/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/kintoku/</loc><lastmod>2026-08-11</lastmod></url>
-
   <url><loc>https://tooldock.github.io/about/</loc><lastmod>2026-08-05</lastmod></url>
   <url><loc>https://tooldock.github.io/privacy/</loc><lastmod>2026-08-11</lastmod></url>
   <url><loc>https://tooldock.github.io/contact/</loc><lastmod>2026-08-05</lastmod></url>
-
 </urlset>
