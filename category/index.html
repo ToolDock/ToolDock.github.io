@@ -111,12 +111,12 @@
         t => !t.hidden && (!isKnownCategory || t.category === cat)
       );
 
-    const container =
+    const listContainer =
       document.getElementById(
         "tool-list"
       );
 
-    container.innerHTML =
+    listContainer.innerHTML =
       list.map(tool => `
         <a class="tool-card"
            href="${tool.url}">
