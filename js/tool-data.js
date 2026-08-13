@@ -129,7 +129,9 @@ window.TOOLS = [
   {
     id: "qr",
     title: "QRコード作成ツール",
-    desc: "URLやWi-fiをQRコードに変換するツール。",
+    desc: "URL・Wi-Fi・メール・電話・連絡先などのQRコードを作成。PNGとSVGで保存できます。",
+    seoTitle: "QRコード作成｜URL・Wi-Fi・メール・電話・連絡先を無料で作成",
+    seoDesc: "URL・テキスト・Wi-Fi・メール・電話番号・SMS・連絡先（vCard）・地図のQRコードを無料で作成できます。サイズ、余白、色、誤り訂正レベルを指定でき、PNGとSVGで保存可能。入力内容はブラウザ内だけで処理され送信されません。登録不要。",
     category: "work",
     url: "/qr/"
   },
