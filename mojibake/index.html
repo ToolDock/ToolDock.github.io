@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>文字化け生成・復元ツール | ToolDock</title>
-  <meta name="description" content="テキスト列を文字化けさせるツール。復元も同じサイトで可能。">
+  <title>文字化け変換・復元ツール｜化けた文章を元に戻す | ToolDock</title>
+  <meta name="description" content="文字化けした文章を元に戻せる無料ツール。SJIS風（縺薙ｓ縺ｫ縺｡縺ｯ）とLatin1風（ã“ã‚“ã«ã¡ã¯）の2方式に対応し、化け方から見分ける方法も掲載。逆に、正常な文章を文字化けさせることもできます。すべてブラウザ内で処理され送信されません。">
   <link rel="canonical" href="https://tooldock.github.io/mojibake/">
 
   <script>
@@ -568,6 +568,115 @@
     回閲覧されました。
 
 </div>
+
+<article class="tool-article">
+
+<h2>文字化けはなぜ起きるのか</h2>
+
+<p>
+文字は、コンピュータの中では数値の並びとして保存されています。
+その数値を文字に戻すときの<strong>対応表（文字コード）</strong>が、
+書いたときと読むときで食い違うと文字化けが起きます。
+</p>
+
+<p>
+たとえば「こ」をUTF-8で保存すると <code>E3 81 93</code> という3つの数値になります。
+これをUTF-8の表で読めば「こ」に戻りますが、
+Shift_JISの表で読むと別の文字3つとして解釈され、
+「縺薙…」のような意味の通らない並びになります。
+<strong>データが壊れているわけではなく、読み方を間違えているだけ</strong>です。
+だからこそ、正しい表で読み直せば元に戻せます。
+</p>
+
+<h2>2つのモードの違い</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>モード</th><th>例</th><th>どんなときに見るか</th><th>復元</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SJIS風</strong></td>
+<td>縺薙ｓ縺ｫ縺｡縺ｯ</td>
+<td>UTF-8の文章をShift_JISとして開いたとき。CSVをExcelで開いた場合や、古い日本語環境でよく見ます</td>
+<td>一部が欠ける場合があります</td>
+</tr>
+<tr>
+<td><strong>Latin1風</strong></td>
+<td>ã“ã‚“ã«ã¡ã¯</td>
+<td>UTF-8の文章をLatin1（ISO-8859-1）として開いたとき。Webサイトやメールで最も多いパターンです</td>
+<td>ほぼ完全に戻せます</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<p class="note">
+SJIS風で一部の文字が欠けるのは、
+UTF-8のバイトの並びの中に<strong>Shift_JISとして存在しない組み合わせ</strong>が現れるためです。
+そこで情報が失われるので、復元しても「?」などに変わることがあります。
+確実に戻したい文章は、Latin1風をお使いください。
+</p>
+
+<h2>実際に文字化けした文章を直したいときは</h2>
+
+<p>
+受け取ったメールやファイルの中身が化けている場合、
+「文字化け復元」に化けた文字列を貼り付けてください。
+見た目から次のように見当をつけると、当たりやすくなります。
+</p>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>化け方の見た目</th><th>選ぶモード</th></tr>
+</thead>
+<tbody>
+<tr><td>「縺」「繧」「莉」など、見慣れない漢字とカタカナが混ざる</td><td>SJIS風</td></tr>
+<tr><td>「ã」「â」「Ã」など、アクセント付きのラテン文字が並ぶ</td><td>Latin1風</td></tr>
+<tr><td>「�」（黒いひし形に疑問符）が並ぶ</td><td>すでに情報が失われており、復元できません</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>こんなときに使えます</h2>
+
+<ul>
+<li><strong>化けたメールやファイルを読む</strong>— 元の文章に戻して内容を確認する</li>
+<li><strong>不具合の再現</strong>— 開発中に、文字化けした状態のデータを用意する</li>
+<li><strong>表示確認</strong>— 化けた文字がレイアウトを崩さないかを試す</li>
+<li><strong>遊びで使う</strong>— 見た目のインパクトを利用して、隠し文のように使う</li>
+</ul>
+
+<h2>文字化けを防ぐには</h2>
+
+<ul>
+<li><strong>UTF-8で統一する</strong>— 現在のWebとアプリの標準です。迷ったらUTF-8にします</li>
+<li><strong>CSVをExcelで開くときは注意</strong>— UTF-8のCSVを直接開くと化けることがあります。読み込み時に文字コードを指定するか、BOM付きUTF-8で保存します</li>
+<li><strong>HTMLでは文字コードを宣言する</strong>— <code>&lt;meta charset="UTF-8"&gt;</code> を先頭付近に書きます</li>
+<li><strong>ファイル名にも注意</strong>— 環境をまたぐ場合、日本語のファイル名は化けやすくなります</li>
+</ul>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 復元したら「?」や「〓」になってしまいました。</strong><br>
+A. 化ける過程で情報が失われた場合、元には戻せません。
+SJIS風は、変換の途中でShift_JISに存在しない組み合わせが出ると、そこが失われます。
+Latin1風のほうが復元できる可能性が高いので、そちらもお試しください。</p>
+
+<p><strong>Q. 入力した文章は送信されますか？</strong><br>
+A. 送信されません。変換はすべてブラウザ上で行われます。</p>
+
+<p><strong>Q. どのモードで化けたのか分かりません。</strong><br>
+A. 上の表で見た目から見当をつけたうえで、両方試してみてください。
+正しいモードを選べば、意味の通る日本語に戻ります。</p>
+
+<p><strong>Q. 化けた文字数と元の文字数が合いません。</strong><br>
+A. 文字化けは1文字が複数文字に化けたり、逆にまとまったりするため、文字数は一致しません。
+これは異常ではありません。</p>
+
+</article>
 
 <div id="related-tools"></div>
 <script src="/js/related.js"></script>

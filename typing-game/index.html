@@ -179,6 +179,13 @@ button:hover { background: #00e5ff; color: #000; box-shadow: 0 0 15px #00e5ff; }
   .katakana { font-size: 2rem; }
   .roma { font-size: 1.1rem; }
 }
+
+.tg-table { width:100%; border-collapse:collapse; margin:12px 0; }
+.tg-table th, .tg-table td { border-bottom:1px solid rgba(205,231,234,0.25); padding:8px; text-align:left; vertical-align:top; }
+.tg-table th { white-space:nowrap; color:#8ff; width:6em; }
+.description ol, .description ul { padding-left:1.4em; }
+.description li { margin-bottom:0.4em; }
+.description h2 { margin-top:28px; color:#8ff; }
 </style>
 </head>
 <body>
@@ -251,6 +258,47 @@ button:hover { background: #00e5ff; color: #000; box-shadow: 0 0 15px #00e5ff; }
       WPM（Words Per Minute）や正確率をリアルタイム表示。
       サイバー風UIとネオン演出で、気持ちよくタイピング練習できます。
     </p>
+
+    <h2>遊び方</h2>
+    <ol>
+      <li>ジャンルと難易度を選びます</li>
+      <li>「START」を押すと制限時間60秒のカウントが始まります</li>
+      <li>画面に出たカタカナ語を、<strong>ローマ字（英字）で入力</strong>します</li>
+      <li>正しく打ち切ると次の語に進み、連続で正解するとコンボが伸びます</li>
+    </ol>
+
+    <h2>画面に出る数字の意味</h2>
+    <table class="tg-table">
+      <tr><th>スコア</th><td>正しく打った語に応じて加算されます。コンボが続くほど伸びます</td></tr>
+      <tr><th>WPM</th><td>1分あたりに打てる語数の換算値。タイピング速度の目安です</td></tr>
+      <tr><th>正確率</th><td>打鍵のうち、正しかったものの割合</td></tr>
+      <tr><th>コンボ</th><td>ミスなしで続けて正解した数。ミスすると0に戻ります</td></tr>
+      <tr><th>TIME</th><td>残り時間。60秒から始まります</td></tr>
+    </table>
+
+    <h2>速く打つためのコツ</h2>
+    <ul>
+      <li><strong>正確さを先に</strong>— ミスの打ち直しは、ゆっくり正確に打つより時間を使います</li>
+      <li><strong>手元を見ない</strong>— 最初は遅くなりますが、これがいちばん伸びます</li>
+      <li><strong>語を先読みする</strong>— 打ちながら次の文字を目で追う癖をつけます</li>
+      <li><strong>苦手な運びを把握する</strong>— 同じ指が連続する並びは崩れやすいので、その語だけ繰り返します</li>
+      <li><strong>easyから始める</strong>— 短い語でリズムを作ってから長い語に移ります</li>
+    </ul>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. かな入力でも遊べますか？</strong><br>
+    A. このゲームはローマ字（英字）入力を前提としています。入力欄には英字で打ってください。</p>
+
+    <p><strong>Q. スマートフォンでも遊べますか？</strong><br>
+    A. 画面上のキーボードで入力できますが、タイピング練習としては物理キーボードをおすすめします。</p>
+
+    <p><strong>Q. スコアは保存されますか？</strong><br>
+    A. 記録はブラウザの中だけに保存され、サーバーには送信されません。</p>
+
+    <p><strong>Q. なぜ横文字ばかりなのですか？</strong><br>
+    A. IT・ビジネス・SNSの現場で実際に飛び交うカタカナ語を集めているためです。
+    打ちながら用語そのものにも触れられます。</p>
   </div>
 </div>
 
