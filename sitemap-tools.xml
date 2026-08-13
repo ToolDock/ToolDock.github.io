@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- sitemap-tools.xml と同じ内容です。両方を更新してください -->
+<!-- sitemap.xml と同じ内容です。両方を更新してください。
+     Search Console が /sitemap.xml の読み込み失敗を保持し続けたため、
+     別のパスとして用意しています。 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url><loc>https://tooldock.github.io/</loc><lastmod>2026-08-05</lastmod><priority>1.0</priority></url>
