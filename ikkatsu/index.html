@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>一括投資と積立投資の比較｜どちらが有利かを確率で出す | ToolDock</title>
+<meta name="description" content="まとまった資金を一度に投資するか、何回かに分けて投資するかを比較する無料ツール。同じ相場シナリオで1000通りを計算し、一括が勝つ確率、最終資産の中央値、下振れしたときの差を出します。分割期間ごとの比較表つき。">
+<link rel="canonical" href="https://tooldock.github.io/ikkatsu/">
+
+<script>
+const CURRENT_TOOL = "ikkatsu";
+</script>
+
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<!-- グラフ描画ライブラリ（自前で配信。CDNに依存しない） -->
+<script src="/js/vendor/chart.umd.min.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    font-family:sans-serif;
+    background:#f4f6fb;
+    color:#222;
+}
+
+header{
+    background:#1e293b;
+    color:white;
+    padding:20px;
+    text-align:center;
+}
+
+header h1{
+    margin:0 0 12px;
+    font-size:28px;
+}
+
+header .lead{
+    max-width:840px;
+    margin:0 auto;
+    line-height:1.8;
+}
+
+.save-notice{
+    margin-top:10px;
+    font-size:13px;
+    color:#93c5fd;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:14px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card h2{
+    margin-top:0;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+
+label{
+    display:block;
+    margin-bottom:5px;
+    font-size:14px;
+}
+
+input,
+select{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    box-sizing:border-box;
+    font-size:1rem;
+}
+
+button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:1rem;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.small{
+    font-size:13px;
+    color:#666;
+    line-height:1.7;
+}
+
+.reference-box{
+    background:#f8fafc;
+    padding:12px;
+    border-radius:10px;
+    margin-top:10px;
+    line-height:1.8;
+    font-size:14px;
+}
+
+.reference-item{
+    padding:5px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.reference-item:hover{
+    background:#dbeafe;
+}
+
+summary{
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.note-box{
+    margin:0 0 18px;
+    padding:12px 14px;
+    background:#fff7ed;
+    border-left:4px solid #f59e0b;
+    border-radius:8px;
+    font-size:14px;
+    line-height:1.8;
+    color:#7c2d12;
+}
+
+/* 結果 */
+
+.headline{
+    text-align:center;
+    padding:10px 0 4px;
+}
+
+.headline .label{
+    font-size:15px;
+    color:#475569;
+}
+
+.headline .value{
+    font-size:52px;
+    font-weight:bold;
+    line-height:1.2;
+    color:#1d4ed8;
+}
+
+.headline .sub{
+    font-size:14px;
+    color:#64748b;
+    max-width:640px;
+    margin:6px auto 0;
+    line-height:1.7;
+}
+
+.duel{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:14px;
+    margin-top:22px;
+}
+
+.duel-col{
+    padding:16px;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    background:#f8fafc;
+}
+
+.duel-col h3{
+    margin:0 0 10px;
+    font-size:16px;
+}
+
+.duel-col.lump h3{ color:#1d4ed8; }
+.duel-col.dca h3{ color:#047857; }
+
+.duel-col dl{
+    margin:0;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:6px 10px;
+    font-size:14px;
+}
+
+.duel-col dt{ color:#64748b; }
+.duel-col dd{ margin:0; text-align:right; font-weight:bold; }
+
+.chart-wrapper{
+    position:relative;
+    width:100%;
+    height:420px;
+    margin-top:24px;
+}
+
+table.compare{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:12px;
+}
+
+table.compare th,
+table.compare td{
+    border-bottom:1px solid #e5e7eb;
+    padding:10px;
+    text-align:right;
+    font-size:14px;
+    white-space:nowrap;
+}
+
+table.compare th:first-child,
+table.compare td:first-child{
+    text-align:left;
+}
+
+table.compare thead th{
+    background:#f8fafc;
+}
+
+table.compare tr.is-current{
+    background:#eff6ff;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+@media (max-width: 600px){
+
+    header h1{
+        font-size:22px;
+    }
+
+    .headline .value{
+        font-size:40px;
+    }
+
+    .chart-wrapper{
+        height:320px;
+    }
+
+    .card{
+        padding:16px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>一括投資と積立投資の比較</h1>
+    <div class="lead">
+        まとまった資金を、一度に投資するか、何回かに分けて投資するか。
+        <strong>同じ相場シナリオ</strong>で1000通りを計算し、
+        どちらがどれくらいの確率で勝つのか、
+        下振れしたときにどれだけ差がつくのかを出します。
+    </div>
+    <div class="save-notice">
+        ※設定内容はブラウザにのみ保存されます。サーバーに送られることはありません。
+    </div>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+    <p class="note-box">
+        このツールは<strong>すでにまとまった資金がある場合</strong>の比べ方です。
+        毎月の収入から積み立てる場合は、そもそも一括という選択肢がないため、
+        比較の対象になりません。
+    </p>
+
+    <h2>投資する資金</h2>
+
+    <div class="grid">
+        <div>
+            <label for="total">投資できる資金の総額（円）</label>
+            <input type="number" id="total" value="6000000" step="100000" min="0">
+        </div>
+        <div>
+            <label for="split">何か月に分けて投資するか</label>
+            <input type="number" id="split" value="24" min="1" max="240">
+        </div>
+        <div>
+            <label for="years">投資期間（年）</label>
+            <input type="number" id="years" value="20" min="1" max="60">
+        </div>
+        <div>
+            <label for="cashRate">待機資金の利率（年 %）</label>
+            <input type="number" id="cashRate" value="0.1" step="0.1" min="0" max="10">
+        </div>
+    </div>
+
+    <p class="small">
+        「何か月に分けて投資するか」は、積立側の設定です。
+        24なら、総額を24等分して毎月投資します。
+        まだ投資していない分は、待機資金として指定の利率で置いておきます。
+    </p>
+
+</div>
+
+<div class="card">
+
+    <h2>運用の前提</h2>
+
+    <div class="grid">
+        <div>
+            <label for="ret">期待リターン（年 %）</label>
+            <input type="number" id="ret" value="6" step="0.1" min="-20" max="30">
+        </div>
+        <div>
+            <label for="risk">リスク＝標準偏差（年 %）</label>
+            <input type="number" id="risk" value="18" step="0.1" min="0" max="60">
+        </div>
+    </div>
+
+    <details>
+        <summary>参考値から選ぶ</summary>
+        <div class="reference-box" id="referenceBox"></div>
+    </details>
+
+</div>
+
+<div class="card">
+    <button type="button" id="run">比較する</button>
+</div>
+
+<div class="card" id="resultCard" hidden>
+
+    <h2>結果</h2>
+
+    <div class="headline">
+        <div class="label">一括投資が勝つ確率</div>
+        <div class="value" id="winRate">-</div>
+        <div class="sub" id="winSub"></div>
+    </div>
+
+    <div class="duel">
+        <div class="duel-col lump">
+            <h3>一括投資</h3>
+            <dl id="lumpStats"></dl>
+        </div>
+        <div class="duel-col dca">
+            <h3>積立投資（分割）</h3>
+            <dl id="dcaStats"></dl>
+        </div>
+    </div>
+
+    <div class="chart-wrapper">
+        <canvas id="chart"></canvas>
+    </div>
+
+    <h2 style="margin-top:32px">分ける期間を変えるとどうなるか</h2>
+
+    <div class="table-wrap">
+        <table class="compare">
+            <thead>
+                <tr>
+                    <th>分割期間</th>
+                    <th>一括が勝つ確率</th>
+                    <th>積立の最終資産<br>（中央値）</th>
+                    <th>積立の下位5%</th>
+                    <th>一括との差<br>（中央値）</th>
+                </tr>
+            </thead>
+            <tbody id="compareBody"></tbody>
+        </table>
+    </div>
+
+    <p class="small" id="compareNote"></p>
+
+</div>
+
+</div>
+
+<script>
+(() => {
+
+"use strict";
+
+/* =========================
+   一括投資と積立投資の比較
+
+   同じ相場シナリオを両方式に当てて、同じ土俵で比べる。
+   別々の乱数で回すと、条件が同じでも結果がぶれて
+   比較にならないため。
+========================= */
+
+const RUNS = 1000;
+const STORE_KEY = "tooldock-ikkatsu";
+
+const SPLIT_PATTERNS = [3, 6, 12, 24, 36, 60];
+
+const REFERENCE = [
+  { name: "オールカントリー", ret: 8, risk: 16 },
+  { name: "S&P500", ret: 10, risk: 18 },
+  { name: "TOPIX", ret: 6, risk: 15 },
+  { name: "日経225", ret: 7, risk: 20 },
+  { name: "新興国株式", ret: 9, risk: 25 },
+  { name: "NASDAQ100", ret: 13, risk: 28 },
+  { name: "株式と債券を半分ずつ（目安）", ret: 5, risk: 10 },
+  { name: "債券中心（目安）", ret: 2, risk: 5 }
+];
+
+const $ = (id) => document.getElementById(id);
+
+function randn() {
+  let u = 0, v = 0;
+
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+/* =========================
+   相場シナリオ（両方式で共有する）
+========================= */
+
+function makeScenarios(p) {
+
+  const months = p.years * 12;
+  const arr = new Float64Array(RUNS * months);
+
+  /* 年率を月率へ直し、ばらつきによる目減り（ボラティリティ・ドラッグ）を補正する */
+  const meanM = Math.pow(1 + p.ret, 1 / 12) - 1;
+  const volM = p.risk / Math.sqrt(12);
+  const adjM = meanM - (volM * volM) / 2;
+
+  for (let i = 0; i < arr.length; i++) {
+    arr[i] = adjM + volM * randn();
+  }
+
+  return { arr, months };
+}
+
+/* =========================
+   1回分の計算
+
+   一括：初月に全額を投資する
+   積立：総額を split か月で等分し、毎月初に投資する。
+         未投入分は待機資金として利息だけつく
+========================= */
+
+function runOnce(p, sc, runIndex, split) {
+
+  const base = runIndex * sc.months;
+  const cashM = Math.pow(1 + p.cashRate, 1 / 12) - 1;
+  const per = p.total / split;
+
+  let lump = p.total;
+
+  let dcaAsset = 0;
+  let dcaCash = p.total;
+
+  const lumpPath = [];
+  const dcaPath = [];
+
+  for (let t = 0; t < sc.months; t++) {
+
+    const r = sc.arr[base + t];
+
+    /* 月初に投資する */
+    if (t < split) {
+      const invest = Math.min(per, dcaCash);
+      dcaCash -= invest;
+      dcaAsset += invest;
+    }
+
+    lump *= 1 + r;
+    dcaAsset *= 1 + r;
+    dcaCash *= 1 + cashM;
+
+    /* 年末の値を記録する */
+    if ((t + 1) % 12 === 0) {
+      lumpPath.push(lump);
+      dcaPath.push(dcaAsset + dcaCash);
+    }
+  }
+
+  return {
+    lump,
+    dca: dcaAsset + dcaCash,
+    lumpPath,
+    dcaPath
+  };
+}
+
+function percentile(sorted, q) {
+  if (sorted.length === 0) return 0;
+
+  const i = (sorted.length - 1) * q;
+  const lo = Math.floor(i);
+  const hi = Math.ceil(i);
+
+  if (lo === hi) return sorted[lo];
+
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
+}
+
+const asc = (arr) => arr.slice().sort((a, b) => a - b);
+
+function simulate(p, sc, split) {
+
+  const runs = [];
+
+  for (let i = 0; i < RUNS; i++) runs.push(runOnce(p, sc, i, split));
+
+  const lumpFinal = asc(runs.map(r => r.lump));
+  const dcaFinal = asc(runs.map(r => r.dca));
+  const diff = asc(runs.map(r => r.lump - r.dca));
+
+  /* 1円未満の差は引き分けとして数える。
+     分割を1か月にすると両者は同じ投資になり、差が出ないため */
+  const ties = runs.filter(r => Math.abs(r.lump - r.dca) < 1).length;
+  const wins = runs.filter(r => r.lump - r.dca >= 1).length;
+
+  /* 年ごとの中央値と下位5% */
+  const bands = { lumpMid: [], lumpLow: [], dcaMid: [], dcaLow: [] };
+
+  for (let y = 0; y < p.years; y++) {
+    const l = asc(runs.map(r => r.lumpPath[y]));
+    const d = asc(runs.map(r => r.dcaPath[y]));
+
+    bands.lumpMid.push(percentile(l, 0.5));
+    bands.lumpLow.push(percentile(l, 0.05));
+    bands.dcaMid.push(percentile(d, 0.5));
+    bands.dcaLow.push(percentile(d, 0.05));
+  }
+
+  return {
+    split,
+    winRate: wins / RUNS,
+    tieRate: ties / RUNS,
+    bands,
+    lump: {
+      mid: percentile(lumpFinal, 0.5),
+      low: percentile(lumpFinal, 0.05),
+      high: percentile(lumpFinal, 0.95)
+    },
+    dca: {
+      mid: percentile(dcaFinal, 0.5),
+      low: percentile(dcaFinal, 0.05),
+      high: percentile(dcaFinal, 0.95)
+    },
+    diffMid: percentile(diff, 0.5)
+  };
+}
+
+/* =========================
+   入力
+========================= */
+
+function readParams() {
+  const num = (id, fallback) => {
+    const v = Number($(id).value);
+    return Number.isFinite(v) ? v : fallback;
+  };
+
+  return {
+    total: Math.max(0, num("total", 0)),
+    split: Math.min(240, Math.max(1, Math.round(num("split", 24)))),
+    years: Math.min(60, Math.max(1, Math.round(num("years", 20)))),
+    cashRate: Math.max(0, num("cashRate", 0)) / 100,
+    ret: num("ret", 0) / 100,
+    risk: Math.max(0, num("risk", 0)) / 100
+  };
+}
+
+/* =========================
+   表示
+========================= */
+
+function man(v) {
+  const m = v / 10000;
+
+  if (Math.abs(m) >= 10000) {
+    return (m / 10000).toFixed(2) + " 億円";
+  }
+
+  return Math.round(m).toLocaleString("ja-JP") + " 万円";
+}
+
+let chart = null;
+
+function drawChart(p, r) {
+
+  const labels = [];
+  for (let y = 0; y < p.years; y++) labels.push(`${y + 1}年目`);
+
+  const line = (label, data, color, dash) => ({
+    label,
+    data,
+    borderColor: color,
+    backgroundColor: color,
+    borderWidth: dash ? 2 : 3,
+    borderDash: dash ? [6, 4] : [],
+    pointRadius: 0,
+    tension: 0.15
+  });
+
+  const ctx = $("chart").getContext("2d");
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        line("一括：中央値", r.bands.lumpMid, "#2563eb", false),
+        line("積立：中央値", r.bands.dcaMid, "#059669", false),
+        line("一括：下位5%", r.bands.lumpLow, "#93c5fd", true),
+        line("積立：下位5%", r.bands.dcaLow, "#6ee7b7", true)
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        tooltip: {
+          callbacks: { label: (c) => `${c.dataset.label}: ${man(c.parsed.y)}` }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: (v) => man(v) } }
+      }
+    }
+  });
+}
+
+function render(p, main, table) {
+
+  $("resultCard").hidden = false;
+
+  $("winRate").textContent = (main.winRate * 100).toFixed(1) + " %";
+
+  const winCount = Math.round(main.winRate * RUNS);
+  const tieCount = Math.round(main.tieRate * RUNS);
+
+  $("winSub").textContent = tieCount === RUNS
+    ? "1か月に分ける場合は一括投資とまったく同じ投資になるため、結果に差は出ません。"
+    : `${RUNS}通りのうち ${winCount} 回で、`
+      + `${p.split}か月に分けるより一括のほうが多く増えました。`
+      + `${RUNS - winCount - tieCount} 回では、分けたほうが上回っています。`
+      + (tieCount ? `（引き分け ${tieCount} 回）` : "");
+
+  const stat = (o) => `
+    <dt>中央値</dt><dd>${man(o.mid)}</dd>
+    <dt>上位5%</dt><dd>${man(o.high)}</dd>
+    <dt>下位5%</dt><dd>${man(o.low)}</dd>
+  `;
+
+  $("lumpStats").innerHTML = stat(main.lump);
+  $("dcaStats").innerHTML = stat(main.dca);
+
+  drawChart(p, main);
+
+  $("compareBody").innerHTML = table.map(x => `
+    <tr class="${x.split === p.split ? "is-current" : ""}">
+      <td>${x.split}か月${x.split === p.split ? "（選択中）" : ""}</td>
+      <td>${(x.winRate * 100).toFixed(1)} %</td>
+      <td>${man(x.dca.mid)}</td>
+      <td>${man(x.dca.low)}</td>
+      <td>${man(x.diffMid)}</td>
+    </tr>
+  `).join("");
+
+  $("compareNote").textContent =
+    "分ける期間が長いほど、投資に回っていない待機資金の期間も長くなるため、"
+    + "中央値では一括に差をつけられやすくなります。"
+    + "その代わり、下位5%（運が悪かった場合）の落ち込みは小さくなります。";
+}
+
+/* =========================
+   保存
+========================= */
+
+const FIELDS = ["total", "split", "years", "cashRate", "ret", "risk"];
+
+function save() {
+  try {
+    const data = {};
+    for (const id of FIELDS) data[id] = $(id).value;
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  } catch (e) {
+    /* 保存できなくても計算はできる */
+  }
+}
+
+function restore() {
+  let data = null;
+
+  try {
+    data = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+  } catch (e) {
+    return;
+  }
+
+  if (!data) return;
+
+  for (const id of FIELDS) {
+    if (typeof data[id] === "string" && $(id)) $(id).value = data[id];
+  }
+}
+
+/* =========================
+   起動
+========================= */
+
+$("referenceBox").innerHTML = REFERENCE.map((f, i) => `
+  <div class="reference-item" data-ref="${i}">
+    ${f.name}（期待リターン ${f.ret}% / リスク ${f.risk}%）
+  </div>
+`).join("");
+
+$("referenceBox").addEventListener("click", (e) => {
+  const item = e.target.closest("[data-ref]");
+  if (!item) return;
+
+  const f = REFERENCE[Number(item.dataset.ref)];
+
+  $("ret").value = f.ret;
+  $("risk").value = f.risk;
+
+  save();
+});
+
+document.querySelector(".container").addEventListener("input", save);
+
+$("run").addEventListener("click", () => {
+
+  const p = readParams();
+  const sc = makeScenarios(p);
+
+  const main = simulate(p, sc, p.split);
+
+  /* 分割期間ごとの比較。投資期間より長い分割は成立しないので除く */
+  const splits = SPLIT_PATTERNS.filter(s => s <= sc.months);
+
+  if (!splits.includes(p.split) && p.split <= sc.months) splits.push(p.split);
+
+  splits.sort((a, b) => a - b);
+
+  const table = splits.map(s => s === p.split ? main : simulate(p, sc, s));
+
+  render(p, main, table);
+  save();
+
+  $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+restore();
+
+})();
+</script>
+
+<article class="tool-article">
+
+<h2>このツールでできること</h2>
+
+<p>
+退職金や相続、貯めていた預金など、<strong>まとまった資金ができたとき</strong>に迷うのが、
+一度に全部投資するか、何回かに分けて投資するかです。
+</p>
+
+<p>
+このツールは、期待リターンとリスクから1000通りの相場を作り、
+<strong>まったく同じ相場</strong>に対して一括と積立の両方を当てて比べます。
+出るのは「どちらが得か」という断定ではなく、
+<strong>どちらがどれくらいの確率で勝つのか</strong>という分布です。
+</p>
+
+<p class="note">
+<strong>毎月の収入から積み立てている方には、この比較は当てはまりません。</strong>
+手元にまとまった資金がない以上、一括という選択肢がそもそも存在しないためです。
+その場合は<a href="/fukuri/">積立シミュレーション</a>をお使いください。
+</p>
+
+<h2>結論から言うと、期待値では一括が有利になりやすい</h2>
+
+<p>
+理由は単純です。<strong>相場は長い目で見れば上がっている時間のほうが長い</strong>という前提を置くなら、
+資金を早く市場に入れたほうが、その上昇に参加できる期間が長くなります。
+</p>
+
+<p>
+分けて投資している間、まだ投資していない資金は現金のまま置かれています。
+その間、その資金は<strong>ほとんど増えません</strong>。
+分ける期間が長いほど、この「待っている資金」の影響が大きくなります。
+</p>
+
+<p>
+上の比較表で分割期間を変えてみると、
+<strong>期間が長くなるほど一括の勝率が上がっていく</strong>ことが確認できます。
+</p>
+
+<h2>それでも積立が選ばれる理由</h2>
+
+<p>
+勝率だけを見れば一括が有利です。しかし、それは<strong>平均の話</strong>です。
+</p>
+
+<p>
+投資した直後に暴落が起きた場合、一括では資金の全額がその下落を受けます。
+分けて投資していれば、下落した後の安い価格でも買えるため、傷は浅くなります。
+結果の表で<strong>「下位5%」を見比べてください。</strong>
+運が悪かった場合の金額は、分けたほうが大きくなることが多いはずです。
+</p>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th></th><th>一括投資</th><th>積立（分割）投資</th></tr>
+</thead>
+<tbody>
+<tr><td>期待値（中央値）</td><td><strong>高くなりやすい</strong></td><td>低くなりやすい</td></tr>
+<tr><td>下振れしたとき</td><td>落ち込みが大きい</td><td><strong>落ち込みが小さい</strong></td></tr>
+<tr><td>結果のばらつき</td><td>大きい</td><td><strong>小さい</strong></td></tr>
+<tr><td>投資直後の暴落</td><td>全額が影響を受ける</td><td><strong>一部で済む</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="note">
+つまり、<strong>ドルコスト平均法（分割投資）はリターンを上げる手法ではなく、
+結果のばらつきを抑える手法</strong>です。
+「積立のほうが儲かる」という説明を見かけたら、注意してください。
+期待値を上げるのではなく、当たり外れの幅を狭めるのが本来の役割です。
+</p>
+
+<h2>どちらを選ぶかの考え方</h2>
+
+<ul>
+<li><strong>数字だけで選ぶなら一括</strong>— 期待値が高く、勝つ確率も高くなります</li>
+<li><strong>投資直後の暴落に耐えられないなら分割</strong>— 半値になっても続けられるかを想像してください。続けられないなら、期待値が高くても意味がありません</li>
+<li><strong>迷うなら期間を短めに</strong>— 3〜12か月程度に分ければ、待機資金の損失を抑えつつ、投入時期の偏りも減らせます</li>
+<li><strong>資金の性格で決める</strong>— 数年以内に使う予定があるお金は、そもそも投資に向きません</li>
+</ul>
+
+<p>
+最も避けたいのは、<strong>一括で投資して暴落に耐えられず、底で売ってしまうこと</strong>です。
+期待値の高さは、続けられて初めて意味を持ちます。
+自分が耐えられる範囲を選ぶことのほうが、数％の期待値の差より重要です。
+</p>
+
+<h2>結果の読み方</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>項目</th><th>意味</th></tr>
+</thead>
+<tbody>
+<tr><td>一括が勝つ確率</td><td>1000通りのうち、一括の最終資産が積立を上回った割合</td></tr>
+<tr><td>中央値</td><td>ちょうど真ん中の結果。もっともありがちな姿</td></tr>
+<tr><td>上位5%</td><td>相場が非常に良かった場合。一括のほうが大きく伸びます</td></tr>
+<tr><td>下位5%</td><td><strong>運が悪かった場合。ここが判断の分かれ目です</strong></td></tr>
+<tr><td>一括との差</td><td>一括から積立を引いた金額の中央値。プラスなら一括が有利</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>このシミュレーションの前提と限界</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>前提</th><th>影響</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>リターンが正規分布に従うと仮定</td>
+<td>現実の暴落は正規分布より深く、頻度も高めです。<strong>一括の下振れは実際にはもっと厳しくなり得ます</strong></td>
+</tr>
+<tr>
+<td>相場の上下に規則性がないと仮定</td>
+<td>「下がった後は戻りやすい」といった性質は再現していません。実際にそうした性質があるなら、分割投資はここでの計算より有利になります</td>
+</tr>
+<tr>
+<td>試行は1000通り</td>
+<td>勝率は実行のたびに1%前後ぶれます</td>
+</tr>
+<tr>
+<td>税金・手数料・信託報酬を引いていない</td>
+<td>実際の手取りはこれより小さくなります</td>
+</tr>
+<tr>
+<td>待機資金は指定の利率で増える</td>
+<td>普通預金なら実質ほぼ0%です。定期預金などを使う場合はその利率を入れてください</td>
+</tr>
+<tr>
+<td>表示はすべて名目値</td>
+<td>インフレを考慮していません。物価が上がれば実質的な価値は下がります</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 結局どちらが正解ですか？</strong><br>
+A. 期待値では一括が有利になりやすい、というのが計算上の答えです。
+ただしこれは平均の話で、下振れしたときの痛みは一括のほうが大きくなります。
+<strong>自分が耐えられるかどうかで決めるべき問題</strong>であり、数字だけで一方に決まるものではありません。</p>
+
+<p><strong>Q. ドルコスト平均法は儲かる手法ではないのですか？</strong><br>
+A. 期待リターンを上げる手法ではありません。結果のばらつきを抑える手法です。
+価格が下がったときに多く買えるという説明は正しいのですが、
+その分だけ上昇局面に参加できる資金が減るため、期待値としては相殺されます。</p>
+
+<p><strong>Q. 何か月に分けるのが良いですか？</strong><br>
+A. 一律の正解はありません。上の比較表で3・6・12・24・36・60か月を並べて表示しているので、
+勝率と下位5%の両方を見比べてください。
+期間が長いほど下振れは小さくなりますが、中央値では一括に差をつけられます。</p>
+
+<p><strong>Q. 待機資金の利率は何を入れればよいですか？</strong><br>
+A. 普通預金に置くなら0.1%前後、あるいは0%でも結果は大きく変わりません。
+定期預金や個人向け国債など、利率の高い置き場所を使う場合はその値を入れてください。
+待機資金の利率が高いほど、分割投資が不利になりにくくなります。</p>
+
+<p><strong>Q. 投資した後の取り崩しも計算したいのですが。</strong><br>
+A. <a href="/torikuzushi/">取り崩しシミュレーション</a>をお使いください。
+このツールで求めた最終資産を、そちらの「取り崩し開始時の資産」に入れると続けて計算できます。</p>
+
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. お使いのブラウザに保存され、次に開いたときに復元されます。
+サーバーに送信されることはありません。</p>
+
+<h2>免責事項</h2>
+
+<p class="note">
+本ツールは投資方法の違いを試算するための計算ツールであり、
+特定の金融商品の取得・売却や、特定の投資方法をすすめるものではありません。
+入力する期待リターン・リスクは仮定値であり、将来の運用成果を示すものでも保証するものでもありません。
+表示される金額は税金・手数料・信託報酬・インフレを考慮していない名目値です。
+投資の判断はご自身の責任で行ってください。
+</p>
+
+</article>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "一括投資と積立投資はどちらが有利ですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "期待値では一括投資が有利になりやすい、というのが計算上の答えです。相場は長い目で見れば上がっている時間のほうが長いという前提を置くなら、資金を早く市場に入れたほうが上昇に参加できる期間が長くなるためです。ただしこれは平均の話で、投資直後に暴落した場合の痛みは一括のほうが大きくなります。自分が耐えられるかどうかで決めるべき問題です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "ドルコスト平均法は儲かる手法ですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "期待リターンを上げる手法ではなく、結果のばらつきを抑える手法です。価格が下がったときに多く買えるという説明は正しいのですが、その分だけ上昇局面に参加できる資金が減るため、期待値としては相殺されます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "まとまった資金は何か月に分けて投資するのが良いですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "一律の正解はありません。期間が長いほど下振れは小さくなりますが、投資していない待機資金の期間も長くなるため、中央値では一括に差をつけられます。迷う場合は3〜12か月程度に分けると、待機資金の損失を抑えつつ投入時期の偏りも減らせます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "毎月の給料から積み立てる場合もこの比較は当てはまりますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "当てはまりません。手元にまとまった資金がない場合、一括という選択肢がそもそも存在しないためです。その場合は積立シミュレーションをお使いください。"
+      }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
