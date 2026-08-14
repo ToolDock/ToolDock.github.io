@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>取り崩しシミュレーション｜資産が尽きる確率を出す老後資金の計算 | ToolDock</title>
+<meta name="description" content="貯めた資産を取り崩していくと、何歳まで持つのかをモンテカルロ法で計算する無料ツール。定額・定率・4%ルールの3方式を同じ条件で比べ、資産が尽きる確率（破綻確率）を出します。年金などの収入やインフレ率も設定でき、老後資金やFIRE後の生活設計に使えます。">
+<link rel="canonical" href="https://tooldock.github.io/torikuzushi/">
+
+<script>
+const CURRENT_TOOL = "torikuzushi";
+</script>
+
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<!-- グラフ描画ライブラリ（自前で配信。CDNに依存しない） -->
+<script src="/js/vendor/chart.umd.min.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    font-family:sans-serif;
+    background:#f4f6fb;
+    color:#222;
+}
+
+header{
+    background:#1e293b;
+    color:white;
+    padding:20px;
+    text-align:center;
+}
+
+header h1{
+    margin:0 0 12px;
+    font-size:28px;
+}
+
+header .lead{
+    max-width:820px;
+    margin:0 auto;
+    line-height:1.8;
+}
+
+.save-notice{
+    margin-top:10px;
+    font-size:13px;
+    color:#93c5fd;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:14px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card h2{
+    margin-top:0;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+
+label{
+    display:block;
+    margin-bottom:5px;
+    font-size:14px;
+}
+
+input,
+select{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    box-sizing:border-box;
+    font-size:1rem;
+}
+
+button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:1rem;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+/* 取り崩し方式の切り替え */
+
+.methods{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.methods input{
+    position:absolute;
+    width:1px;
+    height:1px;
+    opacity:0;
+    pointer-events:none;
+}
+
+.methods label{
+    margin:0;
+    padding:10px 18px;
+    border:2px solid #cbd5e1;
+    border-radius:999px;
+    font-size:15px;
+    cursor:pointer;
+    background:white;
+    user-select:none;
+}
+
+.methods input:checked + label{
+    background:#2563eb;
+    border-color:#2563eb;
+    color:white;
+    font-weight:bold;
+}
+
+.methods input:focus-visible + label{
+    outline:2px solid #1d4ed8;
+    outline-offset:2px;
+}
+
+.method-note{
+    margin:0 0 18px;
+    padding:12px 14px;
+    background:#f8fafc;
+    border-left:4px solid #94a3b8;
+    border-radius:8px;
+    font-size:14px;
+    line-height:1.8;
+    color:#475569;
+}
+
+.pane{
+    display:none;
+}
+
+.pane.is-active{
+    display:block;
+}
+
+.small{
+    font-size:13px;
+    color:#666;
+    line-height:1.7;
+}
+
+.reference-box{
+    background:#f8fafc;
+    padding:12px;
+    border-radius:10px;
+    margin-top:10px;
+    line-height:1.8;
+    font-size:14px;
+}
+
+.reference-item{
+    padding:5px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.reference-item:hover{
+    background:#dbeafe;
+}
+
+summary{
+    cursor:pointer;
+    font-weight:bold;
+}
+
+/* 結果 */
+
+.headline{
+    text-align:center;
+    padding:10px 0 4px;
+}
+
+.headline .label{
+    font-size:15px;
+    color:#475569;
+}
+
+.headline .value{
+    font-size:52px;
+    font-weight:bold;
+    line-height:1.2;
+}
+
+.headline .value.safe{ color:#15803d; }
+.headline .value.warn{ color:#b45309; }
+.headline .value.risk{ color:#b91c1c; }
+
+.headline .sub{
+    font-size:14px;
+    color:#64748b;
+}
+
+.stat-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    margin:18px 0 0;
+    padding:0;
+    list-style:none;
+}
+
+.stat-list li{
+    padding:10px 16px;
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+    background:#f8fafc;
+    font-size:14px;
+    text-align:center;
+}
+
+.stat-list b{
+    display:block;
+    font-size:20px;
+    color:#0f172a;
+}
+
+.chart-wrapper{
+    position:relative;
+    width:100%;
+    height:420px;
+    margin-top:20px;
+}
+
+table.compare{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:12px;
+}
+
+table.compare th,
+table.compare td{
+    border-bottom:1px solid #e5e7eb;
+    padding:10px;
+    text-align:right;
+    font-size:14px;
+    white-space:nowrap;
+}
+
+table.compare th:first-child,
+table.compare td:first-child{
+    text-align:left;
+}
+
+table.compare thead th{
+    background:#f8fafc;
+}
+
+table.compare tr.is-current{
+    background:#eff6ff;
+}
+
+table.compare tr.is-current td:first-child::after{
+    content:"（選択中）";
+    font-size:12px;
+    color:#2563eb;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+@media (max-width: 600px){
+
+    header h1{
+        font-size:22px;
+    }
+
+    .headline .value{
+        font-size:40px;
+    }
+
+    .chart-wrapper{
+        height:320px;
+    }
+
+    .card{
+        padding:16px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>取り崩しシミュレーション｜資産が尽きる確率を出す</h1>
+    <div class="lead">
+        貯めた資産を取り崩していくと、何歳まで持つのか。
+        期待リターンとリスク（標準偏差）から1000通りの将来を計算し、
+        <strong>資産が尽きる確率</strong>を出します。
+        定額・定率・4%ルールを同じ条件で比較できます。
+    </div>
+    <div class="save-notice">
+        ※設定内容はブラウザにのみ保存されます。サーバーに送られることはありません。
+    </div>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+    <h2>取り崩し方式</h2>
+
+    <div class="methods">
+        <input type="radio" name="method" id="m-fixed" value="fixed" checked>
+        <label for="m-fixed">定額</label>
+
+        <input type="radio" name="method" id="m-rate" value="rate">
+        <label for="m-rate">定率</label>
+
+        <input type="radio" name="method" id="m-rule4" value="rule4">
+        <label for="m-rule4">4%ルール</label>
+    </div>
+
+    <p class="method-note" id="methodNote"></p>
+
+    <div class="pane is-active" id="pane-fixed">
+        <div class="grid">
+            <div>
+                <label for="monthly">毎月の取り崩し額（円）</label>
+                <input type="number" id="monthly" value="100000" step="10000" min="0">
+            </div>
+            <div>
+                <label for="indexed">物価スライド</label>
+                <select id="indexed">
+                    <option value="1">する（インフレ率に応じて増やす）</option>
+                    <option value="0">しない（金額を固定する）</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="pane" id="pane-rate">
+        <div class="grid">
+            <div>
+                <label for="rate">毎年の取り崩し率（%）</label>
+                <input type="number" id="rate" value="4" step="0.1" min="0.1" max="20">
+            </div>
+        </div>
+    </div>
+
+    <div class="pane" id="pane-rule4">
+        <div class="grid">
+            <div>
+                <label for="ruleRate">初年度の取り崩し率（%）</label>
+                <input type="number" id="ruleRate" value="4" step="0.1" min="0.1" max="20">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card">
+
+    <h2>基本設定</h2>
+
+    <div class="grid">
+        <div>
+            <label for="initial">取り崩し開始時の資産（円）</label>
+            <input type="number" id="initial" value="30000000" step="1000000" min="0">
+        </div>
+        <div>
+            <label for="startAge">取り崩しを始める年齢</label>
+            <input type="number" id="startAge" value="65" min="0" max="110">
+        </div>
+        <div>
+            <label for="years">何年間もたせたいか</label>
+            <input type="number" id="years" value="30" min="1" max="70">
+        </div>
+        <div>
+            <label for="inflation">インフレ率（年 %）</label>
+            <input type="number" id="inflation" value="2" step="0.1" min="-5" max="20">
+        </div>
+    </div>
+
+</div>
+
+<div class="card">
+
+    <h2>運用の前提</h2>
+
+    <div class="grid">
+        <div>
+            <label for="ret">期待リターン（年 %）</label>
+            <input type="number" id="ret" value="5" step="0.1" min="-20" max="30">
+        </div>
+        <div>
+            <label for="risk">リスク＝標準偏差（年 %）</label>
+            <input type="number" id="risk" value="12" step="0.1" min="0" max="60">
+        </div>
+    </div>
+
+    <details>
+        <summary>参考値から選ぶ</summary>
+        <div class="reference-box" id="referenceBox"></div>
+    </details>
+
+</div>
+
+<div class="card">
+
+    <h2>年金などの収入（任意）</h2>
+
+    <div class="grid">
+        <div>
+            <label for="incomeAge">受け取りを始める年齢</label>
+            <input type="number" id="incomeAge" value="65" min="0" max="110">
+        </div>
+        <div>
+            <label for="incomeMonthly">毎月の収入（円）</label>
+            <input type="number" id="incomeMonthly" value="0" step="10000" min="0">
+        </div>
+    </div>
+
+    <p class="small">
+        入力すると、その年齢以降は<strong>収入で賄えない分だけ</strong>を資産から取り崩します。
+        収入が取り崩し額を上回る場合、資産には手をつけません。
+    </p>
+
+</div>
+
+<div class="card">
+    <button type="button" id="run">シミュレーション実行</button>
+</div>
+
+<div class="card" id="resultCard" hidden>
+
+    <h2>結果</h2>
+
+    <div class="headline">
+        <div class="label">資産が尽きる確率</div>
+        <div class="value" id="ruinRate">-</div>
+        <div class="sub" id="ruinSub"></div>
+    </div>
+
+    <ul class="stat-list" id="stats"></ul>
+
+    <div class="chart-wrapper">
+        <canvas id="chart"></canvas>
+    </div>
+
+    <h2 style="margin-top:32px">3つの方式を同じ条件で比べる</h2>
+
+    <div class="table-wrap">
+        <table class="compare">
+            <thead>
+                <tr>
+                    <th>方式</th>
+                    <th>尽きる確率</th>
+                    <th>取り崩した総額<br>（中央値）</th>
+                    <th>最終資産<br>（中央値）</th>
+                    <th>最終年の月額<br>（中央値）</th>
+                </tr>
+            </thead>
+            <tbody id="compareBody"></tbody>
+        </table>
+    </div>
+
+    <p class="small" id="compareNote"></p>
+
+</div>
+
+</div>
+
+<script>
+(() => {
+
+"use strict";
+
+/* =========================
+   取り崩しシミュレーション
+
+   毎月の運用収益を乱数で生成し、1000通りの将来を作る。
+   積立と違い、取り崩しでは序盤の下落が致命傷になる
+   （収益率配列リスク）。平均だけでは判断できないため、
+   資産が尽きた回数を数えて確率として出している。
+========================= */
+
+const RUNS = 1000;
+const STORE_KEY = "tooldock-torikuzushi";
+
+const METHODS = {
+  fixed: "定額",
+  rate: "定率",
+  rule4: "4%ルール"
+};
+
+const METHOD_NOTES = {
+  fixed:
+    "毎月きまった額を取り崩します。生活は安定しますが、" +
+    "相場が下がっている時期でも同じ額を売ることになるため、資産が尽きる危険はいちばん高くなります。",
+  rate:
+    "毎年、その時点の残高に対する割合で取り崩します。" +
+    "残高が減れば取り崩し額も減るため理屈のうえでは尽きませんが、" +
+    "相場が悪いと受け取れる額がそのまま減ります。",
+  rule4:
+    "初年度に資産の一定割合を取り崩し、翌年からは物価の上昇に合わせて金額を増やしていきます。" +
+    "米国の過去データから提唱された経験則で、残高が減っても取り崩し額は下がりません。"
+};
+
+/* fukuri と同じ参考値。末尾2つは取り崩し期に使われやすい配分の目安 */
+const REFERENCE = [
+  { name: "オールカントリー", ret: 8, risk: 16 },
+  { name: "S&P500", ret: 10, risk: 18 },
+  { name: "TOPIX", ret: 6, risk: 15 },
+  { name: "日経225", ret: 7, risk: 20 },
+  { name: "新興国株式", ret: 9, risk: 25 },
+  { name: "NASDAQ100", ret: 13, risk: 28 },
+  { name: "株式と債券を半分ずつ（目安）", ret: 5, risk: 10 },
+  { name: "債券中心（目安）", ret: 2, risk: 5 }
+];
+
+const $ = (id) => document.getElementById(id);
+
+/* =========================
+   乱数（標準正規分布）
+========================= */
+
+function randn() {
+  let u = 0, v = 0;
+
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+/* =========================
+   1回分のシミュレーション
+========================= */
+
+function makeScenarios(p) {
+
+  /* 3つの方式を同じ相場で比べられるよう、月ごとの収益率を先に作っておく。
+     方式ごとに別々の乱数を引くと、まったく同じ条件でも
+     確率が数ポイントずれて見えてしまい、比較にならない */
+
+  const months = p.years * 12;
+  const arr = new Float64Array(RUNS * months);
+
+  /* 年率を月率へ直し、ばらつきによる目減り（ボラティリティ・ドラッグ）を補正する */
+  const meanM = Math.pow(1 + p.ret, 1 / 12) - 1;
+  const volM = p.risk / Math.sqrt(12);
+  const adjM = meanM - (volM * volM) / 2;
+
+  for (let i = 0; i < arr.length; i++) {
+    arr[i] = adjM + volM * randn();
+  }
+
+  return { arr, months };
+}
+
+function runOnce(p, method, sc, runIndex) {
+
+  let asset = p.initial;
+  let received = 0;
+  let ruinedYear = -1;
+  let lastDraw = 0;
+
+  const yearly = [];
+  const base = runIndex * sc.months;
+
+  for (let y = 0; y < p.years; y++) {
+
+    const age = p.startAge + y;
+    const infFactor = Math.pow(1 + p.inflation, y);
+
+    /* その年に必要な月額（方式ごとに決まる） */
+    let target;
+
+    if (method === "fixed") {
+      target = p.monthly * (p.indexed ? infFactor : 1);
+    } else if (method === "rate") {
+      target = asset * p.rate / 12;
+    } else {
+      target = p.initial * p.ruleRate / 12 * infFactor;
+    }
+
+    /* 年金などの収入で賄えない分だけを資産から取り崩す */
+    const income = age >= p.incomeAge ? p.incomeMonthly : 0;
+    const draw = Math.max(0, target - income);
+
+    lastDraw = draw;
+
+    for (let m = 0; m < 12; m++) {
+
+      const take = Math.min(draw, asset);
+
+      asset -= take;
+      received += take;
+
+      /* 目標額を出せなかった時点で「尽きた」と判定する */
+      if (take < draw - 0.5 && ruinedYear < 0) {
+        ruinedYear = y;
+      }
+
+      if (asset > 0) {
+        asset *= 1 + sc.arr[base + y * 12 + m];
+        if (asset < 0) asset = 0;
+      }
+    }
+
+    yearly.push(asset);
+  }
+
+  return { yearly, received, ruinedYear, lastDraw };
+}
+
+/* =========================
+   まとめて実行する
+========================= */
+
+function percentile(sorted, q) {
+  if (sorted.length === 0) return 0;
+
+  const i = (sorted.length - 1) * q;
+  const lo = Math.floor(i);
+  const hi = Math.ceil(i);
+
+  if (lo === hi) return sorted[lo];
+
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
+}
+
+function simulate(p, method, sc) {
+
+  const runs = [];
+
+  for (let i = 0; i < RUNS; i++) runs.push(runOnce(p, method, sc, i));
+
+  const ruined = runs.filter(r => r.ruinedYear >= 0);
+
+  /* 年ごとの分位点 */
+  const bands = { p5: [], p30: [], p50: [], p70: [], p95: [] };
+
+  for (let y = 0; y < p.years; y++) {
+    const col = runs.map(r => r.yearly[y]).sort((a, b) => a - b);
+
+    bands.p5.push(percentile(col, 0.05));
+    bands.p30.push(percentile(col, 0.30));
+    bands.p50.push(percentile(col, 0.50));
+    bands.p70.push(percentile(col, 0.70));
+    bands.p95.push(percentile(col, 0.95));
+  }
+
+  const sortedNum = (arr) => arr.slice().sort((a, b) => a - b);
+
+  return {
+    method,
+    bands,
+    ruinRate: ruined.length / RUNS,
+    ruinAgeMedian: ruined.length
+      ? p.startAge + percentile(sortedNum(ruined.map(r => r.ruinedYear)), 0.5)
+      : null,
+    receivedMedian: percentile(sortedNum(runs.map(r => r.received)), 0.5),
+    finalMedian: percentile(sortedNum(runs.map(r => r.yearly[p.years - 1])), 0.5),
+    lastDrawMedian: percentile(sortedNum(runs.map(r => r.lastDraw)), 0.5)
+  };
+}
+
+/* =========================
+   入力の読み取り
+========================= */
+
+function readParams() {
+  const num = (id, fallback) => {
+    const v = Number($(id).value);
+    return Number.isFinite(v) ? v : fallback;
+  };
+
+  return {
+    initial: Math.max(0, num("initial", 0)),
+    startAge: num("startAge", 65),
+    years: Math.min(70, Math.max(1, Math.round(num("years", 30)))),
+    inflation: num("inflation", 0) / 100,
+    ret: num("ret", 0) / 100,
+    risk: Math.max(0, num("risk", 0)) / 100,
+    monthly: Math.max(0, num("monthly", 0)),
+    indexed: $("indexed").value === "1",
+    rate: Math.max(0.001, num("rate", 4)) / 100,
+    ruleRate: Math.max(0.001, num("ruleRate", 4)) / 100,
+    incomeAge: num("incomeAge", 65),
+    incomeMonthly: Math.max(0, num("incomeMonthly", 0))
+  };
+}
+
+function currentMethod() {
+  return document.querySelector('input[name="method"]:checked').value;
+}
+
+/* =========================
+   表示
+========================= */
+
+const yen = (v) => Math.round(v).toLocaleString("ja-JP") + " 円";
+
+function man(v) {
+  const m = v / 10000;
+
+  if (Math.abs(m) >= 10000) {
+    return (m / 10000).toFixed(2) + " 億円";
+  }
+
+  return Math.round(m).toLocaleString("ja-JP") + " 万円";
+}
+
+let chart = null;
+
+function drawChart(p, result) {
+
+  const labels = [];
+
+  for (let y = 0; y < p.years; y++) {
+    labels.push(`${y + 1}年目 (${p.startAge + y}歳)`);
+  }
+
+  const line = (label, data, color) => ({
+    label,
+    data,
+    borderColor: color,
+    backgroundColor: color,
+    borderWidth: label === "中央値" ? 3 : 2,
+    pointRadius: 0,
+    tension: 0.15
+  });
+
+  const ctx = $("chart").getContext("2d");
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        line("上位5%", result.bands.p95, "#38bdf8"),
+        line("上位30%", result.bands.p70, "#f472b6"),
+        line("中央値", result.bands.p50, "#f59e0b"),
+        line("下位30%", result.bands.p30, "#fcd34d"),
+        line("下位5%", result.bands.p5, "#34d399")
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: (c) => `${c.dataset.label}: ${yen(c.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: (v) => man(v) }
+        }
+      }
+    }
+  });
+}
+
+function riskClass(rate) {
+  if (rate <= 0.05) return "safe";
+  if (rate <= 0.20) return "warn";
+  return "risk";
+}
+
+function render(p, results, method) {
+
+  const r = results[method];
+
+  $("resultCard").hidden = false;
+
+  const pct = (r.ruinRate * 100).toFixed(1);
+
+  const valueEl = $("ruinRate");
+  valueEl.textContent = pct + " %";
+  valueEl.className = "value " + riskClass(r.ruinRate);
+
+  $("ruinSub").textContent =
+    r.ruinAgeMedian === null
+      ? `${RUNS}通りのうち、${p.years}年の間に資産が尽きた例はありませんでした。`
+      : `${RUNS}通り中 ${Math.round(r.ruinRate * RUNS)} 回で、途中で資産が尽きました`
+        + `（尽きた年齢の中央値：${Math.round(r.ruinAgeMedian)}歳）。`;
+
+  $("stats").innerHTML = `
+    <li>取り崩した総額（中央値）<b>${man(r.receivedMedian)}</b></li>
+    <li>${p.years}年後の資産（中央値）<b>${man(r.finalMedian)}</b></li>
+    <li>最終年の取り崩し月額（中央値）<b>${yen(r.lastDrawMedian)}</b></li>
+  `;
+
+  drawChart(p, r);
+
+  $("compareBody").innerHTML = Object.keys(METHODS).map(key => {
+    const x = results[key];
+
+    return `
+      <tr class="${key === method ? "is-current" : ""}">
+        <td>${METHODS[key]}</td>
+        <td>${(x.ruinRate * 100).toFixed(1)} %</td>
+        <td>${man(x.receivedMedian)}</td>
+        <td>${man(x.finalMedian)}</td>
+        <td>${yen(x.lastDrawMedian)}</td>
+      </tr>
+    `;
+  }).join("");
+
+  $("compareNote").textContent =
+    "同じ資産・同じ運用条件・同じ相場シナリオで、取り崩し方だけを変えた場合の比較です。"
+    + "定率は残高に応じて取り崩し額が減るため尽きにくい一方、"
+    + "受け取れる額が相場に左右されます。定額と4%ルールは受取額が安定する代わりに、"
+    + "尽きる危険を負います。";
+}
+
+/* =========================
+   保存
+========================= */
+
+const FIELDS = ["monthly", "indexed", "rate", "ruleRate", "initial", "startAge",
+                "years", "inflation", "ret", "risk", "incomeAge", "incomeMonthly"];
+
+function save() {
+  try {
+    const data = { method: currentMethod() };
+    for (const id of FIELDS) data[id] = $(id).value;
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  } catch (e) {
+    /* 保存できなくても計算はできる */
+  }
+}
+
+function restore() {
+  let data = null;
+
+  try {
+    data = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+  } catch (e) {
+    return;
+  }
+
+  if (!data) return;
+
+  for (const id of FIELDS) {
+    if (typeof data[id] === "string" && $(id)) $(id).value = data[id];
+  }
+
+  if (data.method && $("m-" + data.method)) {
+    $("m-" + data.method).checked = true;
+  }
+}
+
+/* =========================
+   起動
+========================= */
+
+function updateMethodUI() {
+  const method = currentMethod();
+
+  for (const key of Object.keys(METHODS)) {
+    $("pane-" + key).classList.toggle("is-active", key === method);
+  }
+
+  $("methodNote").textContent = METHOD_NOTES[method];
+}
+
+$("referenceBox").innerHTML = REFERENCE.map((f, i) => `
+  <div class="reference-item" data-ref="${i}">
+    ${f.name}（期待リターン ${f.ret}% / リスク ${f.risk}%）
+  </div>
+`).join("");
+
+$("referenceBox").addEventListener("click", (e) => {
+  const item = e.target.closest("[data-ref]");
+  if (!item) return;
+
+  const f = REFERENCE[Number(item.dataset.ref)];
+
+  $("ret").value = f.ret;
+  $("risk").value = f.risk;
+
+  save();
+});
+
+for (const el of document.querySelectorAll('input[name="method"]')) {
+  el.addEventListener("change", () => {
+    updateMethodUI();
+    save();
+  });
+}
+
+document.querySelector(".container").addEventListener("input", save);
+
+$("run").addEventListener("click", () => {
+  const p = readParams();
+
+  /* 同じ相場シナリオを3方式で共有する */
+  const sc = makeScenarios(p);
+
+  const results = {};
+  for (const key of Object.keys(METHODS)) results[key] = simulate(p, key, sc);
+
+  render(p, results, currentMethod());
+  save();
+
+  $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+restore();
+updateMethodUI();
+
+})();
+</script>
+
+<article class="tool-article">
+
+<h2>このツールでできること</h2>
+
+<p>
+貯めた資産を取り崩しながら暮らすと、何歳まで持つのか。
+その答えは1つに決まりません。運用結果によって大きく変わるからです。
+このツールは、期待リターンとリスク（標準偏差）から
+<strong>1000通りの将来</strong>を作り、そのうち何回で資産が尽きたかを
+<strong>確率</strong>として出します。
+</p>
+
+<ul>
+<li><strong>資産が尽きる確率</strong>と、尽きた場合の年齢の目安</li>
+<li>資産推移の帯（中央値と上下の幅）</li>
+<li><strong>定額・定率・4%ルールを同じ条件で比較</strong></li>
+<li>年金などの収入、インフレ率も反映できます</li>
+</ul>
+
+<h2>なぜ「平均◯%で回るから大丈夫」が通じないのか</h2>
+
+<p>
+積立と取り崩しでは、相場の下落の意味がまったく違います。
+</p>
+
+<p>
+積立の時期に暴落が来ても、同じ金額でより多く買えるため、
+長い目で見れば不利とは限りません。
+ところが<strong>取り崩しの時期に暴落が来ると、減った資産から生活費を抜くことになります。</strong>
+売った分は二度と回復に参加しません。
+</p>
+
+<p>
+そのため、<strong>平均リターンが同じでも、下落が起きた順番によって結果が大きく変わります。</strong>
+これを<strong>収益率配列リスク</strong>（sequence of returns risk）と呼びます。
+最初の数年が悪いだけで、同じ平均リターンでも資産が尽きてしまうことがあります。
+</p>
+
+<p>
+「毎年5%で回るから4%取り崩しても減らない」という計算は、
+この順番の影響をまったく見ていません。
+取り崩しを確率で捉える必要があるのは、このためです。
+</p>
+
+<h2>3つの取り崩し方の違い</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>方式</th><th>取り崩し額</th><th>長所</th><th>短所</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>定額</strong></td>
+<td>毎月きまった額</td>
+<td>生活の計画が立てやすい</td>
+<td>下落時も同じ額を売るため、尽きる危険がいちばん高い</td>
+</tr>
+<tr>
+<td><strong>定率</strong></td>
+<td>毎年、残高の一定割合</td>
+<td>残高が減れば取り崩し額も減るため、理屈のうえでは尽きない</td>
+<td>受け取れる額が相場に左右され、生活費が読めない</td>
+</tr>
+<tr>
+<td><strong>4%ルール</strong></td>
+<td>初年度に資産の4%、以降は物価スライド</td>
+<td>受取額が実質的に一定に保たれる</td>
+<td>残高が減っても取り崩し額が下がらないため、尽きることがある</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<p class="note">
+上の「3つの方式を同じ条件で比べる」の表を見ると、
+<strong>定率は尽きる確率が低い代わりに、取り崩した総額も少なくなりがち</strong>
+であることが分かります。
+安全さと受取額は交換関係にあり、どちらかが一方的に優れているわけではありません。
+</p>
+
+<h2>4%ルールをそのまま使ってよいのか</h2>
+
+<p>
+4%ルールは、1990年代に米国の過去データを使って提唱された経験則です。
+「引退時の資産の4%を初年度に取り崩し、以降は物価上昇に合わせて増やしていけば、
+30年間は尽きなかった」という調査が元になっています。
+</p>
+
+<p>
+覚えておきたい前提が3つあります。
+</p>
+
+<ul>
+<li><strong>米国株と米国債の過去実績が前提</strong>です。ほかの国や、別の資産配分ではそのまま当てはまりません</li>
+<li><strong>30年間という期間が前提</strong>です。50代で引退して40年以上使うなら、条件が変わります</li>
+<li><strong>税金と手数料は考慮されていません</strong>。日本の課税口座なら利益に約20%かかります</li>
+</ul>
+
+<p>
+このツールで期待リターンやリスク、期間を変えてみると、
+4%という数字が条件次第で安全にも危険にもなることが分かります。
+<strong>数字をそのまま信じるのではなく、自分の条件で確かめる</strong>ための道具として使ってください。
+</p>
+
+<h2>結果の読み方</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>項目</th><th>意味</th></tr>
+</thead>
+<tbody>
+<tr><td>尽きる確率</td><td>1000通りのうち、期間の途中で目標額を取り崩せなくなった割合</td></tr>
+<tr><td>取り崩した総額</td><td>期間を通じて資産から受け取れた合計。方式を比べるときの物差しになります</td></tr>
+<tr><td>最終年の月額</td><td>最後の年に取り崩していた月額。定率では相場次第でこれが大きく減ります</td></tr>
+<tr><td>下位5%の線</td><td>運が悪かった場合の姿。<strong>ここが早い段階で0に触れるなら、条件を見直すべきです</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<p>
+中央値だけを見て安心しないでください。
+中央値は「半分はこれより悪くなる」という値でもあります。
+</p>
+
+<h2>尽きる確率を下げるには</h2>
+
+<ul>
+<li><strong>取り崩し額を下げる</strong>— もっとも効果が大きい調整です</li>
+<li><strong>取り崩しの開始を遅らせる</strong>— 運用期間が延び、必要な年数も減ります</li>
+<li><strong>年金などの収入を織り込む</strong>— 資産から出す額が減るため、確率は大きく下がります</li>
+<li><strong>下落時だけ取り崩しを減らす</strong>— 定率に近い運用をすると、尽きる危険を抑えられます</li>
+<li><strong>リスクを下げる</strong>— ただし期待リターンも下がるため、必ず改善するとは限りません。両方を変えて試してください</li>
+</ul>
+
+<h2>このシミュレーションの前提と限界</h2>
+
+<p>
+数字を正しく受け取るために、何を計算していないかを明記します。
+</p>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>前提</th><th>影響</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>リターンが正規分布に従うと仮定</td>
+<td>現実の暴落は正規分布より深く、頻度も高めです。<strong>尽きる確率はやや小さめに出ます</strong></td>
+</tr>
+<tr>
+<td>試行は1000通り</td>
+<td>確率は実行のたびに1%前後ぶれます。0.1%単位の差に意味はありません</td>
+</tr>
+<tr>
+<td>税金・手数料・信託報酬を引いていない</td>
+<td>実際の手取りはこれより小さくなります。課税口座なら利益に約20%かかります</td>
+</tr>
+<tr>
+<td>資産配分は期間を通じて一定</td>
+<td>年齢とともに保守的にしていく運用は再現していません</td>
+</tr>
+<tr>
+<td>取り崩しは毎月初に行う</td>
+<td>年1回まとめて取り崩す場合とは、わずかに結果が変わります</td>
+</tr>
+<tr>
+<td>収入は名目で固定</td>
+<td>年金額が物価に完全には連動しない点は再現していません。実際には実質的な価値が目減りする可能性があります</td>
+</tr>
+<tr>
+<td>表示はすべて名目値</td>
+<td>物価が上がれば、同じ金額で買えるものは減ります</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 実行するたびに確率が少し変わります。</strong><br>
+A. 乱数で1000通りの将来を作り直しているためです。
+1%前後のぶれは正常で、これは「将来が1つに決まらない」ことがそのまま出ている状態です。
+大きな傾向を読むために使ってください。</p>
+
+<p><strong>Q. 尽きる確率は何%までなら安心ですか？</strong><br>
+A. 一律の基準はありませんが、一般に<strong>5%以下なら余裕がある、20%を超えると条件の見直しが必要</strong>と考えられることが多いです。
+ただしこのツールは正規分布を仮定しており、現実の暴落はそれより厳しくなりがちなので、
+表示される確率は<strong>楽観寄り</strong>と考えて余裕を持たせてください。</p>
+
+<p><strong>Q. 定率なのに尽きる確率が0%にならないことがあります。</strong><br>
+A. 年金などの収入を設定していない場合、定率では残高に比例して取り崩すため、
+理屈のうえでは資産は0になりません。表示が0%にならない場合は、
+入力した取り崩し率が極端に高いか、期間が非常に長い可能性があります。</p>
+
+<p><strong>Q. インフレはどう扱われていますか？</strong><br>
+A. 「物価スライドする」を選んだ定額と、4%ルールでは、
+取り崩し額が毎年インフレ率の分だけ増えていきます。
+実質的な価値で結果を見たい場合は、期待リターンから想定インフレ率を引いた値を入れて、
+インフレ率を0にすると近い形になります。</p>
+
+<p><strong>Q. 積立の段階から計算したいのですが。</strong><br>
+A. <a href="/fukuri/">積立シミュレーション</a>をお使いください。
+そこで求めた資産額を、このツールの「取り崩し開始時の資産」に入れると、
+貯める段階から使う段階までつながります。</p>
+
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. お使いのブラウザに保存され、次に開いたときに復元されます。
+サーバーに送信されることはありません。</p>
+
+<h2>免責事項</h2>
+
+<p class="note">
+本ツールは資産の取り崩しを試算するための計算ツールであり、
+特定の金融商品の取得・売却や、特定の取り崩し方をすすめるものではありません。
+入力する期待リターン・リスクは仮定値であり、将来の運用成果を示すものでも保証するものでもありません。
+表示される金額は税金・手数料・信託報酬を考慮していない名目値です。
+実際の資産計画は、ご自身の状況に応じてご判断ください。
+</p>
+
+</article>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "取り崩しシミュレーションを実行するたびに確率が変わるのはなぜですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "乱数で1000通りの将来を作り直しているためです。1%前後のぶれは正常で、将来が1つに決まらないことがそのまま出ている状態です。大きな傾向を読むために使ってください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "資産が尽きる確率は何%までなら安心ですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "一律の基準はありませんが、一般に5%以下なら余裕がある、20%を超えると条件の見直しが必要と考えられることが多いです。このツールは正規分布を仮定しており現実の暴落はそれより厳しくなりがちなので、表示される確率は楽観寄りと考えて余裕を持たせてください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "定額・定率・4%ルールはどう違いますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "定額は毎月きまった額を取り崩す方法で生活の計画は立てやすい反面、下落時も同じ額を売るため尽きる危険が最も高くなります。定率は毎年残高の一定割合を取り崩すため理屈のうえでは尽きませんが、受け取れる額が相場に左右されます。4%ルールは初年度に資産の4%を取り崩し以降は物価スライドさせる方法で、受取額は安定しますが残高が減っても取り崩し額が下がらないため尽きることがあります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "4%ルールは日本でもそのまま使えますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "そのままは当てはまりません。4%ルールは米国株と米国債の過去実績、30年という期間を前提にした経験則で、税金と手数料も考慮されていません。日本の課税口座では利益に約20%の税がかかります。自分の資産配分と期間で確かめる必要があります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "なぜ取り崩しでは平均リターンだけで判断できないのですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "取り崩しの時期に暴落が来ると、減った資産から生活費を抜くことになり、売った分は回復に参加できません。そのため平均リターンが同じでも、下落が起きた順番によって結果が大きく変わります。これを収益率配列リスクと呼びます。"
+      }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
