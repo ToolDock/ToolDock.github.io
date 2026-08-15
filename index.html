@@ -58,52 +58,10 @@ ToolDockは、無料で使える便利なWebツールをまとめたサイトで
 ツールのリクエストも受け付けています。依頼は下記「Contact」タブから匿名で送ることができます。
 </p>
 
-<h2>業務</h2>
-
-<ul>
-  <li><a href="/counter/">文字数カウントツール</a></li>
-  <li><a href="/genkoyosi/">Web原稿用紙エディタ</a></li>
-  <li><a href="/todolist/">ToDoリスト</a></li>
-  <li><a href="/timer/">タイマー・ストップウォッチ</a></li>
-  <li><a href="/qr/">QRコード作成ツール</a></li>
-  <li><a href="/makejson/">JSON成形・圧縮ツール</a></li>
-  <li><a href="/seiki/">正規表現テスター</a></li>
-</ul>
-
-<h2>生活</h2>
-
-<ul>
-  <li><a href="/roulette/">Webルーレット</a></li>
-  <li><a href="/i_roulette/">イカサマルーレット</a></li>
-  <li><a href="/h_roulette/">ギリギリまで結果が分からないヒリつくルーレット</a></li>
-  <li><a href="/mojibake/">文字化け生成・復元ツール</a></li>
-  <li><a href="/whichcheap/">どっちが安い？コスパ計算ツール</a></li>
-  <li><a href="/fukuri/">複利・積立シミュレーター</a></li>
-  <li><a href="/seiza/">星座占い｜12星座の運勢チェック</a></li>
-  <li><a href="/omikuji/">おみくじ（大凶〜超大吉）</a></li>
-</ul>
-
-<h2>数学</h2>
-
-<ul>
-  <li><a href="/hakohige/">箱ひげ図をきれいに描写するツール</a></li>
-  <li><a href="/matrix/">行列計算ツール</a></li>
-  <li><a href="/circuit/">論理回路図メーカー（論理式・真理値表・状態遷移表から）</a></li>
-  <li><a href="/insubunkai/">因数分解の計算（たすき掛けの途中式つき）</a></li>
-  <li><a href="/renritsu/">連立方程式の計算（途中式つき）</a></li>
-  <li><a href="/hakidasi/">途中式付き・掃き出し法ツール</a></li>
-  <li><a href="/koyuchi/">固有値・固有ベクトルの計算（途中式つき）</a></li>
-  <li><a href="/yukosuji/">有効数字の計算（途中式つき）</a></li>
-  <li><a href="/ode/">途中式付き・微分方程式ツール</a></li>
-  <li><a href="/radix/">n進数変換ツール（2進数・16進数など）</a></li>
-</ul>
-
-<h2>ゲーム</h2>
-
-<ul>
-  <li><a href="/typing-game/">横文字ばっかりのタイピングゲーム</a></li>
-  <li><a href="/kintoku/">パワプロ2026-2027 金特研究所一覧と獲得できる金特まとめ</a></li>
-</ul>
+<!-- カテゴリ別のツール一覧。
+     中身は js/tool-data.js を唯一の情報源として生成する。
+     ここを手で書くと、ツールを足したときに載せ忘れる -->
+<div id="tool-list"></div>
 
 <h2>その他</h2>
 
@@ -112,6 +70,27 @@ ToolDockは、無料で使える便利なWebツールをまとめたサイトで
   <li><a href="/privacy/">Privacy Policy</a></li>
   <li><a href="/contact/">Contact</a></li>
 </ul>
+
+<script src="/js/tool-data.js"></script>
+
+<script>
+  document.getElementById("tool-list").innerHTML =
+    Object.entries(window.CATEGORY_NAMES)
+      .map(([key, name]) => {
+
+        const items = TOOLS.filter(t => !t.hidden && t.category === key);
+
+        if (items.length === 0) return "";
+
+        return `
+          <h2>${name}</h2>
+          <ul>
+            ${items.map(t => `<li><a href="${t.url}">${t.title}</a></li>`).join("")}
+          </ul>
+        `;
+      })
+      .join("");
+</script>
 
 
 <!-- 共通フッター -->
