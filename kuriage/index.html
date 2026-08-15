@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>繰り上げ返済と投資はどっちが得？｜勝つ確率で比べる | ToolDock</title>
+<meta name="description" content="住宅ローンの繰り上げ返済に回すか、その分を投資に回すかを比較する無料ツール。同じ相場シナリオで1000通りを計算し、投資が勝つ確率と手元に残る資産の差を出します。ローン金利・残高・残年数を入れるだけ。団信や住宅ローン控除の考え方も掲載。">
+<link rel="canonical" href="https://tooldock.github.io/kuriage/">
+
+<script>
+const CURRENT_TOOL = "kuriage";
+</script>
+
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<!-- グラフ描画ライブラリ（自前で配信。CDNに依存しない） -->
+<script src="/js/vendor/chart.umd.min.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    font-family:sans-serif;
+    background:#f4f6fb;
+    color:#222;
+}
+
+header{
+    background:#1e293b;
+    color:white;
+    padding:20px;
+    text-align:center;
+}
+
+header h1{
+    margin:0 0 12px;
+    font-size:28px;
+}
+
+header .lead{
+    max-width:840px;
+    margin:0 auto;
+    line-height:1.8;
+}
+
+.save-notice{
+    margin-top:10px;
+    font-size:13px;
+    color:#93c5fd;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:14px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card h2{
+    margin-top:0;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+
+label{
+    display:block;
+    margin-bottom:5px;
+    font-size:14px;
+}
+
+input,
+select{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    box-sizing:border-box;
+    font-size:1rem;
+}
+
+button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:1rem;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.small{
+    font-size:13px;
+    color:#666;
+    line-height:1.7;
+}
+
+.reference-box{
+    background:#f8fafc;
+    padding:12px;
+    border-radius:10px;
+    margin-top:10px;
+    line-height:1.8;
+    font-size:14px;
+}
+
+.reference-item{
+    padding:5px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.reference-item:hover{
+    background:#dbeafe;
+}
+
+summary{
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.note-box{
+    margin:0 0 18px;
+    padding:12px 14px;
+    background:#fff7ed;
+    border-left:4px solid #f59e0b;
+    border-radius:8px;
+    font-size:14px;
+    line-height:1.8;
+    color:#7c2d12;
+}
+
+.loan-info{
+    margin-top:14px;
+    padding:12px 14px;
+    background:#f1f5f9;
+    border-radius:10px;
+    font-size:14px;
+    line-height:1.9;
+    color:#334155;
+}
+
+.loan-info b{
+    color:#0f172a;
+}
+
+/* 結果 */
+
+.headline{
+    text-align:center;
+    padding:10px 0 4px;
+}
+
+.headline .label{
+    font-size:15px;
+    color:#475569;
+}
+
+.headline .value{
+    font-size:52px;
+    font-weight:bold;
+    line-height:1.2;
+    color:#1d4ed8;
+}
+
+.headline .sub{
+    font-size:14px;
+    color:#64748b;
+    max-width:660px;
+    margin:6px auto 0;
+    line-height:1.7;
+}
+
+.duel{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:14px;
+    margin-top:22px;
+}
+
+.duel-col{
+    padding:16px;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    background:#f8fafc;
+}
+
+.duel-col h3{
+    margin:0 0 10px;
+    font-size:16px;
+}
+
+.duel-col.repay h3{ color:#b45309; }
+.duel-col.invest h3{ color:#1d4ed8; }
+
+.duel-col dl{
+    margin:0;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:6px 10px;
+    font-size:14px;
+}
+
+.duel-col dt{ color:#64748b; }
+.duel-col dd{ margin:0; text-align:right; font-weight:bold; }
+
+.chart-wrapper{
+    position:relative;
+    width:100%;
+    height:420px;
+    margin-top:24px;
+}
+
+table.compare{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:12px;
+}
+
+table.compare th,
+table.compare td{
+    border-bottom:1px solid #e5e7eb;
+    padding:10px;
+    text-align:right;
+    font-size:14px;
+    white-space:nowrap;
+}
+
+table.compare th:first-child,
+table.compare td:first-child{
+    text-align:left;
+}
+
+table.compare thead th{
+    background:#f8fafc;
+}
+
+table.compare tr.is-current{
+    background:#eff6ff;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+@media (max-width: 600px){
+
+    header h1{
+        font-size:22px;
+    }
+
+    .headline .value{
+        font-size:40px;
+    }
+
+    .chart-wrapper{
+        height:320px;
+    }
+
+    .card{
+        padding:16px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>繰り上げ返済と投資はどっちが得？</h1>
+    <div class="lead">
+        余ったお金を住宅ローンの繰り上げ返済に回すか、投資に回すか。
+        繰り上げ返済は<strong>ローン金利分の確実な利益</strong>、
+        投資は<strong>期待値は高いが不確実</strong>。
+        同じ相場シナリオで1000通りを計算し、
+        <strong>投資が勝つ確率</strong>を出します。
+    </div>
+    <div class="save-notice">
+        ※設定内容はブラウザにのみ保存されます。サーバーに送られることはありません。
+    </div>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+    <h2>住宅ローンの状況</h2>
+
+    <div class="grid">
+        <div>
+            <label for="balance">ローン残高（円）</label>
+            <input type="number" id="balance" value="30000000" step="1000000" min="0">
+        </div>
+        <div>
+            <label for="loanRate">ローン金利（年 %）</label>
+            <input type="number" id="loanRate" value="0.8" step="0.05" min="0" max="15">
+        </div>
+        <div>
+            <label for="loanYears">残りの返済年数</label>
+            <input type="number" id="loanYears" value="30" min="1" max="50">
+        </div>
+    </div>
+
+    <div class="loan-info" id="loanInfo"></div>
+
+</div>
+
+<div class="card">
+
+    <h2>余ったお金の使い道</h2>
+
+    <div class="grid">
+        <div>
+            <label for="extra">毎月まわせる金額（円）</label>
+            <input type="number" id="extra" value="30000" step="5000" min="0">
+        </div>
+        <div>
+            <label for="lump">今すぐ使えるまとまった資金（円）</label>
+            <input type="number" id="lump" value="0" step="100000" min="0">
+        </div>
+    </div>
+
+    <p class="small">
+        この金額を<strong>全額くり上げ返済にまわす場合</strong>と、
+        <strong>全額投資にまわす場合</strong>を比べます。
+        繰り上げ返済は返済期間を短くする方式（期間短縮型）で計算し、
+        完済後は浮いた返済額をそのまま投資にまわすものとします。
+    </p>
+
+</div>
+
+<div class="card">
+
+    <h2>運用の前提</h2>
+
+    <div class="grid">
+        <div>
+            <label for="ret">期待リターン（年 %）</label>
+            <input type="number" id="ret" value="6" step="0.1" min="-20" max="30">
+        </div>
+        <div>
+            <label for="risk">リスク＝標準偏差（年 %）</label>
+            <input type="number" id="risk" value="18" step="0.1" min="0" max="60">
+        </div>
+        <div>
+            <label for="tax">投資利益への税率（%）</label>
+            <input type="number" id="tax" value="0" step="0.1" min="0" max="55">
+        </div>
+    </div>
+
+    <p class="small">
+        新NISAなど非課税の口座で運用するなら税率は0のままにしてください。
+        課税口座なら20.315を入れます。
+    </p>
+
+    <details>
+        <summary>期待リターンとリスクの参考値</summary>
+        <div class="reference-box" id="referenceBox"></div>
+    </details>
+
+</div>
+
+<div class="card">
+    <button type="button" id="run">比較する</button>
+</div>
+
+<div class="card" id="resultCard" hidden>
+
+    <h2>結果</h2>
+
+    <div class="headline">
+        <div class="label">投資が繰り上げ返済に勝つ確率</div>
+        <div class="value" id="winRate">-</div>
+        <div class="sub" id="winSub"></div>
+    </div>
+
+    <div class="duel">
+        <div class="duel-col repay">
+            <h3>繰り上げ返済にまわした場合</h3>
+            <dl id="repayStats"></dl>
+        </div>
+        <div class="duel-col invest">
+            <h3>投資にまわした場合</h3>
+            <dl id="investStats"></dl>
+        </div>
+    </div>
+
+    <div class="chart-wrapper">
+        <canvas id="chart"></canvas>
+    </div>
+
+    <h2 style="margin-top:32px">ローン金利が変わるとどうなるか</h2>
+
+    <div class="table-wrap">
+        <table class="compare">
+            <thead>
+                <tr>
+                    <th>ローン金利</th>
+                    <th>投資が勝つ確率</th>
+                    <th>投資の最終資産<br>（中央値）</th>
+                    <th>繰上返済の最終資産</th>
+                    <th>差（中央値）</th>
+                </tr>
+            </thead>
+            <tbody id="compareBody"></tbody>
+        </table>
+    </div>
+
+    <p class="small" id="compareNote"></p>
+
+</div>
+
+</div>
+
+<script>
+(() => {
+
+"use strict";
+
+/* =========================
+   繰り上げ返済と投資の比較
+
+   繰り上げ返済は「ローン金利と同じ利回りの、確実な運用」に等しい。
+   投資は期待値では上回りやすいが、外れる可能性がある。
+   同じ相場シナリオを両方に当てて、勝つ確率で比べる。
+========================= */
+
+const RUNS = 1000;
+const STORE_KEY = "tooldock-kuriage";
+
+const RATE_PATTERNS = [0.3, 0.5, 0.8, 1.0, 1.5, 2.0, 3.0];
+
+const REFERENCE = [
+  { name: "オールカントリー", ret: 8, risk: 16 },
+  { name: "S&P500", ret: 10, risk: 18 },
+  { name: "TOPIX", ret: 6, risk: 15 },
+  { name: "株式と債券を半分ずつ（目安）", ret: 5, risk: 10 },
+  { name: "債券中心（目安）", ret: 2, risk: 5 }
+];
+
+const $ = (id) => document.getElementById(id);
+
+function randn() {
+  let u = 0, v = 0;
+
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+/* =========================
+   住宅ローンの毎月返済額（元利均等）
+========================= */
+
+function monthlyPayment(balance, annualRate, years) {
+  const n = years * 12;
+  const r = annualRate / 12;
+
+  if (balance <= 0 || n <= 0) return 0;
+  if (r === 0) return balance / n;
+
+  return balance * r / (1 - Math.pow(1 + r, -n));
+}
+
+/* =========================
+   相場シナリオ（両方式で共有する）
+========================= */
+
+function makeScenarios(months, ret, risk) {
+
+  const arr = new Float64Array(RUNS * months);
+
+  const meanM = Math.pow(1 + ret, 1 / 12) - 1;
+  const volM = risk / Math.sqrt(12);
+  const adjM = meanM - (volM * volM) / 2;
+
+  for (let i = 0; i < arr.length; i++) {
+    arr[i] = adjM + volM * randn();
+  }
+
+  return { arr, months };
+}
+
+/* =========================
+   1回分の計算
+
+   期間は「本来の返済年数」で固定して比べる。
+   繰り上げ返済側は早く完済し、完済後は
+   浮いた返済額と余剰金をすべて投資にまわす。
+========================= */
+
+function runOnce(p, sc, runIndex, loanRate) {
+
+  const base = runIndex * sc.months;
+  const payment = monthlyPayment(p.balance, loanRate, p.loanYears);
+  const rM = loanRate / 12;
+
+  /* --- 繰り上げ返済にまわす場合 --- */
+  let balA = Math.max(0, p.balance - p.lump);
+  let assetA = 0;
+  let investedA = 0;      /* 投資にまわした元本の合計 */
+  let costA = 0;          /* 支払った利息の合計 */
+
+  /* --- 投資にまわす場合 --- */
+  let balB = p.balance;
+  let assetB = p.lump;
+  let costB = 0;
+  let investedB = p.lump;
+
+  const pathA = [];
+  const pathB = [];
+
+  for (let t = 0; t < sc.months; t++) {
+
+    const r = sc.arr[base + t];
+
+    /* 入金と利息の時点をそろえる。
+       ローンは「利息が付いてから返済」なので、投資も
+       「運用してから入金」の順にしないと、投資側だけ
+       1か月分多く運用されて構造的に有利になってしまう */
+
+    assetA *= 1 + r;
+    assetB *= 1 + r;
+
+    /* 毎月使えるお金は、どちらの方式でも同じ（返済額＋余剰金）。
+       返済に使わなかった分は必ず投資にまわす。
+       完済する月は返済額が端数になるため、
+       ここで余りを拾わないと現金が消えてしまう */
+    const available = payment + p.extra;
+
+    /* --- A：繰り上げ返済 --- */
+    if (balA > 0) {
+      const interest = balA * rM;
+      costA += interest;
+
+      /* 通常返済＋繰り上げ分を元本にあてる */
+      const principal = Math.min(balA, available - interest);
+      balA = Math.max(0, balA - principal);
+
+      const leftover = available - (interest + principal);
+      assetA += leftover;
+      investedA += leftover;
+    } else {
+      /* 完済後は、返済に充てていた分と余剰金をすべて投資へ */
+      assetA += available;
+      investedA += available;
+    }
+
+    /* --- B：投資 --- */
+    if (balB > 0) {
+      const interest = balB * rM;
+      costB += interest;
+
+      const principal = Math.min(balB, payment - interest);
+      balB = Math.max(0, balB - principal);
+
+      const put = available - (interest + principal);
+      assetB += put;
+      investedB += put;
+    } else {
+      assetB += available;
+      investedB += available;
+    }
+
+    if ((t + 1) % 12 === 0) {
+      pathA.push(assetA - balA);
+      pathB.push(assetB - balB);
+    }
+  }
+
+  /* 投資の利益には税がかかる。繰り上げ返済で浮いた利息は非課税 */
+  const gainB = Math.max(0, assetB - investedB);
+  const netB = assetB - gainB * p.tax;
+
+  /* 繰り上げ返済側も、投資にまわした分には利益が出る */
+  const gainA2 = Math.max(0, assetA - investedA);
+  const netA2 = assetA - gainA2 * p.tax;
+
+  return {
+    repay: netA2 - balA,
+    invest: netB - balB,
+    pathA,
+    pathB
+  };
+}
+
+function percentile(sorted, q) {
+  if (sorted.length === 0) return 0;
+
+  const i = (sorted.length - 1) * q;
+  const lo = Math.floor(i);
+  const hi = Math.ceil(i);
+
+  if (lo === hi) return sorted[lo];
+
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
+}
+
+const asc = (arr) => arr.slice().sort((a, b) => a - b);
+
+function simulate(p, sc, loanRate) {
+
+  const runs = [];
+
+  for (let i = 0; i < RUNS; i++) runs.push(runOnce(p, sc, i, loanRate));
+
+  const repay = asc(runs.map(r => r.repay));
+  const invest = asc(runs.map(r => r.invest));
+  const diff = asc(runs.map(r => r.invest - r.repay));
+
+  const ties = runs.filter(r => Math.abs(r.invest - r.repay) < 1).length;
+  const wins = runs.filter(r => r.invest - r.repay >= 1).length;
+
+  const bands = { repayMid: [], investMid: [], investLow: [] };
+
+  for (let y = 0; y < p.loanYears; y++) {
+    const a = asc(runs.map(r => r.pathA[y]));
+    const b = asc(runs.map(r => r.pathB[y]));
+
+    bands.repayMid.push(percentile(a, 0.5));
+    bands.investMid.push(percentile(b, 0.5));
+    bands.investLow.push(percentile(b, 0.05));
+  }
+
+  return {
+    loanRate,
+    winRate: wins / RUNS,
+    tieRate: ties / RUNS,
+    bands,
+    repay: {
+      mid: percentile(repay, 0.5),
+      low: percentile(repay, 0.05),
+      high: percentile(repay, 0.95)
+    },
+    invest: {
+      mid: percentile(invest, 0.5),
+      low: percentile(invest, 0.05),
+      high: percentile(invest, 0.95)
+    },
+    diffMid: percentile(diff, 0.5)
+  };
+}
+
+/* =========================
+   入力
+========================= */
+
+function readParams() {
+  const num = (id, fallback) => {
+    const v = Number($(id).value);
+    return Number.isFinite(v) ? v : fallback;
+  };
+
+  return {
+    balance: Math.max(0, num("balance", 0)),
+    loanRate: Math.max(0, num("loanRate", 0)) / 100,
+    loanYears: Math.min(50, Math.max(1, Math.round(num("loanYears", 30)))),
+    extra: Math.max(0, num("extra", 0)),
+    lump: Math.max(0, num("lump", 0)),
+    ret: num("ret", 0) / 100,
+    risk: Math.max(0, num("risk", 0)) / 100,
+    tax: Math.max(0, num("tax", 0)) / 100
+  };
+}
+
+/* =========================
+   表示
+========================= */
+
+function man(v) {
+  const m = v / 10000;
+
+  if (Math.abs(m) >= 10000) {
+    return (m / 10000).toFixed(2) + " 億円";
+  }
+
+  return Math.round(m).toLocaleString("ja-JP") + " 万円";
+}
+
+const yen = (v) => Math.round(v).toLocaleString("ja-JP") + " 円";
+
+function updateLoanInfo() {
+  const p = readParams();
+  const pay = monthlyPayment(p.balance, p.loanRate, p.loanYears);
+  const total = pay * p.loanYears * 12;
+
+  $("loanInfo").innerHTML =
+    `毎月の返済額 <b>${yen(pay)}</b> ／ `
+    + `総返済額 <b>${man(total)}</b> ／ `
+    + `うち利息 <b>${man(total - p.balance)}</b>`;
+}
+
+let chart = null;
+
+function drawChart(p, r) {
+
+  const labels = [];
+  for (let y = 0; y < p.loanYears; y++) labels.push(`${y + 1}年目`);
+
+  const line = (label, data, color, dash) => ({
+    label,
+    data,
+    borderColor: color,
+    backgroundColor: color,
+    borderWidth: dash ? 2 : 3,
+    borderDash: dash ? [6, 4] : [],
+    pointRadius: 0,
+    tension: 0.15
+  });
+
+  const ctx = $("chart").getContext("2d");
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        line("繰上返済：中央値", r.bands.repayMid, "#d97706", false),
+        line("投資：中央値", r.bands.investMid, "#2563eb", false),
+        line("投資：下位5%", r.bands.investLow, "#93c5fd", true)
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        title: {
+          display: true,
+          text: "資産からローン残高を引いた金額（純資産）の推移"
+        },
+        tooltip: {
+          callbacks: { label: (c) => `${c.dataset.label}: ${man(c.parsed.y)}` }
+        }
+      },
+      scales: {
+        y: { ticks: { callback: (v) => man(v) } }
+      }
+    }
+  });
+}
+
+function render(p, main, table) {
+
+  $("resultCard").hidden = false;
+
+  $("winRate").textContent = (main.winRate * 100).toFixed(1) + " %";
+
+  const winCount = Math.round(main.winRate * RUNS);
+
+  $("winSub").textContent =
+    `${RUNS}通りのうち ${winCount} 回で、投資にまわしたほうが手元に多く残りました。`
+    + `${RUNS - winCount} 回では、繰り上げ返済のほうが上回っています。`
+    + `（ローン金利 ${(main.loanRate * 100).toFixed(2)}% との比較）`;
+
+  const stat = (o) => `
+    <dt>中央値</dt><dd>${man(o.mid)}</dd>
+    <dt>上位5%</dt><dd>${man(o.high)}</dd>
+    <dt>下位5%</dt><dd>${man(o.low)}</dd>
+  `;
+
+  $("repayStats").innerHTML = stat(main.repay);
+  $("investStats").innerHTML = stat(main.invest);
+
+  drawChart(p, main);
+
+  $("compareBody").innerHTML = table.map(x => `
+    <tr class="${Math.abs(x.loanRate - p.loanRate) < 1e-9 ? "is-current" : ""}">
+      <td>${(x.loanRate * 100).toFixed(2)} %</td>
+      <td>${(x.winRate * 100).toFixed(1)} %</td>
+      <td>${man(x.invest.mid)}</td>
+      <td>${man(x.repay.mid)}</td>
+      <td>${man(x.diffMid)}</td>
+    </tr>
+  `).join("");
+
+  $("compareNote").textContent =
+    "ローン金利のほかは同じ条件で計算しています。"
+    + "金利が高いほど繰り上げ返済の効果が大きくなり、投資が勝つ確率は下がります。"
+    + "金利が低いほど投資が有利になります。";
+}
+
+/* =========================
+   保存
+========================= */
+
+const FIELDS = ["balance", "loanRate", "loanYears", "extra", "lump", "ret", "risk", "tax"];
+
+function save() {
+  try {
+    const data = {};
+    for (const id of FIELDS) data[id] = $(id).value;
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  } catch (e) {
+    /* 保存できなくても計算はできる */
+  }
+}
+
+function restore() {
+  let data = null;
+
+  try {
+    data = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+  } catch (e) {
+    return;
+  }
+
+  if (!data) return;
+
+  for (const id of FIELDS) {
+    if (typeof data[id] === "string" && $(id)) $(id).value = data[id];
+  }
+}
+
+/* =========================
+   起動
+========================= */
+
+$("referenceBox").innerHTML = REFERENCE.map((f, i) => `
+  <div class="reference-item" data-ref="${i}">
+    ${f.name}（期待リターン ${f.ret}% / リスク ${f.risk}%）
+  </div>
+`).join("");
+
+$("referenceBox").addEventListener("click", (e) => {
+  const item = e.target.closest("[data-ref]");
+  if (!item) return;
+
+  const f = REFERENCE[Number(item.dataset.ref)];
+
+  $("ret").value = f.ret;
+  $("risk").value = f.risk;
+
+  save();
+});
+
+document.querySelector(".container").addEventListener("input", () => {
+  updateLoanInfo();
+  save();
+});
+
+$("run").addEventListener("click", () => {
+
+  const p = readParams();
+  const sc = makeScenarios(p.loanYears * 12, p.ret, p.risk);
+
+  const main = simulate(p, sc, p.loanRate);
+
+  const rates = RATE_PATTERNS.map(r => r / 100);
+
+  if (!rates.some(r => Math.abs(r - p.loanRate) < 1e-9)) rates.push(p.loanRate);
+
+  rates.sort((a, b) => a - b);
+
+  const table = rates.map(r =>
+    Math.abs(r - p.loanRate) < 1e-9 ? main : simulate(p, sc, r));
+
+  render(p, main, table);
+  save();
+
+  $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+restore();
+updateLoanInfo();
+
+})();
+</script>
+
+<article class="tool-article">
+
+<h2>繰り上げ返済は「確実な運用」だと考える</h2>
+
+<p>
+繰り上げ返済のいちばん分かりやすい捉え方は、
+<strong>ローン金利と同じ利回りで、確実に増える運用</strong>だと考えることです。
+</p>
+
+<p>
+金利1%のローンを100万円ぶん繰り上げ返済すると、
+本来払うはずだった利息を払わずに済みます。
+これは<strong>年1%の利益を、値動きの不安なく、税金もかからずに得た</strong>のと同じ意味を持ちます。
+</p>
+
+<p>
+だから比較の軸はこうなります。
+</p>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th></th><th>繰り上げ返済</th><th>投資</th></tr>
+</thead>
+<tbody>
+<tr><td>利回り</td><td>ローン金利と同じ</td><td>期待リターン（不確実）</td></tr>
+<tr><td>確実性</td><td><strong>確実</strong></td><td>外れることがある</td></tr>
+<tr><td>税金</td><td><strong>かからない</strong></td><td>課税口座なら利益に約20%</td></tr>
+<tr><td>お金の自由度</td><td>使えなくなる</td><td><strong>いつでも売れる</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>金利によって答えが変わります</h2>
+
+<p>
+上の「ローン金利が変わるとどうなるか」の表を見てください。
+<strong>同じ条件でも、金利が違うだけで結論が入れ替わります。</strong>
+</p>
+
+<ul>
+<li><strong>金利0.3〜0.5%程度</strong>— 変動金利の低い水準。投資が勝つ確率はかなり高くなります</li>
+<li><strong>金利1%前後</strong>— 現在の多くの住宅ローン。それでも投資が有利に出やすい水準です</li>
+<li><strong>金利2〜3%以上</strong>— 繰り上げ返済の効果が大きくなり、投資の優位はかなり縮みます</li>
+</ul>
+
+<p>
+「繰り上げ返済すべきか」に一般的な答えがないのは、
+<strong>金利という決定的な条件が人によって違う</strong>ためです。
+まず自分のローン金利を確認してください。
+</p>
+
+<h2>計算に入れていない、重要な3つのこと</h2>
+
+<p>
+このツールは金額の比較しかしていません。
+実際の判断では、次の3点が結論を変えることがあります。
+</p>
+
+<h3>1. 住宅ローン控除</h3>
+
+<p>
+住宅ローン控除を受けている期間は、年末のローン残高に応じて税金が戻ってきます。
+<strong>繰り上げ返済で残高を減らすと、この戻りも減ります。</strong>
+控除率がローン金利を上回っている場合、
+繰り上げ返済することでかえって損をする可能性があります。
+</p>
+
+<p class="note">
+控除期間が残っているうちは、繰り上げ返済を待つという判断がよく採られます。
+条件は人によって異なるため、ご自身の控除額を確認してください。
+</p>
+
+<h3>2. 団体信用生命保険（団信）</h3>
+
+<p>
+住宅ローンには通常、団信が付いています。
+契約者が亡くなった場合などにローンが完済される仕組みです。
+</p>
+
+<p>
+つまり<strong>ローンを抱えていること自体が、生命保険を掛けているのと似た働き</strong>をします。
+繰り上げ返済で残高を減らすと、この保障額も減ります。
+</p>
+
+<h3>3. 手元の現金が減ること</h3>
+
+<p>
+繰り上げ返済に使ったお金は<strong>二度と引き出せません。</strong>
+失業、病気、教育費など、まとまった支出が必要になったとき、
+繰り上げ返済した分は助けになりません。
+</p>
+
+<p>
+投資であれば売却して現金化できます。
+<strong>生活費の半年から1年分の現金を確保したうえで</strong>、
+残った余裕資金で考えてください。
+</p>
+
+<h2>結果の読み方</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>項目</th><th>意味</th></tr>
+</thead>
+<tbody>
+<tr><td>投資が勝つ確率</td><td>1000通りのうち、投資にまわしたほうが手元に多く残った割合</td></tr>
+<tr><td>中央値</td><td>ちょうど真ん中の結果</td></tr>
+<tr><td>下位5%</td><td><strong>運が悪かった場合。投資側はここが大きく落ち込みます</strong></td></tr>
+<tr><td>グラフ</td><td>資産からローン残高を引いた金額（純資産）の推移</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>
+繰り上げ返済側の金額は<strong>ほぼぶれません</strong>。確実な運用だからです。
+一方、投資側は上にも下にも大きく振れます。
+<strong>この「ぶれ」を受け入れられるかどうか</strong>が判断の分かれ目になります。
+</p>
+
+<h2>このシミュレーションの前提と限界</h2>
+
+<div class="table-scroll">
+<table>
+<thead>
+<tr><th>前提</th><th>影響</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>住宅ローン控除を考慮していない</strong></td><td>控除期間中は繰り上げ返済の効果が実際より小さくなります</td></tr>
+<tr><td><strong>団信の保障価値を考慮していない</strong></td><td>繰り上げ返済の不利な面が反映されていません</td></tr>
+<tr><td>金利は期間中ずっと一定</td><td>変動金利の場合、途中で上がれば繰り上げ返済が有利になります</td></tr>
+<tr><td>繰り上げ返済は期間短縮型</td><td>返済額軽減型を選ぶと結果は変わります</td></tr>
+<tr><td>繰り上げ返済の手数料を含まない</td><td>手数料がかかる金融機関では繰り上げ返済がわずかに不利になります</td></tr>
+<tr><td>リターンが正規分布に従うと仮定</td><td>現実の暴落はより深く、投資側の下振れは実際にはもっと厳しくなり得ます</td></tr>
+<tr><td>表示はすべて名目値</td><td>インフレを考慮していません。インフレ時は借金の実質的な負担が軽くなります</td></tr>
+<tr>
+<td>ローン金利と期待リターンで月利の出し方が違う</td>
+<td>住宅ローンは実務どおり「年利÷12」、投資は「年利の12乗根」で計算しています。同じ「2%」でもローンのほうがわずかに高く効くため、両者が同率のときは繰り上げ返済がごくわずかに有利に出ます</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 結局どちらを選ぶべきですか？</strong><br>
+A. ローン金利が低いほど投資が有利、高いほど繰り上げ返済が有利、というのが計算上の答えです。
+ただし住宅ローン控除の期間中であること、団信の保障、手元資金の余裕といった、
+金額に表れない要素も判断に含めてください。
+<strong>数字だけで一方に決まる問題ではありません。</strong></p>
+
+<p><strong>Q. 期間短縮型と返済額軽減型のどちらで計算していますか？</strong><br>
+A. 期間短縮型です。同じ金額を繰り上げた場合、利息を減らす効果は期間短縮型のほうが大きくなります。
+完済後は、返済に充てていた金額もすべて投資にまわす前提で計算しています。</p>
+
+<p><strong>Q. 投資の税率は何を入れればよいですか？</strong><br>
+A. 新NISAなど非課税の口座なら0のままにしてください。
+課税口座で運用するなら20.315を入れます。
+税率を上げると、投資が勝つ確率は下がります。</p>
+
+<p><strong>Q. 変動金利の場合はどうすればよいですか？</strong><br>
+A. 現在の金利で計算したうえで、金利が上がった場合として高めの金利でも試してみてください。
+上の比較表で金利ごとの結果が並ぶので、金利上昇に対する強さを確認できます。</p>
+
+<p><strong>Q. 貯めた資産を取り崩す段階も計算したいのですが。</strong><br>
+A. <a href="/torikuzushi/">取り崩しシミュレーション</a>をお使いください。
+まとまった資金の投資方法を比べたい場合は
+<a href="/ikkatsu/">一括投資と積立投資の比較</a>が使えます。</p>
+
+<h2>免責事項</h2>
+
+<p class="note">
+本ツールは繰り上げ返済と投資の金額を試算するための計算ツールであり、
+特定の金融商品の取得・売却や、繰り上げ返済の実行をすすめるものではありません。
+入力する期待リターン・リスクは仮定値であり、将来の運用成果を示すものでも保証するものでもありません。
+住宅ローン控除、団体信用生命保険、繰り上げ返済手数料は計算に含まれていません。
+実際の判断はご自身の契約内容を確認のうえ、必要に応じて専門家にご相談ください。
+</p>
+
+</article>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "住宅ローンの繰り上げ返済と投資はどちらが得ですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "ローン金利が低いほど投資が有利、高いほど繰り上げ返済が有利になります。繰り上げ返済はローン金利と同じ利回りで確実に増える運用と同じ意味を持ち、税金もかかりません。ただし住宅ローン控除の期間中であること、団信の保障、手元資金の余裕といった金額に表れない要素も判断に含める必要があります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "繰り上げ返済はなぜ確実な運用と同じなのですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "繰り上げ返済をすると、本来払うはずだった利息を払わずに済みます。金利1%のローンを繰り上げ返済することは、年1%の利益を値動きの不安なく、税金もかからずに得たのと同じ意味になります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "住宅ローン控除がある場合はどう考えればよいですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "住宅ローン控除は年末のローン残高に応じて税金が戻る仕組みのため、繰り上げ返済で残高を減らすと戻りも減ります。控除率がローン金利を上回っている場合、繰り上げ返済すると損をする可能性があります。控除期間が残っているうちは繰り上げ返済を待つという判断がよく採られます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "期間短縮型と返済額軽減型はどちらが有利ですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "同じ金額を繰り上げた場合、利息を減らす効果は期間短縮型のほうが大きくなります。このツールも期間短縮型で計算しています。ただし返済額軽減型は毎月の負担が下がるため、家計に余裕を持たせたい場合はそちらが選ばれることもあります。"
+      }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
