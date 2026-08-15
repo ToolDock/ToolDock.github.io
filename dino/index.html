@@ -48,6 +48,13 @@ body{
     max-width:600px;
     margin:8vh auto 0;
     padding:0 20px 40px;
+
+    /* ここは読みものではなく操作面。
+       長押しで文字が選択されるとゲームが操作できなくなるので、
+       ブロックごと選択の対象から外す（解説側は選択できるままにする） */
+    -webkit-user-select:none;
+    user-select:none;
+    -webkit-touch-callout:none;
 }
 
 /* --- ゲーム画面 --- */
@@ -70,7 +77,8 @@ body{
     height:auto;
     image-rendering:pixelated;
     image-rendering:crisp-edges;
-    touch-action:manipulation;
+    /* 長押し・ダブルタップ・スワイプのいずれもブラウザに渡さない */
+    touch-action:none;
     cursor:pointer;
 }
 
@@ -145,31 +153,44 @@ kbd{
     background:#3367d6;
 }
 
-/* --- スマホ用の操作ボタン --- */
+/* --- スマホ用の操作ボタン ---
+   しゃがみはタップだけでは気づけないので、
+   ゲーム画面のすぐ下に置いて、押しっぱなしだと分かる書き方にする */
 
 .touch-pad{
     display:none;
-    gap:12px;
-    margin-top:16px;
+    gap:10px;
+    margin:0 0 28px;
 }
 
 .touch-pad button{
     flex:1;
-    padding:16px 0;
+    padding:14px 0;
     border:1px solid #ccc;
-    border-radius:6px;
+    border-radius:8px;
     background:#f7f7f7;
-    color:#444;
+    color:#3c4043;
     font-family:inherit;
-    font-size:16px;
+    font-size:17px;
+    line-height:1.3;
     cursor:pointer;
-    touch-action:manipulation;
+    /* 長押ししてもブラウザ側の選択・拡大が起きないようにする */
+    touch-action:none;
     -webkit-user-select:none;
     user-select:none;
+    -webkit-touch-callout:none;
+    -webkit-tap-highlight-color:transparent;
+}
+
+.touch-pad button small{
+    display:block;
+    margin-top:2px;
+    font-size:11px;
+    color:#80868b;
 }
 
 .touch-pad button:active{
-    background:#e6e6e6;
+    background:#e0e0e0;
 }
 
 /* タッチできる端末でだけ出す。
@@ -221,6 +242,12 @@ body.has-touch .touch-pad{
             aria-label="恐竜が走って障害物をよけるゲーム画面"></canvas>
   </div>
 
+  <!-- タッチ端末でだけ出す。しゃがみに気づけるよう画面のすぐ下に置く -->
+  <div class="touch-pad">
+    <button type="button" id="btn-jump">ジャンプ<small>長押しで高く</small></button>
+    <button type="button" id="btn-duck">しゃがむ<small>押している間ずっと</small></button>
+  </div>
+
   <!-- ネットが切れたときの画面と同じ組みだが、
        本当に接続が切れていると誤解されないよう文言だけ差し替えている -->
   <h1>オフラインの恐竜ゲーム</h1>
@@ -235,13 +262,9 @@ body.has-touch .touch-pad{
     <ul>
       <li><kbd>Space</kbd> または <kbd>↑</kbd> でジャンプ（長押しで高く跳ぶ）</li>
       <li><kbd>↓</kbd> でしゃがむ（空を飛ぶ翼竜はしゃがんでよける）</li>
-      <li>スマホは画面をタップ、または下のボタン</li>
+      <li>スマホは画面をタップでジャンプ。しゃがむときは画面のすぐ下にある
+          「しゃがむ」を押したままにする</li>
     </ul>
-  </div>
-
-  <div class="touch-pad">
-    <button type="button" id="btn-jump">ジャンプ</button>
-    <button type="button" id="btn-duck">しゃがむ</button>
   </div>
 
   <div class="sound-toggle">
@@ -291,8 +314,8 @@ Edgeの場合は <code>edge://surf</code> でサーフィンのゲームが出�
   <tr><td>スタート</td><td>Space / ↑</td><td>画面をタップ</td></tr>
   <tr><td>ジャンプ</td><td>Space / ↑</td><td>画面をタップ、またはジャンプボタン</td></tr>
   <tr><td>高く跳ぶ</td><td>Space / ↑ を長押し</td><td>ジャンプボタンを長押し</td></tr>
-  <tr><td>速く落ちる</td><td>ジャンプ中に ↓</td><td>しゃがむボタン</td></tr>
-  <tr><td>しゃがむ</td><td>↓ を押している間</td><td>しゃがむボタンを押している間</td></tr>
+  <tr><td>速く落ちる</td><td>ジャンプ中に ↓</td><td>「しゃがむ」を押す</td></tr>
+  <tr><td>しゃがむ</td><td>↓ を押している間</td><td>「しゃがむ」を押したままにする</td></tr>
   <tr><td>やり直し</td><td>ゲームオーバー後に Space</td><td>画面をタップ</td></tr>
 </table>
 
@@ -360,8 +383,9 @@ A. ハイスコアだけ、お使いのブラウザに保存されます。
 ブラウザの閲覧データを消すと一緒に消えます。</p>
 
 <p><strong>Q. スマホでも遊べますか？</strong><br>
-A. 遊べます。画面をタップするとジャンプ、
-しゃがむボタンを押している間はしゃがみます。</p>
+A. 遊べます。画面をタップするとジャンプします。
+しゃがむときは、ゲーム画面のすぐ下にある「しゃがむ」ボタンを押したままにしてください。
+指を離すと立ち上がります。タップだけではしゃがめません。</p>
 
 <p><strong>Q. スコアに上限はありますか？</strong><br>
 A. 99999点で表示が一巡します。
@@ -1157,38 +1181,77 @@ document.addEventListener("keyup", e => {
   if (DUCK_KEYS.includes(e.code)) dino.ducking = false;
 });
 
-/* --- タップ操作 --- */
+/* --- タップ操作 ---
+
+   長押しがブラウザ側の「文字の選択」や「コピー/検索」のメニューに
+   化けると、そのままでは操作できなくなる。
+   ゲームの操作面では選択そのものを起こさせない。 */
+
+const wrapper = document.querySelector(".interstitial-wrapper");
+
+wrapper.addEventListener("contextmenu", e => e.preventDefault());
+wrapper.addEventListener("selectstart", e => e.preventDefault());
+
+/* 押している間ずっと、という操作を成立させるための約束。
+   指がボタンからずれても、離すまで同じ要素にイベントを届ける */
+function capture(e){
+  const el = e.currentTarget;
+  if (el.setPointerCapture){
+    try { el.setPointerCapture(e.pointerId); } catch (_){}
+  }
+}
 
 function press(e){
   e.preventDefault();
+  capture(e);
   if (state === "playing") startJump(speed);
   else start();
 }
 
+function release(e){
+  e.preventDefault();
+  endJump();
+}
+
 canvas.addEventListener("pointerdown", press);
-canvas.addEventListener("pointerup", e => { e.preventDefault(); endJump(); });
+canvas.addEventListener("pointerup", release);
+canvas.addEventListener("pointercancel", release);
 
 const btnJump = document.getElementById("btn-jump");
 const btnDuck = document.getElementById("btn-duck");
 
 btnJump.addEventListener("pointerdown", press);
-btnJump.addEventListener("pointerup", e => { e.preventDefault(); endJump(); });
-btnJump.addEventListener("pointerleave", endJump);
+btnJump.addEventListener("pointerup", release);
+btnJump.addEventListener("pointercancel", release);
+
+/* しゃがみを始めた指を覚えておく。
+   ボタンの外で指を離した場合でも、しゃがみっぱなしにしないため */
+let duckPointerId = null;
 
 btnDuck.addEventListener("pointerdown", e => {
   e.preventDefault();
+  capture(e);
+  duckPointerId = e.pointerId;
   if (state !== "playing") return;
   if (dino.jumping) setSpeedDrop();
   else dino.ducking = true;
 });
 
 function releaseDuck(e){
-  if (e) e.preventDefault();
+  if (e){
+    if (e.pointerId !== duckPointerId) return;   /* 別の指の操作は無視する */
+    e.preventDefault();
+  }
+  duckPointerId = null;
   dino.ducking = false;
 }
 
 btnDuck.addEventListener("pointerup", releaseDuck);
-btnDuck.addEventListener("pointerleave", releaseDuck);
+btnDuck.addEventListener("pointercancel", releaseDuck);
+
+/* 取りこぼしの保険。ボタンの外で離してもここで必ず解除される */
+document.addEventListener("pointerup", releaseDuck);
+document.addEventListener("pointercancel", releaseDuck);
 
 document.getElementById("reload-button").addEventListener("click", () => {
   state = "waiting";
@@ -1251,7 +1314,7 @@ raf = requestAnimationFrame(frame);
       "name": "恐竜ゲームの操作方法を教えてください。",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "スペースキーまたは上キーでジャンプし、押している時間が長いほど高く跳びます。下キーを押している間はしゃがみ、ジャンプ中に下キーを押すと落下が速くなります。スマホの場合は画面をタップするとジャンプ、しゃがむボタンを押している間はしゃがみます。"
+        "text": "スペースキーまたは上キーでジャンプし、押している時間が長いほど高く跳びます。下キーを押している間はしゃがみ、ジャンプ中に下キーを押すと落下が速くなります。スマホの場合は画面をタップするとジャンプします。しゃがむときは、ゲーム画面のすぐ下にある「しゃがむ」ボタンを押したままにしてください。指を離すと立ち上がります。"
       }
     },
     {
