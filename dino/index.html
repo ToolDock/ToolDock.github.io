@@ -262,8 +262,8 @@ body.has-touch .touch-pad{
     <ul>
       <li><kbd>Space</kbd> または <kbd>↑</kbd> でジャンプ（長押しで高く跳ぶ）</li>
       <li><kbd>↓</kbd> でしゃがむ（空を飛ぶ翼竜はしゃがんでよける）</li>
-      <li>スマホは画面をタップでジャンプ。しゃがむときは画面のすぐ下にある
-          「しゃがむ」を押したままにする</li>
+      <li>スマホは画面をタップでジャンプ。押したまま指を下へずらすとしゃがむ
+          （画面のすぐ下の「しゃがむ」でも同じ）</li>
     </ul>
   </div>
 
@@ -314,8 +314,8 @@ Edgeの場合は <code>edge://surf</code> でサーフィンのゲームが出�
   <tr><td>スタート</td><td>Space / ↑</td><td>画面をタップ</td></tr>
   <tr><td>ジャンプ</td><td>Space / ↑</td><td>画面をタップ、またはジャンプボタン</td></tr>
   <tr><td>高く跳ぶ</td><td>Space / ↑ を長押し</td><td>ジャンプボタンを長押し</td></tr>
-  <tr><td>速く落ちる</td><td>ジャンプ中に ↓</td><td>「しゃがむ」を押す</td></tr>
-  <tr><td>しゃがむ</td><td>↓ を押している間</td><td>「しゃがむ」を押したままにする</td></tr>
+  <tr><td>速く落ちる</td><td>ジャンプ中に ↓</td><td>ジャンプ中に指を下へずらす</td></tr>
+  <tr><td>しゃがむ</td><td>↓ を押している間</td><td>画面を押したまま指を下へずらす<br>または「しゃがむ」を押したまま</td></tr>
   <tr><td>やり直し</td><td>ゲームオーバー後に Space</td><td>画面をタップ</td></tr>
 </table>
 
@@ -384,8 +384,9 @@ A. ハイスコアだけ、お使いのブラウザに保存されます。
 
 <p><strong>Q. スマホでも遊べますか？</strong><br>
 A. 遊べます。画面をタップするとジャンプします。
-しゃがむときは、ゲーム画面のすぐ下にある「しゃがむ」ボタンを押したままにしてください。
-指を離すと立ち上がります。タップだけではしゃがめません。</p>
+しゃがむときは、画面を押したまま指を下へずらしてください。ずらしている間ずっとしゃがみ、
+指を離すと立ち上がります。ゲーム画面のすぐ下にある「しゃがむ」ボタンでも同じことができます。
+軽くタップしただけではジャンプになります。</p>
 
 <p><strong>Q. スコアに上限はありますか？</strong><br>
 A. 99999点で表示が一巡します。
@@ -1213,9 +1214,56 @@ function release(e){
   endJump();
 }
 
-canvas.addEventListener("pointerdown", press);
-canvas.addEventListener("pointerup", release);
-canvas.addEventListener("pointercancel", release);
+/* --- 画面を直接さわって遊ぶとき ---
+
+   タップ＝ジャンプ、指を下へずらす＝しゃがむ。
+   ジャンプは「一瞬の動作」、しゃがみは「押している間の状態」なので、
+   タップとドラッグに分けると取り違えが起きない。
+   押した瞬間はジャンプにしておき、そこから下へ動いたときだけ
+   しゃがみに切り替える（ジャンプの反応を遅らせないため）。 */
+
+const DUCK_DRAG = 20;      /* これだけ下げたらしゃがみとみなす */
+
+let touchStartY = null;
+let touchDucking = false;
+
+canvas.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  capture(e);
+  touchStartY = e.clientY;
+  touchDucking = false;
+  if (state === "playing") startJump(speed);
+  else start();
+});
+
+canvas.addEventListener("pointermove", e => {
+  if (touchStartY === null || touchDucking) return;
+  if (state !== "playing") return;
+  if (e.clientY - touchStartY < DUCK_DRAG) return;
+
+  touchDucking = true;
+  endJump();                          /* 上昇を打ち切る */
+  if (dino.jumping) setSpeedDrop();   /* 空中なら急いで降りる */
+
+  /* 着地後もしゃがんだままにする。
+     跳んでいる間は drawDino / 当たり判定がこの値を見ないので、
+     ここで立てておいて問題ない */
+  dino.ducking = true;
+});
+
+function releaseCanvas(e){
+  e.preventDefault();
+  touchStartY = null;
+  if (touchDucking){
+    touchDucking = false;
+    dino.ducking = false;
+  } else {
+    endJump();
+  }
+}
+
+canvas.addEventListener("pointerup", releaseCanvas);
+canvas.addEventListener("pointercancel", releaseCanvas);
 
 const btnJump = document.getElementById("btn-jump");
 const btnDuck = document.getElementById("btn-duck");
@@ -1314,7 +1362,7 @@ raf = requestAnimationFrame(frame);
       "name": "恐竜ゲームの操作方法を教えてください。",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "スペースキーまたは上キーでジャンプし、押している時間が長いほど高く跳びます。下キーを押している間はしゃがみ、ジャンプ中に下キーを押すと落下が速くなります。スマホの場合は画面をタップするとジャンプします。しゃがむときは、ゲーム画面のすぐ下にある「しゃがむ」ボタンを押したままにしてください。指を離すと立ち上がります。"
+        "text": "スペースキーまたは上キーでジャンプし、押している時間が長いほど高く跳びます。下キーを押している間はしゃがみ、ジャンプ中に下キーを押すと落下が速くなります。スマホの場合は画面をタップするとジャンプします。しゃがむときは、画面を押したまま指を下へずらしてください。ずらしている間ずっとしゃがみ、指を離すと立ち上がります。ゲーム画面のすぐ下にある「しゃがむ」ボタンでも同じことができます。"
       }
     },
     {
