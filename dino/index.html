@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>オフラインの恐竜ゲーム｜ネットにつながったまま遊べるダイナソーゲーム | ToolDock</title>
+<meta name="description" content="ネットが切れたときに出てくる、あの恐竜（ダイナソー）ゲームをそのまま遊べるページです。オフラインにならなくても遊べます。スペースキーか画面タップでジャンプ、下キーでしゃがんで翼竜をよけます。ハイスコアはブラウザに保存され、登録もインストールも不要です。">
+<link rel="canonical" href="https://tooldock.github.io/dino/">
+
+<script>
+const CURRENT_TOOL = "dino";
+</script>
+
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<!-- ドット絵の定義 -->
+<script src="/dino/sprites.js"></script>
+
+<style>
+
+/* =========================
+   オフライン画面の見た目
+   ブラウザがネットにつながらないときに出る、
+   あの画面の配色・余白・文字サイズをそのまま使う
+========================= */
+
+body{
+    margin:0;
+    max-width:none;
+    padding:0;
+    background:#fff;
+    color:#5b5b5b;
+    font-family:-apple-system, "Segoe UI", "Helvetica Neue", "Hiragino Sans",
+                "Noto Sans JP", Meiryo, sans-serif;
+    font-size:16px;
+    line-height:1.6;
+}
+
+.interstitial-wrapper{
+    box-sizing:border-box;
+    max-width:600px;
+    margin:8vh auto 0;
+    padding:0 20px 40px;
+}
+
+/* --- ゲーム画面 --- */
+
+/* 左右の余白を打ち消して、画面が広いときは canvas をちょうど600pxで
+   表示する。等倍になるとドットがにじまない */
+.runner-stage{
+    position:relative;
+    margin:0 -20px 24px;
+}
+
+.runner-stage.inverted{
+    filter:invert(100%);
+}
+
+#runner{
+    display:block;
+    width:100%;
+    max-width:600px;
+    height:auto;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+    touch-action:manipulation;
+    cursor:pointer;
+}
+
+/* --- 文言 --- */
+
+.interstitial-wrapper h1{
+    font-size:1.6em;
+    font-weight:400;
+    line-height:1.4;
+    margin:0 0 16px;
+    color:#333;
+}
+
+.interstitial-wrapper p{
+    margin:0 0 12px;
+}
+
+.suggestions{
+    margin-top:18px;
+}
+
+.suggestions ul{
+    margin:8px 0 0;
+    padding-left:22px;
+}
+
+.suggestions li{
+    margin-bottom:6px;
+}
+
+kbd{
+    display:inline-block;
+    min-width:16px;
+    padding:1px 6px;
+    border:1px solid #ccc;
+    border-bottom-width:2px;
+    border-radius:3px;
+    background:#f7f7f7;
+    color:#444;
+    font-family:inherit;
+    font-size:13px;
+    line-height:1.5;
+    text-align:center;
+}
+
+.error-code{
+    margin-top:18px;
+    color:#646464;
+    font-size:.8em;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+
+.nav-wrapper{
+    margin-top:24px;
+    overflow:hidden;
+}
+
+#reload-button{
+    float:right;
+    padding:9px 18px;
+    border:0;
+    border-radius:4px;
+    background:#4285f4;
+    color:#fff;
+    font-family:inherit;
+    font-size:.875em;
+    cursor:pointer;
+}
+
+#reload-button:hover{
+    background:#3367d6;
+}
+
+/* --- スマホ用の操作ボタン --- */
+
+.touch-pad{
+    display:none;
+    gap:12px;
+    margin-top:16px;
+}
+
+.touch-pad button{
+    flex:1;
+    padding:16px 0;
+    border:1px solid #ccc;
+    border-radius:6px;
+    background:#f7f7f7;
+    color:#444;
+    font-family:inherit;
+    font-size:16px;
+    cursor:pointer;
+    touch-action:manipulation;
+    -webkit-user-select:none;
+    user-select:none;
+}
+
+.touch-pad button:active{
+    background:#e6e6e6;
+}
+
+/* タッチできる端末でだけ出す。
+   メディアクエリだけだと判定を外す環境があるので、
+   実際のタッチ対応を見て body に印を付ける（下のスクリプト） */
+body.has-touch .touch-pad{
+    display:flex;
+}
+
+.sound-toggle{
+    margin-top:16px;
+    font-size:13px;
+    color:#767676;
+}
+
+.sound-toggle label{
+    cursor:pointer;
+}
+
+/* =========================
+   解説
+   見た目はサイト共通の style.css にそろえる。
+   ここでは幅と余白だけ、オフライン画面の組みに合わせる
+========================= */
+
+.tool-article{
+    max-width:600px;
+    margin:56px auto 40px;
+    color:#222;
+}
+
+#related-tools{
+    max-width:600px;
+    margin:0 auto;
+    padding:0 20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="interstitial-wrapper">
+
+  <div class="runner-stage" id="runner-stage">
+    <canvas id="runner" width="600" height="150"
+            role="img"
+            aria-label="恐竜が走って障害物をよけるゲーム画面"></canvas>
+  </div>
+
+  <!-- ネットが切れたときの画面と同じ組みだが、
+       本当に接続が切れていると誤解されないよう文言だけ差し替えている -->
+  <h1>オフラインの恐竜ゲーム</h1>
+
+  <p>
+  ネットが切れたときに出てくる、あの恐竜のゲームです。<br>
+  このページは通信できています。オフラインにならなくても遊べます。
+  </p>
+
+  <div class="suggestions">
+    <p>操作方法:</p>
+    <ul>
+      <li><kbd>Space</kbd> または <kbd>↑</kbd> でジャンプ（長押しで高く跳ぶ）</li>
+      <li><kbd>↓</kbd> でしゃがむ（空を飛ぶ翼竜はしゃがんでよける）</li>
+      <li>スマホは画面をタップ、または下のボタン</li>
+    </ul>
+  </div>
+
+  <div class="touch-pad">
+    <button type="button" id="btn-jump">ジャンプ</button>
+    <button type="button" id="btn-duck">しゃがむ</button>
+  </div>
+
+  <div class="sound-toggle">
+    <label><input type="checkbox" id="sound-on" checked> 効果音を鳴らす</label>
+  </div>
+
+  <div class="error-code">TOOLDOCK_DINO_GAME</div>
+
+  <div class="nav-wrapper">
+    <button id="reload-button" type="button">最初から</button>
+  </div>
+
+</div>
+
+
+<article class="tool-article">
+
+<h2>ネットが切れたときの恐竜ゲームとは</h2>
+
+<p>
+Google Chromeでインターネットに接続できないページを開くと、
+「インターネットに接続されていません」というエラー画面が表示されます。
+このとき画面上部に描かれている小さな恐竜は、キーを押すと走り出し、
+サボテンや翼竜をよけながらスコアを伸ばすゲームになります。
+正式な名前は付いていませんが、恐竜ゲーム、ダイナソーゲーム、T-Rexゲーム、
+Chrome Dinoなどと呼ばれています。
+</p>
+
+<p>
+本来は通信が切れているときにしか出てこないため、遊びたいときに限って出てきません。
+このページは、そのゲームと同じルール・同じ操作・同じ見た目で遊べるようにしたものです。
+オンラインのまま遊べます。
+</p>
+
+<h3>Chromeで本物を出す方法</h3>
+
+<p>
+Chromeのアドレスバーに <code>chrome://dino</code> と入力すると、
+通信が切れていなくてもエラー画面を呼び出せます（PC版のChromeのみ）。
+Edgeの場合は <code>edge://surf</code> でサーフィンのゲームが出てきます。
+</p>
+
+<h2>操作方法</h2>
+
+<table>
+  <tr><th>操作</th><th>キーボード</th><th>スマホ</th></tr>
+  <tr><td>スタート</td><td>Space / ↑</td><td>画面をタップ</td></tr>
+  <tr><td>ジャンプ</td><td>Space / ↑</td><td>画面をタップ、またはジャンプボタン</td></tr>
+  <tr><td>高く跳ぶ</td><td>Space / ↑ を長押し</td><td>ジャンプボタンを長押し</td></tr>
+  <tr><td>速く落ちる</td><td>ジャンプ中に ↓</td><td>しゃがむボタン</td></tr>
+  <tr><td>しゃがむ</td><td>↓ を押している間</td><td>しゃがむボタンを押している間</td></tr>
+  <tr><td>やり直し</td><td>ゲームオーバー後に Space</td><td>画面をタップ</td></tr>
+</table>
+
+<h2>スコアを伸ばすコツ</h2>
+
+<h3>ジャンプは押しっぱなしにしない</h3>
+
+<p>
+このゲームのジャンプは、キーを押している長さで高さが変わります。
+低いサボテン1本を跳ぶだけなら軽く押すだけで十分で、
+必要以上に高く跳ぶと着地までの時間が延び、次の障害物に間に合わなくなります。
+小さいサボテンは短押し、大きいサボテンが3本並んでいるときだけ長押し、
+と押し分けるとミスが減ります。
+</p>
+
+<h3>着地を早めるために下キーを使う</h3>
+
+<p>
+ジャンプ中に下キーを押すと、落下が速くなってすぐ着地できます。
+跳びすぎたと思ったらすぐ下キーを押すと、次の障害物に対応できることがあります。
+</p>
+
+<h3>翼竜は高さを見てから決める</h3>
+
+<p>
+一定のスコアを超えると翼竜が飛んできます。高さは3種類です。
+</p>
+
+<table>
+  <tr><th>高さ</th><th>対処</th></tr>
+  <tr><td>地面すれすれ</td><td>ジャンプでよける</td></tr>
+  <tr><td>中くらい</td><td>しゃがんでよける</td></tr>
+  <tr><td>高いところ</td><td>そのまま走り抜ける</td></tr>
+</table>
+
+<p>
+いちばんやりがちなのが、高いところを飛ぶ翼竜に反応してジャンプし、
+自分から当たりにいってしまうパターンです。
+高い翼竜は何もしないのが正解です。
+</p>
+
+<h3>画面が暗くなっても操作は変わらない</h3>
+
+<p>
+スコアが700点、1400点…と進むと画面が反転して夜になります。
+見た目が変わるだけで、速度も当たり判定も昼と同じです。
+慌てて操作を変える必要はありません。
+</p>
+
+<h3>速度は上がり続ける</h3>
+
+<p>
+走る速度はスコアとともに上がっていき、上限に達すると一定になります。
+序盤はゆっくりに感じますが、1000点を超えたあたりからは
+障害物を見てから判断していては間に合いません。
+画面の右端に何が出たかを早めに見て、先に押し分けを決めておくと安定します。
+</p>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. スコアは保存されますか？</strong><br>
+A. ハイスコアだけ、お使いのブラウザに保存されます。
+画面の右上に <strong>HI</strong> として表示され、次に開いたときも残っています。
+サーバーには送信していません。
+ブラウザの閲覧データを消すと一緒に消えます。</p>
+
+<p><strong>Q. スマホでも遊べますか？</strong><br>
+A. 遊べます。画面をタップするとジャンプ、
+しゃがむボタンを押している間はしゃがみます。</p>
+
+<p><strong>Q. スコアに上限はありますか？</strong><br>
+A. 99999点で表示が一巡します。
+速度は先に上限に達するため、そこから先は集中力の勝負になります。</p>
+
+<p><strong>Q. 効果音を消せますか？</strong><br>
+A. ゲーム画面の下にある「効果音を鳴らす」のチェックを外してください。
+設定はブラウザに保存されます。</p>
+
+<p><strong>Q. インストールや登録は必要ですか？</strong><br>
+A. 不要です。このページを開くだけで遊べます。
+ページを離れれば止まります。</p>
+
+<p><strong>Q. 本物のChromeの恐竜ゲームと同じですか？</strong><br>
+A. 遊び方・速度の上がり方・障害物の出方・夜になる仕組みは同じになるように作っていますが、
+このページの絵と処理はすべて自前で描き起こしたものです。
+細部の当たり判定などは完全には一致しません。</p>
+
+<h2>スペースキーでページが動いてしまうとき</h2>
+
+<p>
+このページでは、ゲーム画面が表示されている間だけ
+スペースキーと矢印キーの標準動作（ページのスクロール）を止めています。
+解説だけを読みたいときは、ゲーム画面を画面外までスクロールすれば
+スペースキーは通常どおりスクロールに使えます。
+</p>
+
+</article>
+
+
+<script>
+/* =========================================================
+   恐竜ゲーム本体
+
+   ・画像ファイルは使わず、/dino/sprites.js の矩形定義を描く
+   ・座標は 600 x 150 の論理ピクセルで統一し、
+     実際の解像度（devicePixelRatio）は文脈の拡大で吸収する
+========================================================= */
+
+(() => {
+
+"use strict";
+
+const S = window.SPRITES;
+
+const canvas = document.getElementById("runner");
+const stage  = document.getElementById("runner-stage");
+const ctx    = canvas.getContext("2d");
+
+/* タッチできる端末なら、画面下の操作ボタンを出す */
+if (navigator.maxTouchPoints > 0 ||
+    (window.matchMedia && window.matchMedia("(pointer: coarse)").matches)){
+  document.body.classList.add("has-touch");
+}
+
+/* --- 画面の基準寸法 --- */
+
+const W = 600;               /* 論理幅 */
+const H = 150;               /* 論理高さ */
+const GROUND_Y = 127;        /* 地面の線 */
+const FLOOR = 129;           /* 恐竜と障害物の足元 */
+
+const FG = "#535353";        /* 前景色。夜はCSSのinvertで反転する */
+const BG = "#ffffff";        /* 背景色。目や口をくり抜くのに使う */
+
+/* --- 速度と物理 --- */
+
+const START_SPEED = 6;
+const MAX_SPEED = 13;
+const ACCELERATION = 0.001;
+
+const GRAVITY = 0.6;
+const JUMP_VELOCITY = -10;
+const DROP_VELOCITY = -5;    /* キーを離したときに上昇を打ち切る速度 */
+const MIN_JUMP_HEIGHT = 30;
+const SPEED_DROP_COEFFICIENT = 3;
+
+const GAP_COEFFICIENT = 0.6;
+const MAX_GAP_COEFFICIENT = 1.5;
+
+const CLEAR_TIME = 3000;     /* 開始直後、障害物を出さない時間 */
+const INVERT_DISTANCE = 700; /* この点数ごとに夜になる */
+const INVERT_DURATION = 12000;
+
+const SCORE_COEFFICIENT = 0.025;
+const ACHIEVEMENT_STEP = 100;
+
+/* =========================
+   描画のためのヘルパー
+========================= */
+
+/* 矩形の配列をそのまま塗る。holes は背景色でくり抜く */
+function drawSprite(rects, holes, x, y){
+  ctx.fillStyle = FG;
+  for (let i = 0; i < rects.length; i++){
+    const r = rects[i];
+    ctx.fillRect(x + r[0], y + r[1], r[2], r[3]);
+  }
+  if (holes){
+    ctx.fillStyle = BG;
+    for (let i = 0; i < holes.length; i++){
+      const r = holes[i];
+      ctx.fillRect(x + r[0], y + r[1], r[2], r[3]);
+    }
+  }
+}
+
+function rand(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/* =========================
+   地面
+
+   Chromeの地面と同じく、1本の線に凹凸と小石が乗っている。
+   幅1200のパターンを1枚作り、2枚並べてスクロールさせる
+   （1200は画面幅600の倍数なので、継ぎ目が出ない）
+========================= */
+
+const GROUND_W = 1200;
+const GROUND_H = 12;
+
+const groundCanvas = document.createElement("canvas");
+groundCanvas.width = GROUND_W;
+groundCanvas.height = GROUND_H;
+
+(function buildGround(){
+  const g = groundCanvas.getContext("2d");
+  g.fillStyle = FG;
+
+  /* 基準となる線。
+     画面幅にあわせて縮小表示されることがあるので、
+     1ドットだと線が消える。2ドットの厚みを持たせておく */
+  g.fillRect(0, 1, GROUND_W, 2);
+
+  /* ところどころ厚みが増している区間（でこぼこ） */
+  let x = 0;
+  while (x < GROUND_W){
+    x += rand(24, 100);
+    const w = rand(4, 12);
+    g.fillRect(x, 3, w, 1);
+    if (Math.random() < 0.4) g.fillRect(x + 1, 0, Math.max(2, w - 3), 1);
+    x += w;
+  }
+
+  /* 線の下に散らばる小石 */
+  for (let i = 0; i < 45; i++){
+    g.fillRect(rand(0, GROUND_W - 2), rand(5, 8), 1, 1);
+  }
+})();
+
+let groundX = 0;
+
+function updateGround(move){
+  groundX -= move;
+  if (groundX <= -GROUND_W) groundX += GROUND_W;
+}
+
+function drawGround(){
+  ctx.drawImage(groundCanvas, Math.floor(groundX), GROUND_Y - 1);
+  ctx.drawImage(groundCanvas, Math.floor(groundX) + GROUND_W, GROUND_Y - 1);
+}
+
+/* =========================
+   雲
+========================= */
+
+const MAX_CLOUDS = 6;
+const CLOUD_MIN_GAP = 100;
+const CLOUD_MAX_GAP = 400;
+const CLOUD_MIN_Y = 30;
+const CLOUD_MAX_Y = 71;
+
+let clouds = [];
+
+function updateClouds(speed, dt){
+  const move = speed * 0.18 * dt;
+
+  for (let i = clouds.length - 1; i >= 0; i--){
+    clouds[i].x -= move;
+    if (clouds[i].x + S.cloud.width < 0) clouds.splice(i, 1);
+  }
+
+  const last = clouds[clouds.length - 1];
+
+  if (clouds.length < MAX_CLOUDS &&
+      (!last || W - (last.x + S.cloud.width) > last.gap)){
+    clouds.push({
+      x: W,
+      y: rand(CLOUD_MIN_Y, CLOUD_MAX_Y),
+      gap: rand(CLOUD_MIN_GAP, CLOUD_MAX_GAP)
+    });
+  }
+}
+
+function drawClouds(){
+  for (const c of clouds) drawSprite(S.cloud.rects, null, Math.floor(c.x), c.y);
+}
+
+/* =========================
+   障害物
+
+   minSpeed は「この速度になるまで出さない」という下限。
+   翼竜は序盤には出てこない
+========================= */
+
+const TYPES = {
+
+  cactusSmall: {
+    sprite: S.cactusSmall,
+    minGap: 120,
+    minSpeed: 0,
+    multipleSpeed: 4,      /* この速度未満では複数本にしない */
+    maxGroup: 3,
+    yPos: [FLOOR - S.cactusSmall.height],
+    box: [2, 2, 13, 32]
+  },
+
+  cactusLarge: {
+    sprite: S.cactusLarge,
+    minGap: 120,
+    minSpeed: 0,
+    multipleSpeed: 7,
+    maxGroup: 3,
+    yPos: [FLOOR - S.cactusLarge.height],
+    box: [3, 3, 19, 45]
+  },
+
+  bird: {
+    sprite: S.bird,
+    minGap: 150,
+    minSpeed: 8.5,
+    multipleSpeed: 999,
+    maxGroup: 1,
+    /* 地面すれすれ（跳ぶ）/ 中（しゃがむ）/ 高い（そのまま走る）。
+       立ち・しゃがみの当たり判定と照らして高さを決めてある */
+    yPos: [89, 72, 35],
+    speedOffset: 0.8,      /* 恐竜より速い・遅いを混ぜる */
+    boxes: [[16, 10, 26, 14], [2, 16, 16, 6]]
+  }
+};
+
+let obstacles = [];
+let lastType = null;
+let sameTypeCount = 0;
+
+function obstacleGap(width, speed, minGap){
+  const min = Math.round(width * speed + minGap * GAP_COEFFICIENT);
+  return rand(min, Math.round(min * MAX_GAP_COEFFICIENT));
+}
+
+function pickType(speed){
+  const keys = Object.keys(TYPES).filter(k => speed >= TYPES[k].minSpeed);
+
+  /* 同じ種類が3回続いたら別の種類にする（Chromeと同じ制限） */
+  let key = keys[rand(0, keys.length - 1)];
+  if (key === lastType && sameTypeCount >= 2 && keys.length > 1){
+    while (key === lastType) key = keys[rand(0, keys.length - 1)];
+  }
+
+  sameTypeCount = (key === lastType) ? sameTypeCount + 1 : 0;
+  lastType = key;
+
+  return key;
+}
+
+function spawnObstacle(speed){
+  const key = pickType(speed);
+  const t = TYPES[key];
+
+  const count = speed >= t.multipleSpeed ? rand(1, t.maxGroup) : 1;
+  const width = t.sprite.width * count;
+
+  obstacles.push({
+    key,
+    count,
+    width,
+    x: W,
+    y: t.yPos[rand(0, t.yPos.length - 1)],
+    gap: obstacleGap(width, speed, t.minGap),
+    /* 翼竜は恐竜より速い個体と遅い個体を混ぜる。
+       生成時に決めておかないと、配列が詰まるたびに速度が変わってしまう */
+    speedOffset: t.speedOffset ? (Math.random() < 0.5 ? t.speedOffset : -t.speedOffset) : 0,
+    frame: 0,
+    frameTimer: 0
+  });
+}
+
+function updateObstacles(speed, dt, deltaTime, allowNew){
+  for (let i = obstacles.length - 1; i >= 0; i--){
+    const o = obstacles[i];
+    const t = TYPES[o.key];
+
+    o.x -= (speed + o.speedOffset) * dt;
+
+    if (t.sprite.f1){
+      o.frameTimer += deltaTime;
+      if (o.frameTimer > 1000 / 6){
+        o.frameTimer = 0;
+        o.frame ^= 1;
+      }
+    }
+
+    if (o.x + o.width < 0) obstacles.splice(i, 1);
+  }
+
+  if (!allowNew) return;
+
+  const last = obstacles[obstacles.length - 1];
+
+  if (!last || last.x + last.width + last.gap < W){
+    spawnObstacle(speed);
+  }
+}
+
+function drawObstacles(){
+  for (const o of obstacles){
+    const t = TYPES[o.key];
+    const sp = t.sprite;
+    const rects = sp.rects ? sp.rects : (o.frame ? sp.f2 : sp.f1);
+
+    for (let i = 0; i < o.count; i++){
+      drawSprite(rects, sp.holes, Math.floor(o.x) + i * sp.width, o.y);
+    }
+  }
+}
+
+/* 障害物の当たり判定用の箱を、画面座標で返す */
+function obstacleBoxes(o){
+  const t = TYPES[o.key];
+  const out = [];
+
+  if (t.boxes){
+    for (const b of t.boxes){
+      out.push([o.x + b[0], o.y + b[1], b[2], b[3]]);
+    }
+    return out;
+  }
+
+  for (let i = 0; i < o.count; i++){
+    const ox = o.x + i * t.sprite.width;
+    out.push([ox + t.box[0], o.y + t.box[1], t.box[2], t.box[3]]);
+  }
+  return out;
+}
+
+/* =========================
+   恐竜
+========================= */
+
+const DINO_X = 24;
+const DINO_GROUND_Y = FLOOR - S.dino.height;
+const DUCK_Y = FLOOR - S.duck.height;
+
+const RUN_BOXES  = [[24, 4, 18, 13], [8, 22, 24, 15], [10, 37, 20, 9]];
+const DUCK_BOXES = [[10, 8, 46, 20]];
+
+const dino = {
+  y: DINO_GROUND_Y,
+  velocity: 0,
+  jumping: false,
+  ducking: false,
+  speedDrop: false,
+  reachedMinHeight: false,
+  frame: 0,
+  frameTimer: 0,
+  crashed: false
+};
+
+function resetDino(){
+  dino.y = DINO_GROUND_Y;
+  dino.velocity = 0;
+  dino.jumping = false;
+  dino.ducking = false;
+  dino.speedDrop = false;
+  dino.reachedMinHeight = false;
+  dino.frame = 0;
+  dino.frameTimer = 0;
+  dino.crashed = false;
+}
+
+function startJump(speed){
+  if (dino.jumping) return;
+  dino.jumping = true;
+  dino.ducking = false;
+  dino.velocity = JUMP_VELOCITY - speed / 10;
+  dino.reachedMinHeight = false;
+  dino.speedDrop = false;
+  playSound("jump");
+}
+
+/* キーを離したところで上昇を打ち切る。押した長さで高さが決まる */
+function endJump(){
+  if (dino.reachedMinHeight && dino.velocity < DROP_VELOCITY){
+    dino.velocity = DROP_VELOCITY;
+  }
+}
+
+function setSpeedDrop(){
+  if (!dino.jumping) return;
+  dino.speedDrop = true;
+  dino.velocity = 1;
+}
+
+function updateDino(dt, deltaTime){
+  if (dino.jumping){
+
+    dino.y += dino.speedDrop
+      ? dino.velocity * SPEED_DROP_COEFFICIENT * dt
+      : dino.velocity * dt;
+
+    dino.velocity += GRAVITY * dt;
+
+    if (dino.y < DINO_GROUND_Y - MIN_JUMP_HEIGHT || dino.speedDrop){
+      dino.reachedMinHeight = true;
+    }
+
+    if (dino.y >= DINO_GROUND_Y){
+      dino.y = DINO_GROUND_Y;
+      dino.jumping = false;
+      dino.speedDrop = false;
+      dino.velocity = 0;
+    }
+
+  } else {
+    /* 走行アニメーション。速度が上がるほど脚の入れ替えを速くする */
+    dino.frameTimer += deltaTime;
+    if (dino.frameTimer > 1000 / 12){
+      dino.frameTimer = 0;
+      dino.frame ^= 1;
+    }
+  }
+}
+
+function drawDino(state){
+  if (state === "waiting"){
+    drawSprite(S.dino.idle, S.dino.holes, DINO_X, DINO_GROUND_Y);
+    return;
+  }
+
+  if (dino.crashed){
+    /* 目を閉じた顔にするため、目のくり抜きを細くする */
+    drawSprite(S.dino.idle, [[36, 8, 4, 2], S.dino.holes[1]], DINO_X, DINO_GROUND_Y);
+    return;
+  }
+
+  if (dino.ducking && !dino.jumping){
+    drawSprite(dino.frame ? S.duck.f2 : S.duck.f1, S.duck.holes, DINO_X, DUCK_Y);
+    return;
+  }
+
+  if (dino.jumping){
+    drawSprite(S.dino.idle, S.dino.holes, DINO_X, Math.floor(dino.y));
+    return;
+  }
+
+  drawSprite(dino.frame ? S.dino.run2 : S.dino.run1, S.dino.holes, DINO_X, Math.floor(dino.y));
+}
+
+function dinoBoxes(){
+  const boxes = (dino.ducking && !dino.jumping) ? DUCK_BOXES : RUN_BOXES;
+  const y = (dino.ducking && !dino.jumping) ? DUCK_Y : dino.y;
+  return boxes.map(b => [DINO_X + b[0], y + b[1], b[2], b[3]]);
+}
+
+/* =========================
+   当たり判定
+========================= */
+
+function overlap(a, b){
+  return a[0] < b[0] + b[2] &&
+         a[0] + a[2] > b[0] &&
+         a[1] < b[1] + b[3] &&
+         a[1] + a[3] > b[1];
+}
+
+function checkCollision(){
+  const dBoxes = dinoBoxes();
+
+  /* 外接矩形どうしが離れていれば、細かい判定はしない */
+  const dOuter = [DINO_X, dino.ducking && !dino.jumping ? DUCK_Y : dino.y,
+                  S.dino.width, S.dino.height];
+
+  for (const o of obstacles){
+    const t = TYPES[o.key];
+    const sp = t.sprite;
+    const oOuter = [o.x, o.y, o.width, sp.height];
+
+    if (!overlap(dOuter, oOuter)) continue;
+
+    for (const ob of obstacleBoxes(o)){
+      for (const db of dBoxes){
+        if (overlap(db, ob)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+/* =========================
+   スコア表示
+
+   等幅で1文字ずつ置いて、桁がぶれないようにする
+========================= */
+
+const DIGIT_W = 11;
+
+function drawText(text, x, y){
+  ctx.fillStyle = FG;
+  ctx.font = "bold 15px 'Courier New', Courier, monospace";
+  ctx.textBaseline = "top";
+  for (let i = 0; i < text.length; i++){
+    ctx.fillText(text[i], x + i * DIGIT_W, y);
+  }
+}
+
+function pad(n){
+  return String(Math.floor(n) % 100000).padStart(5, "0");
+}
+
+let flashTimer = 0;
+let flashCount = 0;
+
+function drawScore(score, hiScore){
+  const right = W - 12;
+
+  /* 100点ごとの点滅中は、現在スコアを一時的に消す */
+  let show = true;
+  if (flashCount > 0) show = Math.floor(flashTimer / 250) % 2 === 0;
+
+  if (show) drawText(pad(score), right - 5 * DIGIT_W, 10);
+
+  if (hiScore > 0){
+    ctx.globalAlpha = 0.5;
+    drawText("HI " + pad(hiScore), right - 14 * DIGIT_W, 10);
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* =========================
+   ゲームオーバー表示
+========================= */
+
+function drawGameOver(){
+  ctx.fillStyle = FG;
+  ctx.font = "bold 16px 'Courier New', Courier, monospace";
+  ctx.textBaseline = "top";
+  ctx.textAlign = "center";
+  ctx.fillText("G A M E   O V E R", W / 2, 42);
+  ctx.textAlign = "left";
+
+  /* やり直しボタン（時計回りの円と、その先端の矢じり）。
+     円は右上を欠けさせ、欠けの終わり（真上あたり）に矢じりを置く */
+  const cx = W / 2, cy = 84, r = 12;
+
+  ctx.strokeStyle = FG;
+  ctx.lineWidth = 3;
+  ctx.lineCap = "butt";
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, -Math.PI * 0.15, Math.PI * 1.55);
+  ctx.stroke();
+
+  const ex = cx + r * Math.cos(-Math.PI * 0.45);
+  const ey = cy + r * Math.sin(-Math.PI * 0.45);
+
+  ctx.beginPath();
+  ctx.moveTo(ex - 1, ey - 5);
+  ctx.lineTo(ex - 1, ey + 5);
+  ctx.lineTo(ex + 7, ey);
+  ctx.closePath();
+  ctx.fill();
+}
+
+/* =========================
+   効果音
+   音声ファイルは持たず、その場で合成する
+========================= */
+
+let audioCtx = null;
+let soundOn = localStorage.getItem("dino-sound") !== "off";
+
+const soundBox = document.getElementById("sound-on");
+soundBox.checked = soundOn;
+soundBox.addEventListener("change", () => {
+  soundOn = soundBox.checked;
+  localStorage.setItem("dino-sound", soundOn ? "on" : "off");
+});
+
+function beep(freq, endFreq, duration, gain, type){
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const amp = audioCtx.createGain();
+
+  osc.type = type || "square";
+  osc.frequency.setValueAtTime(freq, t);
+  if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, t + duration);
+
+  amp.gain.setValueAtTime(gain, t);
+  amp.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+  osc.connect(amp).connect(audioCtx.destination);
+  osc.start(t);
+  osc.stop(t + duration + 0.02);
+}
+
+function playSound(name){
+  if (!soundOn) return;
+
+  if (!audioCtx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    audioCtx = new AC();
+  }
+  if (audioCtx.state === "suspended") audioCtx.resume();
+
+  if (name === "jump")   beep(760, null, 0.05, 0.05);
+  if (name === "hit")    beep(320, 90, 0.35, 0.09, "sawtooth");
+  if (name === "point"){ beep(1200, null, 0.06, 0.05);
+                         setTimeout(() => soundOn && beep(1600, null, 0.09, 0.05), 90); }
+}
+
+/* =========================
+   ゲーム全体の状態
+========================= */
+
+let state = "waiting";      /* waiting → playing → crashed */
+let speed = START_SPEED;
+let distance = 0;
+let hiScore = Number(localStorage.getItem("dino-hi") || 0);
+let runTime = 0;
+let invertTimer = 0;
+let nextInvert = INVERT_DISTANCE;
+let nextAchievement = ACHIEVEMENT_STEP;
+let lastTime = 0;
+let raf = null;
+
+function score(){
+  return distance * SCORE_COEFFICIENT;
+}
+
+function reset(){
+  obstacles = [];
+  clouds = [];
+  lastType = null;
+  sameTypeCount = 0;
+  speed = START_SPEED;
+  distance = 0;
+  runTime = 0;
+  invertTimer = 0;
+  nextInvert = INVERT_DISTANCE;
+  nextAchievement = ACHIEVEMENT_STEP;
+  flashTimer = 0;
+  flashCount = 0;
+  stage.classList.remove("inverted");
+  resetDino();
+}
+
+function start(){
+  if (state === "playing") return;
+  reset();
+  state = "playing";
+  lastTime = 0;
+  startJump(speed);
+}
+
+function gameOver(){
+  state = "crashed";
+  dino.crashed = true;
+  dino.ducking = false;
+  playSound("hit");
+
+  if (score() > hiScore){
+    hiScore = Math.floor(score());
+    localStorage.setItem("dino-hi", String(hiScore));
+  }
+}
+
+/* =========================
+   ループ
+========================= */
+
+function frame(now){
+  raf = requestAnimationFrame(frame);
+
+  if (!lastTime) lastTime = now;
+  const deltaTime = Math.min(now - lastTime, 50);
+  lastTime = now;
+
+  const dt = deltaTime / (1000 / 60);   /* 60fps基準に正規化 */
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, W, H);
+
+  if (state === "playing"){
+
+    runTime += deltaTime;
+    const move = speed * dt;
+    distance += move;
+
+    updateGround(move);
+    updateClouds(speed, dt);
+    updateObstacles(speed, dt, deltaTime, runTime > CLEAR_TIME);
+    updateDino(dt, deltaTime);
+
+    if (speed < MAX_SPEED) speed += ACCELERATION * dt;
+
+    /* 100点ごとの点滅と音 */
+    if (score() >= nextAchievement){
+      nextAchievement += ACHIEVEMENT_STEP;
+      flashCount = 3;
+      flashTimer = 0;
+      playSound("point");
+    }
+    if (flashCount > 0){
+      flashTimer += deltaTime;
+      if (flashTimer > 250 * 6){ flashCount = 0; flashTimer = 0; }
+    }
+
+    /* 700点ごとに夜になり、12秒で戻る */
+    if (invertTimer > 0){
+      invertTimer += deltaTime;
+      if (invertTimer > INVERT_DURATION){
+        invertTimer = 0;
+        stage.classList.remove("inverted");
+      }
+    } else if (score() >= nextInvert){
+      nextInvert += INVERT_DISTANCE;
+      invertTimer = deltaTime;
+      stage.classList.add("inverted");
+    }
+
+    if (checkCollision()) gameOver();
+
+  } else if (state === "waiting"){
+    /* 開始前は雲だけゆっくり流す */
+    updateClouds(START_SPEED, dt);
+  }
+
+  drawClouds();
+  drawGround();
+  drawObstacles();
+  drawDino(state);
+  drawScore(score(), hiScore);
+
+  if (state === "crashed") drawGameOver();
+}
+
+/* =========================
+   入力
+
+   スペースキーと矢印キーは、ゲームが画面に映っているときだけ奪う。
+   解説を読んでいる間はふつうにスクロールできるようにする
+========================= */
+
+let stageVisible = true;
+
+if ("IntersectionObserver" in window){
+  new IntersectionObserver(entries => {
+    stageVisible = entries[0].isIntersecting;
+  }, { threshold: 0.35 }).observe(stage);
+}
+
+const JUMP_KEYS = ["Space", "ArrowUp", "KeyW"];
+const DUCK_KEYS = ["ArrowDown", "KeyS"];
+
+document.addEventListener("keydown", e => {
+  if (e.repeat) return;
+  if (!stageVisible) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+  const target = e.target;
+  if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
+
+  if (JUMP_KEYS.includes(e.code)){
+    e.preventDefault();
+    if (state === "waiting") start();
+    else if (state === "crashed") start();
+    else startJump(speed);
+    return;
+  }
+
+  if (DUCK_KEYS.includes(e.code)){
+    e.preventDefault();
+    if (state !== "playing") return;
+    if (dino.jumping) setSpeedDrop();
+    else dino.ducking = true;
+  }
+});
+
+document.addEventListener("keyup", e => {
+  if (JUMP_KEYS.includes(e.code)) endJump();
+  if (DUCK_KEYS.includes(e.code)) dino.ducking = false;
+});
+
+/* --- タップ操作 --- */
+
+function press(e){
+  e.preventDefault();
+  if (state === "playing") startJump(speed);
+  else start();
+}
+
+canvas.addEventListener("pointerdown", press);
+canvas.addEventListener("pointerup", e => { e.preventDefault(); endJump(); });
+
+const btnJump = document.getElementById("btn-jump");
+const btnDuck = document.getElementById("btn-duck");
+
+btnJump.addEventListener("pointerdown", press);
+btnJump.addEventListener("pointerup", e => { e.preventDefault(); endJump(); });
+btnJump.addEventListener("pointerleave", endJump);
+
+btnDuck.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  if (state !== "playing") return;
+  if (dino.jumping) setSpeedDrop();
+  else dino.ducking = true;
+});
+
+function releaseDuck(e){
+  if (e) e.preventDefault();
+  dino.ducking = false;
+}
+
+btnDuck.addEventListener("pointerup", releaseDuck);
+btnDuck.addEventListener("pointerleave", releaseDuck);
+
+document.getElementById("reload-button").addEventListener("click", () => {
+  state = "waiting";
+  reset();
+  stage.scrollIntoView({ block: "center", behavior: "smooth" });
+});
+
+/* =========================
+   解像度あわせ
+   論理座標は常に 600 x 150。実画素だけ端末にあわせる
+========================= */
+
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  const cssW = canvas.clientWidth || W;
+  const ratio = (cssW / W) * dpr;
+
+  canvas.width  = Math.round(W * ratio);
+  canvas.height = Math.round(H * ratio);
+
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+}
+
+window.addEventListener("resize", resize);
+resize();
+
+/* タブが隠れている間は止めるだけ。
+   戻ったときに時間が飛んで即死しないよう、計測もリセットする */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden){
+    if (raf) cancelAnimationFrame(raf);
+    raf = null;
+  } else if (!raf){
+    lastTime = 0;
+    raf = requestAnimationFrame(frame);
+  }
+});
+
+raf = requestAnimationFrame(frame);
+
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "ネットが切れたときに出てくる恐竜のゲームを、オンラインのまま遊べますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "遊べます。このページはChromeのオフライン画面に出てくる恐竜ゲームと同じルール・同じ操作で遊べるように作ったもので、通信がつながったままでも動きます。Chrome本体で呼び出したい場合は、アドレスバーに chrome://dino と入力すると、通信が切れていなくてもエラー画面を開けます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "恐竜ゲームの操作方法を教えてください。",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "スペースキーまたは上キーでジャンプし、押している時間が長いほど高く跳びます。下キーを押している間はしゃがみ、ジャンプ中に下キーを押すと落下が速くなります。スマホの場合は画面をタップするとジャンプ、しゃがむボタンを押している間はしゃがみます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "空を飛んでくる翼竜はどうよければよいですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "翼竜の高さは3種類あります。地面すれすれの高さならジャンプ、中くらいの高さならしゃがんでよけます。高いところを飛んでいる翼竜は恐竜の頭より上を通るため、何もせず走り抜けるのが正解です。高い翼竜に反応してジャンプすると、自分から当たりにいくことになります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "途中で画面が暗くなるのはなぜですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "スコアが700点、1400点と一定の点数に達するたびに、画面の色が反転して夜になります。しばらく走ると昼に戻ります。見た目が変わるだけで、走る速度も当たり判定も昼のときと同じです。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "ハイスコアは保存されますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "お使いのブラウザに保存され、次に開いたときも画面右上にHIとして表示されます。サーバーには送信していません。ブラウザの閲覧データを削除すると一緒に消えます。"
+      }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
