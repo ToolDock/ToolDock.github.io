@@ -67,6 +67,11 @@ if (tool) {
     ${hasDesc ? "" : `<meta name="description"
           content="${escapeAttr(metaDesc)}">`}
 
+    <!-- これが無いと、Googleは画像プレビューを小さく出すか、出さない。
+         検索結果・Discover・コレクションのサムネイルはこの指定が前提になる -->
+    <meta name="robots"
+          content="max-image-preview:large">
+
     <meta property="og:type"
           content="website">
 
