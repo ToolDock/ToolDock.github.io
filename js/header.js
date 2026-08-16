@@ -22,7 +22,8 @@
   /* すでに置かれていれば何もしない（二重読み込み対策） */
   if (document.getElementById("td-header")) return;
 
-  const LOGO = "/img/logo.png";
+  /* ファビコンと同じ絵柄を切り出したもの */
+  const MARK = "/img/mark.png";
 
   function injectStyle() {
     if (document.getElementById("td-header-style")) return;
@@ -31,35 +32,82 @@
     style.id = "td-header-style";
 
     style.textContent = `
-      .td-header {
+      /* ページ側が裸の header{} や a{} を書いていることがあり、
+         そのままだと余白・寄せ・色をそこから拾ってしまう。
+         見た目に関わるものは、ここで全部言い切っておく。
+         この一括指定は下の個別指定より前に置くこと（同じ強さなので後勝ち） */
+      .td-header,
+      .td-header * {
         box-sizing: border-box;
-        background: #ffffff;
-        /* フッターと同じ青で下端に細い線を引き、上下で挟む */
-        border-bottom: 3px solid;
-        border-image: linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%) 1;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+        text-align: left;
+        text-decoration: none;
+        letter-spacing: normal;
+        font-family: -apple-system, "Segoe UI", "Hiragino Sans",
+                     "Noto Sans JP", Meiryo, sans-serif;
+        font-style: normal;
       }
 
-      /* ロゴは画面の左上に置く。
+      .td-header {
+        display: block;
+        background: #ffffff;
+        color: #1f2937;
+        line-height: 1.2;
+        /* フッターと同じ系統の青を、細く1本だけ。
+           太い線や濃い色を敷くと本文より目立ってしまう */
+        border-bottom: 2px solid #7dd3fc;
+      }
+
+      /* ロゴは画面の左端に寄せる。
          本文の幅にそろえて中央に寄せると、帯の中で宙に浮いて見える */
       .td-header-inner {
-        padding: 8px 18px;
+        padding: 6px 12px;
       }
 
       .td-header a {
-        display: inline-block;
-        line-height: 0;
-        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: inherit;
       }
 
+      /* ファビコンと同じマーク。
+         元画像が48pxなので、それより小さく出して常に鮮明に保つ */
       .td-header img {
         display: block;
-        width: auto;
-        height: 44px;
+        width: 26px;
+        height: 26px;
+        max-width: none;
+        min-width: 0;
+      }
+
+      .td-header-name {
+        display: block;
+        color: #1f2937;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -0.2px;
+      }
+
+      .td-header-tag {
+        display: block;
+        margin-top: 1px;
+        color: #7b8794;
+        font-size: 10px;
+        line-height: 1.2;
+        letter-spacing: 0;
       }
 
       @media (max-width: 600px) {
-        .td-header img { height: 36px; }
-        .td-header-inner { padding: 7px 14px; }
+        .td-header-inner { padding: 5px 10px; }
+        .td-header img { width: 23px; height: 23px; }
+        .td-header-name { font-size: 15px; }
       }
 
       @media print {
@@ -115,13 +163,16 @@
     headerEl.className = "td-header";
     headerEl.id = "td-header";
 
-    /* 幅と高さを属性で持たせて、読み込み中に本文が飛び跳ねないようにする */
     headerEl.innerHTML = `
       <div class="td-header-inner">
-        <a href="/" aria-label="ToolDock ホーム">
-          <img src="${LOGO}"
-               width="1068" height="332"
-               alt="ToolDock 無料Webツール集">
+        <a href="/">
+          <img src="${MARK}"
+               width="48" height="48"
+               alt="ToolDock">
+          <span>
+            <span class="td-header-name">ToolDock</span>
+            <span class="td-header-tag">無料Webツール集</span>
+          </span>
         </a>
       </div>
     `;
