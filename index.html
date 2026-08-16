@@ -39,11 +39,68 @@
   <meta property="og:image" content="https://tooldock.github.io/ogp.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:alt" content="ToolDock 無料Webツール集">
   <meta property="og:locale" content="ja_JP">
 
   <meta name="twitter:card" content="summary_large_image">
 
+  <!-- og:image を見ないサービスもあるので、こちらも明示しておく -->
+  <meta name="twitter:image" content="https://tooldock.github.io/ogp.png">
+
   <link rel="canonical" href="https://tooldock.github.io/">
+
+  <!-- このページは head.js を読まないため、構造化データが1つも無かった。
+       og:image はSNSのカード用で、Google側のサムネイルには使われない。
+       検索やコレクションで代表画像を持てるよう、ここで明示する -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://tooldock.github.io/#website",
+        "name": "ToolDock",
+        "url": "https://tooldock.github.io/",
+        "description": "完全ブラウザで使える無料Webツール集。",
+        "inLanguage": "ja",
+        "publisher": { "@id": "https://tooldock.github.io/#org" }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://tooldock.github.io/#org",
+        "name": "ToolDock",
+        "url": "https://tooldock.github.io/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://tooldock.github.io/ogp.png",
+          "width": 1200,
+          "height": 630
+        }
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://tooldock.github.io/#webpage",
+        "url": "https://tooldock.github.io/",
+        "name": "ToolDock ｜ 無料Webツール集",
+        "description": "完全ブラウザで使える無料Webツール集。",
+        "inLanguage": "ja",
+        "isPartOf": { "@id": "https://tooldock.github.io/#website" },
+        "primaryImageOfPage": { "@id": "https://tooldock.github.io/#primaryimage" },
+        "thumbnailUrl": "https://tooldock.github.io/ogp.png"
+      },
+      {
+        "@type": "ImageObject",
+        "@id": "https://tooldock.github.io/#primaryimage",
+        "url": "https://tooldock.github.io/ogp.png",
+        "contentUrl": "https://tooldock.github.io/ogp.png",
+        "width": 1200,
+        "height": 630,
+        "caption": "ToolDock 無料Webツール集"
+      }
+    ]
+  }
+  </script>
 
 </head>
 
