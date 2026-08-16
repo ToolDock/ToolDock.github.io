@@ -262,7 +262,7 @@ function addJsonLd(data){
    右レールと広告枠。各HTMLに書かず、ここから1回だけ読み込む
 ========================= */
 
-for (const src of ["/js/sidebar.js", "/js/ads.js", "/js/affiliate.js", "/js/footer.js"]) {
+for (const src of ["/js/sidebar.js", "/js/ads.js", "/js/affiliate.js", "/js/header.js", "/js/footer.js"]) {
   const partScript = document.createElement("script");
 
   partScript.src = src;
