@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>オフラインの恐竜ゲーム｜ネットにつながったまま遊べるダイナソーゲーム | ToolDock</title>
+<title>ダイナソーゲーム（オフラインの恐竜ゲーム）｜ネットにつながったまま遊べる | ToolDock</title>
 <meta name="description" content="ネットが切れたときに出てくる、あの恐竜（ダイナソー）ゲームをそのまま遊べるページです。オフラインにならなくても遊べます。スペースキーか画面タップでジャンプ、下キーでしゃがんで翼竜をよけます。ハイスコアはブラウザに保存され、登録もインストールも不要です。">
 <link rel="canonical" href="https://tooldock.github.io/dino/">
 
@@ -49,12 +49,21 @@ body{
     margin:8vh auto 0;
     padding:0 20px 40px;
 
-    /* ここは読みものではなく操作面。
-       長押しで文字が選択されるとゲームが操作できなくなるので、
-       ブロックごと選択の対象から外す（解説側は選択できるままにする） */
+}
+
+/* ここは読みものではなく操作面。
+   長押しで文字が選択されたり虫眼鏡が出るとゲームが操作できなくなる。
+   ブロックとその中身すべてを選択の対象から外す。
+   親に指定しただけでは子に効かない環境があるので、
+   子孫にも同じ指定を配る（解説側は選択できるままにする） */
+.interstitial-wrapper,
+.interstitial-wrapper *{
     -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
     user-select:none;
     -webkit-touch-callout:none;
+    -webkit-tap-highlight-color:transparent;
 }
 
 /* --- ゲーム画面 --- */
@@ -64,6 +73,8 @@ body{
 .runner-stage{
     position:relative;
     margin:0 -20px 24px;
+    /* 画面まわりは長押し・スワイプ・拡大をすべてブラウザに渡さない */
+    touch-action:none;
 }
 
 .runner-stage.inverted{
@@ -160,7 +171,11 @@ kbd{
 .touch-pad{
     display:none;
     gap:10px;
-    margin:0 0 28px;
+    /* ボタンを少し外れて押しても、この余白がイベントを受け止める。
+       ボタンの「まわり」で長押しの虫眼鏡が出るのを防ぐ */
+    padding:10px 0 14px;
+    margin:0 0 14px;
+    touch-action:none;
 }
 
 .touch-pad button{
@@ -250,7 +265,7 @@ body.has-touch .touch-pad{
 
   <!-- ネットが切れたときの画面と同じ組みだが、
        本当に接続が切れていると誤解されないよう文言だけ差し替えている -->
-  <h1>オフラインの恐竜ゲーム</h1>
+  <h1>オフラインの恐竜ゲーム（ダイナソーゲーム）</h1>
 
   <p>
   ネットが切れたときに出てくる、あの恐竜のゲームです。<br>
@@ -791,6 +806,19 @@ function setSpeedDrop(){
   dino.velocity = 1;
 }
 
+/* しゃがみ始める。キー・ボタン・画面のドラッグで共通に使う。
+
+   空中なら急いで降りたうえで、着地後もしゃがんだままにする。
+   跳んでいる間は drawDino も当たり判定も ducking を見ないので、
+   ここで立てておいて問題ない。
+   「跳んでいるときは ducking を立てない」とすると、
+   押しっぱなしのまま着地したときに立ち上がってしまう */
+function startDuck(){
+  endJump();
+  if (dino.jumping) setSpeedDrop();
+  dino.ducking = true;
+}
+
 function updateDino(dt, deltaTime){
   if (dino.jumping){
 
@@ -1172,8 +1200,7 @@ document.addEventListener("keydown", e => {
   if (DUCK_KEYS.includes(e.code)){
     e.preventDefault();
     if (state !== "playing") return;
-    if (dino.jumping) setSpeedDrop();
-    else dino.ducking = true;
+    startDuck();
   }
 });
 
@@ -1189,9 +1216,29 @@ document.addEventListener("keyup", e => {
    ゲームの操作面では選択そのものを起こさせない。 */
 
 const wrapper = document.querySelector(".interstitial-wrapper");
+const touchPad = document.querySelector(".touch-pad");
 
 wrapper.addEventListener("contextmenu", e => e.preventDefault());
 wrapper.addEventListener("selectstart", e => e.preventDefault());
+wrapper.addEventListener("dragstart", e => e.preventDefault());
+
+/* CSSの user-select だけでは、長押ししたときの虫眼鏡（選択の拡大鏡）が
+   出る端末がある。touch イベントの既定動作そのものを止めると確実に消える。
+   passive:false でないと preventDefault が無視される点に注意。
+
+   ここで止めるのはゲーム画面と操作ボタンの領域だけ。
+   説明文のあたりまで止めると、そこから指を動かしても
+   ページをスクロールできなくなってしまう。 */
+
+function killTouchDefault(el){
+  if (!el) return;
+  for (const type of ["touchstart", "touchmove", "touchend"]){
+    el.addEventListener(type, e => e.preventDefault(), { passive: false });
+  }
+}
+
+killTouchDefault(stage);
+killTouchDefault(touchPad);
 
 /* 押している間ずっと、という操作を成立させるための約束。
    指がボタンからずれても、離すまで同じ要素にイベントを届ける */
@@ -1242,13 +1289,7 @@ canvas.addEventListener("pointermove", e => {
   if (e.clientY - touchStartY < DUCK_DRAG) return;
 
   touchDucking = true;
-  endJump();                          /* 上昇を打ち切る */
-  if (dino.jumping) setSpeedDrop();   /* 空中なら急いで降りる */
-
-  /* 着地後もしゃがんだままにする。
-     跳んでいる間は drawDino / 当たり判定がこの値を見ないので、
-     ここで立てておいて問題ない */
-  dino.ducking = true;
+  startDuck();
 });
 
 function releaseCanvas(e){
@@ -1281,8 +1322,7 @@ btnDuck.addEventListener("pointerdown", e => {
   capture(e);
   duckPointerId = e.pointerId;
   if (state !== "playing") return;
-  if (dino.jumping) setSpeedDrop();
-  else dino.ducking = true;
+  startDuck();
 });
 
 function releaseDuck(e){
