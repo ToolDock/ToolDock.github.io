@@ -635,6 +635,39 @@ document.getElementById("chartBody").innerHTML =
 convert();
 </script>
 
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "16進数の A〜F は何を表していますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "10進数の10〜15にあたります。16進数は0〜9の10個では数字が足りないため、続きをA・B・C・D・E・Fで表します。このツールでは36進法まで対応しているので、Z（35）まで使えます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "n進数の小数も変換できますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "できます。たとえば10進数の0.1を2進数にすると0.0001100110011…と循環し、割り切れません。これがプログラムで0.1 + 0.2がぴったり0.3にならない原因です。小数点以下の桁数は入力欄で変更できます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "何桁くらいまで扱えますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "整数部分は多倍長整数で計算しているため、桁数の制限は実質ありません。"
+      }
+    }
+  ]
+}
+</script>
 <div id="related-tools"></div>
 <script src="/js/related.js"></script>
 
