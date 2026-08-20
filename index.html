@@ -27,7 +27,7 @@
   <title>ToolDock ｜ 無料Webツール集</title>
 
   <meta name="description"
-        content="完全ブラウザで使える無料Webツール集。">
+        content="ブラウザだけで使える無料のWebツール集。インストールも会員登録も不要です。連立方程式や因数分解を途中式つきで解く数学ツール、リスクを込みで計算する積立・取り崩しシミュレーター、文字数カウントや原稿用紙エディタなど。入力した内容はブラウザ内で処理し、サーバーへ送信しません。">
 
   <meta name="apple-mobile-web-app-title" content="ToolDock">
 
@@ -38,7 +38,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ToolDock">
   <meta property="og:title" content="ToolDock ｜ 無料Webツール集">
-  <meta property="og:description" content="完全ブラウザで使える無料Webツール集。">
+  <meta property="og:description" content="ブラウザだけで使える無料のWebツール集。インストールも会員登録も不要です。連立方程式や因数分解を途中式つきで解く数学ツール、リスクを込みで計算する積立・取り崩しシミュレーター、文字数カウントや原稿用紙エディタなど。入力した内容はブラウザ内で処理し、サーバーへ送信しません。">
   <meta property="og:url" content="https://tooldock.github.io/">
   <meta property="og:image" content="https://tooldock.github.io/ogp.png">
   <meta property="og:image:width" content="1200">
@@ -66,7 +66,7 @@
         "@id": "https://tooldock.github.io/#website",
         "name": "ToolDock",
         "url": "https://tooldock.github.io/",
-        "description": "完全ブラウザで使える無料Webツール集。",
+        "description": "ブラウザだけで使える無料のWebツール集。インストールも会員登録も不要です。連立方程式や因数分解を途中式つきで解く数学ツール、リスクを込みで計算する積立・取り崩しシミュレーター、文字数カウントや原稿用紙エディタなど。入力した内容はブラウザ内で処理し、サーバーへ送信しません。",
         "inLanguage": "ja",
         "publisher": { "@id": "https://tooldock.github.io/#org" }
       },
@@ -87,7 +87,7 @@
         "@id": "https://tooldock.github.io/#webpage",
         "url": "https://tooldock.github.io/",
         "name": "ToolDock ｜ 無料Webツール集",
-        "description": "完全ブラウザで使える無料Webツール集。",
+        "description": "ブラウザだけで使える無料のWebツール集。インストールも会員登録も不要です。連立方程式や因数分解を途中式つきで解く数学ツール、リスクを込みで計算する積立・取り崩しシミュレーター、文字数カウントや原稿用紙エディタなど。入力した内容はブラウザ内で処理し、サーバーへ送信しません。",
         "inLanguage": "ja",
         "isPartOf": { "@id": "https://tooldock.github.io/#website" },
         "primaryImageOfPage": { "@id": "https://tooldock.github.io/#primaryimage" },
@@ -106,6 +106,12 @@
   }
   </script>
 
+  <style>
+    h2{ margin-top:36px; padding-bottom:6px; border-bottom:2px solid #e5e7eb; font-size:1.25rem; }
+    h3{ margin-top:24px; font-size:1.05rem; }
+    #tool-list h2{ border-bottom-color:#bfdbfe; }
+  </style>
+
 </head>
 
 <body>
@@ -115,8 +121,45 @@
 </h1>
 
 <p>
-ToolDockは、無料で使える便利なWebツールをまとめたサイトです。ブラウザ上で簡単に利用でき、インストールは不要です。<br>
-ツールのリクエストも受け付けています。依頼は下記「Contact」タブから匿名で送ることができます。
+ToolDockは、ブラウザだけで使える無料のWebツールを集めたサイトです。
+インストールも会員登録も不要で、ページを開けばその場で使えます。
+入力した内容はすべてブラウザの中で処理しており、当サイトのサーバーへ送信されることはありません。
+</p>
+
+<h2>ToolDockのツールの特徴</h2>
+
+<h3>答えだけでなく、途中の計算を出します</h3>
+
+<p>
+数学系のツールでは、結果と一緒に途中式を表示します。
+連立方程式は加減法の手順を1行ずつ、因数分解はたすき掛けの過程を、
+掃き出し法は行基本変形の1手ごとの行列を出します。
+答え合わせに使うだけでなく、解き方そのものを追えるようにするためです。
+</p>
+
+<h3>お金の計算は、幅で出します</h3>
+
+<p>
+積立や取り崩しのシミュレーターでは、期待リターンに加えてリスク（標準偏差）を入力していただきます。
+「毎年◯%で増える」という計算は現実には起こらないため、
+結果を1本の線ではなく、上振れと下振れを含む幅で示しています。
+資産が尽きる確率や、一括投資と積立投資のどちらが勝つ確率が高いかも計算できます。
+</p>
+
+<h3>入力した内容は送信していません</h3>
+
+<p>
+文字数カウント、原稿用紙エディタ、QRコード作成、正規表現テスターなど、
+人に見せたくない内容を扱うツールもあります。
+これらを含め、計算はすべて利用者のブラウザの中で行っており、
+入力された文章や数値が外部へ送られることはありません。
+</p>
+
+<h2>公開中のツール</h2>
+
+<p>
+現在<strong id="tool-count">-</strong>種類のツールを、生活・業務・数学・ゲームの4分野に分けて公開しています。
+それぞれのページには、そのツールを使うときに知っておくと役に立つ解説を添えています。
 </p>
 
 <!-- カテゴリ別のツール一覧。
@@ -124,12 +167,21 @@ ToolDockは、無料で使える便利なWebツールをまとめたサイトで
      ここを手で書くと、ツールを足したときに載せ忘れる -->
 <div id="tool-list"></div>
 
-<h2>その他</h2>
+<h2>ツールのご要望について</h2>
+
+<p>
+「こういう計算を毎回手でやっていて面倒」といったご要望を受け付けています。
+<a href="/contact/">お問い合わせ</a>のフォームから匿名で送信でき、
+メールアドレスの入力は不要です。
+公開中のツールには、いただいた声から作ったものも含まれています。
+</p>
+
+<h2>このサイトについて</h2>
 
 <ul>
-  <li><a href="/about/">About</a></li>
-  <li><a href="/privacy/">Privacy Policy</a></li>
-  <li><a href="/contact/">Contact</a></li>
+  <li><a href="/about/">ToolDockについて</a>｜サイトの方針と運営情報</li>
+  <li><a href="/privacy/">プライバシーポリシー</a>｜入力内容の扱い、アクセス解析、広告について</li>
+  <li><a href="/contact/">お問い合わせ</a>｜ご要望・不具合のご報告</li>
 </ul>
 
 <script src="/js/tool-data.js"></script>
@@ -151,6 +203,10 @@ ToolDockは、無料で使える便利なWebツールをまとめたサイトで
         `;
       })
       .join("");
+
+  /* 件数も同じ情報源から出す。手で書くと必ず古くなる */
+  document.getElementById("tool-count").textContent =
+    TOOLS.filter(t => !t.hidden).length;
 </script>
 
 
