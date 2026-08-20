@@ -2,7 +2,6 @@
 <html lang="ja">
 
 <head>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -17,20 +16,19 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="stylesheet" href="/style.css">
 
-  <title>About | ToolDock</title>
+  <title>ToolDockについて｜サイトの方針と運営情報</title>
+
   <!-- これが無いと、Googleは画像プレビューを小さく出すか、出さない -->
   <meta name="robots" content="max-image-preview:large">
 
-
-  <meta name="description"
-        content="ToolDockについて紹介するページです。">
+  <meta name="description" content="ToolDockは、ブラウザだけで使える無料のWebツールを集めたサイトです。1画面で完結させる、途中式を見せる、前提を隠さない、入力内容を送信しないという4つの方針で作っています。掲載しているツールの分野と運営についてもご案内します。">
 
   <link rel="canonical" href="https://tooldock.github.io/about/">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ToolDock">
-  <meta property="og:title" content="About | ToolDock">
-  <meta property="og:description" content="ToolDockについて紹介するページです。">
+  <meta property="og:title" content="ToolDockについて｜サイトの方針と運営情報">
+  <meta property="og:description" content="ToolDockは、ブラウザだけで使える無料のWebツールを集めたサイトです。1画面で完結させる、途中式を見せる、前提を隠さない、入力内容を送信しないという4つの方針で作っています。掲載しているツールの分野と運営についてもご案内します。">
   <meta property="og:url" content="https://tooldock.github.io/about/">
   <meta property="og:image" content="https://tooldock.github.io/ogp.png">
   <meta property="og:image:width" content="1200">
@@ -38,48 +36,133 @@
   <meta property="og:locale" content="ja_JP">
   <meta name="twitter:card" content="summary_large_image">
 
+  <style>
+    h2{ margin-top:36px; padding-bottom:6px; border-bottom:2px solid #e5e7eb; font-size:1.25rem; }
+    h3{ margin-top:24px; font-size:1.05rem; }
+    dt{ margin-top:14px; font-weight:bold; }
+    dd{ margin:4px 0 0 1.2em; }
+    .updated{ margin-top:40px; font-size:.9rem; color:#666; }
+  </style>
+
 </head>
 
 <body>
 
-  <h1>ToolDockについて</h1>
+<h1>ToolDockについて</h1>
 
-  <p>
-    ToolDockは、無料で使えるWebツールをまとめたサイトです。
-  </p>
+<p>
+ToolDockは、ブラウザだけで使える無料のWebツールを集めたサイトです。
+インストールも会員登録も不要で、ページを開けばその場で使えます。
+</p>
 
-  <p>
-    日常作業を少し便利にすることを目的として、
-    シンプルで使いやすいツールを公開しています。
-  </p>
+<h2>作っているものの方針</h2>
 
-  <h2>公開中のツール</h2>
+<h3>1画面で完結させる</h3>
 
-  <ul id="tool-list"></ul>
+<p>
+同じ計算をするのに、複数のページを行き来したり、
+結果を出すために手順を何度も踏ませたりしないことを基本にしています。
+入力欄と結果を同じ画面に置き、入力した瞬間に結果が変わるようにしているツールが多いのはそのためです。
+</p>
 
-  <p>
-    今後も新しいツールを追加予定です。
-  </p>
+<h3>途中の計算を見せる</h3>
 
-  <p>
-    © ToolDock
-  </p>
+<p>
+数学系のツールでは、答えだけでなく途中式を出すようにしています。
+連立方程式、因数分解、掃き出し法、固有値、行列式などがこれにあたります。
+答えが合っているかどうかを利用者自身が確かめられることと、
+解き方そのものを学べることを狙っています。
+</p>
 
-  <script src="/js/tool-data.js"></script>
+<h3>前提を隠さない</h3>
 
-  <script>
-    /* 一覧は js/tool-data.js を唯一の情報源として生成する */
+<p>
+資産運用のシミュレーターでは、期待リターンだけでなくリスク（標準偏差）を入力していただき、
+結果を1本の線ではなく幅で示しています。
+「毎年◯%で増える」という計算は現実には起こらないためです。
+税金や手数料を計算に含めていないことも、各ページに明記しています。
+</p>
 
-    document.getElementById("tool-list").innerHTML =
-      TOOLS
-        .filter(t => !t.hidden)
-        .map(t => `
-          <li><a href="${t.url}">${t.title}</a></li>
-        `).join("");
-  </script>
+<h3>入力した内容を送信しない</h3>
 
+<p>
+ツールの計算はすべてブラウザの中で行っています。
+入力した文章や数値がToolDockのサーバーへ送られることはありません。
+文字数カウント、原稿用紙エディタ、QRコード作成、正規表現テスターなど、
+内容を人に見せたくないものを扱うツールでも安心してお使いいただけます。
+</p>
 
-<!-- 共通フッター -->
+<h2>どんなツールがあるか</h2>
+
+<dl>
+  <dt>生活</dt>
+  <dd>
+    ルーレット、おみくじ、星座占いといった「決められないとき」に使うものと、
+    複利計算・積立シミュレーター、取り崩しシミュレーター、
+    住宅ローンの繰り上げ返済と投資の比較など、お金の見通しを立てるものがあります。
+  </dd>
+
+  <dt>業務</dt>
+  <dd>
+    文字数カウント、原稿用紙エディタ、Todoリスト、タイマー、
+    JSON整形、正規表現テスター、QRコード作成など、
+    仕事や文章作成で手が止まる場面を減らすためのものです。
+  </dd>
+
+  <dt>数学</dt>
+  <dd>
+    連立方程式、因数分解、行列計算、掃き出し法、固有値・固有ベクトル、
+    微分方程式、有効数字、n進数変換、箱ひげ図、論理回路図など、
+    途中式つきで答えを出すものを揃えています。
+  </dd>
+
+  <dt>ゲーム</dt>
+  <dd>
+    タイピングゲームやオフラインの恐竜ゲームのほか、
+    実況パワフルプロ野球のマイライフについて、
+    金特ミッション、イベントクリスタル、万能クリスタル、尻尾の一覧をまとめています。
+  </dd>
+</dl>
+
+<p>
+公開中のツールは<a href="/">トップページ</a>と
+<a href="/category/">カテゴリ別の一覧</a>からご覧いただけます。
+</p>
+
+<h2>記事の書き方について</h2>
+
+<p>
+ツールの下に置いている解説は、そのツールを使うときに知っておくと役に立つことを書いています。
+他のサイトの文章を引き写したものではありません。
+</p>
+
+<p>
+ゲーム攻略の記事については、実際にプレイして確認した内容のみを掲載しています。
+確認できていないことは書かない方針です。
+誤りのご指摘をいただいた場合は、確認のうえ訂正します。
+</p>
+
+<h2>運営について</h2>
+
+<p>
+ToolDockは個人が運営しています。
+特定の企業や団体とは関係がありません。
+</p>
+
+<p>
+運営費用のため、Google AdSenseによる広告と、
+楽天アフィリエイトによる商品の紹介を掲載しています。
+アフィリエイトリンクを含む箇所には「PR」と表示しています。
+広告の掲載が、ツールの計算結果や記事の内容に影響することはありません。
+</p>
+
+<p>
+ご連絡は<a href="/contact/">お問い合わせ</a>からお願いします。
+個人情報の取り扱いについては<a href="/privacy/">プライバシーポリシー</a>をご覧ください。
+</p>
+
+<!-- 共通ヘッダーとフッター -->
+<script src="/js/header.js"></script>
 <script src="/js/footer.js"></script>
 
 </body>
