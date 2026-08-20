@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 検索結果で切られる先頭30字ほどに、探している語と件数を入れる。
+     サイト名は付けない（この長さでは席がもったいない） -->
+<title>マイライフ 尻尾の入手方法一覧｜全12種と晩成化MAXの9個（パワプロ2026-2027）</title>
+<meta name="description" content="パワプロ2026-2027のマイライフで手に入る尻尾12種の入手方法一覧です。9個集めると晩成化がMAXになるため、狙って取りやすいものから埋められるようオススメ度を3段階で付けました。チェックを付けて取り済みを管理でき、MAXまであと何個かがその場で分かります。子・丑・寅から亥まで、干支ごとの条件をまとめています。">
+<link rel="canonical" href="https://tooldock.github.io/shippo/">
+
+<script> const CURRENT_TOOL = "shippo"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#f5f5f5;
+    color:#222;
+    font-family:"Yu Gothic","Meiryo",sans-serif;
+    line-height:1.7;
+}
+
+/* 左右の余白。右側のリンク欄は js/sidebar.js が別に確保する */
+.page-wrapper{
+    width:100%;
+    padding-left:24px;
+    padding-right:24px;
+}
+
+header{
+    text-align:center;
+    padding:40px 20px 20px;
+}
+
+header h1{
+    margin:0;
+    font-size:2.2rem;
+    color:#111;
+    line-height:1.4;
+}
+
+header p{
+    margin:10px 0 0;
+    color:#555;
+}
+
+main{
+    max-width:1000px;
+    margin:0 auto;
+}
+
+/* =========================
+   絞り込み
+========================= */
+
+.filter-panel{
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    padding:16px 18px;
+    margin-bottom:18px;
+}
+
+.filter-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+}
+
+.filter-row + .filter-row{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid #eee;
+}
+
+.filter-panel input[type="search"]{
+    flex:1 1 240px;
+    min-width:0;
+    padding:10px 12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+    font-family:inherit;
+}
+
+.seg{
+    display:flex;
+    border:1px solid #ccc;
+    border-radius:8px;
+    overflow:hidden;
+}
+
+.seg button{
+    padding:9px 16px;
+    border:0;
+    background:#fff;
+    color:#333;
+    font-size:15px;
+    font-family:inherit;
+    cursor:pointer;
+}
+
+.seg button + button{
+    border-left:1px solid #ccc;
+}
+
+.seg button[aria-pressed="true"]{
+    background:#2563eb;
+    color:#fff;
+}
+
+.toggle{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    user-select:none;
+}
+
+.filter-count{
+    margin-left:auto;
+    font-size:14px;
+    color:#555;
+    white-space:nowrap;
+}
+
+.filter-count strong{
+    color:#111;
+    font-size:16px;
+}
+
+.reset{
+    padding:8px 14px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    background:#fff;
+    color:#333;
+    font-size:14px;
+    font-family:inherit;
+    cursor:pointer;
+}
+
+
+/* =========================
+   一覧
+========================= */
+
+.list{
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    overflow:hidden;
+}
+
+.item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:14px 18px;
+    border-bottom:1px solid #eee;
+}
+
+.item:last-child{
+    border-bottom:0;
+}
+
+.item.done{
+    background:#f7fafc;
+    color:#94a3b8;
+}
+
+.item input[type="checkbox"]{
+    flex:0 0 auto;
+    width:20px;
+    height:20px;
+    margin-top:3px;
+    cursor:pointer;
+}
+
+.item-body{
+    flex:1 1 auto;
+    min-width:0;
+}
+
+.badge{
+    display:inline-block;
+    margin-right:8px;
+    padding:1px 9px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    vertical-align:2px;
+}
+
+.badge.s{ background:#dbeafe; color:#1d4ed8; }
+.badge.l{ background:#fef3c7; color:#b45309; }
+
+.item.done .badge{ background:#e5e7eb; color:#9ca3af; }
+
+.how{
+    font-size:16px;
+    font-weight:700;
+}
+
+.note{
+    margin-top:2px;
+    font-size:14px;
+    color:#64748b;
+}
+
+.item.done .note{ color:#b6c2cf; }
+
+.empty{
+    padding:28px 18px;
+    text-align:center;
+    color:#666;
+}
+
+
+/* =========================
+   尻尾のページ固有
+========================= */
+
+/* 集めた数と、MAXまでの残り */
+.progress{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    gap:8px 18px;
+    margin-left:auto;
+    font-size:14px;
+    color:#555;
+    white-space:nowrap;
+}
+
+.progress strong{
+    color:#111;
+    font-size:16px;
+}
+
+.progress .rest{
+    color:#b45309;
+    font-weight:700;
+}
+
+.progress .cleared{
+    padding:2px 10px;
+    border-radius:999px;
+    background:#16a34a;
+    color:#fff;
+    font-weight:700;
+}
+
+/* 干支 */
+.eto{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:26px;
+    height:26px;
+    margin-right:8px;
+    border-radius:8px;
+    background:#1e293b;
+    color:#fff;
+    font-size:15px;
+    font-weight:700;
+    vertical-align:-4px;
+}
+
+.item.done .eto{ background:#cbd5e1; color:#fff; }
+
+/* オススメ度 */
+.stars{
+    margin-left:8px;
+    font-size:14px;
+    letter-spacing:1px;
+    white-space:nowrap;
+}
+
+.stars[data-rank="3"]{ color:#f59e0b; }
+.stars[data-rank="2"]{ color:#94a3b8; }
+.stars[data-rank="1"]{ color:#cbd5e1; }
+
+.item.done .stars{ color:#dde3ea; }
+
+/* 素材が要るものは一目で分かるようにする */
+.needs{
+    display:inline-block;
+    margin-left:8px;
+    padding:1px 8px;
+    border-radius:999px;
+    background:#fef3c7;
+    color:#92400e;
+    font-size:11px;
+    font-weight:700;
+    vertical-align:2px;
+}
+
+.item.done .needs{ background:#eef2f6; color:#b6c2cf; }
+
+@media (max-width:600px){
+    .page-wrapper{ padding-left:12px; padding-right:12px; }
+    header{ padding:28px 12px 16px; }
+    header h1{ font-size:1.5rem; }
+    .filter-count{ margin-left:0; width:100%; }
+    .progress{ margin-left:0; width:100%; white-space:normal; }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>マイライフ 尻尾 入手方法一覧（全12種）</h1>
+    <p>9個集めると晩成化がMAXになります。チェックは自動で保存されます</p>
+</header>
+
+<main>
+
+<div class="filter-panel">
+
+    <div class="filter-row">
+        <input type="search" id="q" placeholder="尻尾の名前や入手方法で検索（例：ラジコン、散歩、ヒーロー）"
+               aria-label="尻尾の名前や入手方法で検索">
+        <button type="button" class="reset" id="reset">リセット</button>
+    </div>
+
+    <div class="filter-row">
+        <div class="seg" role="group" aria-label="オススメ度">
+            <button type="button" data-rank="all" aria-pressed="true">すべて</button>
+            <button type="button" data-rank="3"   aria-pressed="false">★3</button>
+            <button type="button" data-rank="2"   aria-pressed="false">★2</button>
+            <button type="button" data-rank="1"   aria-pressed="false">★1</button>
+        </div>
+
+        <label class="toggle">
+            <input type="checkbox" id="hide-done">取得済みを隠す
+        </label>
+
+        <span class="progress">
+            <span>取得 <strong id="done">0</strong> / 12</span>
+            <span id="rest-wrap">MAXまであと <strong class="rest" id="rest">9</strong> 個</span>
+        </span>
+    </div>
+
+</div>
+
+<div class="list" id="list"></div>
+
+</main>
+
+</div>
+
+
+<article class="tool-article">
+
+<h2>尻尾は9個でMAXになる</h2>
+
+<p>
+このページは据え置き機の実況パワフルプロ野球2026-2027のマイライフを対象としています。
+スマートフォンの「パワプロアプリ」とは別のものです。
+</p>
+
+<p>
+マイライフで手に入る尻尾は、子から亥までの<strong>全12種</strong>です。
+<strong>9個集めた時点で晩成化がMAXになる</strong>ため、
+12種すべてをそろえる必要はありません。
+</p>
+
+<h2>★1の2つは取らなくてよい</h2>
+
+<p>
+オススメ度は、狙って取りにいけるかどうかで3段階に分けています。
+内訳は次のとおりです。
+</p>
+
+<ul>
+<li><strong>★3が7種</strong>— 条件がはっきりしていて、狙えば取れる</li>
+<li><strong>★2が3種</strong>— 条件は分かるが、日付や月が限られる</li>
+<li><strong>★1が2種</strong>— 運の要素が大きく、狙いにくい</li>
+</ul>
+
+<p>
+<strong>★3の7種と★2の3種で、合わせて10種になります。</strong>
+必要なのは9個なので、
+<strong>運に左右される★1の2つ（午・未）は、はじめから除いて計画できます。</strong>
+★3を全部取ったうえで、★2のうち2つを埋めれば9個に届きます。
+</p>
+
+<h2>素材を先に集めるもの</h2>
+
+<p>
+次の3つは、尻尾を直接もらうのではなく、
+先に素材を手に入れてから交換する形です。
+素材が出る日や月が決まっているので、忘れると次の機会まで待つことになります。
+</p>
+
+<ul>
+<li><strong>丑（紅水晶）</strong>— 下一桁が3か7の日の夜に川岸を散歩して入手し、喫茶店で交換</li>
+<li><strong>寅（虹のサンゴ）</strong>— 4月・6月・8月の夜に海岸を散歩して入手し、ラジコンサーキットで交換</li>
+<li><strong>午（黄水晶）</strong>— 8月の福引抽選で2等を当てて入手し、スポーツショップで交換</li>
+</ul>
+
+<p>
+このうち午だけが★1です。福引の2等が当たるかどうかは運なので、
+ここを当てにした計画は立てないほうが無難です。
+</p>
+
+<h2>時期や条件が決まっているもの</h2>
+
+<ul>
+<li><strong>戌</strong>— 同じ年に月間MVPを全て取る。年をまたぐと数え直しになります</li>
+<li><strong>辰</strong>— ラジコン大会で3回優勝する</li>
+<li><strong>子</strong>— 全球場でヒーロー記念トロフィーを入手する。長い目で見て埋めていくものです</li>
+<li><strong>巳</strong>— デイゲームで活躍した日の夜にブログを更新する。活躍した日に忘れないことが大事です</li>
+<li><strong>亥</strong>— オールスターMVPのスーパーカーでドライブする</li>
+</ul>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 尻尾は全部集める必要がありますか？</strong><br>
+A. ありません。9個集めた時点で晩成化がMAXになります。
+オススメ度★3の7種と★2の3種を合わせると10種あるので、
+運の要素が大きい★1の2種（午・未）は取らなくても9個に届きます。</p>
+
+<p><strong>Q. いちばん狙いにくい尻尾はどれですか？</strong><br>
+A. 午と未です。午は8月の福引抽選で2等を当てる必要があり、
+未は評価MAXの引退選手からもらえることがある、というものです。
+どちらも運が絡むため、このページでは★1にしています。</p>
+
+<p><strong>Q. 紅水晶や虹のサンゴはどこで手に入りますか？</strong><br>
+A. 紅水晶は下一桁が3か7の日の夜に川岸を散歩すると手に入り、喫茶店で丑の尻尾と交換できます。
+虹のサンゴは4月・6月・8月の夜に海岸を散歩すると手に入り、
+ラジコンサーキットで寅の尻尾と交換できます。</p>
+
+<p><strong>Q. マイライフの他のまとめもありますか？</strong><br>
+A. <a href="/kintoku/">能力研究所の金特ミッション一覧</a>、
+<a href="/crystal/">イベントクリスタルの入手方法</a>、
+<a href="/crystal-banno/">万能クリスタルの入手方法</a>をまとめています。</p>
+
+<p><strong>Q. チェックした内容は保存されますか？</strong><br>
+A. お使いのブラウザに保存され、次に開いたときも残ります。
+サーバーに送信されることはありません。
+ブラウザの閲覧データを消すと一緒に消えます。</p>
+
+<p><strong>Q. 特殊能力ファイルのクリスタルもまとめていますか？</strong><br>
+A. <a href="/crystal/">イベントクリスタル</a>と
+<a href="/crystal-banno/">万能クリスタル</a>の入手方法をまとめています。
+金特は<a href="/kintoku/">能力研究所の金特ミッション一覧</a>をご覧ください。</p>
+
+</article>
+
+<script>
+/* =========================================================
+   尻尾の入手方法
+
+   eto  … 干支の1文字
+   name … 尻尾の名前
+   how  … 入手方法
+   rank … オススメ度。3が狙って取りやすい
+   item … 先に集める素材。無ければ空
+========================================================= */
+
+const rows = [
+  { eto:"子", name:"子の尻尾", rank:3, item:"",
+    how:"全球場でヒーロー記念トロフィーを入手する" },
+
+  { eto:"丑", name:"丑の尻尾", rank:2, item:"紅水晶",
+    how:"下一桁が3か7の日の夜に川岸を散歩して紅水晶を入手し、喫茶店で交換する" },
+
+  { eto:"寅", name:"寅の尻尾", rank:2, item:"虹のサンゴ",
+    how:"4月・6月・8月の夜に海岸を散歩して虹のサンゴを入手し、ラジコンサーキットで交換する" },
+
+  { eto:"卯", name:"卯の尻尾", rank:3, item:"",
+    how:"家族コマンドで子供におねだりされたときに買ってあげる" },
+
+  { eto:"辰", name:"辰の尻尾", rank:3, item:"",
+    how:"ラジコン大会で3回優勝する" },
+
+  { eto:"巳", name:"巳の尻尾", rank:3, item:"",
+    how:"デイゲームで活躍した日の夜にブログを更新する" },
+
+  { eto:"午", name:"午の尻尾", rank:1, item:"黄水晶",
+    how:"8月の福引抽選で2等を当てて黄水晶を入手し、スポーツショップで交換する" },
+
+  { eto:"未", name:"未の尻尾", rank:1, item:"",
+    how:"評価MAXの引退選手からもらえることがある" },
+
+  { eto:"申", name:"申の尻尾", rank:3, item:"",
+    how:"オーナーが観戦している試合でヒーローになる" },
+
+  { eto:"酉", name:"酉の尻尾", rank:2, item:"",
+    how:"選手に本をプレゼントしたときのお返し" },
+
+  { eto:"戌", name:"戌の尻尾", rank:3, item:"",
+    how:"同じ年に月間MVPを全て取る" },
+
+  { eto:"亥", name:"亥の尻尾", rank:3, item:"",
+    how:"オールスターMVPのスーパーカーでドライブする" }
+];
+
+/* 晩成化がMAXになる数 */
+const MAX_NEEDED = 9;
+
+const KEY = "tooldock-shippo";
+
+const listEl  = document.getElementById("list");
+const qEl     = document.getElementById("q");
+const hideEl  = document.getElementById("hide-done");
+const doneEl  = document.getElementById("done");
+const restEl  = document.getElementById("rest");
+const restWrap = document.getElementById("rest-wrap");
+
+let rankFilter = "all";
+
+function load(){
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
+  catch (e) { return {}; }
+}
+
+function save(state){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch (e) { /* 保存できなくても、そのページ内では動く */ }
+}
+
+let checked = load();
+
+function render(){
+  const q = qEl.value.trim().toLowerCase();
+  const hide = hideEl.checked;
+
+  const html = [];
+
+  for (const r of rows){
+    const done = !!checked[r.eto];
+
+    if (rankFilter !== "all" && String(r.rank) !== rankFilter) continue;
+    if (hide && done) continue;
+    if (q && !(r.name + " " + r.how + " " + r.item).toLowerCase().includes(q)) continue;
+
+    html.push(`
+      <label class="item${done ? " done" : ""}">
+        <input type="checkbox" data-eto="${r.eto}"${done ? " checked" : ""}>
+        <span class="item-body">
+          <span class="eto">${r.eto}</span><span class="how">${esc(r.name)}</span><span
+            class="stars" data-rank="${r.rank}" title="オススメ度 ${r.rank}">${"★".repeat(r.rank)}${"☆".repeat(3 - r.rank)}</span>${
+            r.item ? `<span class="needs">${esc(r.item)}が必要</span>` : ""}
+          <span class="note">${esc(r.how)}</span>
+        </span>
+      </label>
+    `);
+  }
+
+  listEl.innerHTML = html.length
+    ? html.join("")
+    : `<p class="empty">条件に合うものがありません。リセットで元に戻せます。</p>`;
+
+  /* 集めた数と、MAXまでの残り */
+  const got = rows.filter(r => checked[r.eto]).length;
+  doneEl.textContent = got;
+
+  const rest = MAX_NEEDED - got;
+
+  restWrap.innerHTML = rest > 0
+    ? `MAXまであと <strong class="rest" id="rest">${rest}</strong> 個`
+    : `<span class="cleared">晩成化MAX 達成</span>`;
+}
+
+function esc(s){
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/* チェックは一覧を組み直すたびに要素が入れ替わるので、
+   個々にではなく親でまとめて受ける */
+listEl.addEventListener("change", e => {
+  const box = e.target.closest("input[type=checkbox]");
+  if (!box) return;
+
+  const k = box.dataset.eto;
+  if (box.checked) checked[k] = 1;
+  else delete checked[k];
+
+  save(checked);
+  render();
+});
+
+qEl.addEventListener("input", render);
+hideEl.addEventListener("change", render);
+
+for (const btn of document.querySelectorAll(".seg button")){
+  btn.addEventListener("click", () => {
+    rankFilter = btn.dataset.rank;
+    for (const b of document.querySelectorAll(".seg button")){
+      b.setAttribute("aria-pressed", String(b === btn));
+    }
+    render();
+  });
+}
+
+document.getElementById("reset").addEventListener("click", () => {
+  qEl.value = "";
+  hideEl.checked = false;
+  rankFilter = "all";
+  for (const b of document.querySelectorAll(".seg button")){
+    b.setAttribute("aria-pressed", String(b.dataset.rank === "all"));
+  }
+  render();
+});
+
+render();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "マイライフの尻尾は全部集める必要がありますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "ありません。尻尾は全12種ありますが、9個集めた時点で晩成化がMAXになります。狙って取りやすい★3が7種、条件が限られる★2が3種で合わせて10種あるため、運の要素が大きい★1の2種（午・未）は取らなくても9個に届きます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "いちばん狙いにくい尻尾はどれですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "午の尻尾と未の尻尾です。午は8月の福引抽選で2等を当てて黄水晶を入手する必要があり、未は評価MAXの引退選手からもらえることがある、というものです。どちらも運が絡みます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "紅水晶や虹のサンゴはどこで手に入りますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "紅水晶は下一桁が3か7の日の夜に川岸を散歩すると手に入り、喫茶店で丑の尻尾と交換できます。虹のサンゴは4月・6月・8月の夜に海岸を散歩すると手に入り、ラジコンサーキットで寅の尻尾と交換できます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "尻尾を9個集めるにはどれから取ればよいですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "条件がはっきりしている★3の7種（子・卯・辰・巳・申・戌・亥）を先に埋め、そのうえで★2の3種（丑・寅・酉）のうち2つを取ると9個になります。日付や月が決まっている丑と寅は機会を逃しやすいので、早めに済ませておくと安全です。"
+      }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
