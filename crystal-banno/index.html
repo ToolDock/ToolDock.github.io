@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 検索結果で切られる先頭30字ほどに、探している語と件数を入れる。
+     サイト名は付けない（この長さでは席がもったいない） -->
+<title>マイライフ 万能クリスタル（小）（大）の入手方法｜全9通り（パワプロ2026-2027）</title>
+<meta name="description" content="パワプロのマイライフで、特殊能力ファイルに使う万能クリスタル（小）（大）の入手方法一覧です。（小）は9通りで、チェックを付けて取り済みを管理できます。（大）は夜の商店街「怪しい露店」で（小）2個と交換する以外に入手方法がありません。2024-2025と2026-2027で違いはないと見られます。">
+<link rel="canonical" href="https://tooldock.github.io/crystal-banno/">
+
+<script> const CURRENT_TOOL = "crystal-banno"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#f5f5f5;
+    color:#222;
+    font-family:"Yu Gothic","Meiryo",sans-serif;
+    line-height:1.7;
+}
+
+/* 左右の余白。右側のリンク欄は js/sidebar.js が別に確保する */
+.page-wrapper{
+    width:100%;
+    padding-left:24px;
+    padding-right:24px;
+}
+
+header{
+    text-align:center;
+    padding:40px 20px 20px;
+}
+
+header h1{
+    margin:0;
+    font-size:2.2rem;
+    color:#111;
+    line-height:1.4;
+}
+
+header p{
+    margin:10px 0 0;
+    color:#555;
+}
+
+main{
+    max-width:1000px;
+    margin:0 auto;
+}
+
+/* =========================
+   絞り込み
+========================= */
+
+.filter-panel{
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    padding:16px 18px;
+    margin-bottom:18px;
+}
+
+.filter-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+}
+
+.filter-row + .filter-row{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid #eee;
+}
+
+.filter-panel input[type="search"]{
+    flex:1 1 240px;
+    min-width:0;
+    padding:10px 12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+    font-family:inherit;
+}
+
+.seg{
+    display:flex;
+    border:1px solid #ccc;
+    border-radius:8px;
+    overflow:hidden;
+}
+
+.seg button{
+    padding:9px 16px;
+    border:0;
+    background:#fff;
+    color:#333;
+    font-size:15px;
+    font-family:inherit;
+    cursor:pointer;
+}
+
+.seg button + button{
+    border-left:1px solid #ccc;
+}
+
+.seg button[aria-pressed="true"]{
+    background:#2563eb;
+    color:#fff;
+}
+
+.toggle{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    user-select:none;
+}
+
+.filter-count{
+    margin-left:auto;
+    font-size:14px;
+    color:#555;
+    white-space:nowrap;
+}
+
+.filter-count strong{
+    color:#111;
+    font-size:16px;
+}
+
+.reset{
+    padding:8px 14px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    background:#fff;
+    color:#333;
+    font-size:14px;
+    font-family:inherit;
+    cursor:pointer;
+}
+
+
+/* =========================
+   一覧
+========================= */
+
+.list{
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    overflow:hidden;
+}
+
+.item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:14px 18px;
+    border-bottom:1px solid #eee;
+}
+
+.item:last-child{
+    border-bottom:0;
+}
+
+.item.done{
+    background:#f7fafc;
+    color:#94a3b8;
+}
+
+.item input[type="checkbox"]{
+    flex:0 0 auto;
+    width:20px;
+    height:20px;
+    margin-top:3px;
+    cursor:pointer;
+}
+
+.item-body{
+    flex:1 1 auto;
+    min-width:0;
+}
+
+.badge{
+    display:inline-block;
+    margin-right:8px;
+    padding:1px 9px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    vertical-align:2px;
+}
+
+.badge.s{ background:#dbeafe; color:#1d4ed8; }
+.badge.l{ background:#fef3c7; color:#b45309; }
+
+.item.done .badge{ background:#e5e7eb; color:#9ca3af; }
+
+.how{
+    font-size:16px;
+    font-weight:700;
+}
+
+.note{
+    margin-top:2px;
+    font-size:14px;
+    color:#64748b;
+}
+
+.item.done .note{ color:#b6c2cf; }
+
+.empty{
+    padding:28px 18px;
+    text-align:center;
+    color:#666;
+}
+
+@media (max-width:600px){
+    .page-wrapper{ padding-left:12px; padding-right:12px; }
+    header{ padding:28px 12px 16px; }
+    header h1{ font-size:1.5rem; }
+    .filter-count{ margin-left:0; width:100%; }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>マイライフ 万能クリスタル（小）（大）入手方法一覧</h1>
+    <p>万能クリスタル（小）は9通り、（大）は交換のみ。チェックは自動で保存されます</p>
+</header>
+
+<main>
+
+<div class="filter-panel">
+
+    <div class="filter-row">
+        <input type="search" id="q" placeholder="入手方法で検索（例：スミオ、世界大会、まれに）"
+               aria-label="入手方法で検索">
+        <button type="button" class="reset" id="reset">リセット</button>
+    </div>
+
+    <div class="filter-row">
+        <div class="seg" role="group" aria-label="クリスタルの大きさ">
+            <button type="button" data-size="all"  aria-pressed="true">すべて</button>
+            <button type="button" data-size="小"   aria-pressed="false">小</button>
+            <button type="button" data-size="大"   aria-pressed="false">大</button>
+        </div>
+
+        <label class="toggle">
+            <input type="checkbox" id="hide-done">取得済みを隠す
+        </label>
+
+        <span class="filter-count">
+            表示 <strong id="shown">0</strong> 件 ／ 取得済み <strong id="done">0</strong> 件
+        </span>
+    </div>
+
+</div>
+
+<div class="list" id="list"></div>
+
+</main>
+
+</div>
+
+
+<article class="tool-article">
+
+<h2>万能クリスタルは何に使うのか</h2>
+
+<p>
+このページは据え置き機の実況パワフルプロ野球2026-2027のマイライフを対象としています。
+スマートフォンの「パワプロアプリ」とは別のものです。
+</p>
+
+<p>
+クリスタルは<strong>特殊能力ファイルをクリアするための素材</strong>です。
+ファイルにクリスタル大をはめ込んでいくと、その特殊能力を取得できます。
+</p>
+
+<p>
+クリスタルは「クリスタル小／万能」「クリスタル大／練習」のように、
+大きさと種類の組み合わせで名前が付いています。
+このページでまとめているのは<strong>「万能」の種類</strong>です。
+イベントの種類は
+<a href="/crystal/">イベントクリスタル（小）（大）の入手方法と交換レート</a>
+にまとめています。
+</p>
+
+<h2>（大）は交換でしか手に入らない</h2>
+
+<p>
+万能クリスタル（大）を直接もらえる機会はありません。
+<strong>夜の商店街の「怪しい露店」で、万能クリスタル（小）2個と交換する</strong>のが
+唯一の入手方法です。
+</p>
+
+<p>
+必要な個数の2個は、クリスタル大15種類の中でいちばん少ない数です。
+ただし交換元になる（小）のほうが手に入りにくいため、
+実際には（小）をどれだけ集められるかで決まります。
+</p>
+
+<p>
+<strong>夜に商店街へ行くと「？？？？？？？」という項目が出ます。</strong>
+これを選ぶと怪しい露店を訪れることができます。
+昼には出ないので、夜に行ってください。
+</p>
+
+<h2>運がからむもの</h2>
+
+<p>
+次の4つは、条件を満たしても必ずもらえるとは限りません。
+狙って取るより、続けていれば入る、と考えたほうが気が楽です。
+</p>
+
+<ul>
+<li>オールスターMVPでもらえる車でドライブする</li>
+<li>オーナー観戦試合でヒーローになる</li>
+<li>オフシーズンにスミオからもらう</li>
+<li>病院で子供が退院する</li>
+</ul>
+
+<h2>確実に取れるもの</h2>
+
+<p>
+こちらは達成すれば手に入ります。
+運に任せず数を増やしたいときは、先にこちらを埋めるのが確実です。
+</p>
+
+<ul>
+<li><strong>タイムリー100人</strong>— 打者で長く続けていれば自然に届きます</li>
+<li><strong>奪三振200人</strong>— 投手側の達成条件です</li>
+<li><strong>カフェの店員と炎の石を交換する</strong>— 炎の石を持っていることが前提です</li>
+<li><strong>古賀が新人王を取る</strong>— 古賀の成績しだいなので、取れる年は限られます</li>
+<li><strong>世界大会で優勝する</strong>— 代表に選ばれて優勝する必要があります</li>
+</ul>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 万能クリスタル（大）はどうやって手に入れますか？</strong><br>
+A. 夜の商店街の「怪しい露店」で、万能クリスタル（小）2個と交換する方法だけです。
+（大）を直接もらえる機会はありません。</p>
+
+<p><strong>Q. 怪しい露店はどこにありますか？</strong><br>
+A. 夜に商店街へ行くと「？？？？？？？」という項目が出るので、それを選ぶと訪れることができます。
+昼には出ません。</p>
+
+<p><strong>Q. 万能クリスタル（小）はどこで手に入りますか？</strong><br>
+A. 9通りあります。オールスターMVPでもらえる車でのドライブ、オーナー観戦試合でヒーロー、
+オフシーズンのスミオ、病院で子供が退院、の4つはまれにしか手に入りません。
+タイムリー100人、奪三振200人、カフェの店員と炎の石を交換、古賀の新人王、世界大会優勝の5つは
+達成すれば手に入ります。</p>
+
+<p><strong>Q. ほかの種類のクリスタルの入手方法もありますか？</strong><br>
+A. 練習・対決記録・球場トロフィーなどの種類は、ゲーム内で手に入りやすく、
+わざわざ調べるほどのものではありません。
+このサイトでは、入手が限られる<strong>万能</strong>と
+<a href="/crystal/">イベント</a>の2つだけをまとめています。</p>
+
+<p><strong>Q. チェックした内容は保存されますか？</strong><br>
+A. お使いのブラウザに保存され、次に開いたときも残ります。
+サーバーに送信されることはありません。
+ブラウザの閲覧データを消すと一緒に消えます。</p>
+
+<p><strong>Q. パワプロ2024-2025でも同じですか？</strong><br>
+A. 2024-2025と2026-2027で違いはないと見られます。</p>
+
+</article>
+
+<script>
+/* =========================================================
+   万能クリスタルの入手方法
+
+   size … 小 / 大
+   how  … 入手方法
+   note … 条件や補足。無いものは空にする
+========================================================= */
+
+const rows = [
+  /* 運がからむもの */
+  { size: "小", how: "オールスターMVPでもらえる車でドライブする", note: "まれに入手" },
+  { size: "小", how: "オーナー観戦試合でヒーローになる",         note: "まれに入手" },
+  { size: "小", how: "オフシーズンにスミオからもらう",           note: "まれに入手" },
+  { size: "小", how: "病院で子供が退院する",                     note: "まれに入手" },
+
+  /* 達成・イベントで確実に取れるもの */
+  { size: "小", how: "タイムリー100人を達成する",                note: "" },
+  { size: "小", how: "奪三振200人を達成する",                    note: "" },
+  { size: "小", how: "カフェの店員と炎の石を交換する",           note: "" },
+  { size: "小", how: "古賀が新人王を取る",                       note: "" },
+  { size: "小", how: "世界大会で優勝する",                       note: "" },
+
+  /* （大）はこれ1通りしかない */
+  { size: "大", how: "夜の商店街の「怪しい露店」で（小）2個と交換する", note: "（大）はこれ以外に入手方法がない" }
+];
+
+const KEY = "tooldock-crystal-banno";
+
+const listEl  = document.getElementById("list");
+const qEl     = document.getElementById("q");
+const hideEl  = document.getElementById("hide-done");
+const shownEl = document.getElementById("shown");
+const doneEl  = document.getElementById("done");
+
+let sizeFilter = "all";
+
+/* チェック状態。入手方法の文言をそのまま鍵にすると
+   並び替えても対応が崩れない */
+function load(){
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
+  catch (e) { return {}; }
+}
+
+function save(state){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch (e) { /* 保存できなくても、そのページ内では動く */ }
+}
+
+let checked = load();
+
+function keyOf(r){
+  return r.size + ":" + r.how;
+}
+
+function render(){
+  const q = qEl.value.trim().toLowerCase();
+  const hide = hideEl.checked;
+
+  let shown = 0;
+  const html = [];
+
+  for (const r of rows){
+    const k = keyOf(r);
+    const done = !!checked[k];
+
+    if (sizeFilter !== "all" && r.size !== sizeFilter) continue;
+    if (hide && done) continue;
+    if (q && !(r.how + " " + r.note).toLowerCase().includes(q)) continue;
+
+    shown++;
+
+    html.push(`
+      <label class="item${done ? " done" : ""}">
+        <input type="checkbox" data-key="${escapeAttr(k)}"${done ? " checked" : ""}>
+        <span class="item-body">
+          <span class="badge ${r.size === "小" ? "s" : "l"}">${r.size}</span>
+          <span class="how">${escapeHtml(r.how)}</span>
+          ${r.note ? `<span class="note">${escapeHtml(r.note)}</span>` : ""}
+        </span>
+      </label>
+    `);
+  }
+
+  listEl.innerHTML = html.length
+    ? html.join("")
+    : `<p class="empty">条件に合うものがありません。リセットで元に戻せます。</p>`;
+
+  shownEl.textContent = shown;
+  doneEl.textContent = rows.filter(r => checked[keyOf(r)]).length;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function escapeAttr(s){
+  return escapeHtml(s).replace(/"/g, "&quot;");
+}
+
+/* チェックは一覧を組み直すたびに要素が入れ替わるので、
+   個々にではなく親でまとめて受ける */
+listEl.addEventListener("change", e => {
+  const box = e.target.closest("input[type=checkbox]");
+  if (!box) return;
+
+  const k = box.dataset.key;
+  if (box.checked) checked[k] = 1;
+  else delete checked[k];
+
+  save(checked);
+  render();
+});
+
+qEl.addEventListener("input", render);
+hideEl.addEventListener("change", render);
+
+for (const btn of document.querySelectorAll(".seg button")){
+  btn.addEventListener("click", () => {
+    sizeFilter = btn.dataset.size;
+    for (const b of document.querySelectorAll(".seg button")){
+      b.setAttribute("aria-pressed", String(b === btn));
+    }
+    render();
+  });
+}
+
+document.getElementById("reset").addEventListener("click", () => {
+  qEl.value = "";
+  hideEl.checked = false;
+  sizeFilter = "all";
+  for (const b of document.querySelectorAll(".seg button")){
+    b.setAttribute("aria-pressed", String(b.dataset.size === "all"));
+  }
+  render();
+});
+
+render();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "マイライフの万能クリスタル（大）はどうやって手に入れますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "夜の商店街の「怪しい露店」で、万能クリスタル（小）2個と交換する方法だけです。万能クリスタル（大）を直接もらえる機会はありません。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "万能クリスタル（小）の入手方法を教えてください。",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "9通りあります。オールスターMVPでもらえる車でドライブする、オーナー観戦試合でヒーローになる、オフシーズンにスミオからもらう、病院で子供が退院する、の4つはまれにしか手に入りません。タイムリー100人を達成する、奪三振200人を達成する、カフェの店員と炎の石を交換する、古賀が新人王を取る、世界大会で優勝する、の5つは達成すれば手に入ります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "怪しい露店はどこにありますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "夜に商店街へ行くと「？？？？？？？」という項目が表示されます。これを選ぶと怪しい露店を訪れることができます。昼には出ないため、夜に行く必要があります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "クリスタルは何に使いますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "特殊能力ファイルをクリアするための素材です。ファイルにクリスタル大をはめ込んでいくと、その特殊能力を取得できます。クリスタルは大きさと種類の組み合わせで名前が付いており、万能はそのうちのひとつです。"
+      }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
