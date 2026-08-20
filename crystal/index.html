@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 検索結果で切られる先頭30字ほどに、探している語と件数を入れる。
+     サイト名は付けない（この長さでは席がもったいない） -->
+<title>マイライフ イベントクリスタルの入手方法｜小・大の全14種（パワプロ2026-2027）</title>
+<meta name="description" content="パワプロのマイライフで、イベントクリスタル（小）と（大）を入手する方法の一覧です。趣味の大会、喫茶店通い、施設のレベル上げ、初回限定のものまで全14種をまとめ、チェックを付けて取り済みを管理できます。夜の商店街の怪しい露店で小3個を大1個に交換する方法も掲載。">
+<link rel="canonical" href="https://tooldock.github.io/crystal/">
+
+<script> const CURRENT_TOOL = "crystal"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#f5f5f5;
+    color:#222;
+    font-family:"Yu Gothic","Meiryo",sans-serif;
+    line-height:1.7;
+}
+
+/* 左右の余白。右側のリンク欄は js/sidebar.js が別に確保する */
+.page-wrapper{
+    width:100%;
+    padding-left:24px;
+    padding-right:24px;
+}
+
+header{
+    text-align:center;
+    padding:40px 20px 20px;
+}
+
+header h1{
+    margin:0;
+    font-size:2.2rem;
+    color:#111;
+    line-height:1.4;
+}
+
+header p{
+    margin:10px 0 0;
+    color:#555;
+}
+
+main{
+    max-width:1000px;
+    margin:0 auto;
+}
+
+/* =========================
+   絞り込み
+========================= */
+
+.filter-panel{
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    padding:16px 18px;
+    margin-bottom:18px;
+}
+
+.filter-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+}
+
+.filter-row + .filter-row{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid #eee;
+}
+
+.filter-panel input[type="search"]{
+    flex:1 1 240px;
+    min-width:0;
+    padding:10px 12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+    font-family:inherit;
+}
+
+.seg{
+    display:flex;
+    border:1px solid #ccc;
+    border-radius:8px;
+    overflow:hidden;
+}
+
+.seg button{
+    padding:9px 16px;
+    border:0;
+    background:#fff;
+    color:#333;
+    font-size:15px;
+    font-family:inherit;
+    cursor:pointer;
+}
+
+.seg button + button{
+    border-left:1px solid #ccc;
+}
+
+.seg button[aria-pressed="true"]{
+    background:#2563eb;
+    color:#fff;
+}
+
+.toggle{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    user-select:none;
+}
+
+.filter-count{
+    margin-left:auto;
+    font-size:14px;
+    color:#555;
+    white-space:nowrap;
+}
+
+.filter-count strong{
+    color:#111;
+    font-size:16px;
+}
+
+.reset{
+    padding:8px 14px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    background:#fff;
+    color:#333;
+    font-size:14px;
+    font-family:inherit;
+    cursor:pointer;
+}
+
+/* =========================
+   一覧
+========================= */
+
+.list{
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    overflow:hidden;
+}
+
+.item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:14px 18px;
+    border-bottom:1px solid #eee;
+}
+
+.item:last-child{
+    border-bottom:0;
+}
+
+.item.done{
+    background:#f7fafc;
+    color:#94a3b8;
+}
+
+.item input[type="checkbox"]{
+    flex:0 0 auto;
+    width:20px;
+    height:20px;
+    margin-top:3px;
+    cursor:pointer;
+}
+
+.item-body{
+    flex:1 1 auto;
+    min-width:0;
+}
+
+.badge{
+    display:inline-block;
+    margin-right:8px;
+    padding:1px 9px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    vertical-align:2px;
+}
+
+.badge.s{ background:#dbeafe; color:#1d4ed8; }
+.badge.l{ background:#fef3c7; color:#b45309; }
+
+.item.done .badge{ background:#e5e7eb; color:#9ca3af; }
+
+.how{
+    font-size:16px;
+    font-weight:700;
+}
+
+.note{
+    margin-top:2px;
+    font-size:14px;
+    color:#64748b;
+}
+
+.item.done .note{ color:#b6c2cf; }
+
+.empty{
+    padding:28px 18px;
+    text-align:center;
+    color:#666;
+}
+
+@media (max-width:600px){
+    .page-wrapper{ padding-left:12px; padding-right:12px; }
+    header{ padding:28px 12px 16px; }
+    header h1{ font-size:1.5rem; }
+    .filter-count{ margin-left:0; width:100%; }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>マイライフ イベントクリスタル 入手方法一覧</h1>
+    <p>イベントクリスタル（小）と（大）の入手方法をまとめました。チェックは自動で保存されます</p>
+</header>
+
+<main>
+
+<div class="filter-panel">
+
+    <div class="filter-row">
+        <input type="search" id="q" placeholder="入手方法で検索（例：喫茶店、牧場、初回）"
+               aria-label="入手方法で検索">
+        <button type="button" class="reset" id="reset">リセット</button>
+    </div>
+
+    <div class="filter-row">
+        <div class="seg" role="group" aria-label="クリスタルの種類">
+            <button type="button" data-size="all"  aria-pressed="true">すべて</button>
+            <button type="button" data-size="小"   aria-pressed="false">小</button>
+            <button type="button" data-size="大"   aria-pressed="false">大</button>
+        </div>
+
+        <label class="toggle">
+            <input type="checkbox" id="hide-done">取得済みを隠す
+        </label>
+
+        <span class="filter-count">
+            表示 <strong id="shown">0</strong> 件 ／ 取得済み <strong id="done">0</strong> 件
+        </span>
+    </div>
+
+</div>
+
+<div class="list" id="list"></div>
+
+</main>
+
+</div>
+
+
+<article class="tool-article">
+
+<h2>イベントクリスタルの入手方法</h2>
+
+<p>
+このページは据え置き機の実況パワフルプロ野球2026-2027のマイライフを対象としています。
+スマートフォンの「パワプロアプリ」とは別のものです。
+</p>
+
+<p>
+イベントクリスタルには（小）と（大）があります。
+（小）は11通り、（大）は3通りの入手方法をまとめました。
+上の一覧はチェックを付けて取り済みを管理でき、
+種類での絞り込みと、入手方法の検索ができます。
+</p>
+
+<h2>小3個を大1個に交換できる</h2>
+
+<p>
+（大）を直接もらえる機会は限られています。
+確実なのは、<strong>夜の商店街にある「怪しい露店」で、
+イベントクリスタル（小）3個と交換する</strong>方法です。
+（小）を集める手段のほうが多いので、
+（大）が必要なときはまず（小）を貯めるほうが早いことになります。
+</p>
+
+<h2>施設のレベルが条件になるもの</h2>
+
+<p>
+施設を育てていないと発生しないものがあります。
+先に施設のレベルを上げておくと、取りこぼしが減ります。
+</p>
+
+<ul>
+<li><strong>学校レベル3以上</strong>— ホームの昼の学校で子供からもらう（小）</li>
+<li><strong>温泉レベル最大</strong>— 温泉のサウナに入る（小）</li>
+<li><strong>牧場・植樹・ラボが最大レベル</strong>— 最大まで上げると入手（小）</li>
+<li><strong>牧場レベル最大</strong>— 虹の仮面と交換（大）</li>
+</ul>
+
+<h2>一度きりのもの</h2>
+
+<p>
+初回だけ発生するものは、忘れていると二度と取れません。
+先に済ませておくと確実です。
+</p>
+
+<ul>
+<li>オークションで初めて落札したとき</li>
+<li>優勝旅行に初めて行ったとき</li>
+<li>各職人に初めて改良してもらったとき（職人ごと）</li>
+<li>ミゾットから装備品を初めてもらったとき</li>
+</ul>
+
+<h2>通い続けて取るもの</h2>
+
+<ul>
+<li><strong>同じ喫茶店に33回通う</strong>— 回数が多いので、行く店を決めて通うほうが早く済みます</li>
+<li><strong>趣味の大会で3回優勝</strong>— 趣味ごとに用意されているので、複数の趣味で狙えます</li>
+</ul>
+
+<h2>本のプレゼントで取るもの</h2>
+
+<p>
+チームメイトに自分がプレゼントした本で特殊能力に変化があったとき、
+イベントクリスタルがもらえます。
+プレゼントの必要回数が多いものは（大）になります。
+</p>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. イベントクリスタル（大）はどうやって手に入れますか？</strong><br>
+A. 3通りあります。夜の商店街の「怪しい露店」で（小）3個と交換する方法、
+施設の「牧場」がレベル最大のときに虹の仮面と交換する方法、
+チームメイトにプレゼントした本で特殊能力が変化したとき
+（プレゼントの必要回数が多いもの）です。</p>
+
+<p><strong>Q. 喫茶店には何回通えばよいですか？</strong><br>
+A. 同じ喫茶店に33回です。店を変えると数え直しになるため、
+通う店を決めてから続けてください。</p>
+
+<p><strong>Q. 一度しか取れないものはありますか？</strong><br>
+A. オークションの初回落札、優勝旅行の初回、
+ミゾットから装備品を初めてもらったときは一度きりです。
+職人の改良は職人ごとに初回のぶんがあります。</p>
+
+<p><strong>Q. チェックした内容は保存されますか？</strong><br>
+A. お使いのブラウザに保存され、次に開いたときも残ります。
+サーバーに送信されることはありません。
+ブラウザの閲覧データを消すと一緒に消えます。</p>
+
+<p><strong>Q. 金特ミッションの一覧もありますか？</strong><br>
+A. <a href="/kintoku/">マイライフ 能力研究所の金特ミッション一覧</a>にまとめています。</p>
+
+</article>
+
+<script>
+/* =========================================================
+   イベントクリスタルの入手方法
+
+   size … 小 / 大
+   how  … 入手方法
+   note … 条件や補足。無いものは空にする
+========================================================= */
+
+const rows = [
+  { size: "小", how: "趣味の大会で3回優勝",                             note: "趣味ごと" },
+  { size: "小", how: "同じ喫茶店に33回通う",                            note: "" },
+  { size: "小", how: "ホームの昼の学校で子供からもらう",                 note: "学校レベル3以上" },
+  { size: "小", how: "温泉のサウナに入る",                              note: "温泉レベル最大" },
+  { size: "小", how: "牧場・植樹・ラボを最大レベルまで上げる",           note: "" },
+  { size: "小", how: "オークションで初めて落札する",                     note: "初回のみ" },
+  { size: "小", how: "優勝旅行に初めて行く",                            note: "初回のみ" },
+  { size: "小", how: "各職人に初めて改良してもらう",                     note: "職人ごとに初回" },
+  { size: "小", how: "ミゾットから装備品を初めてもらう",                 note: "初回のみ" },
+  { size: "小", how: "評価の高い引退選手からもらう",                     note: "" },
+  { size: "小", how: "チームメイトにプレゼントした本で特殊能力が変化する", note: "" },
+
+  { size: "大", how: "夜の商店街の「怪しい露店」で（小）3個と交換する",   note: "イベントクリスタル（小）3個が必要" },
+  { size: "大", how: "施設の「牧場」がレベル最大のとき虹の仮面と交換する", note: "牧場レベル最大" },
+  { size: "大", how: "チームメイトにプレゼントした本で特殊能力が変化する", note: "プレゼントの必要回数が多いもの" }
+];
+
+const KEY = "tooldock-crystal";
+
+const listEl  = document.getElementById("list");
+const qEl     = document.getElementById("q");
+const hideEl  = document.getElementById("hide-done");
+const shownEl = document.getElementById("shown");
+const doneEl  = document.getElementById("done");
+
+let sizeFilter = "all";
+
+/* チェック状態。入手方法の文言をそのまま鍵にすると
+   並び替えても対応が崩れない */
+function load(){
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
+  catch (e) { return {}; }
+}
+
+function save(state){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch (e) { /* 保存できなくても、そのページ内では動く */ }
+}
+
+let checked = load();
+
+function keyOf(r){
+  return r.size + ":" + r.how;
+}
+
+function render(){
+  const q = qEl.value.trim().toLowerCase();
+  const hide = hideEl.checked;
+
+  let shown = 0;
+  const html = [];
+
+  for (const r of rows){
+    const k = keyOf(r);
+    const done = !!checked[k];
+
+    if (sizeFilter !== "all" && r.size !== sizeFilter) continue;
+    if (hide && done) continue;
+    if (q && !(r.how + " " + r.note).toLowerCase().includes(q)) continue;
+
+    shown++;
+
+    html.push(`
+      <label class="item${done ? " done" : ""}">
+        <input type="checkbox" data-key="${escapeAttr(k)}"${done ? " checked" : ""}>
+        <span class="item-body">
+          <span class="badge ${r.size === "小" ? "s" : "l"}">${r.size}</span>
+          <span class="how">${escapeHtml(r.how)}</span>
+          ${r.note ? `<span class="note">${escapeHtml(r.note)}</span>` : ""}
+        </span>
+      </label>
+    `);
+  }
+
+  listEl.innerHTML = html.length
+    ? html.join("")
+    : `<p class="empty">条件に合うものがありません。リセットで元に戻せます。</p>`;
+
+  shownEl.textContent = shown;
+  doneEl.textContent = rows.filter(r => checked[keyOf(r)]).length;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function escapeAttr(s){
+  return escapeHtml(s).replace(/"/g, "&quot;");
+}
+
+/* チェックは一覧を組み直すたびに要素が入れ替わるので、
+   個々にではなく親でまとめて受ける */
+listEl.addEventListener("change", e => {
+  const box = e.target.closest("input[type=checkbox]");
+  if (!box) return;
+
+  const k = box.dataset.key;
+  if (box.checked) checked[k] = 1;
+  else delete checked[k];
+
+  save(checked);
+  render();
+});
+
+qEl.addEventListener("input", render);
+hideEl.addEventListener("change", render);
+
+for (const btn of document.querySelectorAll(".seg button")){
+  btn.addEventListener("click", () => {
+    sizeFilter = btn.dataset.size;
+    for (const b of document.querySelectorAll(".seg button")){
+      b.setAttribute("aria-pressed", String(b === btn));
+    }
+    render();
+  });
+}
+
+document.getElementById("reset").addEventListener("click", () => {
+  qEl.value = "";
+  hideEl.checked = false;
+  sizeFilter = "all";
+  for (const b of document.querySelectorAll(".seg button")){
+    b.setAttribute("aria-pressed", String(b.dataset.size === "all"));
+  }
+  render();
+});
+
+render();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "マイライフのイベントクリスタル（大）はどうやって手に入れますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "3通りあります。夜の商店街の「怪しい露店」でイベントクリスタル（小）3個と交換する方法、施設の「牧場」がレベル最大のときに虹の仮面と交換する方法、チームメイトにプレゼントした本で特殊能力が変化したとき（プレゼントの必要回数が多いもの）です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "イベントクリスタル（小）の入手方法を教えてください。",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "趣味の大会で3回優勝する、同じ喫茶店に33回通う、ホームの昼の学校で子供からもらう（学校レベル3以上）、温泉のサウナに入る（温泉レベル最大）、牧場・植樹・ラボを最大レベルまで上げる、オークションで初めて落札する、優勝旅行に初めて行く、各職人に初めて改良してもらう、ミゾットから装備品を初めてもらう、評価の高い引退選手からもらう、チームメイトにプレゼントした本で特殊能力が変化する、の11通りです。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "喫茶店には何回通えばイベントクリスタルがもらえますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "同じ喫茶店に33回です。店を変えると数え直しになるため、通う店を決めてから続けてください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "イベントクリスタルで一度しか取れないものはありますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "オークションの初回落札、優勝旅行の初回、ミゾットから装備品を初めてもらったときは一度きりです。職人の改良は職人ごとに初回のぶんがあります。"
+      }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
