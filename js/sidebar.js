@@ -16,15 +16,10 @@
   /* 表示に使う閾値。この幅未満では本文の下に置く */
   const WIDE = "(min-width: 1300px)";
 
-  /* よく見られているページ（実際のクリック数の多い順に手で並べている） */
-  const POPULAR = [
-    "kintoku",
-    "hakidasi",
-    "counter",
-    "koyuchi",
-    "renritsu",
-    "circuit"
-  ];
+  /* 「人気のページ」に出す件数。
+     並び順は tool-data.js の popularity（直近3か月のクリック数）で決める。
+     ここに直書きすると、実際のアクセスとすぐズレる */
+  const POPULAR_COUNT = 6;
 
   const CATEGORY_ORDER = ["math", "work", "life", "game"];
 
@@ -241,10 +236,12 @@
 
     let html = "";
 
-    /* 人気のページ */
-    const popular = POPULAR
-      .map(id => tools.find(t => t.id === id))
-      .filter(Boolean);
+    /* 人気のページ。popularity の大きい順。
+       数値を持たないもの（＝まだアクセスが無いもの）は出さない */
+    const popular = tools
+      .filter(t => (t.popularity || 0) > 0)
+      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+      .slice(0, POPULAR_COUNT);
 
     if (popular.length) {
       html += `
