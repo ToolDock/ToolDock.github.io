@@ -6,7 +6,7 @@
 
 <!-- 検索結果で切られる先頭30字ほどに、探している語と件数を入れる。
      サイト名は付けない（この長さでは席がもったいない） -->
-<title>【パワプロ2026-2027】マイライフ 能力研究所（金特研究所）の金特ミッション一覧｜全51種</title>
+<title>【パワプロ2026-2027・2025】マイライフ 能力研究所（金特研究所）の金特ミッション一覧</title>
 <meta name="description" content="マイライフの能力研究所（金特研究所）で受けられる金特ミッション全51種の一覧です。金特ごとの達成条件・対象地域・投手／野手の区分がわかり、金特名や条件で検索・絞り込みできます。パワプロ2026-2027と2024-2025で内容は同じなので、どちらのバージョンでも使えます。">
 <link rel="canonical" href="https://tooldock.github.io/kintoku/">
 
@@ -125,10 +125,20 @@ tr:hover{
     background:#fafcff;
 }
 
-.mission-box h4{
+.mission-box .mission-label{
     margin:0 0 8px;
     font-size:0.92rem;
     color:#555;
+    font-weight:bold;
+}
+
+/* 金特名。見た目は今までの素のテキストと同じにする */
+.skill-name{
+    margin:0;
+    font-size:inherit;
+    font-weight:inherit;
+    color:inherit;
+    line-height:inherit;
 }
 
 .placeholder{
@@ -403,11 +413,11 @@ tr.acquired .skill{
 
 <tbody>
 
-<tr>
+<tr id="球界の頭脳">
 <td class="skill">
-球界の頭脳
+<h3 class="skill-name">球界の頭脳</h3>
 <div class="mission-box">
-<h4>ミッションメモ</h4>
+<p class="mission-label">ミッションメモ</p>
 <div class="placeholder">20試合でスタメン捕手として出場した全試合で捕手自責点を3点以内に抑える。</div>
 </div>
 </td>
@@ -418,11 +428,11 @@ tr.acquired .skill{
 </td>
 </tr>
 
-<tr>
+<tr id="本塁打厳禁">
 <td class="skill">
-本塁打厳禁
+<h3 class="skill-name">本塁打厳禁</h3>
 <div class="mission-box">
-<h4>ミッションメモ</h4>
+<p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -433,11 +443,11 @@ tr.acquired .skill{
 </td>
 </tr>
 
-<tr>
+<tr id="重戦車">
 <td class="skill">
-重戦車
+<h3 class="skill-name">重戦車</h3>
 <div class="mission-box">
-<h4>ミッションメモ</h4>
+<p class="mission-label">ミッションメモ</p>
 <div class="placeholder">20試合で合計30点以上、得点を記録する。</div>
 </div>
 </td>
@@ -465,11 +475,11 @@ tr.acquired .skill{
 
 <tbody>
 
-<tr>
+<tr id="鉄腕">
 <td class="skill">
-鉄腕
+<h3 class="skill-name">鉄腕</h3>
 <div class="mission-box">
-<h4>ミッションメモ</h4>
+<p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -480,11 +490,11 @@ tr.acquired .skill{
 </td>
 </tr>
 
-<tr>
+<tr id="伝説のサヨナラ男">
 <td class="skill">
-伝説のサヨナラ男
+<h3 class="skill-name">伝説のサヨナラ男</h3>
 <div class="mission-box">
-<h4>ミッションメモ</h4>
+<p class="mission-label">ミッションメモ</p>
 <div class="placeholder">30試合中にサヨナラ本塁打を打つ。</div>
 </div>
 </td>
@@ -494,11 +504,11 @@ tr.acquired .skill{
 </td>
 </tr>
 
-<tr>
+<tr id="気迫ヘッド">
 <td class="skill">
-気迫ヘッド
+<h3 class="skill-name">気迫ヘッド</h3>
 <div class="mission-box">
-<h4>ミッションメモ</h4>
+<p class="mission-label">ミッションメモ</p>
 <div class="placeholder">20試合で、内野安打を20本以上打つ。</div>
 </div>
 </td>
@@ -519,33 +529,33 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
+<tr id="勝負師">
 <td class="skill">
-勝負師
+<h3 class="skill-name">勝負師</h3>
 <div class="mission-box">
-<h4>ミッションメモ</h4>
+<p class="mission-label">ミッションメモ</p>
 <div class="placeholder">得点圏にランナーを置いた状態で７打数連続で安打を放つ。</div>
 </div>
 </td>
 <td class="condition">「チャンスA」を取得済み</td>
 </tr>
 
-<tr>
+<tr id="左キラー">
 <td class="skill">
-左キラー
+<h3 class="skill-name">左キラー</h3>
 <div class="mission-box">
-<h4>ミッションメモ</h4>
+<p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
 <td class="condition">「対左打者A」を取得済み</td>
 </tr>
 
-<tr>
+<tr id="走者釘付">
 <td class="skill">
-走者釘付
+<h3 class="skill-name">走者釘付</h3>
 <div class="mission-box">
-<h4>ミッションメモ</h4>
+<p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -566,10 +576,10 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
-<td class="skill">怪物球威
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="怪物球威">
+<td class="skill">
+<h3 class="skill-name">怪物球威</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -579,17 +589,18 @@ tr.acquired .skill{
 </td>
 </tr>
 
-<tr>
-<td class="skill">芸術的流し打ち
-<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">30試合で40本、流し打ち方向に安打を放つ。</div></div>
+<tr id="芸術的流し打ち">
+<td class="skill">
+<h3 class="skill-name">芸術的流し打ち</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">30試合で40本、流し打ち方向に安打を放つ。</div></div>
 </td>
 <td class="condition">「流し打ち」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">魔術師
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="魔術師">
+<td class="skill">
+<h3 class="skill-name">魔術師</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -607,10 +618,10 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
-<td class="skill">ドクターK
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="ドクターK">
+<td class="skill">
+<h3 class="skill-name">ドクターK</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -620,16 +631,18 @@ tr.acquired .skill{
 </td>
 </tr>
 
-<tr>
-<td class="skill">代打の神様
-<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">30試合中に代打本塁打を放つ。</div></div>
+<tr id="代打の神様">
+<td class="skill">
+<h3 class="skill-name">代打の神様</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">30試合中に代打本塁打を放つ。</div></div>
 </td>
 <td class="condition">「代打〇」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">鉄人
-<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">30試合をフルイニング出場する。</div></div>
+<tr id="鉄人">
+<td class="skill">
+<h3 class="skill-name">鉄人</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">30試合をフルイニング出場する。</div></div>
 </td>
 <td class="condition">「ケガしにくさA」を取得済み</td>
 </tr>
@@ -645,10 +658,10 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
-<td class="skill">驚異の切れ味
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="驚異の切れ味">
+<td class="skill">
+<h3 class="skill-name">驚異の切れ味</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -658,16 +671,18 @@ tr.acquired .skill{
 </td>
 </tr>
 
-<tr>
-<td class="skill">高速ベースラン
-<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">20試合で5本、三塁打を打つ。</div></div>
+<tr id="高速ベースラン">
+<td class="skill">
+<h3 class="skill-name">高速ベースラン</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">20試合で5本、三塁打を打つ。</div></div>
 </td>
 <td class="condition">「走塁A」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">高速レーザー
-<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">外野手として30試合で2捕殺を記録する。</div></div>
+<tr id="高速レーザー">
+<td class="skill">
+<h3 class="skill-name">高速レーザー</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">外野手として30試合で2捕殺を記録する。</div></div>
 </td>
 <td class="condition">
 ① 外野手適正を持っている
@@ -686,10 +701,10 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
-<td class="skill">精密機械
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="精密機械">
+<td class="skill">
+<h3 class="skill-name">精密機械</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -699,10 +714,10 @@ tr.acquired .skill{
 </td>
 </tr>
 
-<tr>
-<td class="skill">不屈の魂
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="不屈の魂">
+<td class="skill">
+<h3 class="skill-name">不屈の魂</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -712,9 +727,10 @@ tr.acquired .skill{
 </td>
 </tr>
 
-<tr>
-<td class="skill">アーチスト
-<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">出場した7試合全てで本塁打を放つ</div></div>
+<tr id="アーチスト">
+<td class="skill">
+<h3 class="skill-name">アーチスト</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">出場した7試合全てで本塁打を放つ</div></div>
 </td>
 <td class="condition">「パワーヒッター」を取得済み</td>
 </tr>
@@ -730,25 +746,27 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
-<td class="skill">左腕キラー<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">左投手から７打数連続で安打を放つ。</div></div></td>
+<tr id="左腕キラー">
+<td class="skill">
+<h3 class="skill-name">左腕キラー</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">左投手から７打数連続で安打を放つ。</div></div></td>
 <td class="condition">「対左投手A」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">一球入魂
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="一球入魂">
+<td class="skill">
+<h3 class="skill-name">一球入魂</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
 <td class="condition">「初球〇」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">変幻自在
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="変幻自在">
+<td class="skill">
+<h3 class="skill-name">変幻自在</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -769,10 +787,10 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
-<td class="skill">怪童
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="怪童">
+<td class="skill">
+<h3 class="skill-name">怪童</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -782,15 +800,17 @@ tr.acquired .skill{
 </td>
 </tr>
 
-<tr>
-<td class="skill">恐怖の満塁男<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">30試合中に満塁本塁打を放つ。</div></div></td>
+<tr id="恐怖の満塁男">
+<td class="skill">
+<h3 class="skill-name">恐怖の満塁男</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">30試合中に満塁本塁打を放つ。</div></div></td>
 <td class="condition">「満塁男」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">鉄の壁
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="鉄の壁">
+<td class="skill">
+<h3 class="skill-name">鉄の壁</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -811,20 +831,24 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
-<td class="skill">電光石火<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">一度も失敗せず、13試合全てで盗塁を成功させる。</div></div></td>
+<tr id="電光石火">
+<td class="skill">
+<h3 class="skill-name">電光石火</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">一度も失敗せず、13試合全てで盗塁を成功させる。</div></div></td>
 <td class="condition">「盗塁A」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">伝説のサヨナラ男<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">30試合中にサヨナラ本塁打を放つ。</div></div></td>
+<tr id="伝説のサヨナラ男-2">
+<td class="skill">
+<h3 class="skill-name">伝説のサヨナラ男</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">30試合中にサヨナラ本塁打を放つ。</div></div></td>
 <td class="condition">「サヨナラ男」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">ガソリンタンク
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="ガソリンタンク">
+<td class="skill">
+<h3 class="skill-name">ガソリンタンク</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -845,25 +869,27 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
-<td class="skill">強心臓
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="強心臓">
+<td class="skill">
+<h3 class="skill-name">強心臓</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
 <td class="condition">「対ピンチA」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">切り込み隊長<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">ランナーがいない状態で７打数連続で安打を放つ。</div></div></td>
+<tr id="切り込み隊長">
+<td class="skill">
+<h3 class="skill-name">切り込み隊長</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">ランナーがいない状態で７打数連続で安打を放つ。</div></div></td>
 <td class="condition">「チャンスメーカー」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">一球入魂
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="一球入魂-2">
+<td class="skill">
+<h3 class="skill-name">一球入魂</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -881,25 +907,27 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
-<td class="skill">安打製造機
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="安打製造機">
+<td class="skill">
+<h3 class="skill-name">安打製造機</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
 <td class="condition">「アベレージヒッター」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">ストライク送球<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">出場した10試合で10回以上捕殺を記録する。</div></div></td>
+<tr id="ストライク送球">
+<td class="skill">
+<h3 class="skill-name">ストライク送球</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">出場した10試合で10回以上捕殺を記録する。</div></div></td>
 <td class="condition">「送球A」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">精密機械
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="精密機械-2">
+<td class="skill">
+<h3 class="skill-name">精密機械</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -920,50 +948,60 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr><td class="skill">大番狂わせ
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="大番狂わせ"><td class="skill">
+<h3 class="skill-name">大番狂わせ</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td><td class="condition">「意外性」を取得済み</td></tr>
-<tr><td class="skill">火事場の馬鹿力<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">30試合中に、７回以降負けている場面で、計15打点以上を記録する。</div></div></td><td class="condition">「逆境〇」を取得済み</td></tr>
-<tr><td class="skill">広角砲
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="火事場の馬鹿力"><td class="skill">
+<h3 class="skill-name">火事場の馬鹿力</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">30試合中に、７回以降負けている場面で、計15打点以上を記録する。</div></div></td><td class="condition">「逆境〇」を取得済み</td></tr>
+<tr id="広角砲"><td class="skill">
+<h3 class="skill-name">広角砲</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td><td class="condition">「広角打法」を取得済み</td></tr>
-<tr><td class="skill">引っ張り屋
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="引っ張り屋"><td class="skill">
+<h3 class="skill-name">引っ張り屋</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td><td class="condition">「プルヒッター」を取得済み</td></tr>
-<tr><td class="skill">メッタ打ち
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="メッタ打ち"><td class="skill">
+<h3 class="skill-name">メッタ打ち</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td><td class="condition">「固め打ち」を取得済み</td></tr>
-<tr><td class="skill">ロケットスタート
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="ロケットスタート"><td class="skill">
+<h3 class="skill-name">ロケットスタート</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td><td class="condition">「内野安打〇」を取得済み</td></tr>
-<tr><td class="skill">高球必打<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">20試合中に、高めの投球に対して計５本塁打以上を記録する。</div></div></td><td class="condition">「ハイボールヒッター」を取得済み</td></tr>
-<tr><td class="skill">低球必打<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">20試合中に、低めの投球に対して計５本塁打以上を記録する。</div></div></td><td class="condition">「ローボールヒッター」を取得済み</td></tr>
-<tr><td class="skill">内角必打<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">20試合中に、内角の投球に対して計５本塁打以上を記録する。</div></div></td><td class="condition">「インコースヒッター」を取得済み</td></tr>
-<tr><td class="skill">外角必打<div class="mission-box"><h4>ミッションメモ</h4><div class="placeholder">20試合中に、外角の投球に対して計５本塁打以上を記録する。</div></div></td><td class="condition">「アウトコースヒッター」を取得済み</td></tr>
-<tr><td class="skill">内角無双
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="高球必打"><td class="skill">
+<h3 class="skill-name">高球必打</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">20試合中に、高めの投球に対して計５本塁打以上を記録する。</div></div></td><td class="condition">「ハイボールヒッター」を取得済み</td></tr>
+<tr id="低球必打"><td class="skill">
+<h3 class="skill-name">低球必打</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">20試合中に、低めの投球に対して計５本塁打以上を記録する。</div></div></td><td class="condition">「ローボールヒッター」を取得済み</td></tr>
+<tr id="内角必打"><td class="skill">
+<h3 class="skill-name">内角必打</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">20試合中に、内角の投球に対して計５本塁打以上を記録する。</div></div></td><td class="condition">「インコースヒッター」を取得済み</td></tr>
+<tr id="外角必打"><td class="skill">
+<h3 class="skill-name">外角必打</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p><div class="placeholder">20試合中に、外角の投球に対して計５本塁打以上を記録する。</div></div></td><td class="condition">「アウトコースヒッター」を取得済み</td></tr>
+<tr id="内角無双"><td class="skill">
+<h3 class="skill-name">内角無双</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td><td class="condition">「内角攻め」を取得済み</td></tr>
-<tr><td class="skill">ハイスピンジャイロ
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="ハイスピンジャイロ"><td class="skill">
+<h3 class="skill-name">ハイスピンジャイロ</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td><td class="condition">「ジャイロボール」を取得済み</td></tr>
@@ -979,30 +1017,30 @@ tr.acquired .skill{
 <table>
 <tbody>
 
-<tr>
-<td class="skill">ガラスのハート
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="ガラスのハート">
+<td class="skill">
+<h3 class="skill-name">ガラスのハート</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
 <td class="condition">「打たれ強さG」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">ノミの心臓
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="ノミの心臓">
+<td class="skill">
+<h3 class="skill-name">ノミの心臓</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
 <td class="condition">「対ピンチG」を取得済み</td>
 </tr>
 
-<tr>
-<td class="skill">扇風機
-<div class="mission-box">
-<h4>ミッションメモ</h4>
+<tr id="扇風機">
+<td class="skill">
+<h3 class="skill-name">扇風機</h3>
+<div class="mission-box"><p class="mission-label">ミッションメモ</p>
 <div class="placeholder">ミッション情報は準備中です</div>
 </div>
 </td>
@@ -1083,12 +1121,10 @@ document.querySelectorAll("section.region").forEach(section => {
 
         if (!skillCell || !conditionCell) return;
 
-        /* 金特名はミッションメモを除いた先頭のテキスト */
-        const name = [...skillCell.childNodes]
-            .filter(n => n.nodeType === Node.TEXT_NODE)
-            .map(n => n.textContent)
-            .join("")
-            .trim();
+        /* 金特名は見出しから取る。
+           以前は素のテキストノードを拾っていたが、
+           金特名を h3 にしたのでそこから読む */
+        const name = (skillCell.querySelector(".skill-name")?.textContent || "").trim();
 
         const condition = conditionCell.textContent.replace(/\s+/g, " ").trim();
         const memo = (skillCell.querySelector(".placeholder")?.textContent || "").trim();
@@ -1269,10 +1305,10 @@ A. 使えます。マイライフの能力研究所は、
 2024-2025と2026-2027で金特の種類も取得条件も変わっていません。
 この一覧はどちらのバージョンでも同じ内容として参照できます。</p>
 
-<p><strong>Q. 「能力研究所」と「金特研究所」は同じものですか？</strong><br>
+<p><strong>Q. 「能力研究所」「金特研究所」「特殊能力研究所」は同じものですか？</strong><br>
 A. 同じ施設を指しています。
-金特を取得する場所であることから金特研究所と呼ばれることも多く、
-このページではどちらの呼び方でも探せるようにしています。</p>
+金特を取得する場所であることから金特研究所、特殊能力研究所と呼ばれることも多く、
+このページではどの呼び方でも探せるようにしています。</p>
 
 <p><strong>Q. 目当ての金特が一覧に出てきません。</strong><br>
 A. 地域の絞り込みや投手／野手の切り替えが残っていないか確認してください。
@@ -1322,10 +1358,10 @@ A. <a href="/crystal/">イベントクリスタルの入手方法</a>、
     },
     {
       "@type": "Question",
-      "name": "「能力研究所」と「金特研究所」は同じものですか？",
+      "name": "「能力研究所」「金特研究所」「特殊能力研究所」は同じものですか？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "同じ施設を指しています。金特を取得する場所であることから金特研究所と呼ばれることも多く、このページではどちらの呼び方でも探せるようにしています。"
+        "text": "同じ施設を指しています。金特を取得する場所であることから、金特研究所や特殊能力研究所と呼ばれることもあります。いずれも同じ施設で、このページではどの呼び方でも探せるようにしています。"
       }
     },
     {
