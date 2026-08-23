@@ -260,16 +260,41 @@ function addJsonLd(data){
 /* =========================
    共通パーツの読み込み
    右レールと広告枠。各HTMLに書かず、ここから1回だけ読み込む
+
+   ■ 直したときは PARTS_VERSION を1つ上げること
+
+   GitHub Pages は配信するファイルに10分のキャッシュを付ける。
+   URLが同じままだと、直してもその間は古い版が使われ、
+   直っていないように見える。
+   番号を変えるとブラウザは別のURLとして扱うので、
+   期限を待たずに新しい版を取りに行く。
+
+   番号が効くのは、下の5本だけ。
+   HTMLから直に読んでいる analytics.js / tool-data.js / related.js と、
+   head.js 自身には効かない。そちらは従来どおり最大10分かかる
+   （全HTMLを書き換えることになるので、割に合わない）
 ========================= */
 
-for (const src of ["/js/sidebar.js", "/js/ads.js", "/js/affiliate.js", "/js/header.js", "/js/footer.js"]) {
-  const partScript = document.createElement("script");
+{
+  const PARTS_VERSION = 2;
 
-  partScript.src = src;
+  const parts = [
+    "/js/sidebar.js",
+    "/js/ads.js",
+    "/js/affiliate.js",
+    "/js/header.js",
+    "/js/footer.js"
+  ];
 
-  /* 動的に足したスクリプトは既定で非同期になるため、
-     順序を保つために明示的に切っておく */
-  partScript.async = false;
+  for (const src of parts) {
+    const partScript = document.createElement("script");
 
-  document.head.appendChild(partScript);
+    partScript.src = `${src}?v=${PARTS_VERSION}`;
+
+    /* 動的に足したスクリプトは既定で非同期になるため、
+       順序を保つために明示的に切っておく */
+    partScript.async = false;
+
+    document.head.appendChild(partScript);
+  }
 }
