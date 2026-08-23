@@ -147,9 +147,12 @@ main{
 /* 押されている側を黒く塗る。kintoku の絞り込みと同じ見せ方 */
 .seg{
     display:flex;
+    flex-wrap:wrap;
     gap:8px;
 }
 
+/* 幅が足りないときは折り返す。
+   nowrap を付けないと、ボタンの中で1文字ずつ縦に割れる */
 .seg button{
     padding:9px 20px;
     border:1px solid var(--line);
@@ -159,6 +162,7 @@ main{
     font-size:15px;
     font-weight:700;
     font-family:inherit;
+    white-space:nowrap;
     cursor:pointer;
 }
 
