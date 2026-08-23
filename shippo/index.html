@@ -43,7 +43,7 @@
 
     /* ここから下は「意味のある色」。
        枠や見出しは無彩色のままにして、
-       見分けが要るところ（小と大、必要な個数）だけ色を持たせる */
+       見分けが要るところ（難易度、素材の要否）だけ色を持たせる */
     --c-rank3:#15803d;   /* ★3 狙って取りやすい */
     --c-rank2:#b45309;   /* ★2 手間や条件がある */
     --c-rank1:#b91c1c;   /* ★1 運まかせ */
@@ -51,10 +51,6 @@
     --c-cond:#b45309;    /* 先に満たしておく前提 */
     --c-rest:#b45309;    /* MAXまでの残り */
     --c-done:#15803d;    /* MAX達成 */
-    --c-cost2:#15803d;   /* 2個。いちばん安い */
-    --c-cost3:#1d4ed8;   /* 3個 */
-    --c-cost4:#b45309;   /* 4個 */
-    --c-cost5:#b91c1c;   /* 5個。いちばん高い */
 }
 
 *{
@@ -329,39 +325,25 @@ main{
     font-weight:700;
 }
 
-/* 干支。枠の一部なので無彩色 */
-.eto{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    width:26px;
-    height:26px;
-    margin-right:8px;
-    border-radius:8px;
-    background:var(--ink);
-    color:#fff;
-    font-size:15px;
-    font-weight:700;
-    vertical-align:-4px;
-}
-
-.item.done .eto{ background:#c7ccd3; }
-
-/* オススメ度。狙いやすい順に緑→橙→赤。
-   このページでいちばん見分けたい情報なので色を持たせる */
-.stars{
+/* 難易度。狙いやすい順に緑→橙→赤。
+   ★だけでは何の指標か伝わらないので、言葉を一緒に出す */
+.rank{
+    display:inline-block;
     margin-left:8px;
-    font-size:14px;
-    letter-spacing:1px;
-    white-space:nowrap;
+    padding:2px 11px;
+    border-radius:999px;
+    font-size:12px;
     font-weight:700;
+    white-space:nowrap;
+    vertical-align:2px;
+    color:#fff;
 }
 
-.stars[data-rank="3"]{ color:var(--c-rank3); }
-.stars[data-rank="2"]{ color:var(--c-rank2); }
-.stars[data-rank="1"]{ color:var(--c-rank1); }
+.rank[data-rank="3"]{ background:var(--c-rank3); }
+.rank[data-rank="2"]{ background:var(--c-rank2); }
+.rank[data-rank="1"]{ background:var(--c-rank1); }
 
-.item.done .stars{ color:#c7ccd3; }
+.item.done .rank{ background:#c7ccd3; }
 
 /* 先に集める素材があるもの */
 .needs{
@@ -420,9 +402,9 @@ main{
     <div class="filter-row">
         <div class="seg" role="group" aria-label="オススメ度">
             <button type="button" data-rank="all" aria-pressed="true">すべて</button>
-            <button type="button" data-rank="3"   aria-pressed="false">★3</button>
-            <button type="button" data-rank="2"   aria-pressed="false">★2</button>
-            <button type="button" data-rank="1"   aria-pressed="false">★1</button>
+            <button type="button" data-rank="3"   aria-pressed="false">★3 取りやすい</button>
+            <button type="button" data-rank="2"   aria-pressed="false">★2 手間</button>
+            <button type="button" data-rank="1"   aria-pressed="false">★1 運まかせ</button>
         </div>
 
         <label class="toggle">
@@ -574,7 +556,7 @@ A. <a href="/kintoku/">能力研究所の金特ミッション一覧</a>、
 /* =========================================================
    尻尾の入手方法
 
-   eto  … 干支の1文字
+   eto  … 干支の1文字。チェックの保存キーに使う（表示はしない）
    name … 尻尾の名前
    how  … 入手方法
    rank … オススメ度。3が狙って取りやすい
@@ -624,6 +606,9 @@ const rows = [
 /* 晩成化がMAXになる数 */
 const MAX_NEEDED = 9;
 
+/* ★の意味。記号だけでは難易度と分からないので言葉を添える */
+const RANK_LABEL = { 3: "取りやすい", 2: "手間がかかる", 1: "運まかせ" };
+
 const KEY = "tooldock-shippo";
 
 const listEl  = document.getElementById("list");
@@ -658,14 +643,16 @@ function render(){
 
     if (rankFilter !== "all" && String(r.rank) !== rankFilter) continue;
     if (hide && done) continue;
-    if (q && !(r.name + " " + r.how + " " + r.item).toLowerCase().includes(q)) continue;
+    /* 難易度の言葉も画面に出ているので、検索の対象に含める */
+    const hay = r.name + " " + r.how + " " + r.item + " " + RANK_LABEL[r.rank];
+    if (q && !hay.toLowerCase().includes(q)) continue;
 
     html.push(`
       <label class="item${done ? " done" : ""}">
         <input type="checkbox" data-eto="${r.eto}"${done ? " checked" : ""}>
         <span class="item-body">
-          <span class="eto">${r.eto}</span><span class="how">${esc(r.name)}</span><span
-            class="stars" data-rank="${r.rank}" title="オススメ度 ${r.rank}">${"★".repeat(r.rank)}${"☆".repeat(3 - r.rank)}</span>${
+          <span class="how">${esc(r.name)}</span><span
+            class="rank" data-rank="${r.rank}">${"★".repeat(r.rank)} ${RANK_LABEL[r.rank]}</span>${
             r.item ? `<span class="needs">${esc(r.item)}が必要</span>` : ""}
           <span class="note">${esc(r.how)}</span>${
             r.cond ? `<span class="note cond">前提：${esc(r.cond)}</span>` : ""}
