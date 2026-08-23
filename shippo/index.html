@@ -19,6 +19,43 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
 
 <style>
+/* =========================
+   配色
+
+   /kintoku/ にそろえる。
+   色を敷くのは見出しの帯だけで、そこは黒に近いチャコール。
+   面は白と薄いグレー、線は青みのあるグレーでまとめる。
+   文字サイズと余白は変えていない
+========================= */
+
+:root{
+    --ink:#222;          /* 本文と帯の地色 */
+    --ink-strong:#111;   /* 見出し */
+    --ink-deep:#0f172a;  /* 一覧の項目名 */
+    --ink-sub:#555;
+    --ink-mute:#777;
+    --line:#d6dbe2;      /* 枠線 */
+    --line-soft:#dfe4ea;
+    --head-bg:#eceff3;   /* 表のヘッダー */
+    --tint:#fafcff;      /* ごく薄い下地 */
+    --dash:#b8c2d1;      /* 破線 */
+    --accent:#2563eb;    /* 差し色。解説の見出しの左罫だけに使う */
+
+    /* ここから下は「意味のある色」。
+       枠や見出しは無彩色のままにして、
+       見分けが要るところ（小と大、必要な個数）だけ色を持たせる */
+    --c-rank3:#15803d;   /* ★3 狙って取りやすい */
+    --c-rank2:#b45309;   /* ★2 手間や条件がある */
+    --c-rank1:#b91c1c;   /* ★1 運まかせ */
+    --c-needs:#1d4ed8;   /* 先に集める素材が要る */
+    --c-cond:#b45309;    /* 先に満たしておく前提 */
+    --c-rest:#b45309;    /* MAXまでの残り */
+    --c-done:#15803d;    /* MAX達成 */
+    --c-cost2:#15803d;   /* 2個。いちばん安い */
+    --c-cost3:#1d4ed8;   /* 3個 */
+    --c-cost4:#b45309;   /* 4個 */
+    --c-cost5:#b91c1c;   /* 5個。いちばん高い */
+}
 
 *{
     box-sizing:border-box;
@@ -27,9 +64,11 @@
 body{
     margin:0;
     background:#f5f5f5;
-    color:#222;
-    font-family:"Yu Gothic","Meiryo",sans-serif;
-    line-height:1.7;
+    color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic",
+                "Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
+    line-height:1.75;
+    font-size:16px;
 }
 
 /* 左右の余白。右側のリンク欄は js/sidebar.js が別に確保する */
@@ -39,21 +78,30 @@ body{
     padding-right:24px;
 }
 
+/* =========================
+   ページ見出し
+   帯は敷かず、地のうえに文字だけ置く
+========================= */
+
 header{
+    max-width:1000px;
+    margin:16px auto 22px;
+    padding:24px 8px 4px;
     text-align:center;
-    padding:40px 20px 20px;
 }
 
 header h1{
     margin:0;
-    font-size:2.2rem;
-    color:#111;
+    color:var(--ink-strong);
+    font-size:1.85rem;
+    font-weight:700;
     line-height:1.4;
 }
 
 header p{
-    margin:10px 0 0;
-    color:#555;
+    margin:12px 0 0;
+    color:var(--ink-sub);
+    font-size:.95rem;
 }
 
 main{
@@ -67,9 +115,9 @@ main{
 
 .filter-panel{
     background:#fff;
-    border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-    padding:16px 18px;
+    border-radius:14px;
+    box-shadow:0 3px 12px rgba(0,0,0,.1);
+    padding:16px 20px;
     margin-bottom:18px;
 }
 
@@ -83,42 +131,45 @@ main{
 .filter-row + .filter-row{
     margin-top:12px;
     padding-top:12px;
-    border-top:1px solid #eee;
+    border-top:1px solid #eef1f5;
 }
 
 .filter-panel input[type="search"]{
     flex:1 1 240px;
     min-width:0;
-    padding:10px 12px;
-    border:1px solid #ccc;
-    border-radius:8px;
+    padding:10px 14px;
+    border:1px solid var(--line);
+    border-radius:999px;
     font-size:16px;
     font-family:inherit;
 }
 
+.filter-panel input[type="search"]:focus{
+    outline:none;
+    border-color:var(--ink);
+}
+
+/* 押されている側を黒く塗る。kintoku の絞り込みと同じ見せ方 */
 .seg{
     display:flex;
-    border:1px solid #ccc;
-    border-radius:8px;
-    overflow:hidden;
+    gap:8px;
 }
 
 .seg button{
-    padding:9px 16px;
-    border:0;
+    padding:9px 20px;
+    border:1px solid var(--line);
+    border-radius:999px;
     background:#fff;
-    color:#333;
+    color:var(--ink);
     font-size:15px;
+    font-weight:700;
     font-family:inherit;
     cursor:pointer;
 }
 
-.seg button + button{
-    border-left:1px solid #ccc;
-}
-
 .seg button[aria-pressed="true"]{
-    background:#2563eb;
+    background:var(--ink);
+    border-color:var(--ink);
     color:#fff;
 }
 
@@ -128,40 +179,45 @@ main{
     gap:6px;
     cursor:pointer;
     user-select:none;
+    color:var(--ink);
 }
 
 .filter-count{
     margin-left:auto;
     font-size:14px;
-    color:#555;
+    color:var(--ink-mute);
     white-space:nowrap;
 }
 
 .filter-count strong{
-    color:#111;
-    font-size:16px;
+    color:var(--ink-strong);
+    font-size:17px;
 }
 
 .reset{
-    padding:8px 14px;
-    border:1px solid #ccc;
-    border-radius:8px;
+    padding:9px 18px;
+    border:1px solid var(--line);
+    border-radius:999px;
     background:#fff;
-    color:#333;
+    color:var(--ink);
     font-size:14px;
+    font-weight:700;
     font-family:inherit;
     cursor:pointer;
 }
 
+.reset:hover{
+    background:#f2f4f7;
+}
 
 /* =========================
-   一覧
+   入手方法の一覧
 ========================= */
 
 .list{
     background:#fff;
-    border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    border-radius:18px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
     overflow:hidden;
 }
 
@@ -169,24 +225,29 @@ main{
     display:flex;
     align-items:flex-start;
     gap:12px;
-    padding:14px 18px;
-    border-bottom:1px solid #eee;
+    padding:14px 22px;
+    border-bottom:1px solid var(--line-soft);
 }
 
 .item:last-child{
     border-bottom:0;
 }
 
+.item:hover{
+    background:var(--tint);
+}
+
 .item.done{
-    background:#f7fafc;
-    color:#94a3b8;
+    background:#f7f8fa;
+    color:#9aa2ab;
 }
 
 .item input[type="checkbox"]{
     flex:0 0 auto;
     width:20px;
     height:20px;
-    margin-top:3px;
+    margin-top:4px;
+    accent-color:var(--ink);
     cursor:pointer;
 }
 
@@ -195,48 +256,43 @@ main{
     min-width:0;
 }
 
-.badge{
-    display:inline-block;
-    margin-right:8px;
-    padding:1px 9px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:700;
-    vertical-align:2px;
-}
-
-.badge.s{ background:#dbeafe; color:#1d4ed8; }
-.badge.l{ background:#fef3c7; color:#b45309; }
-
-.item.done .badge{ background:#e5e7eb; color:#9ca3af; }
 
 .how{
     font-size:16px;
     font-weight:700;
+    color:var(--ink-deep);
 }
+
+.item.done .how{ color:#9aa2ab; }
 
 .note{
-    margin-top:2px;
+    margin-top:3px;
     font-size:14px;
-    color:#64748b;
+    color:var(--ink-mute);
 }
 
-.item.done .note{ color:#b6c2cf; }
-
-/* 先に満たしておく前提。入手方法とは別の行にする */
-.note.cond{
-    display:block;
-    color:#92400e;
-}
-
-.item.done .note.cond{ color:#c9ced6; }
+.item.done .note{ color:#b3b9c0; }
 
 .empty{
     padding:28px 18px;
     text-align:center;
-    color:#666;
+    color:var(--ink-mute);
 }
 
+/* =========================
+   解説
+
+   見出しは共通の style.css と同じ、左に差し色の罫を引くやり方にそろえる
+========================= */
+
+.tool-article h2{
+    border-left:5px solid var(--accent);
+    color:var(--ink);
+}
+
+.tool-article h3{
+    color:var(--ink-strong);
+}
 
 /* =========================
    尻尾のページ固有
@@ -250,29 +306,30 @@ main{
     gap:8px 18px;
     margin-left:auto;
     font-size:14px;
-    color:#555;
+    color:var(--ink-mute);
     white-space:nowrap;
 }
 
 .progress strong{
-    color:#111;
-    font-size:16px;
+    color:var(--ink-strong);
+    font-size:17px;
 }
 
+/* あと何個かは、残っているうちだけ色を付ける */
 .progress .rest{
-    color:#b45309;
+    color:var(--c-rest);
     font-weight:700;
 }
 
 .progress .cleared{
-    padding:2px 10px;
+    padding:2px 12px;
     border-radius:999px;
-    background:#16a34a;
+    background:var(--c-done);
     color:#fff;
     font-weight:700;
 }
 
-/* 干支 */
+/* 干支。枠の一部なので無彩色 */
 .eto{
     display:inline-flex;
     align-items:center;
@@ -281,52 +338,62 @@ main{
     height:26px;
     margin-right:8px;
     border-radius:8px;
-    background:#1e293b;
+    background:var(--ink);
     color:#fff;
     font-size:15px;
     font-weight:700;
     vertical-align:-4px;
 }
 
-.item.done .eto{ background:#cbd5e1; color:#fff; }
+.item.done .eto{ background:#c7ccd3; }
 
-/* オススメ度 */
+/* オススメ度。狙いやすい順に緑→橙→赤。
+   このページでいちばん見分けたい情報なので色を持たせる */
 .stars{
     margin-left:8px;
     font-size:14px;
     letter-spacing:1px;
     white-space:nowrap;
+    font-weight:700;
 }
 
-.stars[data-rank="3"]{ color:#f59e0b; }
-.stars[data-rank="2"]{ color:#94a3b8; }
-.stars[data-rank="1"]{ color:#cbd5e1; }
+.stars[data-rank="3"]{ color:var(--c-rank3); }
+.stars[data-rank="2"]{ color:var(--c-rank2); }
+.stars[data-rank="1"]{ color:var(--c-rank1); }
 
-.item.done .stars{ color:#dde3ea; }
+.item.done .stars{ color:#c7ccd3; }
 
-/* 素材が要るものは一目で分かるようにする */
+/* 先に集める素材があるもの */
 .needs{
     display:inline-block;
     margin-left:8px;
-    padding:1px 8px;
+    padding:2px 10px;
     border-radius:999px;
-    background:#fef3c7;
-    color:#92400e;
+    background:var(--c-needs);
+    color:#fff;
     font-size:11px;
     font-weight:700;
     vertical-align:2px;
 }
 
-.item.done .needs{ background:#eef2f6; color:#b6c2cf; }
+.item.done .needs{ background:#c7ccd3; }
+
+/* 先に満たしておく前提。入手方法とは別の行にする */
+.note.cond{
+    display:block;
+    color:var(--c-cond);
+}
+
+.item.done .note.cond{ color:#c7ccd3; }
 
 @media (max-width:600px){
     .page-wrapper{ padding-left:12px; padding-right:12px; }
-    header{ padding:28px 12px 16px; }
-    header h1{ font-size:1.5rem; }
+    header{ margin:8px auto 16px; padding:14px 4px 2px; }
+    header h1{ font-size:1.3rem; }
     .filter-count{ margin-left:0; width:100%; }
+    .item{ padding:13px 16px; }
     .progress{ margin-left:0; width:100%; white-space:normal; }
 }
-
 </style>
 
 </head>
