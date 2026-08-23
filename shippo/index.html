@@ -47,7 +47,6 @@
     --c-rank3:#15803d;   /* ★3 狙って取りやすい */
     --c-rank2:#b45309;   /* ★2 手間や条件がある */
     --c-rank1:#b91c1c;   /* ★1 運まかせ */
-    --c-needs:#1d4ed8;   /* 先に集める素材が要る */
     --c-cond:#b45309;    /* 先に満たしておく前提 */
     --c-rest:#b45309;    /* MAXまでの残り */
     --c-done:#15803d;    /* MAX達成 */
@@ -148,9 +147,12 @@ main{
 /* 押されている側を黒く塗る。kintoku の絞り込みと同じ見せ方 */
 .seg{
     display:flex;
+    flex-wrap:wrap;
     gap:8px;
 }
 
+/* 幅が足りないときは折り返す。
+   nowrap を付けないと、ボタンの中で1文字ずつ縦に割れる */
 .seg button{
     padding:9px 20px;
     border:1px solid var(--line);
@@ -160,6 +162,7 @@ main{
     font-size:15px;
     font-weight:700;
     font-family:inherit;
+    white-space:nowrap;
     cursor:pointer;
 }
 
@@ -219,44 +222,51 @@ main{
 
 .item{
     display:flex;
-    align-items:flex-start;
+    align-items:stretch;
     gap:12px;
     padding:14px 22px;
     border-bottom:1px solid var(--line-soft);
 }
 
-.item:last-child{
-    border-bottom:0;
-}
-
-.item:hover{
-    background:var(--tint);
-}
-
-.item.done{
-    background:#f7f8fa;
-    color:#9aa2ab;
-}
-
-.item input[type="checkbox"]{
-    flex:0 0 auto;
-    width:20px;
-    height:20px;
-    margin-top:4px;
-    accent-color:var(--ink);
-    cursor:pointer;
-}
-
-.item-body{
-    flex:1 1 auto;
+/* 左：名前と難易度。仕切りを挟んで右に取得方法を置く */
+.item-main{
+    flex:0 0 270px;
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
     min-width:0;
 }
+
+.item-how{
+    flex:1 1 auto;
+    min-width:0;
+    display:flex;
+    align-items:center;
+    padding-left:18px;
+    border-left:1px solid var(--line);
+    color:var(--ink);
+    font-size:15px;
+}
+
+.item.done .item-how{ color:#9aa2ab; }
+
+/* 先に満たしておく前提。取得方法とは別の行にする */
+.cond{
+    display:block;
+    margin-top:3px;
+    font-size:13px;
+    color:var(--c-cond);
+}
+
+.item.done .cond{ color:#b3b9c0; }
 
 
 .how{
     font-size:16px;
     font-weight:700;
     color:var(--ink-deep);
+    white-space:nowrap;
 }
 
 .item.done .how{ color:#9aa2ab; }
@@ -345,35 +355,23 @@ main{
 
 .item.done .rank{ background:#c7ccd3; }
 
-/* 先に集める素材があるもの */
-.needs{
-    display:inline-block;
-    margin-left:8px;
-    padding:2px 10px;
-    border-radius:999px;
-    background:var(--c-needs);
-    color:#fff;
-    font-size:11px;
-    font-weight:700;
-    vertical-align:2px;
-}
-
-.item.done .needs{ background:#c7ccd3; }
-
-/* 先に満たしておく前提。入手方法とは別の行にする */
-.note.cond{
-    display:block;
-    color:var(--c-cond);
-}
-
-.item.done .note.cond{ color:#c7ccd3; }
 
 @media (max-width:600px){
     .page-wrapper{ padding-left:12px; padding-right:12px; }
     header{ margin:8px auto 16px; padding:14px 4px 2px; }
     header h1{ font-size:1.3rem; }
     .filter-count{ margin-left:0; width:100%; }
-    .item{ padding:13px 16px; }
+    .seg button{ padding:8px 14px; font-size:14px; }
+    .item{ padding:13px 16px; flex-wrap:wrap; }
+    .item-main{ flex:1 1 auto; }
+    .item-how{
+        flex:1 1 100%;
+        padding-left:0;
+        padding-top:8px;
+        margin-top:8px;
+        border-left:0;
+        border-top:1px dashed var(--line);
+    }
     .progress{ margin-left:0; width:100%; white-space:normal; }
 }
 </style>
@@ -650,12 +648,13 @@ function render(){
     html.push(`
       <label class="item${done ? " done" : ""}">
         <input type="checkbox" data-eto="${r.eto}"${done ? " checked" : ""}>
-        <span class="item-body">
+        <span class="item-main">
           <span class="how">${esc(r.name)}</span><span
-            class="rank" data-rank="${r.rank}">${"★".repeat(r.rank)} ${RANK_LABEL[r.rank]}</span>${
-            r.item ? `<span class="needs">${esc(r.item)}が必要</span>` : ""}
-          <span class="note">${esc(r.how)}</span>${
-            r.cond ? `<span class="note cond">前提：${esc(r.cond)}</span>` : ""}
+            class="rank" data-rank="${r.rank}">${"★".repeat(r.rank)} ${RANK_LABEL[r.rank]}</span>
+        </span>
+        <span class="item-how">
+          <span>${esc(r.how)}${
+            r.cond ? `<span class="cond">前提：${esc(r.cond)}</span>` : ""}</span>
         </span>
       </label>
     `);
