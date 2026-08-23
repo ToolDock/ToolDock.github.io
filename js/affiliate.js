@@ -219,10 +219,20 @@
       </p>
     `;
 
-    const related = document.getElementById("related-tools");
+    /* 本文（よくある質問）の直後、「人気のページ」より前に置く。
 
-    if (related && related.parentNode) {
-      related.parentNode.insertBefore(box, related);
+       sidebar.js のほうが先に読み込まれ、
+       「人気のページ」を #related-tools の前に差し込む。
+       こちらも #related-tools だけを見て入れると、
+       そのうしろに回り込んでしまう。
+       まず人気のページを探し、無ければ #related-tools を使う */
+
+    const anchor =
+      document.querySelector(".td-rail-inline") ||
+      document.getElementById("related-tools");
+
+    if (anchor && anchor.parentNode) {
+      anchor.parentNode.insertBefore(box, anchor);
     } else {
       document.body.appendChild(box);
     }
