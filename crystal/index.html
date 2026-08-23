@@ -22,24 +22,24 @@
 /* =========================
    配色
 
-   落ち着いた紺を基調にする。
-   水色は面積が広いと軽く見えるので、面で使う色は暗くする。
-   ここを差し替えれば配色ごと入れ替えられる
+   /kintoku/ にそろえる。
+   色を敷くのは見出しの帯だけで、そこは黒に近いチャコール。
+   面は白と薄いグレー、線は青みのあるグレーでまとめる。
+   文字サイズと余白は変えていない
 ========================= */
 
 :root{
-    --navy-900:#0f2740;
-    --navy-800:#16375a;
-    --navy-700:#1d4972;
-    --navy-600:#255c8c;
-    --navy-500:#2f6fa3;
-    --navy-300:#9db6cd;
-    --navy-100:#dde8f1;
-    --navy-050:#f2f6fa;
-    --gold-700:#8a6318;
-    --navy-200:#c9d9e6;
-    --ink:#1b2733;
-    --ink-sub:#5a6672;
+    --ink:#222;          /* 本文と帯の地色 */
+    --ink-strong:#111;   /* 見出し */
+    --ink-deep:#0f172a;  /* 一覧の項目名 */
+    --ink-sub:#555;
+    --ink-mute:#777;
+    --line:#d6dbe2;      /* 枠線 */
+    --line-soft:#dfe4ea;
+    --head-bg:#eceff3;   /* 表のヘッダー */
+    --tint:#fafcff;      /* ごく薄い下地 */
+    --dash:#b8c2d1;      /* 破線 */
+    --accent:#2563eb;    /* 差し色。解説の見出しの左罫だけに使う */
 }
 
 *{
@@ -48,10 +48,8 @@
 
 body{
     margin:0;
-    background:#eaeff4;
+    background:#f5f5f5;
     color:var(--ink);
-    /* 端末が持っている中でいちばん読みやすいゴシックを順に指定する。
-       日本語のWebフォントは重いので読み込まない */
     font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic",
                 "Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
     line-height:1.75;
@@ -67,37 +65,27 @@ body{
 
 /* =========================
    ページ見出し
+   帯は敷かず、地のうえに文字だけ置く
 ========================= */
 
 header{
-    position:relative;
     max-width:1000px;
     margin:16px auto 22px;
-    padding:26px 26px 22px;
-    border-radius:16px;
-    overflow:hidden;
-    text-align:left;
-    color:#fff;
-    background:
-        repeating-linear-gradient(-45deg,
-            rgba(255,255,255,.07) 0 8px,
-            rgba(255,255,255,0) 8px 16px),
-        linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
-    box-shadow:0 6px 18px rgba(15,39,64,.20);
+    padding:24px 8px 4px;
+    text-align:center;
 }
 
 header h1{
     margin:0;
+    color:var(--ink-strong);
     font-size:1.85rem;
     font-weight:700;
     line-height:1.4;
-    letter-spacing:.01em;
-    text-shadow:0 1px 2px rgba(0,0,0,.18);
 }
 
 header p{
-    margin:10px 0 0;
-    color:rgba(255,255,255,.92);
+    margin:12px 0 0;
+    color:var(--ink-sub);
     font-size:.95rem;
 }
 
@@ -112,11 +100,9 @@ main{
 
 .filter-panel{
     background:#fff;
-    border:1px solid #d7e2ec;
-    border-top:4px solid var(--navy-600);
-    border-radius:12px;
-    box-shadow:0 2px 10px rgba(15,39,64,.08);
-    padding:16px 18px;
+    border-radius:14px;
+    box-shadow:0 3px 12px rgba(0,0,0,.1);
+    padding:16px 20px;
     margin-bottom:18px;
 }
 
@@ -130,49 +116,45 @@ main{
 .filter-row + .filter-row{
     margin-top:12px;
     padding-top:12px;
-    border-top:1px dashed #dfe8f0;
+    border-top:1px solid #eef1f5;
 }
 
 .filter-panel input[type="search"]{
     flex:1 1 240px;
     min-width:0;
-    padding:10px 12px;
-    border:1.5px solid var(--navy-200);
-    border-radius:8px;
+    padding:10px 14px;
+    border:1px solid var(--line);
+    border-radius:999px;
     font-size:16px;
     font-family:inherit;
 }
 
 .filter-panel input[type="search"]:focus{
     outline:none;
-    border-color:var(--navy-500);
-    box-shadow:0 0 0 3px rgba(37,92,140,.18);
+    border-color:var(--ink);
 }
 
+/* 押されている側を黒く塗る。kintoku の絞り込みと同じ見せ方 */
 .seg{
     display:flex;
-    border:1.5px solid var(--navy-200);
-    border-radius:8px;
-    overflow:hidden;
+    gap:8px;
 }
 
 .seg button{
-    padding:9px 16px;
-    border:0;
+    padding:9px 20px;
+    border:1px solid var(--line);
+    border-radius:999px;
     background:#fff;
-    color:var(--navy-800);
+    color:var(--ink);
     font-size:15px;
     font-weight:700;
     font-family:inherit;
     cursor:pointer;
 }
 
-.seg button + button{
-    border-left:1.5px solid var(--navy-200);
-}
-
 .seg button[aria-pressed="true"]{
-    background:var(--navy-600);
+    background:var(--ink);
+    border-color:var(--ink);
     color:#fff;
 }
 
@@ -182,28 +164,27 @@ main{
     gap:6px;
     cursor:pointer;
     user-select:none;
-    font-weight:700;
-    color:var(--navy-800);
+    color:var(--ink);
 }
 
 .filter-count{
     margin-left:auto;
     font-size:14px;
-    color:var(--ink-sub);
+    color:var(--ink-mute);
     white-space:nowrap;
 }
 
 .filter-count strong{
-    color:var(--navy-700);
+    color:var(--ink-strong);
     font-size:17px;
 }
 
 .reset{
-    padding:8px 14px;
-    border:1.5px solid var(--navy-200);
-    border-radius:8px;
+    padding:9px 18px;
+    border:1px solid var(--line);
+    border-radius:999px;
     background:#fff;
-    color:var(--navy-800);
+    color:var(--ink);
     font-size:14px;
     font-weight:700;
     font-family:inherit;
@@ -211,7 +192,7 @@ main{
 }
 
 .reset:hover{
-    background:var(--navy-050);
+    background:#f2f4f7;
 }
 
 /* =========================
@@ -220,9 +201,8 @@ main{
 
 .rate{
     background:#fff;
-    border:1px solid #d7e2ec;
-    border-radius:12px;
-    box-shadow:0 2px 10px rgba(15,39,64,.08);
+    border-radius:18px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
     margin-top:22px;
     padding:0 0 6px;
     overflow:hidden;
@@ -230,18 +210,18 @@ main{
 
 .rate h2{
     margin:0;
-    padding:12px 18px;
-    background:linear-gradient(135deg, var(--navy-700), var(--navy-900));
+    padding:16px 22px;
+    background:var(--ink);
     color:#fff;
-    font-size:1.1rem;
+    font-size:1.15rem;
     font-weight:700;
 }
 
 .rate p.lead{
     margin:0;
-    padding:12px 18px;
-    background:var(--navy-050);
-    border-bottom:1px solid #d7e2ec;
+    padding:14px 22px;
+    background:var(--tint);
+    border-bottom:1px solid var(--line-soft);
     font-size:14px;
     color:var(--ink-sub);
 }
@@ -254,22 +234,21 @@ main{
 
 .rate th,
 .rate td{
-    border-bottom:1px solid #eaf0f5;
-    padding:10px 18px;
+    border-bottom:1px solid var(--line-soft);
+    padding:12px 22px;
     text-align:left;
 }
 
 .rate thead th{
-    background:var(--navy-100);
-    color:var(--navy-900);
+    background:var(--head-bg);
+    color:var(--ink);
     font-size:14px;
     font-weight:700;
     white-space:nowrap;
-    border-bottom:2px solid var(--navy-300);
 }
 
 .rate tbody tr:nth-child(even){
-    background:#fafcfe;
+    background:var(--tint);
 }
 
 .rate td:first-child{
@@ -286,29 +265,30 @@ main{
 /* このページで扱っている種類の行 */
 .rate tr.here,
 .rate tbody tr.here:nth-child(even){
-    background:var(--navy-100);
+    background:#eef1f5;
 }
 
 .rate tr.here td:first-child{
-    box-shadow:inset 4px 0 0 var(--navy-600);
+    box-shadow:inset 4px 0 0 var(--ink);
 }
 
 .rate .tag{
     display:inline-block;
     margin-left:8px;
-    padding:2px 9px;
+    padding:2px 10px;
     border-radius:999px;
-    background:var(--navy-600);
+    background:var(--ink);
     color:#fff;
     font-size:11px;
     font-weight:700;
     vertical-align:1px;
 }
 
-.rate tr[data-cost="2"] td.cost{ color:#14663c; }
-.rate tr[data-cost="3"] td.cost{ color:var(--navy-700); }
-.rate tr[data-cost="4"] td.cost{ color:var(--gold-700); }
-.rate tr[data-cost="5"] td.cost{ color:#96322b; }
+/* 必要数は文字の濃さで差をつける。色は足さない */
+.rate tr[data-cost="2"] td.cost{ color:var(--ink-strong); }
+.rate tr[data-cost="3"] td.cost{ color:var(--ink); }
+.rate tr[data-cost="4"] td.cost{ color:#5a6472; }
+.rate tr[data-cost="5"] td.cost{ color:#7c8794; }
 
 /* =========================
    入手方法の一覧
@@ -316,9 +296,8 @@ main{
 
 .list{
     background:#fff;
-    border:1px solid #d7e2ec;
-    border-radius:12px;
-    box-shadow:0 2px 10px rgba(15,39,64,.08);
+    border-radius:18px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
     overflow:hidden;
 }
 
@@ -326,10 +305,8 @@ main{
     display:flex;
     align-items:flex-start;
     gap:12px;
-    padding:14px 18px;
-    border-bottom:1px solid #eaf0f5;
-    border-left:4px solid transparent;
-    transition:background .12s, border-color .12s;
+    padding:14px 22px;
+    border-bottom:1px solid var(--line-soft);
 }
 
 .item:last-child{
@@ -337,14 +314,12 @@ main{
 }
 
 .item:hover{
-    background:var(--navy-050);
-    border-left-color:var(--navy-300);
+    background:var(--tint);
 }
 
 .item.done{
-    background:#f4f7fa;
-    color:#98a4b0;
-    border-left-color:transparent;
+    background:#f7f8fa;
+    color:#9aa2ab;
 }
 
 .item input[type="checkbox"]{
@@ -352,7 +327,7 @@ main{
     width:20px;
     height:20px;
     margin-top:4px;
-    accent-color:var(--navy-600);
+    accent-color:var(--ink);
     cursor:pointer;
 }
 
@@ -361,105 +336,78 @@ main{
     min-width:0;
 }
 
+/* 小は白抜き、大は塗り。色を増やさずに差をつける */
 .badge{
     display:inline-block;
     margin-right:8px;
-    padding:2px 10px;
-    border-radius:6px;
+    padding:1px 10px;
+    border-radius:999px;
     font-size:12px;
     font-weight:700;
     vertical-align:2px;
+}
+
+.badge.s{
+    background:#fff;
+    border:1.5px solid var(--ink);
+    color:var(--ink);
+}
+
+.badge.l{
+    background:var(--ink);
+    border:1.5px solid var(--ink);
     color:#fff;
 }
 
-.badge.s{ background:var(--navy-600); }
-.badge.l{ background:var(--gold-700); }
-
-.item.done .badge{ background:#bcc6d0; }
+.item.done .badge.s{ background:#fff; border-color:#c7ccd3; color:#a8afb7; }
+.item.done .badge.l{ background:#c7ccd3; border-color:#c7ccd3; color:#fff; }
 
 .how{
     font-size:16px;
     font-weight:700;
-    color:var(--navy-900);
+    color:var(--ink-deep);
 }
 
-.item.done .how{ color:#98a4b0; }
+.item.done .how{ color:#9aa2ab; }
 
 .note{
     margin-top:3px;
     font-size:14px;
-    color:var(--ink-sub);
+    color:var(--ink-mute);
 }
 
-.item.done .note{ color:#b3bdc7; }
+.item.done .note{ color:#b3b9c0; }
 
 .empty{
     padding:28px 18px;
     text-align:center;
-    color:#666;
+    color:var(--ink-mute);
 }
 
 /* =========================
    解説
 
-   サイト共通の style.css の上に、このページの配色をかぶせる
+   見出しは共通の style.css と同じ、左に差し色の罫を引くやり方にそろえる
 ========================= */
 
-.tool-article{
-    border:1px solid #d7e2ec;
-    box-shadow:0 2px 10px rgba(15,39,64,.08);
-}
-
 .tool-article h2{
-    margin:36px 0 14px;
-    padding:10px 16px;
-    border:0;
-    border-radius:8px;
-    background:linear-gradient(135deg, var(--navy-700), var(--navy-900));
-    color:#fff;
-    font-size:1.15rem;
-    font-weight:700;
-}
-
-.tool-article h2:first-child{
-    margin-top:0;
+    border-left:5px solid var(--accent);
+    color:var(--ink);
 }
 
 .tool-article h3{
-    margin:26px 0 8px;
-    padding-left:12px;
-    border-left:5px solid var(--navy-500);
-    color:var(--navy-900);
-    font-size:1.05rem;
-    font-weight:700;
-}
-
-.tool-article strong{
-    color:var(--navy-800);
-}
-
-.tool-article a{
-    color:var(--navy-700);
-    font-weight:700;
-}
-
-.tool-article table th{
-    background:var(--navy-100);
-    color:var(--navy-900);
-    border-bottom:2px solid var(--navy-300);
-}
-
-.tool-article ul li::marker{
-    color:var(--navy-500);
+    color:var(--ink-strong);
 }
 
 @media (max-width:600px){
     .page-wrapper{ padding-left:12px; padding-right:12px; }
-    header{ margin:10px auto 16px; padding:20px 16px 18px; border-radius:12px; }
+    header{ margin:8px auto 16px; padding:14px 4px 2px; }
     header h1{ font-size:1.3rem; }
     .filter-count{ margin-left:0; width:100%; }
-    .rate th, .rate td{ padding:9px 12px; }
-    .tool-article h2{ font-size:1.05rem; padding:9px 12px; }
+    .rate th, .rate td{ padding:11px 14px; }
+    .rate h2{ padding:14px 16px; font-size:1.05rem; }
+    .rate p.lead{ padding:12px 16px; }
+    .item{ padding:13px 16px; }
 }
 </style>
 
