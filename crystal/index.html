@@ -19,6 +19,27 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
 
 <style>
+/* =========================
+   配色
+
+   ヘッダーとフッターで使っている青（#0ea5e9→#0284c7）を土台にして、
+   見出し・表・バッジまで通す。ページごとに色が散らないようにする
+========================= */
+
+:root{
+    --blue-900:#0c4a6e;
+    --blue-800:#075985;
+    --blue-700:#0369a1;
+    --blue-600:#0284c7;
+    --blue-500:#0ea5e9;
+    --blue-300:#7dd3fc;
+    --blue-100:#e0f2fe;
+    --blue-050:#f0f9ff;
+    --amber-600:#b45309;
+    --amber-100:#fef3c7;
+    --ink:#1f2937;
+    --ink-sub:#5b6572;
+}
 
 *{
     box-sizing:border-box;
@@ -26,10 +47,14 @@
 
 body{
     margin:0;
-    background:#f5f5f5;
-    color:#222;
-    font-family:"Yu Gothic","Meiryo",sans-serif;
-    line-height:1.7;
+    background:#eef4f8;
+    color:var(--ink);
+    /* 端末が持っている中でいちばん読みやすいゴシックを順に指定する。
+       日本語のWebフォントは重いので読み込まない */
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic",
+                "Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
+    line-height:1.75;
+    font-size:16px;
 }
 
 /* 左右の余白。右側のリンク欄は js/sidebar.js が別に確保する */
@@ -39,21 +64,40 @@ body{
     padding-right:24px;
 }
 
+/* =========================
+   ページ見出し
+========================= */
+
 header{
-    text-align:center;
-    padding:40px 20px 20px;
+    position:relative;
+    max-width:1000px;
+    margin:16px auto 22px;
+    padding:26px 26px 22px;
+    border-radius:16px;
+    overflow:hidden;
+    text-align:left;
+    color:#fff;
+    background:
+        repeating-linear-gradient(-45deg,
+            rgba(255,255,255,.07) 0 8px,
+            rgba(255,255,255,0) 8px 16px),
+        linear-gradient(135deg, var(--blue-500) 0%, var(--blue-700) 100%);
+    box-shadow:0 6px 18px rgba(2,132,199,.22);
 }
 
 header h1{
     margin:0;
-    font-size:2.2rem;
-    color:#111;
+    font-size:1.85rem;
+    font-weight:700;
     line-height:1.4;
+    letter-spacing:.01em;
+    text-shadow:0 1px 2px rgba(0,0,0,.18);
 }
 
 header p{
     margin:10px 0 0;
-    color:#555;
+    color:rgba(255,255,255,.92);
+    font-size:.95rem;
 }
 
 main{
@@ -67,8 +111,10 @@ main{
 
 .filter-panel{
     background:#fff;
+    border:1px solid #dbe7f0;
+    border-top:4px solid var(--blue-600);
     border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    box-shadow:0 2px 10px rgba(12,74,110,.07);
     padding:16px 18px;
     margin-bottom:18px;
 }
@@ -83,22 +129,28 @@ main{
 .filter-row + .filter-row{
     margin-top:12px;
     padding-top:12px;
-    border-top:1px solid #eee;
+    border-top:1px dashed #d8e6f0;
 }
 
 .filter-panel input[type="search"]{
     flex:1 1 240px;
     min-width:0;
     padding:10px 12px;
-    border:1px solid #ccc;
+    border:1.5px solid #c8dcea;
     border-radius:8px;
     font-size:16px;
     font-family:inherit;
 }
 
+.filter-panel input[type="search"]:focus{
+    outline:none;
+    border-color:var(--blue-500);
+    box-shadow:0 0 0 3px rgba(14,165,233,.18);
+}
+
 .seg{
     display:flex;
-    border:1px solid #ccc;
+    border:1.5px solid #c8dcea;
     border-radius:8px;
     overflow:hidden;
 }
@@ -107,18 +159,19 @@ main{
     padding:9px 16px;
     border:0;
     background:#fff;
-    color:#333;
+    color:var(--blue-800);
     font-size:15px;
+    font-weight:700;
     font-family:inherit;
     cursor:pointer;
 }
 
 .seg button + button{
-    border-left:1px solid #ccc;
+    border-left:1.5px solid #c8dcea;
 }
 
 .seg button[aria-pressed="true"]{
-    background:#2563eb;
+    background:linear-gradient(180deg, var(--blue-500), var(--blue-600));
     color:#fff;
 }
 
@@ -128,31 +181,37 @@ main{
     gap:6px;
     cursor:pointer;
     user-select:none;
+    font-weight:700;
+    color:var(--blue-800);
 }
 
 .filter-count{
     margin-left:auto;
     font-size:14px;
-    color:#555;
+    color:var(--ink-sub);
     white-space:nowrap;
 }
 
 .filter-count strong{
-    color:#111;
-    font-size:16px;
+    color:var(--blue-700);
+    font-size:17px;
 }
 
 .reset{
     padding:8px 14px;
-    border:1px solid #ccc;
+    border:1.5px solid #c8dcea;
     border-radius:8px;
     background:#fff;
-    color:#333;
+    color:var(--blue-800);
     font-size:14px;
+    font-weight:700;
     font-family:inherit;
     cursor:pointer;
 }
 
+.reset:hover{
+    background:var(--blue-050);
+}
 
 /* =========================
    交換レート表
@@ -160,22 +219,30 @@ main{
 
 .rate{
     background:#fff;
+    border:1px solid #dbe7f0;
     border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    box-shadow:0 2px 10px rgba(12,74,110,.07);
     margin-top:22px;
-    padding:18px;
+    padding:0 0 6px;
+    overflow:hidden;
 }
 
 .rate h2{
-    margin:0 0 4px;
-    font-size:1.2rem;
-    color:#111;
+    margin:0;
+    padding:12px 18px;
+    background:linear-gradient(135deg, var(--blue-600), var(--blue-800));
+    color:#fff;
+    font-size:1.1rem;
+    font-weight:700;
 }
 
 .rate p.lead{
-    margin:0 0 14px;
+    margin:0;
+    padding:12px 18px;
+    background:var(--blue-050);
+    border-bottom:1px solid #dbe7f0;
     font-size:14px;
-    color:#555;
+    color:var(--ink-sub);
 }
 
 .rate table{
@@ -186,34 +253,51 @@ main{
 
 .rate th,
 .rate td{
-    border-bottom:1px solid #eee;
-    padding:9px 10px;
+    border-bottom:1px solid #e6eff6;
+    padding:10px 18px;
     text-align:left;
 }
 
 .rate thead th{
-    background:#f8fafc;
-    color:#334155;
+    background:var(--blue-100);
+    color:var(--blue-900);
     font-size:14px;
+    font-weight:700;
     white-space:nowrap;
+    border-bottom:2px solid var(--blue-300);
 }
 
-.rate td.cost{
-    width:8em;
-    white-space:nowrap;
+.rate tbody tr:nth-child(even){
+    background:#fafdff;
+}
+
+.rate td:first-child{
     font-weight:700;
 }
 
-.rate tr.here{
-    background:#eff6ff;
+.rate td.cost{
+    width:9em;
+    white-space:nowrap;
+    font-weight:700;
+    text-align:right;
+}
+
+/* このページで扱っている種類の行 */
+.rate tr.here,
+.rate tbody tr.here:nth-child(even){
+    background:var(--blue-100);
+}
+
+.rate tr.here td:first-child{
+    box-shadow:inset 4px 0 0 var(--blue-600);
 }
 
 .rate .tag{
     display:inline-block;
-    margin-left:6px;
-    padding:1px 7px;
+    margin-left:8px;
+    padding:2px 9px;
     border-radius:999px;
-    background:#2563eb;
+    background:var(--blue-600);
     color:#fff;
     font-size:11px;
     font-weight:700;
@@ -221,18 +305,19 @@ main{
 }
 
 .rate tr[data-cost="2"] td.cost{ color:#15803d; }
-.rate tr[data-cost="3"] td.cost{ color:#1d4ed8; }
-.rate tr[data-cost="4"] td.cost{ color:#b45309; }
+.rate tr[data-cost="3"] td.cost{ color:var(--blue-700); }
+.rate tr[data-cost="4"] td.cost{ color:var(--amber-600); }
 .rate tr[data-cost="5"] td.cost{ color:#b91c1c; }
 
 /* =========================
-   一覧
+   入手方法の一覧
 ========================= */
 
 .list{
     background:#fff;
+    border:1px solid #dbe7f0;
     border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    box-shadow:0 2px 10px rgba(12,74,110,.07);
     overflow:hidden;
 }
 
@@ -241,23 +326,32 @@ main{
     align-items:flex-start;
     gap:12px;
     padding:14px 18px;
-    border-bottom:1px solid #eee;
+    border-bottom:1px solid #e6eff6;
+    border-left:4px solid transparent;
+    transition:background .12s, border-color .12s;
 }
 
 .item:last-child{
     border-bottom:0;
 }
 
+.item:hover{
+    background:var(--blue-050);
+    border-left-color:var(--blue-300);
+}
+
 .item.done{
-    background:#f7fafc;
-    color:#94a3b8;
+    background:#f4f7fa;
+    color:#9aa7b4;
+    border-left-color:transparent;
 }
 
 .item input[type="checkbox"]{
     flex:0 0 auto;
     width:20px;
     height:20px;
-    margin-top:3px;
+    margin-top:4px;
+    accent-color:var(--blue-600);
     cursor:pointer;
 }
 
@@ -269,27 +363,31 @@ main{
 .badge{
     display:inline-block;
     margin-right:8px;
-    padding:1px 9px;
-    border-radius:999px;
+    padding:2px 10px;
+    border-radius:6px;
     font-size:12px;
     font-weight:700;
     vertical-align:2px;
+    color:#fff;
 }
 
-.badge.s{ background:#dbeafe; color:#1d4ed8; }
-.badge.l{ background:#fef3c7; color:#b45309; }
+.badge.s{ background:linear-gradient(180deg, var(--blue-500), var(--blue-600)); }
+.badge.l{ background:linear-gradient(180deg, #f59e0b, var(--amber-600)); }
 
-.item.done .badge{ background:#e5e7eb; color:#9ca3af; }
+.item.done .badge{ background:#c3ccd6; }
 
 .how{
     font-size:16px;
     font-weight:700;
+    color:var(--blue-900);
 }
 
+.item.done .how{ color:#9aa7b4; }
+
 .note{
-    margin-top:2px;
+    margin-top:3px;
     font-size:14px;
-    color:#64748b;
+    color:var(--ink-sub);
 }
 
 .item.done .note{ color:#b6c2cf; }
@@ -300,13 +398,68 @@ main{
     color:#666;
 }
 
-@media (max-width:600px){
-    .page-wrapper{ padding-left:12px; padding-right:12px; }
-    header{ padding:28px 12px 16px; }
-    header h1{ font-size:1.5rem; }
-    .filter-count{ margin-left:0; width:100%; }
+/* =========================
+   解説
+
+   サイト共通の style.css の上に、このページの配色をかぶせる
+========================= */
+
+.tool-article{
+    border:1px solid #dbe7f0;
+    box-shadow:0 2px 10px rgba(12,74,110,.07);
 }
 
+.tool-article h2{
+    margin:36px 0 14px;
+    padding:10px 16px;
+    border:0;
+    border-radius:8px;
+    background:linear-gradient(135deg, var(--blue-600), var(--blue-800));
+    color:#fff;
+    font-size:1.15rem;
+    font-weight:700;
+}
+
+.tool-article h2:first-child{
+    margin-top:0;
+}
+
+.tool-article h3{
+    margin:26px 0 8px;
+    padding-left:12px;
+    border-left:5px solid var(--blue-500);
+    color:var(--blue-900);
+    font-size:1.05rem;
+    font-weight:700;
+}
+
+.tool-article strong{
+    color:var(--blue-800);
+}
+
+.tool-article a{
+    color:var(--blue-700);
+    font-weight:700;
+}
+
+.tool-article table th{
+    background:var(--blue-100);
+    color:var(--blue-900);
+    border-bottom:2px solid var(--blue-300);
+}
+
+.tool-article ul li::marker{
+    color:var(--blue-500);
+}
+
+@media (max-width:600px){
+    .page-wrapper{ padding-left:12px; padding-right:12px; }
+    header{ margin:10px auto 16px; padding:20px 16px 18px; border-radius:12px; }
+    header h1{ font-size:1.3rem; }
+    .filter-count{ margin-left:0; width:100%; }
+    .rate th, .rate td{ padding:9px 12px; }
+    .tool-article h2{ font-size:1.05rem; padding:9px 12px; }
+}
 </style>
 
 </head>
