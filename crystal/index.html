@@ -40,6 +40,16 @@
     --tint:#fafcff;      /* ごく薄い下地 */
     --dash:#b8c2d1;      /* 破線 */
     --accent:#2563eb;    /* 差し色。解説の見出しの左罫だけに使う */
+
+    /* ここから下は「意味のある色」。
+       枠や見出しは無彩色のままにして、
+       見分けが要るところ（小と大、必要な個数）だけ色を持たせる */
+    --c-small:#1d4ed8;   /* 小 */
+    --c-large:#b45309;   /* 大 */
+    --c-cost2:#15803d;   /* 2個。いちばん安い */
+    --c-cost3:#1d4ed8;   /* 3個 */
+    --c-cost4:#b45309;   /* 4個 */
+    --c-cost5:#b91c1c;   /* 5個。いちばん高い */
 }
 
 *{
@@ -284,11 +294,11 @@ main{
     vertical-align:1px;
 }
 
-/* 必要数は文字の濃さで差をつける。色は足さない */
-.rate tr[data-cost="2"] td.cost{ color:var(--ink-strong); }
-.rate tr[data-cost="3"] td.cost{ color:var(--ink); }
-.rate tr[data-cost="4"] td.cost{ color:#5a6472; }
-.rate tr[data-cost="5"] td.cost{ color:#7c8794; }
+/* 必要数は安い順に緑→青→橙→赤。ひと目で高い安いが分かるようにする */
+.rate tr[data-cost="2"] td.cost{ color:var(--c-cost2); }
+.rate tr[data-cost="3"] td.cost{ color:var(--c-cost3); }
+.rate tr[data-cost="4"] td.cost{ color:var(--c-cost4); }
+.rate tr[data-cost="5"] td.cost{ color:var(--c-cost5); }
 
 /* =========================
    入手方法の一覧
@@ -336,31 +346,22 @@ main{
     min-width:0;
 }
 
-/* 小は白抜き、大は塗り。色を増やさずに差をつける */
+/* 小と大は一覧の中でいちばん見分けたい情報なので、色を持たせる */
 .badge{
     display:inline-block;
     margin-right:8px;
-    padding:1px 10px;
+    padding:2px 11px;
     border-radius:999px;
     font-size:12px;
     font-weight:700;
     vertical-align:2px;
-}
-
-.badge.s{
-    background:#fff;
-    border:1.5px solid var(--ink);
-    color:var(--ink);
-}
-
-.badge.l{
-    background:var(--ink);
-    border:1.5px solid var(--ink);
     color:#fff;
 }
 
-.item.done .badge.s{ background:#fff; border-color:#c7ccd3; color:#a8afb7; }
-.item.done .badge.l{ background:#c7ccd3; border-color:#c7ccd3; color:#fff; }
+.badge.s{ background:var(--c-small); }
+.badge.l{ background:var(--c-large); }
+
+.item.done .badge{ background:#c7ccd3; }
 
 .how{
     font-size:16px;
