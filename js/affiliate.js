@@ -30,12 +30,13 @@
 
   const PRODUCTS = {
 
-    /* マイライフの4ページは、どれも同じ本体を扱っている。
-       同じ商品を4回書くと、片方だけ直して食い違うので1つにまとめる */
+    /* パワプロ2026-2027を扱うページは、どれも同じ本体の話。
+       同じ商品を何回も書くと、片方だけ直して食い違うので1つにまとめる */
     "/kintoku/":       [PAWAPURO_2026],
     "/crystal/":       [PAWAPURO_2026],
     "/crystal-banno/": [PAWAPURO_2026],
     "/shippo/":        [PAWAPURO_2026],
+    "/eikan-kintoku/": [PAWAPURO_2026],
 
     "/hakidasi/": [
       {

@@ -119,27 +119,6 @@ main{
     gap:10px;
 }
 
-.filter-row + .filter-row{
-    margin-top:12px;
-    padding-top:12px;
-    border-top:1px solid #eef1f5;
-}
-
-.filter-panel input[type="search"]{
-    flex:1 1 240px;
-    min-width:0;
-    padding:10px 14px;
-    border:1px solid var(--line);
-    border-radius:999px;
-    font-size:16px;
-    font-family:inherit;
-}
-
-.filter-panel input[type="search"]:focus{
-    outline:none;
-    border-color:var(--ink);
-}
-
 /* 押されている側を黒く塗る。kintoku の絞り込みと同じ見せ方 */
 .seg{
     display:flex;
@@ -332,12 +311,6 @@ main{
 <div class="filter-panel">
 
     <div class="filter-row">
-        <input type="search" id="q" placeholder="入手方法で検索（例：スミオ、世界大会、まれに）"
-               aria-label="入手方法で検索">
-        <button type="button" class="reset" id="reset">リセット</button>
-    </div>
-
-    <div class="filter-row">
         <div class="seg" role="group" aria-label="クリスタルの大きさ">
             <button type="button" data-size="all"  aria-pressed="true">すべて</button>
             <button type="button" data-size="小"   aria-pressed="false">小</button>
@@ -347,6 +320,8 @@ main{
         <label class="toggle">
             <input type="checkbox" id="hide-done">取得済みを隠す
         </label>
+
+        <button type="button" class="reset" id="reset">リセット</button>
 
         <span class="filter-count">
             表示 <strong id="shown">0</strong> 件 ／ 取得済み <strong id="done">0</strong> 件
@@ -501,7 +476,6 @@ const rows = [
 const KEY = "tooldock-crystal-banno";
 
 const listEl  = document.getElementById("list");
-const qEl     = document.getElementById("q");
 const hideEl  = document.getElementById("hide-done");
 const shownEl = document.getElementById("shown");
 const doneEl  = document.getElementById("done");
@@ -527,7 +501,6 @@ function keyOf(r){
 }
 
 function render(){
-  const q = qEl.value.trim().toLowerCase();
   const hide = hideEl.checked;
 
   let shown = 0;
@@ -539,7 +512,6 @@ function render(){
 
     if (sizeFilter !== "all" && r.size !== sizeFilter) continue;
     if (hide && done) continue;
-    if (q && !(r.how + " " + r.note).toLowerCase().includes(q)) continue;
 
     shown++;
 
@@ -585,7 +557,6 @@ listEl.addEventListener("change", e => {
   render();
 });
 
-qEl.addEventListener("input", render);
 hideEl.addEventListener("change", render);
 
 for (const btn of document.querySelectorAll(".seg button")){
@@ -599,7 +570,6 @@ for (const btn of document.querySelectorAll(".seg button")){
 }
 
 document.getElementById("reset").addEventListener("click", () => {
-  qEl.value = "";
   hideEl.checked = false;
   sizeFilter = "all";
   for (const b of document.querySelectorAll(".seg button")){

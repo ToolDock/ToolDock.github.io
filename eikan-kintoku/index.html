@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 検索結果で切られる先頭32幅ちょうどに収めてある。
+     栄冠ナイン・金特・入手方法・金特本・国際大会まで全部出る -->
+<title>【パワプロ2026-2027】栄冠ナイン 金特の入手方法｜金特本・国際大会</title>
+<meta name="description" content="パワプロ2026-2027の栄冠ナインで金特（金色の特殊能力）を取る方法のまとめです。金特本の入手先2つ、国際大会の評価ごとに覚える特殊能力の一覧、特訓や合宿で取れる威圧感まで。栄冠ナインでしか手に入らないストレートキラー・おかわりも掲載。欲しい金特から狙う評価を逆引きできます。">
+<link rel="canonical" href="https://tooldock.github.io/eikan-kintoku/">
+
+<script> const CURRENT_TOOL = "eikan-kintoku"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<style>
+/* =========================
+   配色
+
+   /crystal/ /kintoku/ と同じ考え方。
+   枠（見出しの帯・ボタン・カード・表のヘッダー）は無彩色にして、
+   見分けが要るところだけ色を持たせる。
+
+   このページで見分けたいのは2つ。
+     ・投手のものか、野手のものか
+     ・覚えるのが金特か、それ以外か
+   金特はゲーム内の表記に合わせて金色寄りの橙、
+   それ以外の特殊能力は青にする
+========================= */
+
+:root{
+    --ink:#222;          /* 本文と帯の地色 */
+    --ink-strong:#111;   /* 見出し */
+    --ink-deep:#0f172a;  /* 一覧の項目名 */
+    --ink-sub:#555;
+    --ink-mute:#777;
+    --line:#d6dbe2;      /* 枠線 */
+    --line-soft:#dfe4ea;
+    --head-bg:#eceff3;   /* 表のヘッダー */
+    --tint:#fafcff;      /* ごく薄い下地 */
+    --accent:#2563eb;    /* 差し色。解説の見出しの左罫だけに使う */
+
+    /* 意味のある色 */
+    --c-pitcher:#1d4ed8; /* 投手 */
+    --c-batter:#15803d;  /* 野手 */
+    --c-kin:#b45309;     /* 金特 */
+    --c-sub:#1d4ed8;     /* 金特以外の特殊能力 */
+    --c-none:#8a919a;    /* 変化なし */
+    --c-fixed:#15803d;   /* 確定で取れる */
+    --c-random:#b45309;  /* ランダム */
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#f5f5f5;
+    color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic",
+                "Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
+    line-height:1.75;
+    font-size:16px;
+}
+
+/* 左右の余白。右側のリンク欄は js/sidebar.js が別に確保する */
+.page-wrapper{
+    width:100%;
+    padding-left:24px;
+    padding-right:24px;
+}
+
+/* =========================
+   ページ見出し
+========================= */
+
+header{
+    max-width:1000px;
+    margin:16px auto 22px;
+    padding:24px 8px 4px;
+    text-align:center;
+}
+
+header h1{
+    margin:0;
+    color:var(--ink-strong);
+    font-size:1.85rem;
+    font-weight:700;
+    line-height:1.4;
+}
+
+header p{
+    margin:12px 0 0;
+    color:var(--ink-sub);
+    font-size:.95rem;
+}
+
+main{
+    max-width:1000px;
+    margin:0 auto;
+}
+
+/* =========================
+   カード（表を1枚ずつ包む）
+========================= */
+
+.card{
+    background:#fff;
+    border-radius:18px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    margin-bottom:22px;
+    padding:0 0 6px;
+    overflow:hidden;
+}
+
+.card h2{
+    margin:0;
+    padding:16px 22px;
+    background:var(--ink);
+    color:#fff;
+    font-size:1.15rem;
+    font-weight:700;
+}
+
+.card p.lead{
+    margin:0;
+    padding:14px 22px;
+    background:var(--tint);
+    border-bottom:1px solid var(--line-soft);
+    font-size:14px;
+    color:var(--ink-sub);
+}
+
+.card table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:15px;
+}
+
+.card th,
+.card td{
+    border-bottom:1px solid var(--line-soft);
+    padding:12px 22px;
+    text-align:left;
+    vertical-align:top;
+}
+
+.card thead th{
+    background:var(--head-bg);
+    color:var(--ink);
+    font-size:14px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.card tbody tr:nth-child(even){
+    background:var(--tint);
+}
+
+.card tbody tr:hover{
+    background:#f2f5f9;
+}
+
+/* 表が広いときは、表の中だけ横に流す。ページ全体は横に揺れない */
+.scroll{
+    overflow-x:auto;
+}
+
+/* =========================
+   手段の早見
+========================= */
+
+.ways{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    margin-bottom:22px;
+}
+
+.way{
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    padding:16px 18px;
+}
+
+.way .num{
+    display:inline-block;
+    min-width:26px;
+    height:26px;
+    margin-bottom:8px;
+    border-radius:999px;
+    background:var(--ink);
+    color:#fff;
+    font-size:14px;
+    font-weight:700;
+    line-height:26px;
+    text-align:center;
+}
+
+.way h3{
+    margin:0 0 6px;
+    color:var(--ink-strong);
+    font-size:1.02rem;
+    font-weight:700;
+    line-height:1.5;
+}
+
+.way p{
+    margin:0;
+    color:var(--ink-sub);
+    font-size:14px;
+    line-height:1.7;
+}
+
+.way a{
+    color:var(--accent);
+}
+
+/* =========================
+   絞り込み
+========================= */
+
+.filter-panel{
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 3px 12px rgba(0,0,0,.1);
+    padding:16px 20px;
+    margin-bottom:18px;
+}
+
+.filter-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+}
+
+/* 幅が足りないときは折り返す。
+   nowrap を付けないと、ボタンの中で1文字ずつ縦に割れる */
+.seg{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.seg button{
+    padding:9px 20px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:#fff;
+    color:var(--ink);
+    font-size:15px;
+    font-weight:700;
+    font-family:inherit;
+    white-space:nowrap;
+    cursor:pointer;
+}
+
+.seg button[aria-pressed="true"]{
+    background:var(--ink);
+    border-color:var(--ink);
+    color:#fff;
+}
+
+.filter-count{
+    margin-left:auto;
+    font-size:14px;
+    color:var(--ink-mute);
+    white-space:nowrap;
+}
+
+.filter-count strong{
+    color:var(--ink-strong);
+    font-size:17px;
+}
+
+.empty{
+    padding:28px 18px;
+    text-align:center;
+    color:var(--ink-mute);
+}
+
+/* =========================
+   バッジと色分け
+========================= */
+
+.badge{
+    display:inline-block;
+    padding:2px 11px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+    color:#fff;
+}
+
+.badge.p{ background:var(--c-pitcher); }
+.badge.b{ background:var(--c-batter); }
+.badge.n{ background:#8a919a; }
+
+/* 評価の名前 */
+.eval{
+    font-weight:700;
+    color:var(--ink-deep);
+}
+
+/* 覚える特殊能力。金特だけ色を変え、印を付ける */
+.skill{
+    font-weight:700;
+    color:var(--c-sub);
+}
+
+.skill.kin{
+    color:var(--c-kin);
+}
+
+.skill.kin::after{
+    content:"金特";
+    display:inline-block;
+    margin-left:6px;
+    padding:1px 7px;
+    border-radius:999px;
+    background:var(--c-kin);
+    color:#fff;
+    font-size:11px;
+    vertical-align:2px;
+}
+
+.none{
+    color:var(--c-none);
+}
+
+/* 確定かランダムか。逆引き表でいちばん見たいところ */
+.fixed{
+    color:var(--c-fixed);
+    font-weight:700;
+}
+
+.random{
+    color:var(--c-random);
+    font-weight:700;
+}
+
+.up{
+    font-size:14px;
+    color:var(--ink-sub);
+    line-height:1.6;
+}
+
+/* 逆引き表の金特名 */
+.card td .kin-name{
+    font-weight:700;
+    color:var(--ink-deep);
+}
+
+/* =========================
+   解説
+========================= */
+
+.tool-article h2{
+    border-left:5px solid var(--accent);
+    color:var(--ink);
+}
+
+.tool-article h3{
+    color:var(--ink-strong);
+}
+
+/* 注意書き */
+.callout{
+    margin:18px 0;
+    padding:14px 18px;
+    border:1px solid var(--line);
+    border-left:5px solid var(--c-kin);
+    border-radius:10px;
+    background:#fffaf5;
+    font-size:15px;
+    line-height:1.75;
+}
+
+@media (max-width:820px){
+    .ways{ grid-template-columns:1fr; }
+}
+
+@media (max-width:600px){
+    .page-wrapper{ padding-left:12px; padding-right:12px; }
+    header{ margin:8px auto 16px; padding:14px 4px 2px; }
+    header h1{ font-size:1.3rem; }
+    .filter-count{ margin-left:0; width:100%; }
+    .card th, .card td{ padding:11px 14px; }
+    .card h2{ padding:14px 16px; font-size:1.05rem; }
+    .card p.lead{ padding:12px 16px; }
+    .card table{ font-size:14px; }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>栄冠ナイン 金特の入手方法まとめ</h1>
+    <p>金特本・国際大会・特訓の3つ。国際大会は評価ごとに覚える特殊能力が決まっています</p>
+</header>
+
+<main>
+
+<div class="ways">
+
+    <div class="way">
+        <span class="num">1</span>
+        <h3>金特本を使う</h3>
+        <p>
+        甲子園の抽選会の翌日にOBからもらうか、アイテム業者から買います。
+        <a href="#book">くわしく</a>
+        </p>
+    </div>
+
+    <div class="way">
+        <span class="num">2</span>
+        <h3>国際大会で活躍する</h3>
+        <p>
+        8/27に代表へ選ばれ、9/6に評価に応じた特殊能力を覚えます。
+        <a href="#kokusai">くわしく</a>
+        </p>
+    </div>
+
+    <div class="way">
+        <span class="num">3</span>
+        <h3>特訓・合宿で取る</h3>
+        <p>
+        今作から金特になった「威圧感」だけは、この方法でも取れます。
+        <a href="#iatsu">くわしく</a>
+        </p>
+    </div>
+
+</div>
+
+<div class="filter-panel">
+    <div class="filter-row">
+        <div class="seg" id="seg">
+            <button type="button" data-side="all" aria-pressed="true">すべて</button>
+            <button type="button" data-side="p" aria-pressed="false">投手</button>
+            <button type="button" data-side="b" aria-pressed="false">野手</button>
+        </div>
+        <span class="filter-count"><strong id="count">0</strong> 件を表示中</span>
+    </div>
+</div>
+
+<div class="card">
+    <h2>国際大会の評価と、覚える特殊能力</h2>
+    <p class="lead">
+    9/6のイベントで、大会での評価に応じて能力が上がり、特殊能力を覚えます。
+    MVPとタイトルは最大1名まで、ベストナインは人数の制限がありません。
+    </p>
+    <div class="scroll">
+    <table id="tbl">
+        <thead>
+            <tr>
+                <th>評価</th>
+                <th>対象</th>
+                <th>上がる能力</th>
+                <th>覚える特殊能力</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr data-side="p">
+                <td><span class="eval" id="mvp-p">大会MVP</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="up">球速+3<br>コントロール+7<br>スタミナ+7<br>いずれかの変化球の変化量+2</td>
+                <td>
+                    <span class="skill kin">強心臓</span>
+                    <span class="skill kin">怪物球威</span>
+                    <span class="skill kin">ドクターK</span>
+                    <span class="skill kin">変幻自在</span>
+                    <span class="skill kin">精密機械</span>
+                    <div class="up">のうちどれかひとつ。稀に既に持っているものと被る</div>
+                </td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval" id="mvp-b">大会MVP</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="up">ミート+7<br>パワー+7<br>走力+7<br>守備力+7<br>捕球+7</td>
+                <td>
+                    <span class="skill kin">勝負師</span>
+                    <span class="skill kin">安打製造機</span>
+                    <span class="skill kin">アーチスト</span>
+                    <span class="skill kin">魔術師</span>
+                    <span class="skill kin">電光石火</span>
+                    <div class="up">のうちどれかひとつ。稀に既に持っているものと被る</div>
+                </td>
+            </tr>
+
+            <tr data-side="p">
+                <td><span class="eval">大会ベストナイン</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="up">球速+2<br>コントロール+4<br>スタミナ+4<br>いずれかの変化球の変化量+1</td>
+                <td>
+                    <span class="skill">対ピンチA</span>
+                    <span class="skill">重い球</span>
+                    <span class="skill">奪三振</span>
+                    <span class="skill">緩急○</span>
+                    <span class="skill">低め○</span>
+                    <div class="up">のうちいずれかひとつ。稀に被る</div>
+                </td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval">大会ベストナイン</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="up">ミート+4<br>パワー+4<br>走力+4<br>守備力+4<br>捕球+4</td>
+                <td>
+                    <span class="skill">アベレージヒッター</span>
+                    <span class="skill">パワーヒッター</span>
+                    <span class="skill">守備職人</span>
+                    <span class="skill">盗塁A</span>
+                    <span class="skill">チャンスA</span>
+                    <div class="up">のうちいずれかひとつ。稀に被る</div>
+                </td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval" id="shui">大会首位打者</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill kin">安打製造機</span></td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval" id="honruida">大会最多本塁打</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill kin">アーチスト</span></td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval" id="tourui">大会最多盗塁</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill kin">電光石火</span></td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval" id="daten">大会最多打点</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill kin">勝負師</span></td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval" id="shubi">大会最優秀守備選手</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill kin">魔術師</span></td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval">ヒットを量産した</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="up">ミート+7</td>
+                <td class="none">－</td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval">豪快なホームランを放った</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="up">パワー+7</td>
+                <td class="none">－</td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval">チャンスに強い活躍</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill">チャンス</span><div class="up">C以下ならB、BならAに上がる</div></td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval">快足を飛ばした</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="up">走力+5</td>
+                <td><span class="skill">走塁</span><div class="up">C以下ならB、BならAに上がる</div></td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval">守備で貢献</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="up">守備力+5</td>
+                <td><span class="skill">守備職人</span></td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval">好リードが光る</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill">キャッチャー</span><div class="up">C以下ならB、BならAに上がる</div></td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval">大事な場面で盗塁を決めた</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="up">走力+5</td>
+                <td><span class="skill">盗塁</span><div class="up">C以下ならB、BならAに上がる</div></td>
+            </tr>
+
+            <tr data-side="b">
+                <td><span class="eval">代打の切り札として活躍</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill">代打○</span></td>
+            </tr>
+
+            <tr data-side="p">
+                <td><span class="eval" id="boug">大会の最優秀防御率</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill kin">強心臓</span></td>
+            </tr>
+
+            <tr data-side="p">
+                <td><span class="eval" id="kyuen">大会最優秀救援投手</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="none">－</td>
+                <td>
+                    <span class="skill">存在感</span> または <span class="skill kin">威圧感</span>
+                    <div class="up">威圧感は存在感の上位</div>
+                </td>
+            </tr>
+
+            <tr data-side="p">
+                <td><span class="eval">日本のエースとして活躍</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="up">球速+2<br>コントロール+5<br>スタミナ+5<br>いずれかの変化球の変化量+1</td>
+                <td class="none">－</td>
+            </tr>
+
+            <tr data-side="p">
+                <td><span class="eval">先発三本柱の一角</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="up">球速+1<br>コントロール+3<br>スタミナ+3<br>いずれかの変化球の変化量+1</td>
+                <td class="none">－</td>
+            </tr>
+
+            <tr data-side="p">
+                <td><span class="eval">粘り強くイニングを稼いだ</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="up">スタミナ+10</td>
+                <td class="none">－</td>
+            </tr>
+
+            <tr data-side="p">
+                <td><span class="eval">ピンチの場面に強い投球</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill">対ピンチ</span><div class="up">C以下ならB、BならAに上がる</div></td>
+            </tr>
+
+            <tr data-side="p">
+                <td><span class="eval">最終回をピシャリと締めた</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill">対ピンチ</span><div class="up">C以下ならB、BならAに上がる</div></td>
+            </tr>
+
+            <tr data-side="p">
+                <td><span class="eval">決め球で三振を量産した</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="none">－</td>
+                <td><span class="skill">奪三振</span></td>
+            </tr>
+
+            <tr data-side="n">
+                <td><span class="eval">あまり目立った活躍はなかった</span></td>
+                <td><span class="badge n">共通</span></td>
+                <td class="none">能力変化なし</td>
+                <td class="none">－</td>
+            </tr>
+
+        </tbody>
+    </table>
+    </div>
+    <p class="empty" id="empty" hidden>あてはまる評価がありません</p>
+</div>
+
+<div class="card">
+    <h2>国際大会で取れる金特一覧</h2>
+    <p class="lead">
+    MVPは5つのうちからランダムですが、タイトルを取れば狙った金特が確定で手に入ります。
+    </p>
+    <div class="scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>金特</th>
+                <th>対象</th>
+                <th>確定で取れる評価</th>
+                <th>ランダムで取れる評価</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="kin-name" id="kin-anda">安打製造機</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td><span class="fixed">大会首位打者</span></td>
+                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
+            </tr>
+            <tr>
+                <td><span class="kin-name" id="kin-archist">アーチスト</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td><span class="fixed">大会最多本塁打</span></td>
+                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
+            </tr>
+            <tr>
+                <td><span class="kin-name" id="kin-denko">電光石火</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td><span class="fixed">大会最多盗塁</span></td>
+                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
+            </tr>
+            <tr>
+                <td><span class="kin-name" id="kin-shobu">勝負師</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td><span class="fixed">大会最多打点</span></td>
+                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
+            </tr>
+            <tr>
+                <td><span class="kin-name" id="kin-majutsu">魔術師</span></td>
+                <td><span class="badge b">野手</span></td>
+                <td><span class="fixed">大会最優秀守備選手</span></td>
+                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
+            </tr>
+            <tr>
+                <td><span class="kin-name" id="kin-kyoshin">強心臓</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td><span class="fixed">大会の最優秀防御率</span></td>
+                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
+            </tr>
+            <tr>
+                <td><span class="kin-name" id="kin-kaibutsu">怪物球威</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="none">－</td>
+                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
+            </tr>
+            <tr>
+                <td><span class="kin-name" id="kin-drk">ドクターK</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="none">－</td>
+                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
+            </tr>
+            <tr>
+                <td><span class="kin-name" id="kin-hengen">変幻自在</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="none">－</td>
+                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
+            </tr>
+            <tr>
+                <td><span class="kin-name" id="kin-seimitsu">精密機械</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="none">－</td>
+                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
+            </tr>
+            <tr>
+                <td><span class="kin-name" id="kin-iatsu">威圧感</span></td>
+                <td><span class="badge p">投手</span></td>
+                <td class="none">－</td>
+                <td><span class="random">大会最優秀救援投手</span><div class="up">存在感との2択。特訓・合宿でも取れる</div></td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+</div>
+
+</main>
+
+</div>
+
+
+<article class="tool-article">
+
+<h2 id="genteikintoku">栄冠ナインでしか手に入らない金特が2つある</h2>
+
+<p>
+<strong>ストレートキラー</strong>と<strong>おかわり</strong>の2つは、
+栄冠ナインの金特本でしか手に入らないと見られます。
+</p>
+
+<table>
+<thead>
+<tr><th>金特</th><th>もとになる特殊能力</th><th>効果</th></tr>
+</thead>
+<tbody>
+<tr>
+<td id="kin-sk"><strong>ストレートキラー</strong></td>
+<td>対ストレート○の上位</td>
+<td>ストレートを打つのがとても上手くなる</td>
+</tr>
+<tr>
+<td id="kin-okawari"><strong>おかわり</strong></td>
+<td>マルチ弾の上位</td>
+<td>ホームランを打っているとパワーがとても上がる</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+この2つは<strong>他のモードでは入手できず、サクセスで継承することもできません</strong>。
+パワプロ2026から静かに追加された特殊能力と見られ、
+存在そのものを書いている攻略サイトがほとんどありません。
+</p>
+
+<div class="callout">
+狙って取れるものではなく、金特本の抽選で出るのを待つ形になります。
+栄冠ナインでしか作れない選手を目指すなら、
+甲子園のOBイベントとアイテム業者を丁寧に見ておいてください。
+</div>
+
+<h2 id="book">手段1｜金特本を使う</h2>
+
+<p>
+金特本は、使うとその金特を覚えられるアイテムです。
+入手先は2つあります。
+</p>
+
+<h3>甲子園の抽選会の翌日に、OBからもらう</h3>
+
+<p>
+甲子園に出場すると、抽選会の翌日にOBから祝いの品をもらえるイベントが起きます。
+日付は<strong>夏の甲子園なら8月3日、春の甲子園なら3月14日</strong>です。
+</p>
+
+<p>
+このイベントでは<strong>ランダムにアイテムを2つ</strong>受け取れて、
+そのなかに稀に金特本が混ざっています。
+</p>
+
+<p>
+抽選会が終わった時点で自動セーブが入ります。
+オンラインストレージが使えるなら、
+<strong>抽選会の日にセーブしてバックアップを取っておけば、
+金特本が出るまでやり直せます</strong>。
+前作はもらえるアイテムが1つだったので、
+2つになった今作のほうがやり直しの手間は軽い印象です。
+</p>
+
+<h3>アイテム業者から買う</h3>
+
+<p>
+今作から、アイテム業者で特殊能力本を買えるようになりました。
+業者は<strong>試合に5勝するたびに訪ねてきます</strong>。練習試合も勝数に数えます。
+</p>
+
+<p>
+並ぶ商品のなかに金特本が入っていることがあります。
+見分ける手がかりがあり、
+マネージャーが<strong>「今日はレアなアイテムが入荷しているみたいです！」</strong>と言ったときは、
+金特本が確実に入荷しています。
+</p>
+
+<div class="callout">
+ただし、<strong>マネージャーが何も言わなくても金特本が並んでいることがあります</strong>。
+セリフが無いから今日は無い、と決めつけず、業者が来たら必ず品揃えを見てください。
+</div>
+
+<h2 id="kokusai">手段2｜国際大会で活躍する</h2>
+
+<h3>代表に選ばれる条件</h3>
+
+<p>
+8月27日に、条件を満たした選手が国際大会の代表メンバーに選ばれます。
+次のどれかに当てはまる選手が候補です。
+</p>
+
+<ul>
+<li>☆450以上の選手</li>
+<li>☆400以上で、能力値にSを持っている選手<br>
+<span class="up">投手は、球速156km/h以上か、総変化量12以上でも可</span></li>
+<li>夏の甲子園で特段の活躍をした選手</li>
+</ul>
+
+<p>
+選ばれるのは<strong>最大3名</strong>で、
+<strong>メインポジションが捕手の選手は1名まで</strong>です。
+候補が4名以上いるときは、☆の高い選手から上位3名が選ばれます。
+</p>
+
+<h3>9月6日に結果が出る</h3>
+
+<p>
+大会での評価に応じて、9月6日のイベントで能力が上がり、特殊能力を覚えます。
+評価ごとの中身は<a href="#tbl">上の表</a>にまとめてあります。
+</p>
+
+<p>
+MVPとタイトルは<strong>最大1名までしか選ばれません</strong>。
+ベストナインは人数の制限がなく、何名でも選ばれます。
+また、<strong>日本の順位が高いほど、MVP・タイトル・ベストナインに入る見込みが上がります</strong>。
+</p>
+
+<h3>狙った金特が欲しいなら、MVPよりタイトル</h3>
+
+<p>
+MVPは金特を5つのうちから1つ、ランダムで覚えます。
+一方でタイトルは中身が決まっていて、
+<strong>首位打者なら安打製造機、最多本塁打ならアーチスト</strong>と、狙った金特が確定で手に入ります。
+</p>
+
+<p>
+ここで<strong>投手と野手で事情がかなり違います</strong>。
+野手は首位打者・最多本塁打・最多盗塁・最多打点・最優秀守備選手と、
+5つの金特すべてに確定ルートがあります。
+対して投手は、確定で取れるのが最優秀防御率の強心臓だけです。
+怪物球威・ドクターK・変幻自在・精密機械の4つは、MVPのランダムに頼ることになります。
+</p>
+
+<h3>やり直すなら9月1日から5日のあいだに</h3>
+
+<p>
+結果が出るのは9月6日なので、
+<strong>9月1日から5日のあいだにセーブしてバックアップを取っておけば</strong>、
+望んだ評価が出るまでやり直せます。
+</p>
+
+<h2 id="iatsu">手段3｜威圧感は特訓や合宿でも取れる</h2>
+
+<p>
+<strong>威圧感は、青特殊能力である「存在感」の上位</strong>にあたります。
+そして今作から、<strong>威圧感が青特殊能力から金特に格上げされました</strong>。
+存在感のほうは青特殊能力のままです。
+</p>
+
+<p>
+ただし扱いは以前のままで、
+<strong>他の青特殊能力と同じように、特訓や合宿などで普通に取れます</strong>。
+金特になったからといって、金特本や国際大会を待つ必要はありません。
+金特のなかでは例外的に手に入れやすい部類です。
+</p>
+
+<h2>よくある質問</h2>
+
+<h3>栄冠ナインで金特を取る方法は何がありますか？</h3>
+
+<p>
+3つあります。金特本を使う方法、国際大会で活躍する方法、
+そして「威圧感」に限っては特訓や合宿で取る方法です。
+</p>
+
+<h3>金特本はどこで手に入りますか？</h3>
+
+<p>
+2か所です。甲子園の抽選会の翌日（夏は8月3日、春は3月14日）にOBからもらう祝いの品と、
+アイテム業者からの購入です。業者は試合に5勝するたびに訪ねてきます。
+</p>
+
+<h3>アイテム業者に金特本が並んでいるか、事前に分かりますか？</h3>
+
+<p>
+マネージャーが「今日はレアなアイテムが入荷しているみたいです！」と言ったときは、
+金特本が確実に入荷しています。ただしセリフが無いときにも並んでいることがあるため、
+業者が来たら品揃えは必ず確認してください。
+</p>
+
+<h3>国際大会の代表に選ばれる条件を教えてください。</h3>
+
+<p>
+☆450以上の選手、☆400以上で能力値にSを持っている選手（投手は球速156km/h以上か総変化量12以上でも可）、
+夏の甲子園で特段の活躍をした選手が候補です。8月27日に最大3名が選ばれ、
+メインポジションが捕手の選手は1名までです。候補が4名以上いるときは☆の高い順に上位3名が選ばれます。
+</p>
+
+<h3>狙った金特を確実に取るにはどうすればいいですか？</h3>
+
+<p>
+国際大会のタイトルを狙ってください。MVPは5つのうちからランダムですが、
+タイトルは中身が決まっています。首位打者なら安打製造機、最多本塁打ならアーチスト、
+最多盗塁なら電光石火、最多打点なら勝負師、最優秀守備選手なら魔術師、
+投手は最優秀防御率で強心臓です。
+</p>
+
+<h3>国際大会の結果はやり直せますか？</h3>
+
+<p>
+結果が出るのは9月6日なので、9月1日から5日のあいだにセーブしてバックアップを取っておけば、
+望んだ評価が出るまでやり直せます。金特本のOBイベントも、
+抽選会の日にバックアップを取れば同じようにやり直せます。
+</p>
+
+<h3>栄冠ナインだけで手に入る金特はありますか？</h3>
+
+<p>
+ストレートキラーとおかわりの2つです。ストレートキラーは対ストレート○の上位で、
+ストレートを打つのがとても上手くなります。おかわりはマルチ弾の上位で、
+ホームランを打っているとパワーがとても上がります。
+どちらも他のモードでは入手できず、サクセスで継承することもできません。
+</p>
+
+<h3>威圧感は金特になったのですか？</h3>
+
+<p>
+今作から青特殊能力より格上げされ、金特になりました。
+威圧感は青特殊能力「存在感」の上位にあたり、存在感のほうは青特殊能力のままです。
+ただし威圧感の取り方は変わっておらず、
+他の青特殊能力と同じように特訓や合宿などで取れます。
+</p>
+
+</article>
+
+<script>
+/* =========================
+   絞り込み
+
+   行は静的なHTMLに書いてある。
+   金特名で検索して来る人がいるので、JSで組み立てると拾われにくい
+========================= */
+
+const rows  = [...document.querySelectorAll("#tbl tbody tr")];
+const seg   = document.getElementById("seg");
+const count = document.getElementById("count");
+const empty = document.getElementById("empty");
+
+let side = "all";
+
+function render() {
+
+  let shown = 0;
+
+  for (const tr of rows) {
+
+    /* 「共通」の行は、投手でも野手でも残す */
+    const okSide = side === "all"
+                || tr.dataset.side === side
+                || tr.dataset.side === "n";
+
+    const show = okSide;
+
+    tr.hidden = !show;
+
+    if (show) shown++;
+  }
+
+  count.textContent = shown;
+  empty.hidden = shown > 0;
+}
+
+seg.addEventListener("click", e => {
+
+  const b = e.target.closest("button");
+
+  if (!b) return;
+
+  side = b.dataset.side;
+
+  for (const other of seg.querySelectorAll("button")) {
+    other.setAttribute("aria-pressed", String(other === b));
+  }
+
+  render();
+});
+
+render();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "栄冠ナインで金特を取る方法は何がありますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "3つあります。金特本を使う方法、国際大会で活躍する方法、そして「威圧感」に限っては特訓や合宿で取る方法です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "栄冠ナインの金特本はどこで手に入りますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "2か所です。甲子園の抽選会の翌日（夏は8月3日、春は3月14日）にOBからもらう祝いの品と、アイテム業者からの購入です。アイテム業者は試合に5勝するたびに訪ねてきます。練習試合も勝数に数えます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "アイテム業者に金特本が並んでいるか、事前に分かりますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "マネージャーが「今日はレアなアイテムが入荷しているみたいです！」と言ったときは、金特本が確実に入荷しています。ただしセリフが無いときにも並んでいることがあるため、業者が来たら品揃えは必ず確認してください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "栄冠ナインの国際大会で代表に選ばれる条件を教えてください。",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "☆450以上の選手、☆400以上で能力値にSを持っている選手（投手は球速156km/h以上か総変化量12以上でも可）、夏の甲子園で特段の活躍をした選手が候補です。8月27日に最大3名が選ばれ、メインポジションが捕手の選手は1名までです。候補が4名以上いるときは☆の高い順に上位3名が選ばれます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "栄冠ナインで狙った金特を確実に取るにはどうすればいいですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "国際大会のタイトルを狙ってください。大会MVPは5つのうちからランダムですが、タイトルは中身が決まっています。大会首位打者なら安打製造機、大会最多本塁打ならアーチスト、大会最多盗塁なら電光石火、大会最多打点なら勝負師、大会最優秀守備選手なら魔術師、投手は大会の最優秀防御率で強心臓です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "栄冠ナインの国際大会の結果はやり直せますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "結果が出るのは9月6日なので、9月1日から5日のあいだにセーブしてバックアップを取っておけば、望んだ評価が出るまでやり直せます。金特本のOBイベントも、抽選会の日にバックアップを取れば同じようにやり直せます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "栄冠ナインだけで手に入る金特はありますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "ストレートキラーとおかわりの2つです。ストレートキラーは対ストレート○の上位で、ストレートを打つのがとても上手くなります。おかわりはマルチ弾の上位で、ホームランを打っているとパワーがとても上がります。どちらも他のモードでは入手できず、サクセスで継承することもできません。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "パワプロ2026-2027で威圧感は金特になったのですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "今作から青特殊能力より格上げされ、金特になりました。威圧感は青特殊能力「存在感」の上位にあたり、存在感のほうは青特殊能力のままです。ただし威圧感の取り方は変わっておらず、他の青特殊能力と同じように特訓や合宿などで取れます。"
+      }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
