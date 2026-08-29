@@ -123,27 +123,6 @@ main{
     gap:10px;
 }
 
-.filter-row + .filter-row{
-    margin-top:12px;
-    padding-top:12px;
-    border-top:1px solid #eef1f5;
-}
-
-.filter-panel input[type="search"]{
-    flex:1 1 240px;
-    min-width:0;
-    padding:10px 14px;
-    border:1px solid var(--line);
-    border-radius:999px;
-    font-size:16px;
-    font-family:inherit;
-}
-
-.filter-panel input[type="search"]:focus{
-    outline:none;
-    border-color:var(--ink);
-}
-
 /* 押されている側を黒く塗る。kintoku の絞り込みと同じ見せ方 */
 .seg{
     display:flex;
@@ -402,12 +381,6 @@ main{
 <div class="filter-panel">
 
     <div class="filter-row">
-        <input type="search" id="q" placeholder="尻尾の名前や入手方法で検索（例：ラジコン、散歩、ヒーロー）"
-               aria-label="尻尾の名前や入手方法で検索">
-        <button type="button" class="reset" id="reset">リセット</button>
-    </div>
-
-    <div class="filter-row">
         <div class="seg" role="group" aria-label="オススメ度">
             <button type="button" data-rank="all" aria-pressed="true">すべて</button>
             <button type="button" data-rank="3"   aria-pressed="false">★3 取りやすい</button>
@@ -418,6 +391,8 @@ main{
         <label class="toggle">
             <input type="checkbox" id="hide-done">取得済みを隠す
         </label>
+
+        <button type="button" class="reset" id="reset">リセット</button>
 
         <span class="progress">
             <span>取得 <strong id="done">0</strong> / 12</span>
@@ -620,7 +595,6 @@ const RANK_LABEL = { 3: "取りやすい", 2: "手間がかかる", 1: "運ま�
 const KEY = "tooldock-shippo";
 
 const listEl  = document.getElementById("list");
-const qEl     = document.getElementById("q");
 const hideEl  = document.getElementById("hide-done");
 const doneEl  = document.getElementById("done");
 const restEl  = document.getElementById("rest");
@@ -641,7 +615,6 @@ function save(state){
 let checked = load();
 
 function render(){
-  const q = qEl.value.trim().toLowerCase();
   const hide = hideEl.checked;
 
   const html = [];
@@ -652,8 +625,6 @@ function render(){
     if (rankFilter !== "all" && String(r.rank) !== rankFilter) continue;
     if (hide && done) continue;
     /* 難易度の言葉も画面に出ているので、検索の対象に含める */
-    const hay = r.name + " " + r.how + " " + r.item + " " + RANK_LABEL[r.rank];
-    if (q && !hay.toLowerCase().includes(q)) continue;
 
     html.push(`
       <label class="item${done ? " done" : ""}">
@@ -703,7 +674,6 @@ listEl.addEventListener("change", e => {
   render();
 });
 
-qEl.addEventListener("input", render);
 hideEl.addEventListener("change", render);
 
 for (const btn of document.querySelectorAll(".seg button")){
@@ -717,7 +687,6 @@ for (const btn of document.querySelectorAll(".seg button")){
 }
 
 document.getElementById("reset").addEventListener("click", () => {
-  qEl.value = "";
   hideEl.checked = false;
   rankFilter = "all";
   for (const b of document.querySelectorAll(".seg button")){

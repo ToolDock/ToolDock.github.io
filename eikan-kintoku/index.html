@@ -242,21 +242,6 @@ main{
     gap:10px;
 }
 
-.filter-panel input[type="search"]{
-    flex:1 1 240px;
-    min-width:0;
-    padding:10px 14px;
-    border:1px solid var(--line);
-    border-radius:999px;
-    font-size:16px;
-    font-family:inherit;
-}
-
-.filter-panel input[type="search"]:focus{
-    outline:none;
-    border-color:var(--ink);
-}
-
 /* 幅が足りないときは折り返す。
    nowrap を付けないと、ボタンの中で1文字ずつ縦に割れる */
 .seg{
@@ -462,7 +447,6 @@ main{
 
 <div class="filter-panel">
     <div class="filter-row">
-        <input type="search" id="q" placeholder="評価や特殊能力で検索（例：MVP、アーチスト、盗塁）" aria-label="検索">
         <div class="seg" id="seg">
             <button type="button" data-side="all" aria-pressed="true">すべて</button>
             <button type="button" data-side="p" aria-pressed="false">投手</button>
@@ -710,7 +694,7 @@ main{
 </div>
 
 <div class="card">
-    <h2>欲しい金特から逆引きする（国際大会）</h2>
+    <h2>国際大会で取れる金特一覧</h2>
     <p class="lead">
     MVPは5つのうちからランダムですが、タイトルを取れば狙った金特が確定で手に入ります。
     </p>
@@ -1039,27 +1023,13 @@ MVPは金特を5つのうちから1つ、ランダムで覚えます。
 ========================= */
 
 const rows  = [...document.querySelectorAll("#tbl tbody tr")];
-const q     = document.getElementById("q");
 const seg   = document.getElementById("seg");
 const count = document.getElementById("count");
 const empty = document.getElementById("empty");
 
-/* 検索対象は、その行に見えている文字すべて。
-
-   「金特」の印はCSSで付けているので textContent に入らない。
-   このページで「金特」と打つ人はいるはずなので、
-   金特を含む行には、その語を検索用に足しておく */
-for (const tr of rows) {
-  const text = tr.textContent.replace(/\s+/g, " ").trim();
-  const kin  = tr.querySelector(".skill.kin") ? " 金特" : "";
-  tr.dataset.text = text + kin;
-}
-
 let side = "all";
 
 function render() {
-
-  const word = q.value.trim();
 
   let shown = 0;
 
@@ -1070,9 +1040,7 @@ function render() {
                 || tr.dataset.side === side
                 || tr.dataset.side === "n";
 
-    const okWord = word === "" || tr.dataset.text.includes(word);
-
-    const show = okSide && okWord;
+    const show = okSide;
 
     tr.hidden = !show;
 
@@ -1082,8 +1050,6 @@ function render() {
   count.textContent = shown;
   empty.hidden = shown > 0;
 }
-
-q.addEventListener("input", render);
 
 seg.addEventListener("click", e => {
 
