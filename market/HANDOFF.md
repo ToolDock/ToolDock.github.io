@@ -16,11 +16,11 @@
 |---|---|
 | `js/vendor/chart.umd.min.js`（既存） | 208 KB |
 | `js/vendor/encoding-japanese.min.js`（既存） | 228 KB |
-| Plotly.js 3.6.0（参考実装が使用） | 約 3.5 MB |
-| plotly-basic 3.6.0（散布図のみの部分バンドル） | 約 1 MB |
+| Plotly.js 3.6.0（参考実装が使用） | 4,730 KB |
+| plotly-basic 3.6.0（散布図などの部分バンドル） | 1,089 KB |
 
 このサイトの他のツールは最大でも 228 KB です。AdSense を載せた公開ページに
-3.5 MB の JS を足すのは、表示速度の面でも割に合わないと思います。
+4.7 MB の JS を足すのは、表示速度の面でも割に合わないと思います。
 
 **推奨は、既に vendor 済みの Chart.js で描き直すことです。** 対応は次のとおりで、
 Plotly 固有の機能には依存していません。
