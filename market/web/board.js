@@ -1,43 +1,43 @@
 /* 今日の米国市場 ── market.json を読んでページを組み立てる。
  *
- * チャートは build_static.py が Plotly の Figure をそのままJSONにしたもの。
- * 触るとしたら applyChartTheme()（色・フォント）と、
- * 各 render〜()（文言・並び）くらいで足りるようにしてある。
+ * チャートは Chart.js（/js/vendor/chart.umd.min.js）で描く。
+ * market.json に入っているのは数値と系列だけで、図の定義は持たない。
+ *
+ * 折れ線3種（タイルの日中足・基準価額・ドローダウン）は Chart.js。
+ * Fear & Greed のメーターと VIX のメーターは図形なので、
+ * Chart.js を曲げるより素のSVGで描くほうが短く正確になる。
+ * 触るとしたら COLORS（色）と、各 render〜()（文言・並び）で足りるようにしてある。
  */
 (function () {
   "use strict";
 
   var DATA_URL = "./market.json";
-  var PLOT_CONFIG = { displayModeBar: false, responsive: true, locale: "ja" };
+
+  var COLORS = {
+    up: "#2e7d32",
+    down: "#c62828",
+    flat: "#78909c",
+    grid: "rgba(128,128,128,0.22)"
+  };
+
+  var MONTH_TICKS = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
 
   function cssVar(name, fallback) {
     var value = getComputedStyle(document.documentElement).getPropertyValue(name);
     return (value || "").trim() || fallback;
   }
 
-  /* Plotlyは図の中に色を持つので、CSS変数から文字色だけ流し込む */
-  function applyChartTheme(figure) {
-    var color = cssVar("--chart-font-color", "#3d4348");
-    figure.layout = figure.layout || {};
-    figure.layout.font = Object.assign({}, figure.layout.font, { color: color });
-    figure.layout.autosize = true;
-    delete figure.layout.width;
-    delete figure.layout.height;   /* 高さはCSS側（.tile__chart など）で決める */
-    return figure;
+  function fontColor() { return cssVar("--chart-font-color", "#3d4348"); }
+
+  function dirColor(direction) {
+    return direction > 0 ? COLORS.up : (direction < 0 ? COLORS.down : COLORS.flat);
   }
 
-  /* 入れ子のレイアウトに置かれても崩れないよう、器のサイズ変化に追従させる */
-  var observer = window.ResizeObserver ? new ResizeObserver(function (entries) {
-    entries.forEach(function (entry) { Plotly.Plots.resize(entry.target); });
-  }) : null;
-
-  function plot(elementId, figure) {
-    var el = typeof elementId === "string" ? document.getElementById(elementId) : elementId;
-    if (!el || !figure) { return; }
-    applyChartTheme(figure);
-    Plotly.newPlot(el, figure.data, figure.layout, PLOT_CONFIG).then(function () {
-      if (observer) { observer.observe(el); }
-    });
+  function rgba(hex, alpha) {
+    var r = parseInt(hex.slice(1, 3), 16),
+        g = parseInt(hex.slice(3, 5), 16),
+        b = parseInt(hex.slice(5, 7), 16);
+    return "rgba(" + r + "," + g + "," + b + "," + alpha + ")";
   }
 
   function directionClass(direction) {
@@ -57,8 +57,376 @@
     }
   }
 
-  /* ── 1・2段目：タイル ─────────────────────── */
-  function renderRows(rows, figures) {
+  function fmt(value, digits) {
+    return Number(value).toLocaleString("ja-JP", {
+      minimumFractionDigits: digits, maximumFractionDigits: digits
+    });
+  }
+
+  /* 器を <canvas> に差し替えて返す。高さはCSS側（.tile__chart など）が決める */
+  function canvasIn(host) {
+    if (!host) { return null; }
+    host.innerHTML = "";
+    var canvas = document.createElement("canvas");
+    host.appendChild(canvas);
+    return canvas;
+  }
+
+  var charts = [];
+
+  function makeChart(host, config) {
+    var canvas = canvasIn(host);
+    if (!canvas) { return null; }
+    config.options = config.options || {};
+    config.options.responsive = true;
+    config.options.maintainAspectRatio = false;
+    config.options.animation = false;
+    var chart = new Chart(canvas, config);
+    charts.push(chart);
+    return chart;
+  }
+
+  /* ── 1・2段目：タイルの日中足 ───────────────── */
+  function tileChart(host, tile) {
+    var color = dirColor(tile.direction);
+    var base = tile.prev_close;
+    var values = tile.values || [];
+    var datasets = [];
+
+    /* 前日終値の基準線。塗りつぶしの相手にもなる */
+    if (base != null) {
+      datasets.push({
+        data: values.map(function () { return base; }),
+        borderColor: COLORS.flat,
+        borderWidth: 1,
+        borderDash: [3, 3],
+        pointRadius: 0,
+        fill: false
+      });
+    }
+
+    datasets.push({
+      data: values,
+      borderColor: color,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHitRadius: 8,
+      tension: 0,
+      fill: base != null ? { target: 0, above: rgba(color, 0.16), below: rgba(color, 0.16) } : false,
+      backgroundColor: rgba(color, 0.16)
+    });
+
+    /* 前日終値を含めた範囲に少し余白を足す。全体が横一線に見えないように */
+    var span = values.filter(function (v) { return v != null; });
+    if (base != null) { span = span.concat([base]); }
+    var low = Math.min.apply(null, span);
+    var high = Math.max.apply(null, span);
+    var pad = (high - low) * 0.15 || (Math.abs(high) * 0.001 + 0.01);
+
+    makeChart(host, {
+      type: "line",
+      data: { labels: tile.times || [], datasets: datasets },
+      options: {
+        layout: { padding: 0 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            filter: function (item) { return item.datasetIndex === datasets.length - 1; },
+            callbacks: {
+              label: function (item) { return fmt(item.parsed.y, tile.digits); }
+            }
+          }
+        },
+        scales: {
+          x: { display: false },
+          y: { display: false, min: low - pad, max: high + pad }
+        }
+      }
+    });
+  }
+
+  /* ── 3段目：基準価額の年初来 ────────────────── */
+  function fundChart(host, series) {
+    var values = series.values;
+    var color = values[values.length - 1] >= values[0] ? COLORS.up : COLORS.down;
+    var low = Math.min.apply(null, values);
+    var high = Math.max.apply(null, values);
+    var pad = (high - low) * 0.12;
+
+    /* 端をそのまま渡すと目盛りに「46,752円」と生の値が出るので、
+       きりのいい単位まで外側に丸める */
+    var step = 1000;
+    low = Math.floor((low - pad) / step) * step;
+    high = Math.ceil((high + pad) / step) * step;
+
+    /* 月が変わる最初の営業日だけ「◯月」と出す */
+    var seen = {};
+    var monthTick = series.dates.map(function (d) {
+      var month = Number(d.slice(5, 7));
+      if (seen[month]) { return ""; }
+      seen[month] = true;
+      return month + "月";
+    });
+
+    makeChart(host, {
+      type: "line",
+      data: {
+        labels: series.dates,
+        datasets: [{
+          data: values,
+          borderColor: color,
+          borderWidth: 2.4,
+          pointRadius: 0,
+          pointHitRadius: 6,
+          fill: "origin",
+          backgroundColor: rgba(color, 0.12)
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (item) { return fmt(item.parsed.y, 0) + "円"; }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            border: { color: COLORS.grid },
+            ticks: {
+              color: fontColor(), autoSkip: false, maxRotation: 0,
+              callback: function (_v, i) { return monthTick[i]; }
+            }
+          },
+          y: {
+            min: low, max: high,
+            grid: { color: COLORS.grid },
+            border: { display: false },
+            ticks: {
+              color: fontColor(),
+              callback: function (v) { return fmt(v, 0) + "円"; }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /* ── 4段目：年初来ドローダウン ──────────────── */
+  function drawdownChart(host, drawdown) {
+    var years = Object.keys(drawdown.years).sort();
+    if (!years.length) { return; }
+
+    var lowest = 0;
+    var datasets = years.map(function (year, index) {
+      var y = drawdown.years[year];
+      var latest = index === years.length - 1;
+      var color = latest ? COLORS.down : COLORS.flat;
+      y.values.forEach(function (v) { lowest = Math.min(lowest, v); });
+      return {
+        label: year + "年",
+        /* 年をまたいで重ねるので、横軸は日付ではなく「年の何日目か」にそろえる */
+        data: y.dates.map(function (d, i) {
+          return { x: dayOfYear(d), y: y.values[i] };
+        }),
+        borderColor: color,
+        borderWidth: latest ? 2.6 : 2.0,
+        borderDash: latest ? [] : [6, 4],
+        pointRadius: 0,
+        pointHitRadius: 6,
+        fill: latest ? "origin" : false,
+        backgroundColor: rgba(color, 0.10)
+      };
+    });
+
+    makeChart(host, {
+      type: "line",
+      data: { datasets: datasets },
+      options: {
+        interaction: { mode: "nearest", axis: "x", intersect: false },
+        plugins: {
+          legend: {
+            display: true, align: "end",
+            labels: { color: fontColor(), boxWidth: 18, usePointStyle: false }
+          },
+          tooltip: {
+            callbacks: {
+              title: function (items) { return monthDayLabel(items[0].parsed.x); },
+              label: function (item) {
+                return item.dataset.label + " " + item.parsed.y.toFixed(2) + "%";
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: "linear", min: 1, max: 366,
+            grid: { color: COLORS.grid },
+            border: { display: false },
+            ticks: {
+              color: fontColor(), autoSkip: false, maxRotation: 0,
+              stepSize: 1,
+              callback: function (v) {
+                var i = MONTH_TICKS.indexOf(v);
+                return i === -1 ? "" : (i + 1) + "月";
+              }
+            },
+            afterBuildTicks: function (axis) {
+              axis.ticks = MONTH_TICKS.map(function (v) { return { value: v }; });
+            }
+          },
+          y: {
+            /* 下端も5%刻みに丸める。生の値が目盛りに出ないように */
+            min: Math.floor(Math.min(lowest * 1.15, -2) / 5) * 5, max: 2.5,
+            grid: { color: COLORS.grid },
+            border: { display: false },
+            ticks: {
+              color: fontColor(),
+              callback: function (v) { return v + "%"; }
+            }
+          }
+        }
+      }
+    });
+
+    /* 各年の最大下落を、値だけ添えておく */
+    var host2 = document.getElementById("drawdown-max");
+    if (host2) {
+      host2.innerHTML = "";
+      years.slice().reverse().forEach(function (year) {
+        var y = drawdown.years[year];
+        if (y.max == null) { return; }
+        var item = document.createElement("span");
+        item.className = "dd-max";
+        item.textContent = year + "年 最大 " + y.max.toFixed(1) + "%（" + y.max_date + "）";
+        host2.appendChild(item);
+      });
+    }
+  }
+
+  function dayOfYear(iso) {
+    var d = new Date(iso + "T00:00:00");
+    return Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+  }
+
+  function monthDayLabel(day) {
+    for (var i = MONTH_TICKS.length - 1; i >= 0; i--) {
+      if (day >= MONTH_TICKS[i]) {
+        return (i + 1) + "月" + (day - MONTH_TICKS[i] + 1) + "日ごろ";
+      }
+    }
+    return day + "日目";
+  }
+
+  /* ── 5段目：Fear & Greed のメーター ──────────── */
+  var FG_SPAN = 120;                  /* メーターの開き角（度） */
+  var FG_R_OUT = 100, FG_R_IN = 78;
+
+  function fgAngle(value) {
+    var v = Math.max(0, Math.min(100, value));
+    return (v / 100 - 0.5) * FG_SPAN * Math.PI / 180;
+  }
+
+  function fgPoint(theta, radius) {
+    return [radius * Math.sin(theta), -radius * Math.cos(theta)];
+  }
+
+  function arcPath(low, high, rOut, rIn) {
+    var a1 = fgAngle(low), a2 = fgAngle(high);
+    var o1 = fgPoint(a1, rOut), o2 = fgPoint(a2, rOut);
+    var i2 = fgPoint(a2, rIn), i1 = fgPoint(a1, rIn);
+    return "M" + o1 + "A" + rOut + "," + rOut + " 0 0 1 " + o2 +
+           "L" + i2 + "A" + rIn + "," + rIn + " 0 0 0 " + i1 + "Z";
+  }
+
+  function fgGauge(host, fg, bands) {
+    if (!host) { return; }
+    var svg = ['<svg viewBox="-135 -125 270 150" role="img" aria-label="Fear and Greed Index">'];
+
+    bands.forEach(function (band) {
+      svg.push('<path d="' + arcPath(band[0], band[1], FG_R_OUT, FG_R_IN) +
+               '" fill="' + band[4] + '"/>');
+    });
+
+    /* 針 */
+    var theta = fgAngle(fg.value);
+    var tip = fgPoint(theta, FG_R_IN - 6);
+    var left = fgPoint(theta - Math.PI / 2, 4.5);
+    var right = fgPoint(theta + Math.PI / 2, 4.5);
+    var tail = fgPoint(theta + Math.PI, 10);
+    svg.push('<polygon points="' + [tip, left, tail, right].join(" ") +
+             '" fill="rgba(120,144,156,0.95)"/>');
+    svg.push('<circle cx="0" cy="0" r="7" fill="#78909c"/>');
+
+    [0, 50, 100].forEach(function (tick) {
+      var p = fgPoint(fgAngle(tick), FG_R_OUT + 13);
+      svg.push('<text x="' + p[0] + '" y="' + p[1] + '" text-anchor="middle" ' +
+               'dominant-baseline="middle" font-size="12" fill="' + fontColor() +
+               '" opacity="0.65">' + tick + '</text>');
+    });
+    svg.push('</svg>');
+
+    host.innerHTML = svg.join("");
+
+    bind(document, "fear_greed.value_text", fg.value_text);
+    bind(document, "fear_greed.label", fg.label_ja + "（" + fg.label_en + "）");
+    var label = document.querySelector('[data-bind="fear_greed.label"]');
+    if (label) { label.style.color = fg.color; }
+  }
+
+  /* ── 5段目：VIX のメーター ─────────────────── */
+  function vixMeter(host, vix, bands) {
+    if (!host) { return; }
+    var MAX = 50, H = 210, W = 46, X = 34, TOP = 14;
+    var y = function (v) { return TOP + H - (Math.max(0, Math.min(MAX, v)) / MAX) * H; };
+
+    var svg = ['<svg viewBox="0 0 260 250" role="img" aria-label="VIX指数">'];
+
+    bands.forEach(function (band) {
+      var top = y(Math.min(band[1], MAX)), bottom = y(band[0]);
+      svg.push('<rect x="' + X + '" y="' + top + '" width="' + W +
+               '" height="' + (bottom - top) + '" fill="' + band[3] + '" opacity="0.85"/>');
+    });
+    svg.push('<rect x="' + X + '" y="' + TOP + '" width="' + W + '" height="' + H +
+             '" fill="none" stroke="' + COLORS.flat + '" stroke-width="1"/>');
+
+    for (var v = 0; v <= MAX; v += 10) {
+      svg.push('<text x="' + (X - 8) + '" y="' + y(v) + '" text-anchor="end" ' +
+               'dominant-baseline="middle" font-size="11" fill="' + fontColor() +
+               '" opacity="0.7">' + v + '</text>');
+    }
+
+    var mark = y(vix.value);
+    svg.push('<line x1="' + (X - 6) + '" y1="' + mark + '" x2="' + (X + W + 18) +
+             '" y2="' + mark + '" stroke="' + COLORS.flat + '" stroke-width="3"/>');
+    svg.push('<polygon points="' + (X + W + 18) + "," + (mark - 6) + " " +
+             (X + W + 28) + "," + mark + " " + (X + W + 18) + "," + (mark + 6) +
+             '" fill="' + COLORS.flat + '"/>');
+
+    svg.push('<text x="' + (X + W + 34) + '" y="' + (mark - 4) + '" font-size="30" ' +
+             'font-weight="700" fill="' + fontColor() + '">' + vix.value_text + '</text>');
+    svg.push('<text x="' + (X + W + 34) + '" y="' + (mark + 16) + '" font-size="13" fill="' +
+             dirColor(vix.direction) + '">' + escapeText(vix.change_text) + '</text>');
+    svg.push('<text x="' + (X + W + 34) + '" y="' + (TOP + H - 2) + '" font-size="15" ' +
+             'font-weight="700" fill="' + vix.band_color + '">' +
+             escapeText(vix.band_label) + '</text>');
+    /* 左の目盛りと重なるので、値と同じ右の列に置く */
+    svg.push('<text x="' + (X + W + 34) + '" y="' + (TOP + 10) + '" ' +
+             'font-size="12" fill="' + fontColor() + '" opacity="0.6">上ほど警戒</text>');
+    svg.push('</svg>');
+
+    host.innerHTML = svg.join("");
+  }
+
+  function escapeText(text) {
+    return String(text == null ? "" : text)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /* ── 各段の組み立て ─────────────────────── */
+  function renderRows(rows) {
     var host = document.getElementById("rows");
     var rowTpl = document.getElementById("tpl-row");
     var tileTpl = document.getElementById("tpl-tile");
@@ -81,18 +449,19 @@
 
         var chart = node.querySelector(".tile__chart");
         chart.id = "chart-tile-" + tile.slug;
-        pending.push([chart.id, figures.tiles[tile.symbol]]);
+        pending.push([chart.id, tile]);
         tileHost.appendChild(node);
       });
 
       host.appendChild(section);
     });
 
-    pending.forEach(function (item) { plot(item[0], item[1]); });
+    pending.forEach(function (item) {
+      tileChart(document.getElementById(item[0]), item[1]);
+    });
   }
 
-  /* ── 3段目：基準価額 ─────────────────────── */
-  function renderFund(fund, figure) {
+  function renderFund(fund, series) {
     var section = document.getElementById("fund");
     if (!fund) { section.hidden = true; return; }
 
@@ -106,7 +475,10 @@
 
     colorize(section.querySelector('[data-bind="fund.change_line"]'), fund.direction);
     colorize(section.querySelector('[data-bind="fund.ytd_text"]'), sign(fund.ytd_pct));
-    plot("chart-nav", figure);
+
+    if (series && series.values && series.values.length) {
+      fundChart(document.getElementById("chart-nav"), series);
+    }
   }
 
   function sign(value) { return value > 0 ? 1 : (value < 0 ? -1 : 0); }
@@ -121,14 +493,13 @@
     el.classList.add(directionClass(direction));
   }
 
-  /* ── 4段目・5段目 ────────────────────────── */
-  function renderDrawdown(drawdown, figure) {
+  function renderDrawdown(drawdown) {
     bind(document, "drawdown.title", drawdown.title);
     bind(document, "drawdown.note", drawdown.note);
-    plot("chart-drawdown", figure);
+    drawdownChart(document.getElementById("chart-drawdown"), drawdown);
   }
 
-  function renderFearGreed(fg, figure) {
+  function renderFearGreed(fg, bands) {
     var card = document.querySelector(".meter--fg");
     if (!fg) { card.hidden = true; return; }
     bind(document, "fear_greed.note", fg.note);
@@ -149,14 +520,14 @@
       host.appendChild(wrap);
     });
 
-    plot("chart-fg", figure);
+    fgGauge(document.getElementById("chart-fg"), fg, bands);
   }
 
-  function renderVix(vix, figure) {
+  function renderVix(vix, bands) {
     var card = document.querySelector(".meter--vix");
     if (!vix) { card.hidden = true; return; }
     bind(document, "vix.note", vix.note);
-    plot("chart-vix", figure);
+    vixMeter(document.getElementById("chart-vix"), vix, bands);
   }
 
   function renderFooter(sources, disclaimer) {
@@ -171,19 +542,22 @@
   }
 
   /* ── 起動 ───────────────────────────────── */
+  var payload = null;
+
   function render(data) {
-    document.title = data.title;
+    payload = data;
     bind(document, "title", data.title);
     bind(document, "generated_at_text", data.generated_at_text);
     bind(document, "fund_chart_title", data.fund_chart_title);
     var time = document.querySelector("time[data-bind]");
     if (time) { time.dateTime = data.generated_at; }
 
-    renderRows(data.rows, data.figures);
-    renderFund(data.fund, data.figures.nav);
-    renderDrawdown(data.drawdown, data.figures.drawdown);
-    renderFearGreed(data.fear_greed, data.figures.fear_greed);
-    renderVix(data.vix, data.figures.vix);
+    var bands = data.bands || {};
+    renderRows(data.rows);
+    renderFund(data.fund, data.fund_series);
+    renderDrawdown(data.drawdown);
+    renderFearGreed(data.fear_greed, bands.fear_greed || []);
+    renderVix(data.vix, bands.vix || []);
     renderFooter(data.sources, data.disclaimer);
   }
 
@@ -201,13 +575,31 @@
     .then(render)
     .catch(function (e) { fail(e.message); });
 
-  /* OSのテーマが切り替わったら、チャートの文字色も追従させる */
+  /* OSのテーマが切り替わったら、目盛りの文字色も追従させる */
   if (window.matchMedia) {
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
-      var color = cssVar("--chart-font-color", "#3d4348");
-      document.querySelectorAll(".js-plotly-plot").forEach(function (el) {
-        Plotly.relayout(el, { "font.color": color });
+      var color = fontColor();
+      charts.forEach(function (chart) {
+        ["x", "y"].forEach(function (axis) {
+          if (chart.options.scales && chart.options.scales[axis]) {
+            chart.options.scales[axis].ticks.color = color;
+          }
+        });
+        if (chart.options.plugins.legend.labels) {
+          chart.options.plugins.legend.labels.color = color;
+        }
+        chart.update();
       });
+      /* SVGの2つは組み直す */
+      if (payload) {
+        var bands = payload.bands || {};
+        if (payload.fear_greed) {
+          fgGauge(document.getElementById("chart-fg"), payload.fear_greed, bands.fear_greed || []);
+        }
+        if (payload.vix) {
+          vixMeter(document.getElementById("chart-vix"), payload.vix, bands.vix || []);
+        }
+      }
     });
   }
 })();

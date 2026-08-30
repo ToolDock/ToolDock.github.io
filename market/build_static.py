@@ -2,8 +2,8 @@
 
 Streamlit はPythonのサーバーが要るのでGitHub Pagesでは動かない。
 そこで、DBの内容を market.json に固めて、素のHTML/CSS/JSから読ませる。
-チャートは Streamlit版とまったく同じ utils.us_market_figures の Figure を
-Plotly の JSON に落として渡すので、見た目は同じものが出る。
+チャートの描画はブラウザ側（board.js + Chart.js）が行う。
+ここが書き出すのは数値と系列だけで、図そのものは持たない。
 
     python build_static.py                        # dist/ に書き出し
     python build_static.py --refresh              # 先にデータを取得してから書き出し
@@ -20,7 +20,7 @@ GitHub Actions など、DBを持ち回らない環境向け:
     dist/index.html   ページの骨組み（web/index.html のコピー）
     dist/board.css    見た目（web/board.css のコピー）
     dist/board.js     market.json を読んで描画（web/board.js のコピー）
-    dist/market.json  数値・系列・Plotlyの図（このスクリプトが生成）
+    dist/market.json  数値と系列（このスクリプトが生成）
 """
 
 import argparse
@@ -30,20 +30,12 @@ import sys
 from datetime import date, datetime
 from pathlib import Path
 
-import plotly.io as pio
-
 import collect_us_market as collector
 from utils import us_market as um
-from utils import us_market_figures as figs
 
 ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 STATIC_FILES = ["index.html", "board.css", "board.js"]
-
-# 静的サイトにはStreamlitのテーマ注入がないので、文字まわりだけ明示しておく。
-# 実際の色は board.js が CSS変数 --chart-font-color で上書きする。
-FONT_STACK = ("system-ui, -apple-system, 'Hiragino Kaku Gothic ProN', "
-              "'Noto Sans JP', 'Yu Gothic', Meiryo, sans-serif")
 
 SOURCES = [
     "指数・為替・金利・コモディティ・BTC: Yahoo Finance",
@@ -57,11 +49,6 @@ DISCLAIMER = ("本ページは市況の把握を目的とした情報提供で�
 def slug(symbol):
     """^GSPC → gspc、JPY=X → jpy-x。HTMLのidに使う。"""
     return "".join(c if c.isalnum() else "-" for c in symbol.lower()).strip("-")
-
-
-def figure_json(fig):
-    fig.update_layout(font=dict(family=FONT_STACK))
-    return json.loads(pio.to_json(fig))
 
 
 # ── 各パートのデータ ──────────────────────────────────────────
@@ -82,6 +69,12 @@ def tile_payload(tile):
         "change_text": change_text,
         "direction": sign,
         "arrow": "▲" if sign > 0 else ("▼" if sign < 0 else "―"),
+
+        # 日中足そのもの。描画はブラウザ側（Chart.js）で行う。
+        # 時刻は "HH:MM" だけあれば足りる（日付はタイルの session が持っている）
+        "digits": tile["digits"],
+        "times": [str(t)[11:16] for t in tile["times"]],
+        "values": tile["values"],
     }
 
 
@@ -174,29 +167,20 @@ def build_payload(today=None):
     vix = um.load_vix()
     fg_out, vix_out = sentiment_payload(fg, vix)
 
-    rows, tile_figures = [], {}
+    rows = []
     for title, symbols in (("主要指数・為替", um.ROW1),
                            ("コモディティ・金利・暗号資産・半導体", um.ROW2)):
-        tiles = []
-        for tile in um.load_tiles(symbols):
-            tiles.append(tile_payload(tile))
-            tile_figures[tile["symbol"]] = figure_json(figs.intraday_chart(tile))
+        tiles = [tile_payload(tile) for tile in um.load_tiles(symbols)]
         rows.append({"title": title, "tiles": tiles})
 
-    figures = {"tiles": tile_figures}
+    # 基準価額の年初来。日付と値だけ渡し、描画はブラウザ側に任せる
+    fund_series = None
     if stats:
-        figures["nav"] = figure_json(figs.nav_chart(um.year_slice(series, this_year)))
-    if series:
-        figures["drawdown"] = figure_json(
-            figs.drawdown_chart(series, this_year, last_year))
-    if fg:
-        figures["fear_greed"] = figure_json(
-            figs.fg_gauge(fg["value"], fg["label_en"], fg["label_ja"], fg["color"]))
-    if vix:
-        change_text, sign = um.format_change(vix)
-        figures["vix"] = figure_json(
-            figs.vix_meter(vix["price"], change_text, sign,
-                           vix["band_label"], vix["band_color"]))
+        year_rows = um.year_slice(series, this_year)
+        fund_series = {
+            "dates": [r[0].isoformat() for r in year_rows],
+            "values": [r[1] for r in year_rows],
+        }
 
     generated = datetime.now().astimezone()
     return {
@@ -216,7 +200,9 @@ def build_payload(today=None):
         },
         "fear_greed": fg_out,
         "vix": vix_out,
-        "figures": figures,
+        "fund_series": fund_series,
+        "bands": {"fear_greed": [list(b) for b in um.FG_BANDS],
+                  "vix": [list(b) for b in um.VIX_BANDS]},
         "sources": SOURCES,
         "disclaimer": DISCLAIMER,
     }

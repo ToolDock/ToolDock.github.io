@@ -6,7 +6,7 @@
 <title>今日の米国市場</title>
 <meta name="description" content="S&P500・NASDAQ100・FANG+・ドル円・ゴールド・米国債10年・BTC・SOX指数の一日の値動きと、eMAXIS Slim 米国株式（S&P500）の基準価額・年初来ドローダウン、Fear &amp; Greed、VIX。">
 <link rel="stylesheet" href="./board.css">
-<script src="https://cdn.plot.ly/plotly-3.6.0.min.js" charset="utf-8"></script>
+<script src="/js/vendor/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -73,6 +73,7 @@
     <h2 class="section__title" data-bind="drawdown.title"></h2>
     <div class="card">
       <div class="chart chart--wide" id="chart-drawdown"></div>
+      <p class="dd-maxes" id="drawdown-max"></p>
       <p class="note" data-bind="drawdown.note"></p>
     </div>
   </section>
@@ -84,6 +85,8 @@
       <article class="card meter meter--fg">
         <h3 class="meter__title">本日の Fear &amp; Greed Index</h3>
         <div class="chart" id="chart-fg"></div>
+        <p class="meter__value" data-bind="fear_greed.value_text"></p>
+        <p class="meter__band" data-bind="fear_greed.label"></p>
         <div class="meter__history" id="fg-history"></div>
         <p class="note" data-bind="fear_greed.note"></p>
       </article>

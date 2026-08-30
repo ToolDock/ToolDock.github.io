@@ -8,7 +8,7 @@ dist/
   index.html    骨組み（このフォルダの index.html のコピー）
   board.css     見た目（同 board.css のコピー）
   board.js      market.json を読んで描画（同 board.js のコピー）
-  market.json   数値・系列・Plotlyの図（ビルド時に生成）
+  market.json   数値と系列（ビルド時に生成）
 ```
 
 `index.html` / `board.css` / `board.js` の編集は、この `web/` の方を直してください。
@@ -28,9 +28,9 @@ python build_static.py --refresh
 `dist/` の中身を Pages リポジトリの公開ディレクトリ（`/` か `/docs`）に置くだけです。
 サブディレクトリに置いても、参照はすべて相対パス（`./board.css` など）なので動きます。
 
-外部リソースは `cdn.plot.ly` の Plotly.js（3.6.0）だけです。CDN を使いたくない場合は
-`plotly-3.6.0.min.js` をリポジトリに置いて、`index.html` の `<script src>` を
-そちらに向けてください（約4.5MB）。
+外部リソースはありません。チャートはサイトに置いてある Chart.js
+（`/js/vendor/chart.umd.min.js`、204KB）を読みます。ここだけ絶対パスなので、
+別のサイトに置くときは `index.html` の `<script src>` を直してください。
 
 ## デザインを変えるとき
 
@@ -39,9 +39,10 @@ python build_static.py --refresh
 `board.css` の `:root` にまとめてあります。ダークテーマは
 `@media (prefers-color-scheme: dark)` のブロックです。
 
-チャートの中の文字色だけは Plotly が持つので、CSS変数 `--chart-font-color` を
-`board.js` の `applyChartTheme()` が読んで Plotly に渡しています。
-`:root` の値を変えれば図の文字色も一緒に変わります。
+チャートの目盛りの文字色は、CSS変数 `--chart-font-color` を `board.js` の
+`fontColor()` が読んで Chart.js に渡しています。`:root` の値を変えれば
+目盛りとメーターの文字色も一緒に変わります。OSのテーマが切り替わったときは
+`board.js` の末尾が拾って描き直します。
 
 ### レイアウト
 
@@ -60,10 +61,21 @@ python build_static.py --refresh
 
 ### チャートそのもの
 
-`market.json` の `figures` に Plotly の図（`{data, layout}`）がそのまま入っています。
-`Plotly.newPlot(el, fig.data, fig.layout)` に渡すだけの形です。
-図の中身を変えたい場合は、生成元の `utils/us_market_figures.py`（Python）を直すのが確実です。
-Streamlit版（`market_board.py`）と同じ関数を使っているので、両方に反映されます。
+`market.json` が持つのは数値と系列だけで、図の定義は入っていません。
+描画は全部 `board.js` の中にあります。
+
+| 描くもの | どこで |
+|---|---|
+| タイルの日中足（8枚） | `tileChart()` … Chart.js の折れ線。前日終値の線との差を塗る |
+| 基準価額の年初来 | `fundChart()` … Chart.js の折れ線 |
+| 年初来ドローダウン | `drawdownChart()` … Chart.js の折れ線2本 |
+| Fear & Greed のメーター | `fgGauge()` … 素のSVG |
+| VIX のメーター | `vixMeter()` … 素のSVG |
+
+メーター2つは図というより図形なので、Chart.js を曲げるよりSVGを直接書くほうが
+短く正確になります。色は `market.json` の `bands` が持っているので、
+区分の境目や色を変えるときは Python 側（`utils/us_market.py` の
+`FG_BANDS` / `VIX_BANDS`）を直してください。
 
 ## market.json の構造
 
@@ -91,7 +103,11 @@ Streamlit版（`market_board.py`）と同じ関数を使っているので、両
           "change_mode": "pct",    // "pct" か "bp"
           "change_text": "-19.23（-0.25%）",
           "direction": -1,         // 1=上げ / -1=下げ / 0=変わらず
-          "arrow": "▼"
+          "arrow": "▼",
+
+          "digits": 2,             // 小数何桁で見せるか
+          "times":  ["09:30", "09:35", "…"],  // 日中足。日付は session が持つ
+          "values": [7738.98, "…"]
         }
       ]
     }
@@ -140,9 +156,14 @@ Streamlit版（`market_board.py`）と同じ関数を使っているので、両
     "note": "…"
   },
 
-  "figures": {                                    // Plotly の {data, layout}
-    "tiles": { "^GSPC": { "data": [], "layout": {} }, "…": {} },
-    "nav": {}, "drawdown": {}, "fear_greed": {}, "vix": {}
+  "fund_series": {                                // 3段目のチャート用。なければ null
+    "dates":  ["2026-01-05", "…"],
+    "values": [39457.0, "…"]
+  },
+
+  "bands": {                                      // メーターの区分。色もここ
+    "fear_greed": [[0, 25, "Extreme Fear", "極度の恐怖", "#c62828"], "…"],
+    "vix":        [[0, 15, "落ち着き", "#2e7d32"], "…"]
   },
 
   "sources": ["…"],

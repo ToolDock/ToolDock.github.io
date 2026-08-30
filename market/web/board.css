@@ -2,7 +2,7 @@
  *
  * デザインの差し替えはこのファイルだけで足りるように、
  * 色・角丸・間隔はすべて :root の変数に寄せてある。
- * チャートの文字色も --chart-font-color を board.js が読んで Plotly に渡す。
+ * チャートの目盛りの文字色も --chart-font-color を board.js が読んで Chart.js に渡す。
  */
 
 :root {
@@ -177,8 +177,8 @@ body {
 }
 
 .meter__title { margin: 0 0 6px; font-size: 1rem; font-weight: 700; }
-.meter .chart { height: 260px; }
-.meter--vix .chart { height: 280px; }
+.meter .chart { height: 170px; }
+.meter--vix .chart { height: 250px; }
 
 .meter__history { display: flex; justify-content: space-around; margin-top: 4px; }
 .meter__history-item { text-align: center; }
@@ -217,4 +217,40 @@ body {
   .row__tiles { grid-template-columns: 1fr; }
   .board__title { font-size: 1.5rem; }
   .stat__value { font-size: 2rem; }
+}
+
+/* ── Chart.js / SVG に移したときに足したもの ───────────── */
+
+/* canvas は器いっぱいに広げる。高さは上の .tile__chart などが決める */
+.tile__chart canvas,
+.fund__chart canvas,
+.chart canvas { width: 100% !important; height: 100% !important; }
+
+/* メーターの図はSVG。器の幅に合わせて縮む */
+.meter .chart svg { width: 100%; height: 100%; display: block; }
+
+/* Fear & Greed の数値と区分。以前は図の中に描いていた */
+.meter__value {
+  margin: 2px 0 0;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.meter__band {
+  margin: 2px 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ドローダウンの最大値。以前は図の中の注釈だった */
+.dd-maxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
 }
