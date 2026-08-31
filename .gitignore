@@ -141,3 +141,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# 米国市場ダッシュボードのビルド中間物
+market/investment_ai.db
+market/**/__pycache__/

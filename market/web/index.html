@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- title / description / canonical は静的に置く。
+     head.js は「既に無ければ補う」作りなので、必ずこの順で -->
+<title>今日の米国市場｜S&P500・ドル円・VIXを一面で見るダッシュボード</title>
+<meta name="description" content="S&P500・NASDAQ100・NYSE FANG+・ドル円・ゴールド・米国債10年・BTC・SOX指数の一日の値動きを一面にまとめた無料ダッシュボード。eMAXIS Slim 米国株式（S&P500）の基準価額と年初来ドローダウン、Fear &amp; Greed Index、VIX指数も掲載。平日の朝に自動更新されます。">
+<link rel="canonical" href="https://tooldock.github.io/us-market/">
+
+<script> const CURRENT_TOOL = "us-market"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<!-- head.js が /style.css を書き出すので、それより後に読ませる -->
+<link rel="stylesheet" href="./board.css">
+<script src="/js/vendor/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!--
+  中身はすべて board.js が market.json から流し込む。
+  この HTML は骨組みだけなので、デザイン変更は board.css と、
+  ここのクラス名・並び順をいじるだけで足りるようにしてある。
+-->
+<main class="board" id="board">
+
+  <header class="board__header">
+    <h1 class="board__title" data-bind="title">今日の米国市場</h1>
+    <p class="board__updated">最終更新 <time data-bind="generated_at_text"></time></p>
+  </header>
+
+  <!-- 1段目・2段目：4つ段組のタイル（board.js が2つ複製して埋める） -->
+  <template id="tpl-row">
+    <section class="row">
+      <h2 class="row__title"></h2>
+      <div class="row__tiles"></div>
+    </section>
+  </template>
+
+  <template id="tpl-tile">
+    <article class="tile">
+      <h3 class="tile__label"></h3>
+      <p class="tile__price"></p>
+      <p class="tile__change"></p>
+      <div class="tile__chart"></div>
+      <p class="tile__session"></p>
+    </article>
+  </template>
+
+  <div class="board__rows" id="rows"></div>
+
+  <!-- S&P500の主要銘柄ヒートマップ -->
+  <section class="section section--heatmap" id="heatmap">
+    <h2 class="section__title" data-bind="heatmap.title">S&P500 主要銘柄のヒートマップ</h2>
+    <div class="card">
+      <p class="heat__summary" id="heat-summary"></p>
+      <div class="heat" id="heat"></div>
+      <p class="note" data-bind="heatmap.note"></p>
+    </div>
+  </section>
+
+  <!-- eMAXIS Slim 米国株式（S&P500） -->
+  <section class="section section--fund" id="fund">
+    <h2 class="section__title" data-bind="fund_chart_title"></h2>
+    <div class="card fund">
+      <div class="fund__stats">
+        <div class="stat stat--primary">
+          <p class="stat__label">基準価額（1万口あたり）</p>
+          <p class="stat__value"><span data-bind="fund.nav_text"></span><span class="stat__unit">円</span></p>
+          <p class="stat__change" data-bind="fund.change_line"></p>
+          <p class="stat__note"><span data-bind="fund.date_text"></span> 基準</p>
+        </div>
+        <hr class="fund__rule">
+        <div class="stat">
+          <p class="stat__label">年初来（<span data-bind="fund.start_date_text"></span> 比）</p>
+          <p class="stat__value stat__value--sm" data-bind="fund.ytd_text"></p>
+        </div>
+        <div class="stat">
+          <p class="stat__label">年初来高値からの位置</p>
+          <p class="stat__value stat__value--xs" data-bind="fund.from_peak_text"></p>
+          <p class="stat__note">高値 <span data-bind="fund.peak_text"></span>円</p>
+        </div>
+      </div>
+      <div class="fund__chart" id="chart-nav"></div>
+    </div>
+  </section>
+
+  <!-- 年初来ドローダウン -->
+  <section class="section section--drawdown" id="drawdown">
+    <h2 class="section__title" data-bind="drawdown.title"></h2>
+    <div class="card">
+      <div class="chart chart--wide" id="chart-drawdown"></div>
+      <p class="dd-maxes" id="drawdown-max"></p>
+      <p class="note" data-bind="drawdown.note"></p>
+    </div>
+  </section>
+
+  <!-- Fear & Greed：メーターと1年チャート -->
+  <section class="section section--fg" id="fear-greed">
+    <h2 class="section__title">Fear &amp; Greed Index</h2>
+    <div class="card fg">
+      <div class="fg__meter">
+        <div class="gauge" id="chart-fg"></div>
+        <p class="meter__value" data-bind="fear_greed.value_text"></p>
+        <p class="meter__band" data-bind="fear_greed.label"></p>
+        <div class="meter__history" id="fg-history"></div>
+      </div>
+      <div class="fg__chart" id="chart-fg-year"></div>
+    </div>
+    <p class="note" data-bind="fear_greed.note"></p>
+  </section>
+
+  <!-- VIX：S&P500と重ねた1年チャート -->
+  <section class="section section--vix" id="vix">
+    <h2 class="section__title">VIX指数（恐怖指数）の1年</h2>
+    <div class="card">
+      <div class="vix__head">
+        <span class="vix__value" data-bind="vix.value_text"></span>
+        <span class="vix__change" data-bind="vix.change_text"></span>
+        <span class="vix__band" data-bind="vix.band_label"></span>
+      </div>
+      <div class="chart chart--wide" id="chart-vix"></div>
+      <p class="note" data-bind="vix.note"></p>
+    </div>
+  </section>
+
+  <footer class="board__footer">
+    <h2 class="footer__title">出典</h2>
+    <ul class="sources" id="sources"></ul>
+    <p class="disclaimer" data-bind="disclaimer"></p>
+  </footer>
+
+  <p class="board__error" id="error" hidden></p>
+</main>
+
+<script src="./board.js"></script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+</body>
+</html>
