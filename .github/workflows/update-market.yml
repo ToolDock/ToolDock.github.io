@@ -1,7 +1,6 @@
 # GitHub Pages のダッシュボードを毎日更新する。
 #
-# Pages リポジトリの .github/workflows/update-market.yml として置く。
-# 前提のディレクトリ構成は deploy/README.md を参照。
+# 前提のディレクトリ構成は market/HANDOFF.md を参照。
 #
 # 置き場所を変えた場合は env の3つを直せば動く。
 

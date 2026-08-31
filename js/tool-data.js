@@ -49,6 +49,16 @@ window.TOOLS = [
   },
 
   {
+    id: "us-market",
+    title: "今日の米国市場",
+    desc: "S&P500・ドル円・VIXなど、その日の米国市場を一面にまとめたダッシュボード。",
+    seoTitle: "今日の米国市場｜S&P500・ドル円・VIXを一面で見るダッシュボード",
+    seoDesc: "S&P500・NASDAQ100・NYSE FANG+・ドル円・ゴールド・米国債10年・BTC・SOX指数の一日の値動きを一面にまとめた無料ダッシュボード。eMAXIS Slim 米国株式（S&P500）の基準価額と年初来ドローダウン、Fear & Greed Index、VIX指数も掲載。平日の朝に自動更新されます。",
+    category: "life",
+    url: "/us-market/"
+  },
+
+  {
     id: "fukuri",
     title: "複利計算・積立シミュレーター",
     desc: "リスク（標準偏差）を入れて、将来資産のブレ幅まで出す積立・複利シミュレーター。",

@@ -1,100 +1,102 @@
 # 米国市場ダッシュボード ── 引き継ぎ
 
-`/us-market/` に、今日の米国市場を一面で見るページを追加するための一式です。
-**まだ `main` には入れていません。このブランチのままでは公開されません。**
+`/us-market/` に、今日の米国市場を一面で見るページを置いています。
 
-データ取得の仕組みと、動く参考実装まで用意してあります。
-サイトへの馴染ませ方（デザイン・スラッグ・登録）は、そちらで判断してください。
+**公開はまだです。** AdSense の審査中なので、審査結果が出るまでマージを待っています。
+それ以外の作業（チャートの載せ替え・サイトへの統合）は済んでいます。
 
 ---
 
-## 1. まず決めてほしいこと ── チャートライブラリ
+## 1. チャートライブラリ ── Chart.js に載せ替え済み
 
-参考実装は **Plotly.js を CDN から読んでいます**。動きますが、このサイトには重すぎます。
+参考実装は Plotly.js を CDN から読んでいましたが、サイトに置いてある
+Chart.js に描き直しました。
 
 | | サイズ（min） |
 |---|---|
-| `js/vendor/chart.umd.min.js`（既存） | 208 KB |
-| `js/vendor/encoding-japanese.min.js`（既存） | 228 KB |
-| Plotly.js 3.6.0（参考実装が使用） | 4,730 KB |
-| plotly-basic 3.6.0（散布図などの部分バンドル） | 1,089 KB |
+| `js/vendor/chart.umd.min.js`（採用） | 204 KB |
+| `js/vendor/encoding-japanese.min.js`（サイト内で最大） | 223 KB |
+| Plotly.js 3.6.0（元の参考実装） | 4,730 KB |
 
-このサイトの他のツールは最大でも 228 KB です。AdSense を載せた公開ページに
-4.7 MB の JS を足すのは、表示速度の面でも割に合わないと思います。
+あわせて `market.json` から `figures`（Plotly の図の定義）を外しました。
+これが全体の 93.3% を占めていたので、**201 KB → 40 KB** になっています。
+日次でコミットするファイルなので、リポジトリの膨らみ方にも効きます。
 
-**推奨は、既に vendor 済みの Chart.js で描き直すことです。** 対応は次のとおりで、
-Plotly 固有の機能には依存していません。
+描画は `web/board.js` に集約しました。
 
-| 描くもの | Chart.js での実装 |
+| 描くもの | どこで |
 |---|---|
-| 日中足8枚（タイル） | `type: "line"`、`fill` で前日終値との差を塗る。軸は `display: false` |
-| 基準価額の年初来 | `type: "line"`、`fill: "origin"` |
-| 年初来ドローダウン（2本） | `type: "line"` ×2。片方 `borderDash` |
-| Fear & Greed（120度メーター） | `type: "doughnut"` に `rotation: -60, circumference: 120, cutout: "78%"`。針は小さいプラグインを1つ書く |
-| VIX（縦メーター） | `type: "bar"`（`indexAxis` 既定）を積み上げ、しきい値は `annotation` か描画プラグイン |
+| タイルの日中足（8枚） | `tileChart()` … Chart.js の折れ線 |
+| 基準価額の年初来 | `fundChart()` … Chart.js の折れ線 |
+| 年初来ドローダウン | `drawdownChart()` … Chart.js の折れ線2本 |
+| Fear & Greed のメーター | `fgGauge()` … 素のSVG |
+| VIX のメーター | `vixMeter()` … 素のSVG |
 
-必要な数値・系列は全部 `market.json` に入っているので、
-`figures` を無視して生データから描き直せます（→ 4章）。
+メーター2つは図というより図形なので、SVGを直接書いています。
+元の実装が Plotly の図形で描いていたのは Streamlit のサニタイズ対策で、
+自前の静的ページではその制約がありません。
 
-Plotly のまま行くなら、`plotly-basic.min.js` を `js/vendor/` に置いて
-`index.html` の `<script src>` をそちらに向けてください。参考実装が使っているのは
-Scatter・shapes・annotations だけなので、basic バンドルで足ります。
+`utils/us_market_figures.py` は不要になったので削除しました。
+`requirements.txt` に残るのは `requests` だけです。
 
 ---
 
 ## 2. 置いたもの
 
 ```
-market/                          ← 公開されない。データ取得とビルド
-├── build_static.py              ビルド本体
-├── collect_us_market.py         データ取得（Yahoo / MUFG / CNN）
-├── db.py                        SQLite接続
-├── requirements.txt             requests, plotly のみ
-├── utils/
-│   ├── us_market.py             DBから表示用の値を組み立てる
-│   └── us_market_figures.py     Plotlyの図（Chart.jsに移すなら不要になる）
-├── web/                         公開ファイルの元。ここを直してビルドする
-│   ├── index.html
-│   ├── board.css
-│   ├── board.js
-│   └── README.md                market.json の全構造とスタイル変更手順
-├── data/
-│   └── fund_nav.csv             基準価額の履歴433件（2025-01-01〜）
-└── HANDOFF.md                   これ
+market/                          <- 公開されない。データ取得とビルド
+|-- build_static.py              ビルド本体
+|-- collect_us_market.py         データ取得（Yahoo / MUFG / CNN）
+|-- db.py                        SQLite接続
+|-- requirements.txt             requests のみ
+|-- utils/
+|   `-- us_market.py             DBから表示用の値を組み立てる
+|-- web/                         公開ファイルの元。ここを直してビルドする
+|   |-- index.html
+|   |-- board.css
+|   |-- board.js
+|   `-- README.md                market.json の全構造とスタイル変更手順
+|-- data/
+|   `-- fund_nav.csv             基準価額の履歴433件（2025-01-01〜）
+`-- HANDOFF.md                   これ
 
-us-market/                       ← 公開候補。参考実装をビルドしたもの
-├── index.html
-├── board.css
-├── board.js
-└── market.json
+us-market/                       <- 公開候補。ビルドしたもの
+|-- index.html
+|-- board.css
+|-- board.js
+`-- market.json
 
 .github/workflows/
-└── update-market.yml            平日 07:00(JST) に自動更新
+`-- update-market.yml            平日 07:00(JST) に自動更新
 ```
-
-既存ファイルには触っていません。`.gitignore` にビルド中間物の2行だけ足してあります。
 
 ---
 
-## 3. サイトに馴染ませるとき
+## 3. サイトへの統合 ── 済み
 
-参考実装は単体で完結していて、このサイトの共通パーツを使っていません。
-統合するなら次が必要です。
-
-- **`/us-market/index.html` を他のツールと同じ体裁にする**
-  `CURRENT_TOOL` → `/js/tool-data.js` → `/js/head.js` → `/js/analytics.js`、
+- **スラッグは `us-market` で確定。** サイトには英語のスラッグ
+  （`roulette` `timer` `matrix` `radix` `counter` `dino` `crystal`）が
+  既に多数あるので、ローマ字にそろえる必要はないと判断しました。
+  後から変えると canonical と被リンクが動くので、これで固定します。
+- `index.html` を他のツールと同じ体裁にしました。
+  `CURRENT_TOOL` -> `/js/tool-data.js` -> `/js/head.js` -> `/js/analytics.js`、
   AdSense、末尾の `#related-tools` + `/js/related.js`。
-  静的な `<title>` / `<meta name="description">` / `<link rel="canonical">` も。
-- **`js/tool-data.js` の `TOOLS` に追加**（`id` / `title` / `desc` / `seoTitle` /
-  `seoDesc` / `category` / `url`）。カテゴリは `life` あたりでしょうか。
-- **`/ogp/<id>.png`** を用意
-- **`sitemap.xml` / `sitemap-tools.xml`** に追加
-- **スラッグ** … 仮に `us-market` にしてあります。`fukuri` や `hakohige` に
-  合わせるなら `beikoku-shijo` などでしょうか。**公開前に決めてください。**
-  後から変えると canonical と被リンクが動きます。
-- **`board.css`** … 単体ページ用に書いてあります。`/style.css` と共通パーツに
-  寄せるか、このまま残すかは判断にお任せします。色・余白は `:root` の
-  CSS変数にまとめてあるので、値の差し替えだけで揃うようにはしてあります。
+  静的な `<title>` / `<meta name="description">` / `<link rel="canonical">` も
+  置いてあります（`head.js` は「既に無ければ補う」作りなので、順序が重要）。
+- `js/tool-data.js` に登録（カテゴリは `life`）
+- `/ogp/us-market.png` を既存のテンプレートに合わせて作成
+- `sitemap-tools.xml` に追加
+- `board.css` の配色・書体・角丸を `/crystal/` `/kintoku/` にそろえました。
+  意味のある色（上げ／下げ、区分の色）だけは残しています。
+- **ダークテーマは外しました。** サイトの他のページが持っていないため、
+  共通ヘッダーとフッターだけ明るいまま残って浮いてしまいます。
+
+### 段組みについて1つ注意
+
+サイトは本文が900px、右レールが280pxです。**画面が広いと本文は580pxまで狭まります。**
+そのため画面幅のメディアクエリではタイルが4列のまま潰れます。
+`repeat(auto-fit, minmax(190px, 1fr))` にして、器の幅で4列と2列を
+行き来するようにしてあります（3列にはならない値にしてあります）。
 
 ---
 
@@ -103,12 +105,14 @@ us-market/                       ← 公開候補。参考実装をビルドし�
 全項目の説明は `market/web/README.md` にあります。要点だけ:
 
 - `rows[].tiles[]` … 8枚のタイル。`price` / `change_pct` などの生値と、
-  `price_text` / `change_text` の整形済みテキストの両方が入っています
+  `price_text` / `change_text` の整形済みテキストの両方が入っています。
+  日中足そのものも `digits` / `times` / `values` として同じ場所にあります
 - `fund` … 基準価額、前日比、年初来騰落、年初来高値からの位置
+- `fund_series` … 基準価額の年初来。`dates` / `values`
 - `drawdown.years["2026"|"2025"]` … `dates` / `values`（下落率%）/ `max` / `max_date`
 - `fear_greed` / `vix` … 値・区分ラベル・区分色
-- `figures` … Plotly の `{data, layout}`。**Chart.js に移すならここは捨てて構いません。**
-  各タイルの日中足の系列は `figures.tiles["^GSPC"].data[1].x / .y` にあります
+- `bands` … メーターの区分と色。境目や色を変えるときは Python 側の
+  `utils/us_market.py` の `FG_BANDS` / `VIX_BANDS` を直します
 
 `generated_at` はビルド時刻で、市場の最終更新時刻ではありません。
 各タイルの `session` が、その値がどの取引日のものかを表します。

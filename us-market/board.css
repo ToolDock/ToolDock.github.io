@@ -2,42 +2,32 @@
  *
  * デザインの差し替えはこのファイルだけで足りるように、
  * 色・角丸・間隔はすべて :root の変数に寄せてある。
+ * 値は /crystal/ /kintoku/ と同じ体系にそろえてある。
  * チャートの目盛りの文字色も --chart-font-color を board.js が読んで Chart.js に渡す。
  */
 
 :root {
-  --bg: #ffffff;
+  --bg: #f5f5f5;         /* サイト共通の地の色 */
   --surface: #ffffff;
-  --border: #e3e6ea;
-  --text: #1f2328;
-  --text-muted: #62696f;
-  --text-faint: #8b9298;
+  --border: #d6dbe2;
+  --text: #222222;
+  --text-muted: #555555;
+  --text-faint: #777777;
 
+  /* 意味のある色。ここだけは data の色分けなので残す */
   --up: #2e7d32;
   --down: #c62828;
   --flat: #78909c;
 
-  --chart-font-color: #3d4348;
+  --chart-font-color: #555555;
 
-  --radius: 10px;
+  --radius: 14px;
   --gap: 16px;
   --section-gap: 34px;
   --max-width: 1240px;
 
-  --font: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP",
-          "Yu Gothic", Meiryo, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e1117;
-    --surface: #161b22;
-    --border: #2a313a;
-    --text: #e6edf3;
-    --text-muted: #9aa4ae;
-    --text-faint: #6e7681;
-    --chart-font-color: #c9d1d9;
-  }
+  --font: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "BIZ UDPGothic",
+          "Yu Gothic Medium", "Yu Gothic", Meiryo, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -90,7 +80,10 @@ body {
 
 .row__tiles {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* 画面幅ではなく器の幅で折り返す。
+     右レールが出ると本文が580pxまで狭まるので、
+     画面幅のメディアクエリだと4列のまま潰れてしまう */
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: var(--gap);
 }
 
@@ -123,7 +116,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.tile__chart { height: 112px; margin-top: 4px; }
+.tile__chart { height: 112px; margin-top: auto; padding-top: 4px; }
 
 .tile__session {
   margin: 0;
@@ -142,7 +135,7 @@ body {
 /* ── 3段目：基準価額 ─────────────────────── */
 .fund {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) 2.4fr;
+  grid-template-columns: minmax(200px, 1fr) minmax(280px, 2.4fr);
   gap: 24px;
   align-items: start;
 }
@@ -172,7 +165,7 @@ body {
 /* ── 5段目：センチメント ─────────────────── */
 .sentiment {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--gap);
 }
 
@@ -207,14 +200,11 @@ body {
 
 /* ── 画面幅が狭いとき ───────────────────── */
 @media (max-width: 1000px) {
-  .row__tiles { grid-template-columns: repeat(2, 1fr); }
   .fund { grid-template-columns: 1fr; }
-  .sentiment { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
   body { padding: 20px 14px 40px; }
-  .row__tiles { grid-template-columns: 1fr; }
   .board__title { font-size: 1.5rem; }
   .stat__value { font-size: 2rem; }
 }
@@ -254,3 +244,7 @@ body {
   font-size: 13px;
   color: var(--text-muted);
 }
+
+/* 変化率が2行に折り返したタイルだけ図が下がって、
+   横に並んだ図の高さがそろわないので、図から下を底に寄せる */
+.tile { display: flex; flex-direction: column; }

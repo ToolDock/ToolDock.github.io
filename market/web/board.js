@@ -575,31 +575,4 @@
     .then(render)
     .catch(function (e) { fail(e.message); });
 
-  /* OSのテーマが切り替わったら、目盛りの文字色も追従させる */
-  if (window.matchMedia) {
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
-      var color = fontColor();
-      charts.forEach(function (chart) {
-        ["x", "y"].forEach(function (axis) {
-          if (chart.options.scales && chart.options.scales[axis]) {
-            chart.options.scales[axis].ticks.color = color;
-          }
-        });
-        if (chart.options.plugins.legend.labels) {
-          chart.options.plugins.legend.labels.color = color;
-        }
-        chart.update();
-      });
-      /* SVGの2つは組み直す */
-      if (payload) {
-        var bands = payload.bands || {};
-        if (payload.fear_greed) {
-          fgGauge(document.getElementById("chart-fg"), payload.fear_greed, bands.fear_greed || []);
-        }
-        if (payload.vix) {
-          vixMeter(document.getElementById("chart-vix"), payload.vix, bands.vix || []);
-        }
-      }
-    });
-  }
 })();
