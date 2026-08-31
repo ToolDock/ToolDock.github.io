@@ -3,516 +3,602 @@
   "symbol": "NVDA",
   "name": "NVIDIA",
   "sector": "情報技術",
-  "weight": 7.0
+  "weight": 7.0,
+  "name_ja": "エヌビディア"
  },
  {
   "symbol": "AAPL",
   "name": "Apple",
   "sector": "情報技術",
-  "weight": 6.0
+  "weight": 6.0,
+  "name_ja": "アップル"
  },
  {
   "symbol": "MSFT",
   "name": "Microsoft",
   "sector": "情報技術",
-  "weight": 6.0
+  "weight": 6.0,
+  "name_ja": "マイクロソフト"
  },
  {
   "symbol": "AVGO",
   "name": "Broadcom",
   "sector": "情報技術",
-  "weight": 2.4
+  "weight": 2.4,
+  "name_ja": "ブロードコム"
  },
  {
   "symbol": "ORCL",
   "name": "Oracle",
   "sector": "情報技術",
-  "weight": 1.0
+  "weight": 1.0,
+  "name_ja": "オラクル"
  },
  {
   "symbol": "AMD",
   "name": "AMD",
   "sector": "情報技術",
-  "weight": 0.7
+  "weight": 0.7,
+  "name_ja": ""
  },
  {
   "symbol": "CRM",
   "name": "Salesforce",
   "sector": "情報技術",
-  "weight": 0.6
+  "weight": 0.6,
+  "name_ja": "セールスフォース"
  },
  {
   "symbol": "INTU",
   "name": "Intuit",
   "sector": "情報技術",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "インテュイット"
  },
  {
   "symbol": "NOW",
   "name": "ServiceNow",
   "sector": "情報技術",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "サービスナウ"
  },
  {
   "symbol": "IBM",
   "name": "IBM",
   "sector": "情報技術",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": ""
  },
  {
   "symbol": "CSCO",
   "name": "Cisco",
   "sector": "情報技術",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "シスコシステムズ"
  },
  {
   "symbol": "ADBE",
   "name": "Adobe",
   "sector": "情報技術",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "アドビ"
  },
  {
   "symbol": "ACN",
   "name": "Accenture",
   "sector": "情報技術",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "アクセンチュア"
  },
  {
   "symbol": "QCOM",
   "name": "Qualcomm",
   "sector": "情報技術",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "クアルコム"
  },
  {
   "symbol": "TXN",
   "name": "Texas Instruments",
   "sector": "情報技術",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "テキサス・インスツルメンツ"
  },
  {
   "symbol": "AMAT",
   "name": "Applied Materials",
   "sector": "情報技術",
-  "weight": 0.35
+  "weight": 0.35,
+  "name_ja": "アプライド"
  },
  {
   "symbol": "MU",
   "name": "Micron",
   "sector": "情報技術",
-  "weight": 0.35
+  "weight": 0.35,
+  "name_ja": "マイクロン"
  },
  {
   "symbol": "PANW",
   "name": "Palo Alto Networks",
   "sector": "情報技術",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "パロアルト"
  },
  {
   "symbol": "INTC",
   "name": "Intel",
   "sector": "情報技術",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "インテル"
  },
  {
   "symbol": "LRCX",
   "name": "Lam Research",
   "sector": "情報技術",
-  "weight": 0.25
+  "weight": 0.25,
+  "name_ja": "ラムリサーチ"
  },
  {
   "symbol": "KLAC",
   "name": "KLA",
   "sector": "情報技術",
-  "weight": 0.25
+  "weight": 0.25,
+  "name_ja": ""
  },
  {
   "symbol": "GOOGL",
   "name": "Alphabet",
   "sector": "通信サービス",
-  "weight": 4.0
+  "weight": 4.0,
+  "name_ja": "アルファベット"
  },
  {
   "symbol": "META",
   "name": "Meta",
   "sector": "通信サービス",
-  "weight": 2.6
+  "weight": 2.6,
+  "name_ja": "メタ"
  },
  {
   "symbol": "NFLX",
   "name": "Netflix",
   "sector": "通信サービス",
-  "weight": 1.2
+  "weight": 1.2,
+  "name_ja": "ネットフリックス"
  },
  {
   "symbol": "DIS",
   "name": "Disney",
   "sector": "通信サービス",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "ディズニー"
  },
  {
   "symbol": "TMUS",
   "name": "T-Mobile",
   "sector": "通信サービス",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "Tモバイル"
  },
  {
   "symbol": "VZ",
   "name": "Verizon",
   "sector": "通信サービス",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "ベライゾン"
  },
  {
   "symbol": "T",
   "name": "AT&T",
   "sector": "通信サービス",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": ""
  },
  {
   "symbol": "AMZN",
   "name": "Amazon",
   "sector": "一般消費財",
-  "weight": 4.0
+  "weight": 4.0,
+  "name_ja": "アマゾン"
  },
  {
   "symbol": "TSLA",
   "name": "Tesla",
   "sector": "一般消費財",
-  "weight": 2.0
+  "weight": 2.0,
+  "name_ja": "テスラ"
  },
  {
   "symbol": "HD",
   "name": "Home Depot",
   "sector": "一般消費財",
-  "weight": 1.2
+  "weight": 1.2,
+  "name_ja": "ホーム・デポ"
  },
  {
   "symbol": "MCD",
   "name": "McDonald's",
   "sector": "一般消費財",
-  "weight": 0.7
+  "weight": 0.7,
+  "name_ja": "マクドナルド"
  },
  {
   "symbol": "BKNG",
   "name": "Booking",
   "sector": "一般消費財",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "ブッキング"
  },
  {
   "symbol": "LOW",
   "name": "Lowe's",
   "sector": "一般消費財",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "ロウズ"
  },
  {
   "symbol": "TJX",
   "name": "TJX",
   "sector": "一般消費財",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": ""
  },
  {
   "symbol": "NKE",
   "name": "Nike",
   "sector": "一般消費財",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "ナイキ"
  },
  {
   "symbol": "SBUX",
   "name": "Starbucks",
   "sector": "一般消費財",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "スターバックス"
  },
  {
   "symbol": "BRK-B",
   "name": "Berkshire Hathaway",
   "sector": "金融",
-  "weight": 1.7
+  "weight": 1.7,
+  "name_ja": "バークシャー"
  },
  {
   "symbol": "JPM",
   "name": "JPMorgan",
   "sector": "金融",
-  "weight": 1.5
+  "weight": 1.5,
+  "name_ja": "JPモルガン"
  },
  {
   "symbol": "V",
   "name": "Visa",
   "sector": "金融",
-  "weight": 1.0
+  "weight": 1.0,
+  "name_ja": "ビザ"
  },
  {
   "symbol": "MA",
   "name": "Mastercard",
   "sector": "金融",
-  "weight": 0.9
+  "weight": 0.9,
+  "name_ja": "マスターカード"
  },
  {
   "symbol": "BAC",
   "name": "Bank of America",
   "sector": "金融",
-  "weight": 0.7
+  "weight": 0.7,
+  "name_ja": "バンク・オブ・アメリカ"
  },
  {
   "symbol": "WFC",
   "name": "Wells Fargo",
   "sector": "金融",
-  "weight": 0.6
+  "weight": 0.6,
+  "name_ja": "ウェルズ・ファーゴ"
  },
  {
   "symbol": "GS",
   "name": "Goldman Sachs",
   "sector": "金融",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "ゴールドマン・サックス"
  },
  {
   "symbol": "MS",
   "name": "Morgan Stanley",
   "sector": "金融",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "モルガン・スタンレー"
  },
  {
   "symbol": "SPGI",
   "name": "S&P Global",
   "sector": "金融",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "S&Pグローバル"
  },
  {
   "symbol": "AXP",
   "name": "American Express",
   "sector": "金融",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "アメックス"
  },
  {
   "symbol": "BLK",
   "name": "BlackRock",
   "sector": "金融",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "ブラックロック"
  },
  {
   "symbol": "C",
   "name": "Citigroup",
   "sector": "金融",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "シティグループ"
  },
  {
   "symbol": "LLY",
   "name": "Eli Lilly",
   "sector": "ヘルスケア",
-  "weight": 1.5
+  "weight": 1.5,
+  "name_ja": "イーライリリー"
  },
  {
   "symbol": "UNH",
   "name": "UnitedHealth",
   "sector": "ヘルスケア",
-  "weight": 0.9
+  "weight": 0.9,
+  "name_ja": "ユナイテッドヘルス"
  },
  {
   "symbol": "JNJ",
   "name": "Johnson & Johnson",
   "sector": "ヘルスケア",
-  "weight": 0.8
+  "weight": 0.8,
+  "name_ja": "J&J"
  },
  {
   "symbol": "ABBV",
   "name": "AbbVie",
   "sector": "ヘルスケア",
-  "weight": 0.8
+  "weight": 0.8,
+  "name_ja": "アッヴィ"
  },
  {
   "symbol": "MRK",
   "name": "Merck",
   "sector": "ヘルスケア",
-  "weight": 0.6
+  "weight": 0.6,
+  "name_ja": "メルク"
  },
  {
   "symbol": "TMO",
   "name": "Thermo Fisher",
   "sector": "ヘルスケア",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "サーモフィッシャー"
  },
  {
   "symbol": "ABT",
   "name": "Abbott",
   "sector": "ヘルスケア",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "アボット"
  },
  {
   "symbol": "ISRG",
   "name": "Intuitive Surgical",
   "sector": "ヘルスケア",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "インテュイティブ"
  },
  {
   "symbol": "PFE",
   "name": "Pfizer",
   "sector": "ヘルスケア",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "ファイザー"
  },
  {
   "symbol": "AMGN",
   "name": "Amgen",
   "sector": "ヘルスケア",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "アムジェン"
  },
  {
   "symbol": "DHR",
   "name": "Danaher",
   "sector": "ヘルスケア",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "ダナハー"
  },
  {
   "symbol": "WMT",
   "name": "Walmart",
   "sector": "生活必需品",
-  "weight": 0.9
+  "weight": 0.9,
+  "name_ja": "ウォルマート"
  },
  {
   "symbol": "COST",
   "name": "Costco",
   "sector": "生活必需品",
-  "weight": 0.9
+  "weight": 0.9,
+  "name_ja": "コストコ"
  },
  {
   "symbol": "PG",
   "name": "Procter & Gamble",
   "sector": "生活必需品",
-  "weight": 0.8
+  "weight": 0.8,
+  "name_ja": "P&G"
  },
  {
   "symbol": "KO",
   "name": "Coca-Cola",
   "sector": "生活必需品",
-  "weight": 0.6
+  "weight": 0.6,
+  "name_ja": "コカ・コーラ"
  },
  {
   "symbol": "PEP",
   "name": "PepsiCo",
   "sector": "生活必需品",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "ペプシコ"
  },
  {
   "symbol": "PM",
   "name": "Philip Morris",
   "sector": "生活必需品",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "フィリップ・モリス"
  },
  {
   "symbol": "MO",
   "name": "Altria",
   "sector": "生活必需品",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "アルトリア"
  },
  {
   "symbol": "GE",
   "name": "GE Aerospace",
   "sector": "資本財",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "GEエアロスペース"
  },
  {
   "symbol": "CAT",
   "name": "Caterpillar",
   "sector": "資本財",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "キャタピラー"
  },
  {
   "symbol": "BA",
   "name": "Boeing",
   "sector": "資本財",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "ボーイング"
  },
  {
   "symbol": "RTX",
   "name": "RTX",
   "sector": "資本財",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": ""
  },
  {
   "symbol": "HON",
   "name": "Honeywell",
   "sector": "資本財",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "ハネウェル"
  },
  {
   "symbol": "UNP",
   "name": "Union Pacific",
   "sector": "資本財",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "ユニオン・パシフィック"
  },
  {
   "symbol": "DE",
   "name": "Deere",
   "sector": "資本財",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "ディア"
  },
  {
   "symbol": "LMT",
   "name": "Lockheed Martin",
   "sector": "資本財",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "ロッキード・マーチン"
  },
  {
   "symbol": "UPS",
   "name": "UPS",
   "sector": "資本財",
-  "weight": 0.2
+  "weight": 0.2,
+  "name_ja": ""
  },
  {
   "symbol": "XOM",
   "name": "Exxon Mobil",
   "sector": "エネルギー",
-  "weight": 1.0
+  "weight": 1.0,
+  "name_ja": "エクソンモービル"
  },
  {
   "symbol": "CVX",
   "name": "Chevron",
   "sector": "エネルギー",
-  "weight": 0.7
+  "weight": 0.7,
+  "name_ja": "シェブロン"
  },
  {
   "symbol": "COP",
   "name": "ConocoPhillips",
   "sector": "エネルギー",
-  "weight": 0.3
+  "weight": 0.3,
+  "name_ja": "コノコフィリップス"
  },
  {
   "symbol": "LIN",
   "name": "Linde",
   "sector": "素材",
-  "weight": 0.5
+  "weight": 0.5,
+  "name_ja": "リンデ"
  },
  {
   "symbol": "SHW",
   "name": "Sherwin-Williams",
   "sector": "素材",
-  "weight": 0.2
+  "weight": 0.2,
+  "name_ja": "シャーウィン"
  },
  {
   "symbol": "NEE",
   "name": "NextEra Energy",
   "sector": "公益事業",
-  "weight": 0.4
+  "weight": 0.4,
+  "name_ja": "ネクステラ"
  },
  {
   "symbol": "SO",
   "name": "Southern",
   "sector": "公益事業",
-  "weight": 0.25
+  "weight": 0.25,
+  "name_ja": "サザン"
  },
  {
   "symbol": "DUK",
   "name": "Duke Energy",
   "sector": "公益事業",
-  "weight": 0.2
+  "weight": 0.2,
+  "name_ja": "デューク・エナジー"
  },
  {
   "symbol": "PLD",
   "name": "Prologis",
   "sector": "不動産",
-  "weight": 0.2
+  "weight": 0.2,
+  "name_ja": "プロロジス"
  },
  {
   "symbol": "AMT",
   "name": "American Tower",
   "sector": "不動産",
-  "weight": 0.2
+  "weight": 0.2,
+  "name_ja": "アメリカン・タワー"
  }
 ]

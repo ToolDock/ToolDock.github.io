@@ -127,6 +127,7 @@ def heatmap_payload():
             "items": [{
                 "symbol": x["symbol"],
                 "name": x["name"],
+                "name_ja": x.get("name_ja") or "",
                 "weight": x["weight"],
                 "change_pct": x["change_pct"],
                 "change_text": f"{x['change_pct']:+.2f}%",
