@@ -56,7 +56,17 @@
 
   <div class="board__rows" id="rows"></div>
 
-  <!-- 3段目：eMAXIS Slim 米国株式（S&P500） -->
+  <!-- S&P500の主要銘柄ヒートマップ -->
+  <section class="section section--heatmap" id="heatmap">
+    <h2 class="section__title" data-bind="heatmap.title">S&P500 主要銘柄のヒートマップ</h2>
+    <div class="card">
+      <p class="heat__summary" id="heat-summary"></p>
+      <div class="heat" id="heat"></div>
+      <p class="note" data-bind="heatmap.note"></p>
+    </div>
+  </section>
+
+  <!-- eMAXIS Slim 米国株式（S&P500） -->
   <section class="section section--fund" id="fund">
     <h2 class="section__title" data-bind="fund_chart_title"></h2>
     <div class="card fund">
@@ -82,7 +92,7 @@
     </div>
   </section>
 
-  <!-- 4段目：年初来ドローダウン -->
+  <!-- 年初来ドローダウン -->
   <section class="section section--drawdown" id="drawdown">
     <h2 class="section__title" data-bind="drawdown.title"></h2>
     <div class="card">
@@ -92,26 +102,32 @@
     </div>
   </section>
 
-  <!-- 5段目：センチメント（左右） -->
-  <section class="section section--sentiment" id="sentiment">
-    <h2 class="section__title">市場のセンチメント</h2>
-    <div class="sentiment">
-      <article class="card meter meter--fg">
-        <h3 class="meter__title">本日の Fear &amp; Greed Index</h3>
-        <div class="chart" id="chart-fg"></div>
+  <!-- Fear & Greed：メーターと1年チャート -->
+  <section class="section section--fg" id="fear-greed">
+    <h2 class="section__title">Fear &amp; Greed Index</h2>
+    <div class="card fg">
+      <div class="fg__meter">
+        <div class="gauge" id="chart-fg"></div>
         <p class="meter__value" data-bind="fear_greed.value_text"></p>
         <p class="meter__band" data-bind="fear_greed.label"></p>
         <div class="meter__history" id="fg-history"></div>
-        <p class="note" data-bind="fear_greed.note"></p>
-      </article>
-      <article class="card meter meter--vix">
-        <h3 class="meter__title">本日の VIX 指数</h3>
-        <div class="chart" id="chart-vix"></div>
-        <p class="meter__value" data-bind="vix.value_text"></p>
-        <p class="meter__change" data-bind="vix.change_text"></p>
-        <p class="meter__band" data-bind="vix.band_label"></p>
-        <p class="note" data-bind="vix.note"></p>
-      </article>
+      </div>
+      <div class="fg__chart" id="chart-fg-year"></div>
+    </div>
+    <p class="note" data-bind="fear_greed.note"></p>
+  </section>
+
+  <!-- VIX：S&P500と重ねた1年チャート -->
+  <section class="section section--vix" id="vix">
+    <h2 class="section__title">VIX指数（恐怖指数）の1年</h2>
+    <div class="card">
+      <div class="vix__head">
+        <span class="vix__value" data-bind="vix.value_text"></span>
+        <span class="vix__change" data-bind="vix.change_text"></span>
+        <span class="vix__band" data-bind="vix.band_label"></span>
+      </div>
+      <div class="chart chart--wide" id="chart-vix"></div>
+      <p class="note" data-bind="vix.note"></p>
     </div>
   </section>
 

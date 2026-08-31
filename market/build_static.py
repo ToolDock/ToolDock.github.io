@@ -104,6 +104,51 @@ def fund_payload(stats):
     }
 
 
+def heatmap_payload():
+    """S&P500の主要銘柄を、セクターごとにまとめて返す。
+
+    タイルの面積はウェイト、色は前日比。
+    取得できていないときは None を返す（その節ごと出さない）。
+    """
+    rows = um.load_heatmap()
+    if not rows:
+        return None
+
+    sectors = {}
+    for row in rows:
+        sectors.setdefault(row["sector"], []).append(row)
+
+    out = []
+    for name, items in sectors.items():
+        items.sort(key=lambda x: -x["weight"])
+        out.append({
+            "name": name,
+            "weight": round(sum(x["weight"] for x in items), 3),
+            "items": [{
+                "symbol": x["symbol"],
+                "name": x["name"],
+                "weight": x["weight"],
+                "change_pct": x["change_pct"],
+                "change_text": f"{x['change_pct']:+.2f}%",
+            } for x in items],
+        })
+    out.sort(key=lambda s: -s["weight"])
+
+    changes = [x["change_pct"] for x in rows]
+    up = sum(1 for c in changes if c > 0)
+    down = sum(1 for c in changes if c < 0)
+    return {
+        "title": "S&P500 主要銘柄のヒートマップ",
+        "note": ("面積は時価総額のおおよその比率、色はその日の騰落率。"
+                 "緑が上げ、赤が下げ。S&P500の主要86銘柄を、セクターごとにまとめています。"),
+        "session": rows[0]["session"],
+        "count": len(rows),
+        "up": up,
+        "down": down,
+        "sectors": out,
+    }
+
+
 def drawdown_payload(series, years):
     out = {}
     for year in years:
@@ -173,6 +218,23 @@ def build_payload(today=None):
         tiles = [tile_payload(tile) for tile in um.load_tiles(symbols)]
         rows.append({"title": title, "tiles": tiles})
 
+    # VIX と S&P500 の1年チャート。日付をそろえて2本重ねる
+    vix_daily = dict(um.load_daily("^VIX"))
+    spx_daily = dict(um.load_daily("^GSPC"))
+    shared = sorted(set(vix_daily) & set(spx_daily))
+    vix_chart = {
+        "dates": shared,
+        "vix": [vix_daily[d] for d in shared],
+        "sp500": [spx_daily[d] for d in shared],
+    } if len(shared) >= 30 else None
+
+    # Fear & Greed の1年チャート
+    fg_hist = um.load_fg_history()
+    fg_chart = {
+        "dates": [d for d, _ in fg_hist],
+        "values": [v for _, v in fg_hist],
+    } if len(fg_hist) >= 30 else None
+
     # 基準価額の年初来。日付と値だけ渡し、描画はブラウザ側に任せる
     fund_series = None
     if stats:
@@ -201,6 +263,9 @@ def build_payload(today=None):
         "fear_greed": fg_out,
         "vix": vix_out,
         "fund_series": fund_series,
+        "vix_chart": vix_chart,
+        "fg_chart": fg_chart,
+        "heatmap": heatmap_payload(),
         "bands": {"fear_greed": [list(b) for b in um.FG_BANDS],
                   "vix": [list(b) for b in um.VIX_BANDS]},
         "sources": SOURCES,

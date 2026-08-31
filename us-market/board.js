@@ -14,8 +14,8 @@
   var DATA_URL = "./market.json";
 
   var COLORS = {
-    up: "#2e7d32",
-    down: "#c62828",
+    up: "#15803d",
+    down: "#b91c1c",
     flat: "#78909c",
     grid: "rgba(128,128,128,0.22)"
   };
@@ -320,19 +320,22 @@
     return day + "日目";
   }
 
-  /* ── 5段目：メーター（Fear & Greed と VIX で共通） ────
+  /* ── Fear & Greed のメーター ──────────────────
 
-     どちらも「0〜最大のどこにいるか」を示すだけなので、同じ形にする。
-     片方が円弧、片方が縦棒だと、並べたときに不揃いに見える。
+     CNN の本家に寄せた作り。
+     外側に5つの区分を扇形で並べ、いま該当する区分だけ色を敷く。
+     内側に0〜100の目盛りを置き、中心から太い針を出す。
 
-     Chart.js の doughnut を曲げて針を足すより、SVGを直接書くほうが短い。 */
+     Chart.js の doughnut では扇形ごとのラベルや目盛りが作れないので、
+     SVGを直接書いている。 */
 
-  var GAUGE = {
-    span: 120,        /* 開き角（度） */
-    r: 96,            /* 円弧の半径 */
-    width: 15,        /* 円弧の太さ */
-    gap: 1.6,         /* バンドどうしの隙間（度） */
-    needle: "#6b7280" /* 針。無彩色にして、色はバンドだけに持たせる */
+  var FG = {
+    span: 200,      /* 開き角（度） */
+    rOut: 118,      /* 区分の外側 */
+    rIn: 84,        /* 区分の内側 */
+    rNum: 72,       /* 目盛りの数字 */
+    rTick: 62,      /* 目盛りの線 */
+    gap: 1.2        /* 区分どうしの隙間（度） */
   };
 
   function polar(deg, radius) {
@@ -343,54 +346,339 @@
     ];
   }
 
-  /* 値を、メーターの中心からの角度（度）に直す */
-  function gaugeAngle(value, min, max) {
-    var v = Math.max(min, Math.min(max, value));
-    return ((v - min) / (max - min) - 0.5) * GAUGE.span;
+  function fgAngle(value) {
+    var v = Math.max(0, Math.min(100, value));
+    return (v / 100 - 0.5) * FG.span;
   }
 
-  function bandArc(fromDeg, toDeg, color) {
-    var a = polar(fromDeg, GAUGE.r), b = polar(toDeg, GAUGE.r);
-    return '<path d="M' + a + 'A' + GAUGE.r + ',' + GAUGE.r + ' 0 0 1 ' + b +
-           '" fill="none" stroke="' + color + '" stroke-width="' + GAUGE.width +
-           '" stroke-linecap="round"/>';
+  /* 扇形（外周の円弧 → 内周の円弧 で閉じる） */
+  function wedge(fromDeg, toDeg, rOut, rIn) {
+    var large = (toDeg - fromDeg) > 180 ? 1 : 0;
+    return "M" + polar(fromDeg, rOut) +
+           "A" + rOut + "," + rOut + " 0 " + large + " 1 " + polar(toDeg, rOut) +
+           "L" + polar(toDeg, rIn) +
+           "A" + rIn + "," + rIn + " 0 " + large + " 0 " + polar(fromDeg, rIn) + "Z";
   }
 
-  /* bands は [{from, to, color}] に正規化してから渡す */
-  function gauge(host, opts) {
+  function fgMeter(host, fg, bands) {
     if (!host) { return; }
 
-    var min = opts.min, max = opts.max;
-    /* 目盛りの文字まで入る最小の箱にしてある。
-       余白を広く取ると、下の数字との間が間延びする */
-    var svg = ['<svg viewBox="-116 -124 232 132" role="img" aria-label="' +
-               escapeText(opts.label) + '">'];
+    /* 扇の外側までちょうど収まる箱。余白を取ると、
+       器の幅いっぱいに広げてもメーターが小さく見える */
+    var svg = ['<svg viewBox="-121 -123 242 149" role="img" ' +
+               'aria-label="Fear and Greed Index ' + fg.value_text + ' ' + fg.label_ja + '">'];
 
-    opts.bands.forEach(function (band) {
-      var a = gaugeAngle(band.from, min, max) + GAUGE.gap;
-      var b = gaugeAngle(band.to, min, max) - GAUGE.gap;
-      if (b > a) { svg.push(bandArc(a, b, band.color)); }
-    });
+    bands.forEach(function (band) {
+      var from = fgAngle(band[0]) + FG.gap;
+      var to = fgAngle(band[1]) - FG.gap;
+      var active = fg.value >= band[0] && fg.value <= band[1];
 
-    /* 針。細い二等辺三角形にして、根元に小さな軸を置く */
-    var deg = gaugeAngle(opts.value, min, max);
-    var tip = polar(deg, GAUGE.r - GAUGE.width / 2 - 10);
-    var left = polar(deg - 90, 3);
-    var right = polar(deg + 90, 3);
-    svg.push('<polygon points="' + [tip, left, right].join(" ") +
-             '" fill="' + GAUGE.needle + '"/>');
-    svg.push('<circle cx="0" cy="0" r="6" fill="' + GAUGE.needle + '"/>');
-    svg.push('<circle cx="0" cy="0" r="2.4" fill="#ffffff"/>');
+      svg.push('<path d="' + wedge(from, to, FG.rOut, FG.rIn) + '" fill="' +
+               (active ? tint(band[4], 0.22) : "#f1f3f5") + '" stroke="' +
+               (active ? band[4] : "#e3e6ea") + '" stroke-width="' +
+               (active ? 1.6 : 1) + '"/>');
 
-    (opts.ticks || []).forEach(function (tick) {
-      var p = polar(gaugeAngle(tick, min, max), GAUGE.r + 20);
+      /* 区分の名前。扇の真ん中に、円弧に沿って寝かせる */
+      var mid = (from + to) / 2;
+      var p = polar(mid, (FG.rOut + FG.rIn) / 2);
+
+      /* 「極度の恐怖」は寝かせると読みにくいので2行に折る */
+      var text = band[3];
+      var lines = text.length >= 5 ? [text.slice(0, 3), text.slice(3)] : [text];
+      var spans = lines.map(function (line, i) {
+        return '<tspan x="' + p[0] + '" dy="' +
+               (i === 0 ? (lines.length > 1 ? -6 : 0) : 12) + '">' +
+               escapeText(line) + '</tspan>';
+      }).join("");
+
       svg.push('<text x="' + p[0] + '" y="' + p[1] + '" text-anchor="middle" ' +
-               'dominant-baseline="middle" font-size="11.5" fill="' + fontColor() +
-               '" opacity="0.6">' + tick + '</text>');
+               'dominant-baseline="central" font-size="10.5" font-weight="700" ' +
+               'letter-spacing="0.04em" fill="' +
+               (active ? readableOnWhite(band[4]) : "#8b9298") + '" ' +
+               'transform="rotate(' + mid.toFixed(1) + ' ' + p[0] + ' ' + p[1] + ')">' +
+               spans + '</text>');
     });
 
+    /* 内側の目盛り */
+    for (var v = 0; v <= 100; v += 25) {
+      var t = polar(fgAngle(v), FG.rNum);
+      svg.push('<text x="' + t[0] + '" y="' + t[1] + '" text-anchor="middle" ' +
+               'dominant-baseline="central" font-size="11" fill="#8b9298">' + v + '</text>');
+    }
+    for (var d = 0; d <= 100; d += 5) {
+      var a = polar(fgAngle(d), FG.rTick), b2 = polar(fgAngle(d), FG.rTick - (d % 25 === 0 ? 7 : 4));
+      svg.push('<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b2[0] + '" y2="' + b2[1] +
+               '" stroke="#c8ced5" stroke-width="' + (d % 25 === 0 ? 2 : 1) + '"/>');
+    }
+
+    /* 針。CNNと同じく黒く太い一本。目盛りの手前まで伸ばす */
+    var deg = fgAngle(fg.value);
+    var tip = polar(deg, FG.rTick - 10);
+    svg.push('<line x1="0" y1="0" x2="' + tip[0] + '" y2="' + tip[1] +
+             '" stroke="#1f2328" stroke-width="5.5" stroke-linecap="round"/>');
     svg.push('</svg>');
+
     host.innerHTML = svg.join("");
+  }
+
+  /* 帯の色を、白と混ぜて薄くする */
+  function tint(hex, alpha) {
+    var rgb = [1, 3, 5].map(function (i) {
+      return Math.round(parseInt(hex.substr(i, 2), 16) * alpha + 255 * (1 - alpha));
+    });
+    return "rgb(" + rgb.join(",") + ")";
+  }
+
+  /* ── Fear & Greed の1年チャート ─────────────── */
+  function fgYearChart(host, data) {
+    if (!host || !data) { return; }
+    makeChart(host, {
+      type: "line",
+      data: {
+        labels: data.dates,
+        datasets: [{
+          data: data.values,
+          borderColor: "#1d4ed8",
+          borderWidth: 1.8,
+          pointRadius: 0,
+          pointHitRadius: 6,
+          fill: false
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function (i) { return Math.round(i.parsed.y); } } }
+        },
+        scales: {
+          x: monthAxis(data.dates),
+          y: {
+            min: 0, max: 100,
+            grid: { color: COLORS.grid },
+            border: { display: false },
+            ticks: { color: fontColor(), stepSize: 25 }
+          }
+        }
+      }
+    });
+  }
+
+  /* ── VIX と S&P500 を重ねた1年チャート ────────── */
+  function vixYearChart(host, data) {
+    if (!host || !data) { return; }
+    makeChart(host, {
+      type: "line",
+      data: {
+        labels: data.dates,
+        datasets: [
+          { label: "VIX", data: data.vix, yAxisID: "y",
+            borderColor: "#1f2328", borderWidth: 1.8, pointRadius: 0, pointHitRadius: 6,
+            fill: false },
+          { label: "S&P500", data: data.sp500, yAxisID: "y1",
+            borderColor: "#c98a3a", borderWidth: 1.8, pointRadius: 0, pointHitRadius: 6,
+            fill: false }
+        ]
+      },
+      options: {
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: true, align: "end",
+                    labels: { color: fontColor(), boxWidth: 18, usePointStyle: false } },
+          tooltip: {
+            callbacks: {
+              label: function (i) {
+                return i.dataset.label + " " + fmt(i.parsed.y, i.datasetIndex === 0 ? 2 : 0);
+              }
+            }
+          }
+        },
+        scales: {
+          x: monthAxis(data.dates),
+          y: {
+            position: "left",
+            grid: { color: COLORS.grid },
+            border: { display: false },
+            ticks: { color: fontColor() },
+            title: { display: true, text: "VIX", color: fontColor() }
+          },
+          y1: {
+            position: "right",
+            grid: { drawOnChartArea: false },
+            border: { display: false },
+            ticks: { color: fontColor(), callback: function (v) { return fmt(v, 0); } },
+            title: { display: true, text: "S&P500", color: fontColor() }
+          }
+        }
+      }
+    });
+  }
+
+  /* 月が変わる最初の日だけ「◯月」と出す横軸 */
+  function monthAxis(dates) {
+    var seen = {};
+    var labels = dates.map(function (d) {
+      var m = Number(d.slice(5, 7));
+      if (seen[m]) { return ""; }
+      seen[m] = true;
+      return m + "月";
+    });
+
+    /* 1年ぶんだと先頭の月が数日しかないことがあり、
+       次の月のラベルと重なって潰れる。短すぎる先頭は出さない */
+    var first = labels.findIndex(function (l) { return l; });
+    var second = labels.findIndex(function (l, i) { return l && i > first; });
+    if (first >= 0 && second > 0 && second - first < 8) { labels[first] = ""; }
+    return {
+      grid: { display: false },
+      border: { color: COLORS.grid },
+      ticks: {
+        color: fontColor(), autoSkip: false, maxRotation: 0,
+        callback: function (_v, i) { return labels[i]; }
+      }
+    };
+  }
+
+  /* ── ヒートマップ ────────────────────────────
+
+     面積が時価総額の比、色がその日の騰落率。
+     まずセクターを敷き詰め、その中で銘柄を敷き詰める2段構え。
+
+     並べ方は squarified treemap。単純に横一列に切ると、
+     ウェイトの小さい銘柄が細長い帯になって名前が読めなくなる。 */
+
+  /* 与えられた矩形に、値の比で長方形を敷き詰める */
+  function squarify(values, rect) {
+    var total = values.reduce(function (a, b) { return a + b.value; }, 0);
+    if (!total) { return []; }
+
+    var items = values.slice();
+    var out = [];
+    var x = rect.x, y = rect.y, w = rect.w, h = rect.h;
+    var scale = (w * h) / total;
+
+    function worst(row, side) {
+      var sum = row.reduce(function (a, b) { return a + b; }, 0);
+      var max = Math.max.apply(null, row), min = Math.min.apply(null, row);
+      var s2 = sum * sum, side2 = side * side;
+      return Math.max(side2 * max / s2, s2 / (side2 * min));
+    }
+
+    while (items.length) {
+      var side = Math.min(w, h);
+      var row = [items[0]];
+      var areas = [items[0].value * scale];
+
+      while (items.length > row.length) {
+        var next = items[row.length].value * scale;
+        if (worst(areas.concat([next]), side) > worst(areas, side)) { break; }
+        row.push(items[row.length]);
+        areas.push(next);
+      }
+
+      var rowArea = areas.reduce(function (a, b) { return a + b; }, 0);
+      var thick = rowArea / side;
+      var pos = 0;
+
+      row.forEach(function (item, i) {
+        var len = areas[i] / thick;
+        out.push(w >= h
+          ? { item: item, x: x, y: y + pos, w: thick, h: len }
+          : { item: item, x: x + pos, y: y, w: len, h: thick });
+        pos += len;
+      });
+
+      if (w >= h) { x += thick; w -= thick; } else { y += thick; h -= thick; }
+      items = items.slice(row.length);
+    }
+    return out;
+  }
+
+  /* 騰落率を色に直す。±3%で振り切る。
+     中央は無彩色にして、白い文字が乗る濃さにそろえてある */
+  var HEAT_LIMIT = 2.5;
+
+  function heatColor(pct) {
+    var t = Math.min(Math.abs(pct) / HEAT_LIMIT, 1);
+    /* 中央は青みのない灰色。青が入ると赤の隣で紫に見える */
+    var mid = [117, 120, 122];
+    var end = pct >= 0 ? [21, 128, 61] : [185, 28, 28];
+    return "rgb(" + mid.map(function (v, i) {
+      return Math.round(v + (end[i] - v) * t);
+    }).join(",") + ")";
+  }
+
+  function renderHeatmap(data) {
+    var section = document.getElementById("heatmap");
+    if (!data) { section.hidden = true; return; }
+
+    bind(document, "heatmap.title", data.title);
+    bind(document, "heatmap.note", data.note);
+
+    var summary = document.getElementById("heat-summary");
+    summary.textContent = data.session + " のセッション　" +
+      data.count + "銘柄中 " + data.up + "銘柄が上げ、" + data.down + "銘柄が下げ";
+
+    var host = document.getElementById("heat");
+    host.innerHTML = "";
+
+    /* 高さは幅から決める。横長すぎても縦長すぎても読みにくい */
+    var width = host.clientWidth || 860;
+    var height = Math.round(Math.max(400, Math.min(620, width * 0.70)));
+    host.style.height = height + "px";
+
+    var boxes = squarify(
+      data.sectors.map(function (s) { return { value: s.weight, sector: s }; }),
+      { x: 0, y: 0, w: width, h: height });
+
+    boxes.forEach(function (box) {
+      var sector = box.item.sector;
+      var group = document.createElement("div");
+      group.className = "heat__sector";
+      group.style.cssText = "left:" + box.x + "px;top:" + box.y + "px;" +
+                            "width:" + box.w + "px;height:" + box.h + "px;";
+
+      /* 背の低いセクターに名前を載せると、タイルの取り分が無くなる */
+      var showName = box.h >= 46;
+      if (showName) {
+        var head = document.createElement("div");
+        head.className = "heat__sector-name";
+        head.textContent = sector.name;
+        group.appendChild(head);
+      } else {
+        group.title = sector.name;
+      }
+
+      var top = showName ? 16 : 0;
+      var inner = { x: 0, y: top, w: box.w - 2, h: box.h - top - 2 };
+      squarify(sector.items.map(function (it) {
+        return { value: it.weight, stock: it };
+      }), inner).forEach(function (cell) {
+        var it = cell.item.stock;
+        var tile = document.createElement("div");
+        tile.className = "heat__tile";
+        tile.style.cssText = "left:" + cell.x + "px;top:" + cell.y + "px;" +
+          "width:" + cell.w + "px;height:" + cell.h + "px;" +
+          "background:" + heatColor(it.change_pct) + ";";
+        tile.title = it.name + "（" + it.symbol + "）" + it.change_text;
+
+        /* 狭いタイルに文字を詰めると潰れるので、入る場合だけ出す */
+        if (cell.w >= 46 && cell.h >= 30) {
+          var sym = document.createElement("span");
+          sym.className = "heat__symbol";
+          sym.textContent = it.symbol;
+          tile.appendChild(sym);
+        }
+        if (cell.w >= 56 && cell.h >= 44) {
+          var chg = document.createElement("span");
+          chg.className = "heat__change";
+          chg.textContent = it.change_text;
+          tile.appendChild(chg);
+        }
+        group.appendChild(tile);
+      });
+
+      host.appendChild(group);
+    });
   }
 
   function escapeText(text) {
@@ -472,10 +760,13 @@
     drawdownChart(document.getElementById("chart-drawdown"), drawdown);
   }
 
-  function renderFearGreed(fg, bands) {
-    var card = document.querySelector(".meter--fg");
-    if (!fg) { card.hidden = true; return; }
+  function renderFearGreed(fg, bands, chart) {
+    var section = document.getElementById("fear-greed");
+    if (!fg) { section.hidden = true; return; }
     bind(document, "fear_greed.note", fg.note);
+    bind(document, "fear_greed.value_text", fg.value_text);
+    bind(document, "fear_greed.label", fg.label_ja + "（" + fg.label_en + "）");
+    paint('[data-bind="fear_greed.label"]', fg.color);
 
     var host = document.getElementById("fg-history");
     host.innerHTML = "";
@@ -493,44 +784,33 @@
       host.appendChild(wrap);
     });
 
-    gauge(document.getElementById("chart-fg"), {
-      label: "Fear and Greed Index",
-      value: fg.value, min: 0, max: 100, ticks: [0, 50, 100],
-      bands: bands.map(function (b) {
-        return { from: b[0], to: b[1], color: b[4] };
-      })
-    });
+    fgMeter(document.getElementById("chart-fg"), fg, bands);
 
-    bind(document, "fear_greed.value_text", fg.value_text);
-    bind(document, "fear_greed.label", fg.label_ja + "（" + fg.label_en + "）");
-    paint('[data-bind="fear_greed.label"]', fg.color);
+    /* 1年ぶんの履歴がまだ無いときは、空の枠を残さない */
+    var chartHost = document.getElementById("chart-fg-year");
+    if (chart) {
+      fgYearChart(chartHost, chart);
+    } else {
+      chartHost.hidden = true;
+      section.querySelector(".fg").style.gridTemplateColumns = "1fr";
+    }
   }
 
-  function renderVix(vix, bands) {
-    var card = document.querySelector(".meter--vix");
-    if (!vix) { card.hidden = true; return; }
+  function renderVix(vix, chart) {
+    var section = document.getElementById("vix");
+    if (!vix) { section.hidden = true; return; }
     bind(document, "vix.note", vix.note);
-    gauge(document.getElementById("chart-vix"), {
-      label: "VIX指数",
-      value: vix.value, min: 0, max: 50, ticks: [0, 25, 50],
-      bands: bands.map(function (b) {
-        return { from: b[0], to: b[1], color: b[3] };
-      })
-    });
-
     bind(document, "vix.value_text", vix.value_text);
     bind(document, "vix.change_text", vix.change_text);
     bind(document, "vix.band_label", vix.band_label);
     paint('[data-bind="vix.band_label"]', vix.band_color);
     colorize(document.querySelector('[data-bind="vix.change_text"]'), vix.direction);
+
+    /* 1年ぶんの日足がまだ無いときは、この節ごと出さない */
+    if (!chart) { section.hidden = true; return; }
+    vixYearChart(document.getElementById("chart-vix"), chart);
   }
 
-  /* 区分のラベルに、そのバンドの色を付ける。
-
-     ただしバンドの色は円弧に敷くためのもので、文字にすると薄い。
-     たとえば中立の金色は白地でコントラストが2.5:1しかなく、
-     文字として読めない（WCAG AA は 4.5:1）。
-     円弧の色はそのままに、文字だけ読める濃さまで落とす */
   function paint(selector, color) {
     var el = document.querySelector(selector);
     if (el) { el.style.color = readableOnWhite(color); }
@@ -544,6 +824,8 @@
     return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
   }
 
+  /* バンドの色は円弧や扇に敷くためのもので、文字にすると薄い。
+     色みは保ったまま、白地で読める濃さ（4.5:1）まで落とす */
   function readableOnWhite(hex, target) {
     target = target || 4.5;
     var rgb = [1, 3, 5].map(function (i) { return parseInt(hex.substr(i, 2), 16); });
@@ -580,11 +862,23 @@
 
     var bands = data.bands || {};
     renderRows(data.rows);
+    renderHeatmap(data.heatmap);
     renderFund(data.fund, data.fund_series);
     renderDrawdown(data.drawdown);
-    renderFearGreed(data.fear_greed, bands.fear_greed || []);
-    renderVix(data.vix, bands.vix || []);
+    renderFearGreed(data.fear_greed, bands.fear_greed || [], data.fg_chart);
+    renderVix(data.vix, data.vix_chart);
     renderFooter(data.sources, data.disclaimer);
+
+    /* ヒートマップは器の幅から寸法を決めるので、幅が変わったら組み直す */
+    if (window.ResizeObserver) {
+      var host = document.getElementById("heat");
+      var last = host ? host.clientWidth : 0;
+      new ResizeObserver(function () {
+        if (!host || Math.abs(host.clientWidth - last) < 8) { return; }
+        last = host.clientWidth;
+        renderHeatmap(data.heatmap);
+      }).observe(document.body);
+    }
   }
 
   function fail(message) {

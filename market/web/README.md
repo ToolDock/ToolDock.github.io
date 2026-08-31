@@ -162,8 +162,28 @@ python build_static.py --refresh
   },
 
   "bands": {                                      // メーターの区分。色もここ
-    "fear_greed": [[0, 25, "Extreme Fear", "極度の恐怖", "#c62828"], "…"],
-    "vix":        [[0, 15, "落ち着き", "#2e7d32"], "…"]
+    "fear_greed": [[0, 25, "Extreme Fear", "極度の恐怖", "#b91c1c"], "…"],
+    "vix":        [[0, 15, "落ち着き", "#15803d"], "…"]
+  },
+
+  "fg_chart": {                                   // Fear & Greed の1年。なければ null
+    "dates":  ["2025-09-01", "…"],
+    "values": [61.2, "…"]
+  },
+
+  "vix_chart": {                                  // VIXとS&P500の1年。なければ null
+    "dates":  ["2025-09-01", "…"],
+    "vix":    [16.4, "…"],
+    "sp500":  [6421.5, "…"]                       // 日付はvixと共通のものだけ残してある
+  },
+
+  "heatmap": {                                    // 主要銘柄。なければ null（節ごと出ない）
+    "session": "2026-08-28", "count": 86, "up": 35, "down": 51,
+    "sectors": [{
+      "name": "情報技術", "weight": 21.6,         // 面積の比。画面には出さない
+      "items": [{ "symbol": "NVDA", "name": "NVIDIA", "weight": 7.0,
+                  "change_pct": -1.23, "change_text": "-1.23%" }]
+    }]
   },
 
   "sources": ["…"],

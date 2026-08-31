@@ -15,8 +15,8 @@
   --text-faint: #777777;
 
   /* 意味のある色。ここだけは data の色分けなので残す */
-  --up: #2e7d32;
-  --down: #c62828;
+  --up: #15803d;
+  --down: #b91c1c;
   --flat: #78909c;
 
   --chart-font-color: #555555;
@@ -169,9 +169,6 @@ body {
   gap: var(--gap);
 }
 
-.meter__title { margin: 0 0 6px; font-size: 1rem; font-weight: 700; }
-.meter .chart { height: 158px; }
-
 .meter__history { display: flex; justify-content: space-around; margin-top: 4px; }
 .meter__history-item { text-align: center; }
 .meter__history-label { display: block; font-size: .72rem; color: var(--text-muted); }
@@ -215,22 +212,12 @@ body {
 .fund__chart canvas,
 .chart canvas { width: 100% !important; height: 100% !important; }
 
-/* メーターの図はSVG。器の幅に合わせて縮む */
-.meter .chart svg { width: 100%; height: 100%; display: block; }
-
 /* Fear & Greed の数値と区分。以前は図の中に描いていた */
 .meter__value {
   margin: 6px 0 0;
   font-size: 34px;
   font-weight: 700;
   line-height: 1.1;
-  text-align: center;
-}
-
-.meter__change {
-  margin: 2px 0 0;
-  font-size: 14px;
-  font-weight: 700;
   text-align: center;
 }
 
@@ -254,3 +241,82 @@ body {
 /* 変化率が2行に折り返したタイルだけ図が下がって、
    横に並んだ図の高さがそろわないので、図から下を底に寄せる */
 .tile { display: flex; flex-direction: column; }
+
+/* ── Fear & Greed（メーターと1年チャート） ─────────── */
+
+.fg {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(280px, 1fr);
+  gap: var(--gap);
+  align-items: center;
+}
+
+.fg__meter { min-width: 0; text-align: center; }
+.fg__chart { min-width: 0; height: 260px; }
+
+.gauge svg { width: 100%; height: auto; display: block; }
+
+/* ── VIX ──────────────────────────────────── */
+
+.vix__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-bottom: 8px;
+}
+
+.vix__value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+.vix__change { font-size: 15px; font-weight: 700; }
+.vix__band { font-size: 15px; font-weight: 700; }
+
+/* ── ヒートマップ ───────────────────────────── */
+
+.heat__summary {
+  margin: 0 0 10px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.heat {
+  position: relative;
+  width: 100%;
+}
+
+.heat__sector {
+  position: absolute;
+  padding: 0 1px 1px 0;
+}
+
+.heat__sector-name {
+  height: 16px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.heat__tile {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border: 1px solid var(--surface);
+  color: #fff;
+  overflow: hidden;
+  line-height: 1.15;
+}
+
+.heat__symbol { font-size: 12px; font-weight: 700; }
+.heat__change { font-size: 11px; opacity: 0.92; }
+
+@media (max-width: 700px) {
+  .fg { grid-template-columns: 1fr; }
+  .fg__chart { height: 220px; }
+  .heat__symbol { font-size: 11px; }
+  .heat__change { font-size: 10px; }
+}

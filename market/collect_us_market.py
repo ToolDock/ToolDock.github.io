@@ -14,6 +14,8 @@
 """
 
 import csv
+import io
+import json
 import sys
 import time
 from datetime import date, datetime, timedelta, timezone
@@ -36,6 +38,9 @@ SYMBOLS = {
     "^SOX":    {"label": "SOX指数",         "digits": 2, "unit": "",   "change": "pct"},
     "^VIX":    {"label": "VIX",            "digits": 2, "unit": "",   "change": "pct"},
 }
+
+# 1年チャートを描く銘柄。日足で別途取得する
+DAILY_SYMBOLS = ["^VIX", "^GSPC"]
 
 # eMAXIS Slim 米国株式（S&P500）
 FUND_CD = "253266"
@@ -72,7 +77,24 @@ def init_tables():
             fetched_at TEXT
         )
     """)
-    cur.execute("DROP TABLE IF EXISTS market_daily")
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS market_daily (
+            symbol TEXT,
+            date TEXT,      -- 取引所ローカル日付 YYYY-MM-DD
+            close REAL,
+            PRIMARY KEY (symbol, date)
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS heatmap (
+            symbol TEXT PRIMARY KEY,
+            session TEXT,
+            price REAL,
+            prev_close REAL,
+            change_pct REAL,
+            fetched_at TEXT
+        )
+    """)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS fund_nav (
             fund_cd TEXT,
@@ -174,6 +196,45 @@ def refresh_symbol(symbol):
     return len(rows), latest_session
 
 
+def refresh_daily(symbol, rng="1y"):
+    """日足を1年ぶん取得して保存する。VIXとS&P500の1年チャート用。
+
+    5分足（refresh_symbol）とは別のテーブルに入れる。
+    こちらは1銘柄1リクエストで済むので、負荷はほとんど変わらない。
+    """
+    result = fetch_chart(symbol, rng, "1d")
+    offset = result["meta"].get("gmtoffset") or 0
+
+    rows = []
+    for stamp, value in _series(result):
+        day = datetime.fromtimestamp(stamp + offset, timezone.utc).date().isoformat()
+        rows.append((symbol, day, value))
+    if not rows:
+        raise RuntimeError(f"{symbol}: 日足が空")
+
+    conn = get_connection()
+    conn.executemany(
+        "INSERT OR REPLACE INTO market_daily (symbol, date, close) VALUES (?,?,?)", rows)
+    conn.commit()
+    conn.close()
+    return len(rows)
+
+
+def refresh_dailies(symbols=DAILY_SYMBOLS, pause=0.8, verbose=False):
+    failed = []
+    for symbol in symbols:
+        try:
+            count = refresh_daily(symbol)
+            if verbose:
+                print(f"  {symbol:9s} 日足 {count}件")
+        except Exception as e:
+            failed.append((symbol, str(e)))
+            if verbose:
+                print(f"  {symbol:9s} 日足 失敗: {e}")
+        time.sleep(pause)
+    return failed
+
+
 def refresh_market(symbols=None, pause=0.8, verbose=False):
     """全シンボルを更新。失敗したものの一覧を返す。"""
     failed = []
@@ -188,6 +249,72 @@ def refresh_market(symbols=None, pause=0.8, verbose=False):
                 print(f"  {symbol:9s} 失敗: {e}")
         time.sleep(pause)
     return failed
+
+
+# ── ヒートマップ（S&P500の主要銘柄） ──────────────────────────
+MEMBERS_PATH = Path(__file__).resolve().parent / "data" / "sp500_members.json"
+
+
+def load_members():
+    """銘柄・セクター・ウェイトの表を読む。
+
+    ウェイトはタイルの面積を決めるためだけの概算値で、画面には出さない。
+    銘柄の入れ替えは年に数回あるので、この表はときどき見直すこと。
+    """
+    with io.open(MEMBERS_PATH, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def refresh_heatmap(pause=1.0, verbose=False, limit=None):
+    """各銘柄の前日比を取得して保存する。
+
+    1銘柄1リクエストなので、他の取得よりずっと重い。
+    Yahoo は非公式APIで、まとめて叩くと429を返すことがある。
+    ここが失敗してもダッシュボード本体は成り立つので、
+    build 側では欠けていても中止しない扱いにしてある。
+    """
+    members = load_members()
+    if limit:
+        members = members[:limit]
+
+    rows, failed = [], []
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+    for member in members:
+        symbol = member["symbol"]
+        try:
+            result = fetch_chart(symbol, "5d", "1d")
+            meta = result["meta"]
+            series = _series(result)
+            price = meta.get("regularMarketPrice") or (series[-1][1] if series else None)
+            prev = meta.get("previousClose")
+            if prev is None and len(series) >= 2:
+                prev = series[-2][1]
+            if price is None or not prev:
+                raise RuntimeError("価格が取れない")
+
+            offset = meta.get("gmtoffset") or 0
+            session = datetime.fromtimestamp(
+                (series[-1][0] if series else 0) + offset, timezone.utc).date().isoformat()
+            rows.append((symbol, session, price, prev,
+                         round((price - prev) / prev * 100, 2), now))
+            if verbose:
+                print(f"  {symbol:6s} {rows[-1][4]:+.2f}%")
+        except Exception as e:
+            failed.append((symbol, str(e)))
+            if verbose:
+                print(f"  {symbol:6s} 失敗: {e}")
+        time.sleep(pause)
+
+    if rows:
+        conn = get_connection()
+        conn.executemany(
+            "INSERT OR REPLACE INTO heatmap "
+            "(symbol, session, price, prev_close, change_pct, fetched_at) VALUES (?,?,?,?,?,?)",
+            rows)
+        conn.commit()
+        conn.close()
+    return len(rows), failed
 
 
 # ── eMAXIS Slim S&P500 の基準価額 ────────────────────────────
@@ -332,10 +459,22 @@ def refresh_all(nav_lookback_days=14, verbose=False):
     """ダッシュボード表示前の通常更新。基準価額は直近ぶんだけ見に行く。"""
     init_tables()
     failed = refresh_market(verbose=verbose)
+    failed += refresh_dailies(verbose=verbose)
     try:
         refresh_fear_greed()
     except Exception as e:
         failed.append(("fear_greed", str(e)))
+
+    # ヒートマップは86リクエストと重く、Yahooに弾かれることもある。
+    # ここが取れなくてもダッシュボード本体は成り立つので、
+    # 失敗しても failed には積まず、警告だけ出す
+    try:
+        count, hm_failed = refresh_heatmap(verbose=verbose)
+        if verbose:
+            print(f"  ヒートマップ {count}件取得"
+                  + (f"（{len(hm_failed)}件失敗）" if hm_failed else ""))
+    except Exception as e:
+        print(f"  ヒートマップの取得に失敗しました（本体には影響しません）: {e}")
     try:
         refresh_fund_nav(start=date.today() - timedelta(days=nav_lookback_days), verbose=verbose)
     except Exception as e:

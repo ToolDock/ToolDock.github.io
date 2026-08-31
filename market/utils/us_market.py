@@ -188,6 +188,58 @@ VIX_BANDS = [
 ]
 
 
+def load_daily(symbol, days=400):
+    """日足の終値を古い順に返す。1年チャート用。"""
+    conn = _conn()
+    try:
+        rows = conn.execute(
+            "SELECT date, close FROM market_daily WHERE symbol=? ORDER BY date", (symbol,)
+        ).fetchall()
+    except Exception:
+        return []
+    finally:
+        conn.close()
+    out = [(r["date"], r["close"]) for r in rows if r["close"] is not None]
+    return out[-days:] if days else out
+
+
+def load_fg_history(days=400):
+    """Fear & Greed の日次履歴を古い順に返す。CNNのヒストリカルを保存したもの。"""
+    conn = _conn()
+    rows = conn.execute(
+        "SELECT date, value FROM fear_greed WHERE type='stock' ORDER BY date"
+    ).fetchall()
+    conn.close()
+    out = [(r["date"], r["value"]) for r in rows if r["value"] is not None]
+    return out[-days:] if days else out
+
+
+def load_heatmap():
+    """ヒートマップの各銘柄を、銘柄表（セクター・ウェイト）と突き合わせて返す。"""
+    import json
+    from pathlib import Path
+    path = Path(__file__).resolve().parent.parent / "data" / "sp500_members.json"
+    with open(path, encoding="utf-8") as f:
+        members = json.load(f)
+
+    conn = _conn()
+    try:
+        rows = {r["symbol"]: r for r in conn.execute(
+            "SELECT symbol, session, change_pct FROM heatmap").fetchall()}
+    except Exception:
+        return []
+    finally:
+        conn.close()
+
+    out = []
+    for m in members:
+        row = rows.get(m["symbol"])
+        if not row or row["change_pct"] is None:
+            continue
+        out.append({**m, "change_pct": row["change_pct"], "session": row["session"]})
+    return out
+
+
 def fg_band(value):
     for low, high, label_en, label_ja, color in FG_BANDS:
         if low <= value <= high:
