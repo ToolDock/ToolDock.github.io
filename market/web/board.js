@@ -320,103 +320,76 @@
     return day + "日目";
   }
 
-  /* ── 5段目：Fear & Greed のメーター ──────────── */
-  var FG_SPAN = 120;                  /* メーターの開き角（度） */
-  var FG_R_OUT = 100, FG_R_IN = 78;
+  /* ── 5段目：メーター（Fear & Greed と VIX で共通） ────
 
-  function fgAngle(value) {
-    var v = Math.max(0, Math.min(100, value));
-    return (v / 100 - 0.5) * FG_SPAN * Math.PI / 180;
+     どちらも「0〜最大のどこにいるか」を示すだけなので、同じ形にする。
+     片方が円弧、片方が縦棒だと、並べたときに不揃いに見える。
+
+     Chart.js の doughnut を曲げて針を足すより、SVGを直接書くほうが短い。 */
+
+  var GAUGE = {
+    span: 120,        /* 開き角（度） */
+    r: 96,            /* 円弧の半径 */
+    width: 15,        /* 円弧の太さ */
+    gap: 1.6,         /* バンドどうしの隙間（度） */
+    needle: "#6b7280" /* 針。無彩色にして、色はバンドだけに持たせる */
+  };
+
+  function polar(deg, radius) {
+    var t = deg * Math.PI / 180;
+    return [
+      (radius * Math.sin(t)).toFixed(2),
+      (-radius * Math.cos(t)).toFixed(2)
+    ];
   }
 
-  function fgPoint(theta, radius) {
-    return [radius * Math.sin(theta), -radius * Math.cos(theta)];
+  /* 値を、メーターの中心からの角度（度）に直す */
+  function gaugeAngle(value, min, max) {
+    var v = Math.max(min, Math.min(max, value));
+    return ((v - min) / (max - min) - 0.5) * GAUGE.span;
   }
 
-  function arcPath(low, high, rOut, rIn) {
-    var a1 = fgAngle(low), a2 = fgAngle(high);
-    var o1 = fgPoint(a1, rOut), o2 = fgPoint(a2, rOut);
-    var i2 = fgPoint(a2, rIn), i1 = fgPoint(a1, rIn);
-    return "M" + o1 + "A" + rOut + "," + rOut + " 0 0 1 " + o2 +
-           "L" + i2 + "A" + rIn + "," + rIn + " 0 0 0 " + i1 + "Z";
+  function bandArc(fromDeg, toDeg, color) {
+    var a = polar(fromDeg, GAUGE.r), b = polar(toDeg, GAUGE.r);
+    return '<path d="M' + a + 'A' + GAUGE.r + ',' + GAUGE.r + ' 0 0 1 ' + b +
+           '" fill="none" stroke="' + color + '" stroke-width="' + GAUGE.width +
+           '" stroke-linecap="round"/>';
   }
 
-  function fgGauge(host, fg, bands) {
+  /* bands は [{from, to, color}] に正規化してから渡す */
+  function gauge(host, opts) {
     if (!host) { return; }
-    var svg = ['<svg viewBox="-135 -125 270 150" role="img" aria-label="Fear and Greed Index">'];
 
-    bands.forEach(function (band) {
-      svg.push('<path d="' + arcPath(band[0], band[1], FG_R_OUT, FG_R_IN) +
-               '" fill="' + band[4] + '"/>');
+    var min = opts.min, max = opts.max;
+    /* 目盛りの文字まで入る最小の箱にしてある。
+       余白を広く取ると、下の数字との間が間延びする */
+    var svg = ['<svg viewBox="-116 -124 232 132" role="img" aria-label="' +
+               escapeText(opts.label) + '">'];
+
+    opts.bands.forEach(function (band) {
+      var a = gaugeAngle(band.from, min, max) + GAUGE.gap;
+      var b = gaugeAngle(band.to, min, max) - GAUGE.gap;
+      if (b > a) { svg.push(bandArc(a, b, band.color)); }
     });
 
-    /* 針 */
-    var theta = fgAngle(fg.value);
-    var tip = fgPoint(theta, FG_R_IN - 6);
-    var left = fgPoint(theta - Math.PI / 2, 4.5);
-    var right = fgPoint(theta + Math.PI / 2, 4.5);
-    var tail = fgPoint(theta + Math.PI, 10);
-    svg.push('<polygon points="' + [tip, left, tail, right].join(" ") +
-             '" fill="rgba(120,144,156,0.95)"/>');
-    svg.push('<circle cx="0" cy="0" r="7" fill="#78909c"/>');
+    /* 針。細い二等辺三角形にして、根元に小さな軸を置く */
+    var deg = gaugeAngle(opts.value, min, max);
+    var tip = polar(deg, GAUGE.r - GAUGE.width / 2 - 10);
+    var left = polar(deg - 90, 3);
+    var right = polar(deg + 90, 3);
+    svg.push('<polygon points="' + [tip, left, right].join(" ") +
+             '" fill="' + GAUGE.needle + '"/>');
+    svg.push('<circle cx="0" cy="0" r="6" fill="' + GAUGE.needle + '"/>');
+    svg.push('<circle cx="0" cy="0" r="2.4" fill="#ffffff"/>');
 
-    [0, 50, 100].forEach(function (tick) {
-      var p = fgPoint(fgAngle(tick), FG_R_OUT + 13);
+    (opts.ticks || []).forEach(function (tick) {
+      var p = polar(gaugeAngle(tick, min, max), GAUGE.r + 20);
       svg.push('<text x="' + p[0] + '" y="' + p[1] + '" text-anchor="middle" ' +
-               'dominant-baseline="middle" font-size="12" fill="' + fontColor() +
-               '" opacity="0.65">' + tick + '</text>');
+               'dominant-baseline="middle" font-size="11.5" fill="' + fontColor() +
+               '" opacity="0.6">' + tick + '</text>');
     });
+
     svg.push('</svg>');
-
-    host.innerHTML = svg.join("");
-
-    bind(document, "fear_greed.value_text", fg.value_text);
-    bind(document, "fear_greed.label", fg.label_ja + "（" + fg.label_en + "）");
-    var label = document.querySelector('[data-bind="fear_greed.label"]');
-    if (label) { label.style.color = fg.color; }
-  }
-
-  /* ── 5段目：VIX のメーター ─────────────────── */
-  function vixMeter(host, vix, bands) {
-    if (!host) { return; }
-    var MAX = 50, H = 210, W = 46, X = 34, TOP = 14;
-    var y = function (v) { return TOP + H - (Math.max(0, Math.min(MAX, v)) / MAX) * H; };
-
-    var svg = ['<svg viewBox="0 0 260 250" role="img" aria-label="VIX指数">'];
-
-    bands.forEach(function (band) {
-      var top = y(Math.min(band[1], MAX)), bottom = y(band[0]);
-      svg.push('<rect x="' + X + '" y="' + top + '" width="' + W +
-               '" height="' + (bottom - top) + '" fill="' + band[3] + '" opacity="0.85"/>');
-    });
-    svg.push('<rect x="' + X + '" y="' + TOP + '" width="' + W + '" height="' + H +
-             '" fill="none" stroke="' + COLORS.flat + '" stroke-width="1"/>');
-
-    for (var v = 0; v <= MAX; v += 10) {
-      svg.push('<text x="' + (X - 8) + '" y="' + y(v) + '" text-anchor="end" ' +
-               'dominant-baseline="middle" font-size="11" fill="' + fontColor() +
-               '" opacity="0.7">' + v + '</text>');
-    }
-
-    var mark = y(vix.value);
-    svg.push('<line x1="' + (X - 6) + '" y1="' + mark + '" x2="' + (X + W + 18) +
-             '" y2="' + mark + '" stroke="' + COLORS.flat + '" stroke-width="3"/>');
-    svg.push('<polygon points="' + (X + W + 18) + "," + (mark - 6) + " " +
-             (X + W + 28) + "," + mark + " " + (X + W + 18) + "," + (mark + 6) +
-             '" fill="' + COLORS.flat + '"/>');
-
-    svg.push('<text x="' + (X + W + 34) + '" y="' + (mark - 4) + '" font-size="30" ' +
-             'font-weight="700" fill="' + fontColor() + '">' + vix.value_text + '</text>');
-    svg.push('<text x="' + (X + W + 34) + '" y="' + (mark + 16) + '" font-size="13" fill="' +
-             dirColor(vix.direction) + '">' + escapeText(vix.change_text) + '</text>');
-    svg.push('<text x="' + (X + W + 34) + '" y="' + (TOP + H - 2) + '" font-size="15" ' +
-             'font-weight="700" fill="' + vix.band_color + '">' +
-             escapeText(vix.band_label) + '</text>');
-    /* 左の目盛りと重なるので、値と同じ右の列に置く */
-    svg.push('<text x="' + (X + W + 34) + '" y="' + (TOP + 10) + '" ' +
-             'font-size="12" fill="' + fontColor() + '" opacity="0.6">上ほど警戒</text>');
-    svg.push('</svg>');
-
     host.innerHTML = svg.join("");
   }
 
@@ -520,14 +493,67 @@
       host.appendChild(wrap);
     });
 
-    fgGauge(document.getElementById("chart-fg"), fg, bands);
+    gauge(document.getElementById("chart-fg"), {
+      label: "Fear and Greed Index",
+      value: fg.value, min: 0, max: 100, ticks: [0, 50, 100],
+      bands: bands.map(function (b) {
+        return { from: b[0], to: b[1], color: b[4] };
+      })
+    });
+
+    bind(document, "fear_greed.value_text", fg.value_text);
+    bind(document, "fear_greed.label", fg.label_ja + "（" + fg.label_en + "）");
+    paint('[data-bind="fear_greed.label"]', fg.color);
   }
 
   function renderVix(vix, bands) {
     var card = document.querySelector(".meter--vix");
     if (!vix) { card.hidden = true; return; }
     bind(document, "vix.note", vix.note);
-    vixMeter(document.getElementById("chart-vix"), vix, bands);
+    gauge(document.getElementById("chart-vix"), {
+      label: "VIX指数",
+      value: vix.value, min: 0, max: 50, ticks: [0, 25, 50],
+      bands: bands.map(function (b) {
+        return { from: b[0], to: b[1], color: b[3] };
+      })
+    });
+
+    bind(document, "vix.value_text", vix.value_text);
+    bind(document, "vix.change_text", vix.change_text);
+    bind(document, "vix.band_label", vix.band_label);
+    paint('[data-bind="vix.band_label"]', vix.band_color);
+    colorize(document.querySelector('[data-bind="vix.change_text"]'), vix.direction);
+  }
+
+  /* 区分のラベルに、そのバンドの色を付ける。
+
+     ただしバンドの色は円弧に敷くためのもので、文字にすると薄い。
+     たとえば中立の金色は白地でコントラストが2.5:1しかなく、
+     文字として読めない（WCAG AA は 4.5:1）。
+     円弧の色はそのままに、文字だけ読める濃さまで落とす */
+  function paint(selector, color) {
+    var el = document.querySelector(selector);
+    if (el) { el.style.color = readableOnWhite(color); }
+  }
+
+  function luminance(rgb) {
+    var a = rgb.map(function (v) {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+  }
+
+  function readableOnWhite(hex, target) {
+    target = target || 4.5;
+    var rgb = [1, 3, 5].map(function (i) { return parseInt(hex.substr(i, 2), 16); });
+    for (var i = 0; i < 24; i++) {
+      if (1.05 / (luminance(rgb) + 0.05) >= target) { break; }
+      rgb = rgb.map(function (v) { return Math.round(v * 0.92); });
+    }
+    return "#" + rgb.map(function (v) {
+      return ("0" + v.toString(16)).slice(-2);
+    }).join("");
   }
 
   function renderFooter(sources, disclaimer) {

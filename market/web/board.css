@@ -170,8 +170,7 @@ body {
 }
 
 .meter__title { margin: 0 0 6px; font-size: 1rem; font-weight: 700; }
-.meter .chart { height: 170px; }
-.meter--vix .chart { height: 250px; }
+.meter .chart { height: 158px; }
 
 .meter__history { display: flex; justify-content: space-around; margin-top: 4px; }
 .meter__history-item { text-align: center; }
@@ -221,10 +220,17 @@ body {
 
 /* Fear & Greed の数値と区分。以前は図の中に描いていた */
 .meter__value {
-  margin: 2px 0 0;
+  margin: 6px 0 0;
   font-size: 34px;
   font-weight: 700;
   line-height: 1.1;
+  text-align: center;
+}
+
+.meter__change {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 700;
   text-align: center;
 }
 

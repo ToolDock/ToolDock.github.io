@@ -107,6 +107,9 @@
       <article class="card meter meter--vix">
         <h3 class="meter__title">本日の VIX 指数</h3>
         <div class="chart" id="chart-vix"></div>
+        <p class="meter__value" data-bind="vix.value_text"></p>
+        <p class="meter__change" data-bind="vix.change_text"></p>
+        <p class="meter__band" data-bind="vix.band_label"></p>
         <p class="note" data-bind="vix.note"></p>
       </article>
     </div>
