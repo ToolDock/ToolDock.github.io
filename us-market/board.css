@@ -311,12 +311,23 @@ body {
   line-height: 1.15;
 }
 
+/* 日本語名は長いものがあるので、はみ出したら省略する */
+.heat__ja {
+  max-width: 96%;
+  font-size: 10.5px;
+  opacity: 0.95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .heat__symbol { font-size: 12px; font-weight: 700; }
 .heat__change { font-size: 11px; opacity: 0.92; }
 
 @media (max-width: 700px) {
   .fg { grid-template-columns: 1fr; }
   .fg__chart { height: 220px; }
+  .heat__ja { font-size: 9.5px; }
   .heat__symbol { font-size: 11px; }
   .heat__change { font-size: 10px; }
 }

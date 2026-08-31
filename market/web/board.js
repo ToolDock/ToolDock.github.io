@@ -659,9 +659,20 @@
         tile.style.cssText = "left:" + cell.x + "px;top:" + cell.y + "px;" +
           "width:" + cell.w + "px;height:" + cell.h + "px;" +
           "background:" + heatColor(it.change_pct) + ";";
-        tile.title = it.name + "（" + it.symbol + "）" + it.change_text;
+        tile.title = (it.name_ja ? it.name_ja + " " : "") +
+          it.name + "（" + it.symbol + "）" + it.change_text;
 
-        /* 狭いタイルに文字を詰めると潰れるので、入る場合だけ出す */
+        /* 狭いタイルに文字を詰めると潰れるので、入る場合だけ出す。
+           上から順に、日本語名 → ティッカー → 騰落率。
+           日本語名はいちばん場所を取るので、大きいタイルにだけ出す。
+           AMD や IBM のように日本語でもその表記のままのものは
+           name_ja が空なので、ティッカーだけになる */
+        if (it.name_ja && cell.w >= 84 && cell.h >= 62) {
+          var ja = document.createElement("span");
+          ja.className = "heat__ja";
+          ja.textContent = it.name_ja;
+          tile.appendChild(ja);
+        }
         if (cell.w >= 46 && cell.h >= 30) {
           var sym = document.createElement("span");
           sym.className = "heat__symbol";
