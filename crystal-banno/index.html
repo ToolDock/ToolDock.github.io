@@ -7,7 +7,7 @@
 <!-- 検索結果で切られる先頭30字ほどに、探している語と件数を入れる。
      サイト名は付けない（この長さでは席がもったいない） -->
 <title>【パワプロ2026-2027】マイライフ 万能クリスタル（小）（大）の入手方法｜全9通り</title>
-<meta name="description" content="パワプロのマイライフで、特殊能力ファイルに使う万能クリスタル（小）（大）の入手方法一覧です。（小）は9通りで、チェックを付けて取り済みを管理できます。（大）は夜の商店街「怪しい露店」で（小）2個と交換する以外に入手方法がありません。2024-2025と2026-2027で違いはないと見られます。">
+<meta name="description" content="パワプロのマイライフで、特殊能力ファイルに使う万能クリスタル（小）（大）の入手方法一覧です。（小）は9通りで、チェックを付けて取り済みを管理できます。（大）は夜の商店街「怪しい露店」で（小）2個と交換する以外に入手方法がありません。クリスタル大15種類の交換レート（小2〜5個）も掲載。万能は2個でいちばん安く交換できます。2024-2025と2026-2027で違いはないと見られます。">
 <link rel="canonical" href="https://tooldock.github.io/crystal-banno/">
 
 <script> const CURRENT_TOOL = "crystal-banno"; </script>
@@ -46,6 +46,10 @@
        見分けが要るところ（小と大、必要な個数）だけ色を持たせる */
     --c-small:#1d4ed8;   /* 小 */
     --c-large:#b45309;   /* 大 */
+    --c-cost2:#15803d;   /* 2個。いちばん安い */
+    --c-cost3:#1d4ed8;   /* 3個 */
+    --c-cost4:#b45309;   /* 4個 */
+    --c-cost5:#b91c1c;   /* 5個。いちばん高い */
 }
 
 *{
@@ -183,6 +187,101 @@ main{
 .reset:hover{
     background:#f2f4f7;
 }
+
+/* =========================
+   交換レート表
+========================= */
+
+.rate{
+    background:#fff;
+    border-radius:18px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    margin-top:22px;
+    padding:0 0 6px;
+    overflow:hidden;
+}
+
+.rate h2{
+    margin:0;
+    padding:16px 22px;
+    background:var(--ink);
+    color:#fff;
+    font-size:1.15rem;
+    font-weight:700;
+}
+
+.rate p.lead{
+    margin:0;
+    padding:14px 22px;
+    background:var(--tint);
+    border-bottom:1px solid var(--line-soft);
+    font-size:14px;
+    color:var(--ink-sub);
+}
+
+.rate table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:15px;
+}
+
+.rate th,
+.rate td{
+    border-bottom:1px solid var(--line-soft);
+    padding:12px 22px;
+    text-align:left;
+}
+
+.rate thead th{
+    background:var(--head-bg);
+    color:var(--ink);
+    font-size:14px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.rate tbody tr:nth-child(even){
+    background:var(--tint);
+}
+
+.rate td:first-child{
+    font-weight:700;
+}
+
+.rate td.cost{
+    width:9em;
+    white-space:nowrap;
+    font-weight:700;
+    text-align:right;
+}
+
+/* このページで扱っている種類の行 */
+.rate tr.here,
+.rate tbody tr.here:nth-child(even){
+    background:#eef1f5;
+}
+
+.rate tr.here td:first-child{
+    box-shadow:inset 4px 0 0 var(--ink);
+}
+
+.rate .tag{
+    display:inline-block;
+    margin-left:8px;
+    padding:2px 10px;
+    border-radius:999px;
+    background:var(--ink);
+    color:#fff;
+    font-size:11px;
+    font-weight:700;
+    vertical-align:1px;
+}
+
+/* 必要数は安い順に緑→青→橙→赤。ひと目で高い安いが分かるようにする */
+.rate tr[data-cost="2"] td.cost{ color:var(--c-cost2); }
+.rate tr[data-cost="3"] td.cost{ color:var(--c-cost3); }
+.rate tr[data-cost="4"] td.cost{ color:var(--c-cost4); }
+.rate tr[data-cost="5"] td.cost{ color:var(--c-cost5); }
 
 /* =========================
    入手方法の一覧
@@ -332,6 +431,37 @@ main{
 
 <div class="list" id="list"></div>
 
+<section class="rate" id="rate-table">
+    <h2>クリスタル大の交換レート</h2>
+    <p class="lead">
+    夜の商店街の「怪しい露店」で、クリスタル（小）を（大）に交換できます。
+    必要な個数は（大）の種類によって2〜5個と変わり、<strong>万能は2個でいちばん安く済みます</strong>。
+    </p>
+
+    <table>
+      <thead>
+        <tr><th>クリスタル大の種類</th><th>必要な（小）の数</th></tr>
+      </thead>
+      <tbody>
+        <tr data-cost="2" class="here"><td>クリスタル大／万能 <span class="tag">このページ</span></td><td class="cost">（小）2個</td></tr>
+        <tr data-cost="3"><td>クリスタル大／シーズン記録</td><td class="cost">（小）3個</td></tr>
+        <tr data-cost="3"><td>クリスタル大／通算記録</td><td class="cost">（小）3個</td></tr>
+        <tr data-cost="3"><td>クリスタル大／イベント</td><td class="cost">（小）3個</td></tr>
+        <tr data-cost="3"><td>クリスタル大／趣味</td><td class="cost">（小）3個</td></tr>
+        <tr data-cost="3"><td>クリスタル大／愛</td><td class="cost">（小）3個</td></tr>
+        <tr data-cost="3"><td>クリスタル大／ミッション</td><td class="cost">（小）3個</td></tr>
+        <tr data-cost="3"><td>クリスタル大／おでかけ</td><td class="cost">（小）3個</td></tr>
+        <tr data-cost="3"><td>クリスタル大／タイトル</td><td class="cost">（小）3個</td></tr>
+        <tr data-cost="3"><td>クリスタル大／チームメイト</td><td class="cost">（小）3個</td></tr>
+        <tr data-cost="3"><td>クリスタル大／引退選手</td><td class="cost">（小）3個</td></tr>
+        <tr data-cost="4"><td>クリスタル大／練習</td><td class="cost">（小）4個</td></tr>
+        <tr data-cost="4"><td>クリスタル大／連係練習</td><td class="cost">（小）4個</td></tr>
+        <tr data-cost="4"><td>クリスタル大／対決記録</td><td class="cost">（小）4個</td></tr>
+        <tr data-cost="5"><td>クリスタル大／球場トロフィー</td><td class="cost">（小）5個</td></tr>
+      </tbody>
+    </table>
+</section>
+
 </main>
 
 </div>
@@ -414,6 +544,12 @@ main{
 <p><strong>Q. 万能クリスタル（大）はどうやって手に入れますか？</strong><br>
 A. 夜の商店街の「怪しい露店」で、万能クリスタル（小）2個と交換する方法だけです。
 （大）を直接もらえる機会はありません。</p>
+
+<p><strong>Q. クリスタル大の交換レートを教えてください。</strong><br>
+A. 種類によって（小）が2〜5個必要です。万能が2個でいちばん安く、
+シーズン記録・通算記録・イベント・趣味・愛・ミッション・おでかけ・タイトル・
+チームメイト・引退選手が3個、練習・連係練習・対決記録が4個、
+球場トロフィーが5個です。<a href="#rate-table">上の表</a>にまとめてあります。</p>
 
 <p><strong>Q. 怪しい露店はどこにありますか？</strong><br>
 A. 夜に商店街へ行くと「？？？？？？？」という項目が出るので、それを選ぶと訪れることができます。
@@ -600,6 +736,14 @@ render();
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "9通りあります。オールスターMVPでもらえる車でドライブする、オーナー観戦試合でヒーローになる、オフシーズンにスミオからもらう、病院で子供が退院する、の4つはまれにしか手に入りません。タイムリー100人を達成する、奪三振200人を達成する、カフェの店員と炎の石を交換する、古賀が新人王を取る、世界大会で優勝する、の5つは達成すれば手に入ります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "クリスタル大の交換レートを教えてください。",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "種類によって（小）が2〜5個必要です。万能が2個でいちばん安く、シーズン記録・通算記録・イベント・趣味・愛・ミッション・おでかけ・タイトル・チームメイト・引退選手が3個、練習・連係練習・対決記録が4個、球場トロフィーが5個です。"
       }
     },
     {
