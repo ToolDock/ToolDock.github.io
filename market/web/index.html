@@ -102,6 +102,23 @@
     </div>
   </section>
 
+  <!-- S&P500の月ごとの騰落 -->
+  <section class="section section--monthly" id="monthly">
+    <h2 class="section__title" data-bind="sp500_monthly.title">S&P500の月ごとの騰落</h2>
+    <div class="card">
+      <p class="heat__summary" data-bind="sp500_monthly.summary"></p>
+      <div class="scroll">
+        <table class="monthly" id="monthly-table">
+          <thead>
+            <tr><th>月</th><th>月末終値</th><th>先月末比</th><th>騰落率</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="note" data-bind="sp500_monthly.note"></p>
+    </div>
+  </section>
+
   <!-- Fear & Greed：メーターと1年チャート -->
   <section class="section section--fg" id="fear-greed">
     <h2 class="section__title">Fear &amp; Greed Index</h2>

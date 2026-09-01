@@ -771,6 +771,43 @@
     drawdownChart(document.getElementById("chart-drawdown"), drawdown);
   }
 
+  /* ── S&P500の月ごとの騰落 ─────────────────── */
+  function renderMonthly(data) {
+    var section = document.getElementById("monthly");
+    if (!data || !data.rows.length) { section.hidden = true; return; }
+
+    bind(document, "sp500_monthly.title", data.title);
+    bind(document, "sp500_monthly.note", data.note);
+    bind(document, "sp500_monthly.summary", data.summary);
+
+    var body = document.querySelector("#monthly-table tbody");
+    body.innerHTML = "";
+    var lastYear = null;
+
+    data.rows.forEach(function (r) {
+      var tr = document.createElement("tr");
+
+      /* 年が変わるところだけ「2025年」と出す。毎行に年を書くと読みにくい */
+      var label = (r.year !== lastYear ? r.year + "年 " : "") + r.label;
+      lastYear = r.year;
+
+      var cells = [
+        { text: label + (r.partial ? "（途中）" : ""), cls: "monthly__label" },
+        { text: r.close_text, cls: "monthly__num" },
+        { text: r.diff_text, cls: "monthly__num " + directionClass(r.direction) },
+        { text: r.pct_text, cls: "monthly__num " + directionClass(r.direction) }
+      ];
+      cells.forEach(function (c) {
+        var td = document.createElement("td");
+        td.className = c.cls;
+        td.textContent = c.text;
+        tr.appendChild(td);
+      });
+      tr.title = r.date + " の終値";
+      body.appendChild(tr);
+    });
+  }
+
   function renderFearGreed(fg, bands, chart) {
     var section = document.getElementById("fear-greed");
     if (!fg) { section.hidden = true; return; }
@@ -876,6 +913,7 @@
     renderHeatmap(data.heatmap);
     renderFund(data.fund, data.fund_series);
     renderDrawdown(data.drawdown);
+    renderMonthly(data.sp500_monthly);
     renderFearGreed(data.fear_greed, bands.fear_greed || [], data.fg_chart);
     renderVix(data.vix, data.vix_chart);
     renderFooter(data.sources, data.disclaimer);
