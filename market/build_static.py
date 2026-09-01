@@ -27,7 +27,7 @@ import argparse
 import json
 import shutil
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import collect_us_market as collector
@@ -101,6 +101,73 @@ def fund_payload(stats):
         "ytd_pct": round(stats["ytd_pct"], 2),
         "peak": stats["peak"],
         "from_peak_pct": round(stats["from_peak_pct"], 2),
+    }
+
+
+def monthly_payload(symbol="^GSPC", months=13):
+    """S&P500の月ごとの騰落。各月の最終営業日の終値どうしを比べる。
+
+    日々の値動きだと荒く見えても、月単位だと様子が違うことがある。
+    直近の月は途中なので、その旨を持たせる。
+    """
+    daily = um.load_daily(symbol, days=None)
+    if len(daily) < 40:
+        return None
+
+    # 月ごとの最終営業日
+    last = {}
+    for day, close in daily:
+        last[day[:7]] = (day, close)
+
+    keys = sorted(last)[-months:]
+    rows = []
+    for i in range(1, len(keys)):
+        day, close = last[keys[i]]
+        prev_close = last[keys[i - 1]][1]
+        diff = close - prev_close
+        pct = diff / prev_close * 100
+        year, month = keys[i].split("-")
+        rows.append({
+            "key": keys[i],
+            "label": f"{int(month)}月",
+            "year": int(year),
+            "date": day,
+            "close": round(close, 2),
+            "close_text": f"{close:,.2f}",
+            "diff": round(diff, 2),
+            "diff_text": f"{diff:+,.2f}pt",
+            "pct": round(pct, 2),
+            "pct_text": f"{pct:+.2f}%",
+            "direction": 1 if diff > 0 else (-1 if diff < 0 else 0),
+        })
+
+    rows.reverse()                      # 新しい月を上に
+
+    # いちばん上の月が「まだ途中」かどうか。
+    # 最新の日付より後に、その月の平日がまだ残っていれば途中とみなす。
+    # 単に「最新データがその月にある」で判定すると、
+    # 月末営業日まで来ていても途中扱いになってしまう
+    if rows:
+        latest = date.fromisoformat(daily[-1][0])
+        day = latest + timedelta(days=1)
+        remaining = 0
+        while day.month == latest.month:
+            if day.weekday() < 5:
+                remaining += 1
+            day += timedelta(days=1)
+        rows[0]["partial"] = rows[0]["key"] == daily[-1][0][:7] and remaining > 0
+
+    up = sum(1 for r in rows if r["direction"] > 0)
+    return {
+        "title": "S&P500の月ごとの騰落",
+        "note": ("各月の最終営業日の終値どうしを比べたもの。"
+                 "日々の値動きだけを見ていると荒く感じても、"
+                 "月単位でならしてみると印象が変わることがあります。"
+                 "いちばん上の月は、まだ途中の場合があります。"),
+        "summary": f"直近{len(rows)}か月のうち {up}か月が上昇、{len(rows) - up}か月が下落",
+        "up": up,
+        "down": len(rows) - up,
+        "rows": rows,
     }
 
 
@@ -267,6 +334,7 @@ def build_payload(today=None):
         "vix_chart": vix_chart,
         "fg_chart": fg_chart,
         "heatmap": heatmap_payload(),
+        "sp500_monthly": monthly_payload(),
         "bands": {"fear_greed": [list(b) for b in um.FG_BANDS],
                   "vix": [list(b) for b in um.VIX_BANDS]},
         "sources": SOURCES,

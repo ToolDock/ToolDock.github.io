@@ -53,6 +53,13 @@ body {
 .board__updated { margin: 4px 0 0; font-size: .8rem; color: var(--text-faint); }
 
 /* ── 共通のカード・見出し ────────────────── */
+/* 表が器より広いときは、表の中だけ横に流す。
+   これが無いとページ全体が横に揺れる */
+.scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -80,10 +87,13 @@ body {
 
 .row__tiles {
   display: grid;
-  /* 画面幅ではなく器の幅で折り返す。
-     右レールが出ると本文が580pxまで狭まるので、
-     画面幅のメディアクエリだと4列のまま潰れてしまう */
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  /* 2列。数字を読める大きさを優先する。
+
+     auto-fit だと器の幅しだいで2列にも3列にもなってしまう。
+     右レールが出ると本文が860pxから580pxまで狭まるので、
+     画面幅のメディアクエリでも決められない。
+     器の幅を見るコンテナクエリで、狭いときだけ1列に落とす */
+  grid-template-columns: 1fr;
   gap: var(--gap);
 }
 
@@ -331,3 +341,51 @@ body {
   .heat__symbol { font-size: 11px; }
   .heat__change { font-size: 10px; }
 }
+
+/* タイルは器の幅で1列と2列を切り替える */
+.board__rows { container-type: inline-size; }
+
+@container (min-width: 400px) {
+  .row__tiles { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 2列にして横に広がったぶん、図も少し高くする */
+@container (min-width: 400px) {
+  .tile__chart { height: 128px; }
+}
+
+/* ── S&P500の月ごとの騰落 ─────────────────── */
+
+.monthly {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.monthly th,
+.monthly td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.monthly th {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.monthly th:first-child,
+.monthly .monthly__label {
+  text-align: left;
+  font-weight: 700;
+}
+
+.monthly .monthly__num { font-variant-numeric: tabular-nums; }
+.monthly tbody tr:hover { background: #f7f8fa; }
+.monthly tbody tr:last-child td { border-bottom: 0; }
+
+.monthly .up { color: var(--up); font-weight: 700; }
+.monthly .down { color: var(--down); font-weight: 700; }
+.monthly .flat { color: var(--text-muted); }
