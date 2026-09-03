@@ -110,6 +110,49 @@
         .td-header-name { font-size: 15px; }
       }
 
+      /* カテゴリのメニュー。
+         ロゴだけだと最上部から他のページへ行けないので、
+         カテゴリへの入口をここに並べる */
+      .td-header-inner {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px 16px;
+      }
+
+      .td-header-nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 2px 4px;
+      }
+
+      .td-header-nav a {
+        display: inline-block;
+        padding: 4px 9px;
+        border-radius: 999px;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .td-header-nav a:hover {
+        background: #eef6fd;
+        color: #0369a1;
+      }
+
+      /* いま見ているカテゴリを塗って示す */
+      .td-header-nav a[aria-current="page"] {
+        background: #e0f2fe;
+        color: #0369a1;
+      }
+
+      @media (max-width: 600px) {
+        .td-header-inner { gap: 2px 10px; }
+        .td-header-nav a { padding: 3px 7px; font-size: 12px; }
+      }
+
       @media print {
         .td-header { display: none !important; }
       }
@@ -156,6 +199,27 @@
     headerEl.style.width = (viewport - railWidth) + "px";
   }
 
+  /* カテゴリの並びは tool-data を唯一の情報源にする。
+     カテゴリを足したり名前を変えたりしても、ここは触らなくていい */
+  function navLinks() {
+    const names = window.CATEGORY_NAMES || {};
+    const tools = (window.TOOLS || []).filter(t => !t.hidden);
+
+    /* 中身のあるカテゴリだけ出す。空の入口を作らない */
+    const cats = Object.keys(names).filter(
+      c => tools.some(t => t.category === c));
+
+    const current = typeof CURRENT_TOOL !== "undefined"
+      ? (window.TOOLS || []).find(t => t.id === CURRENT_TOOL)
+      : null;
+
+    return cats.map(c => {
+      const here = current && current.category === c;
+      return `<a href="/category/?cat=${encodeURIComponent(c)}"${
+        here ? ' aria-current="page"' : ""}>${names[c]}</a>`;
+    }).join("");
+  }
+
   function mount() {
     injectStyle();
 
@@ -174,6 +238,7 @@
             <span class="td-header-tag">無料Webツール集</span>
           </span>
         </a>
+        <nav class="td-header-nav" aria-label="カテゴリ">${navLinks()}</nav>
       </div>
     `;
 
