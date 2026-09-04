@@ -39,8 +39,10 @@ SYMBOLS = {
     "^VIX":    {"label": "VIX",            "digits": 2, "unit": "",   "change": "pct"},
 }
 
-# 1年チャートを描く銘柄。日足で別途取得する
-DAILY_SYMBOLS = ["^VIX", "^GSPC"]
+# 日足を取る銘柄。タイルの期間切り替え（1ヶ月・年初来・1年・5年）と、
+# VIX／S&P500の1年チャートに使う。5分足とは別のテーブルに入れる
+DAILY_SYMBOLS = list(SYMBOLS)
+DAILY_RANGE = "5y"
 
 # eMAXIS Slim 米国株式（S&P500）
 FUND_CD = "253266"
@@ -196,8 +198,8 @@ def refresh_symbol(symbol):
     return len(rows), latest_session
 
 
-def refresh_daily(symbol, rng="1y"):
-    """日足を1年ぶん取得して保存する。VIXとS&P500の1年チャート用。
+def refresh_daily(symbol, rng=DAILY_RANGE):
+    """日足を取得して保存する。タイルの期間切り替えと1年チャート用。
 
     5分足（refresh_symbol）とは別のテーブルに入れる。
     こちらは1銘柄1リクエストで済むので、負荷はほとんど変わらない。

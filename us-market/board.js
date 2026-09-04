@@ -3,7 +3,7 @@
  * チャートは Chart.js（/js/vendor/chart.umd.min.js）で描く。
  * market.json に入っているのは数値と系列だけで、図の定義は持たない。
  *
- * 折れ線3種（タイルの日中足・基準価額・ドローダウン）は Chart.js。
+ * 折れ線3種（タイルの値動き・基準価額・ドローダウン）は Chart.js。
  * Fear & Greed のメーターと VIX のメーターは図形なので、
  * Chart.js を曲げるより素のSVGで描くほうが短く正確になる。
  * 触るとしたら COLORS（色）と、各 render〜()（文言・並び）で足りるようにしてある。
@@ -74,6 +74,15 @@
 
   var charts = [];
 
+  /* タイルのチャートだけは期間の切り替えで作り直すので、
+     別に持っておいて古いものを破棄する。放っておくと Chart.js 側に残る */
+  var tileCharts = [];
+
+  function clearTileCharts() {
+    tileCharts.forEach(function (chart) { chart.destroy(); });
+    tileCharts = [];
+  }
+
   function makeChart(host, config) {
     var canvas = canvasIn(host);
     if (!canvas) { return null; }
@@ -86,14 +95,127 @@
     return chart;
   }
 
-  /* ── 1・2段目：タイルの日中足 ───────────────── */
-  function tileChart(host, tile) {
-    var color = dirColor(tile.direction);
-    var base = tile.prev_close;
-    var values = tile.values || [];
+  /* ── 1・2段目：タイルの値動き ───────────────── */
+
+  /* 表示期間。8枚まとめて切り替える。
+     1日だけ5分足（times / values）、あとは日足（daily）と週足（weekly）を切って使う */
+  var RANGES = [
+    { key: "1d",  label: "1日",   series: null,     origin: "前日終値" },
+    { key: "1m",  label: "1ヶ月", series: "daily",  origin: "1ヶ月前" },
+    { key: "ytd", label: "年初来", series: "daily",  origin: "昨年末" },
+    { key: "1y",  label: "1年",   series: "daily",  origin: "1年前" },
+    { key: "5y",  label: "5年",   series: "weekly", origin: "5年前" }
+  ];
+
+  var range = "1d";
+
+  function rangeDef(key) {
+    for (var i = 0; i < RANGES.length; i++) {
+      if (RANGES[i].key === key) { return RANGES[i]; }
+    }
+    return RANGES[0];
+  }
+
+  /* その期間の起点となる日付（これ以降を描く） */
+  function cutoff(key, lastDate) {
+    if (key === "ytd") { return lastDate.slice(0, 4) + "-01-01"; }
+    if (key === "5y")  { return ""; }          /* 持っているぶん全部 */
+    var d = new Date(lastDate + "T00:00:00Z");
+    if (key === "1m") { d.setUTCMonth(d.getUTCMonth() - 1); }
+    if (key === "1y") { d.setUTCFullYear(d.getUTCFullYear() - 1); }
+    return d.toISOString().slice(0, 10);
+  }
+
+  /* 期間ぶんの系列と、比較の起点。
+     起点は「期間に入る直前の終値」。無ければ期間の最初の値を使う */
+  function viewOf(tile, key) {
+    if (key === "1d") {
+      return {
+        labels: tile.times || [],
+        values: tile.values || [],
+        base: tile.prev_close,
+        last: tile.price,
+        span: tile.session + " のセッション"
+      };
+    }
+
+    var series = tile[rangeDef(key).series];
+    if (!series || !series.dates || series.dates.length < 2) { return null; }
+
+    var dates = series.dates;
+    var from = cutoff(key, dates[dates.length - 1]);
+    var i = 0;
+    while (i < dates.length && dates[i] < from) { i++; }
+    if (dates.length - i < 2) { return null; }
+
+    return {
+      labels: dates.slice(i),
+      values: series.values.slice(i),
+      base: i > 0 ? series.values[i - 1] : series.values[i],
+      last: series.values[series.values.length - 1],
+      span: dates[i] + " 〜 " + dates[dates.length - 1]
+    };
+  }
+
+  /* 騰落の文字列。期間で起点が変わるので、サーバー側の change_text は使えない */
+  function changeOf(tile, view) {
+    if (!view || view.base == null || view.last == null) {
+      return { text: "—", direction: 0, arrow: "―" };
+    }
+    var diff = view.last - view.base;
+    var pct = view.base ? diff / view.base * 100 : null;
+    var dir = diff > 0 ? 1 : (diff < 0 ? -1 : 0);
+    var text = tile.change_mode === "bp"
+      ? signedFmt(diff * 100, 1) + "bp（" + signed(pct) + "%）"
+      : signedFmt(diff, tile.digits) + "（" + signed(pct) + "%）";
+    return { text: text, direction: dir, arrow: dir > 0 ? "▲" : (dir < 0 ? "▼" : "―") };
+  }
+
+  /* 横軸の目盛り。図が大きくなったぶん、どこがいつなのかが要る。
+
+     Chart.js の autoSkip は「何点おき」で間引くので、日付を年や月に
+     まるめると同じ文字が2つ並ぶ（5年で「2025 2025」など）。
+     区切りが変わった最初の点にだけ文字を置き、あとは空にする。 */
+  function axisTicks(labels, key) {
+    var out = [];
+    var seen = null;
+
+    labels.forEach(function (label) {
+      var unit = null;
+      var text = null;
+
+      if (typeof label === "string" && label.length === 10) {
+        if (key === "5y") {
+          unit = label.slice(0, 4);                       /* 年ごと */
+          text = unit;
+        } else if (key === "1m") {
+          /* 週ごと。+3 は、エポックの起点が木曜なので月曜区切りに寄せるため */
+          unit = Math.floor(Date.parse(label + "T00:00:00Z") / 86400000 / 7 + 3 / 7);
+          text = Number(label.slice(5, 7)) + "/" + Number(label.slice(8, 10));
+        } else {
+          unit = label.slice(0, 7);                        /* 月ごと */
+          text = Number(label.slice(5, 7)) + "月";
+        }
+      }
+
+      if (unit !== null && unit !== seen) {
+        seen = unit;
+        out.push(text);
+      } else {
+        out.push("");
+      }
+    });
+
+    return out;
+  }
+
+  function tileChart(host, tile, view) {
+    var color = dirColor(view.direction);
+    var base = view.base;
+    var values = view.values || [];
     var datasets = [];
 
-    /* 前日終値の基準線。塗りつぶしの相手にもなる */
+    /* 起点の基準線。塗りつぶしの相手にもなる */
     if (base != null) {
       datasets.push({
         data: values.map(function () { return base; }),
@@ -123,9 +245,21 @@
     var high = Math.max.apply(null, span);
     var pad = (high - low) * 0.15 || (Math.abs(high) * 0.001 + 0.01);
 
-    makeChart(host, {
+    /* 1日は "HH:MM" で重複しないので、素直に間引かせる。
+       日付の期間だけ、こちらで目盛りの位置を決める */
+    var ticks = { color: fontColor(), font: { size: 10 }, maxRotation: 0 };
+    if (range === "1d") {
+      ticks.autoSkip = true;
+      ticks.maxTicksLimit = 7;
+    } else {
+      var marks = axisTicks(view.labels || [], range);
+      ticks.autoSkip = false;
+      ticks.callback = function (value, index) { return marks[index] || ""; };
+    }
+
+    var chart = makeChart(host, {
       type: "line",
-      data: { labels: tile.times || [], datasets: datasets },
+      data: { labels: view.labels || [], datasets: datasets },
       options: {
         layout: { padding: 0 },
         plugins: {
@@ -138,11 +272,18 @@
           }
         },
         scales: {
-          x: { display: false },
+          x: {
+            display: true,
+            grid: { display: false },
+            border: { display: false },
+            ticks: ticks
+          },
           y: { display: false, min: low - pad, max: high + pad }
         }
       }
     });
+
+    if (chart) { tileCharts.push(chart); }
   }
 
   /* ── 3段目：基準価額の年初来 ────────────────── */
@@ -704,24 +845,37 @@
     var tileTpl = document.getElementById("tpl-tile");
     var pending = [];
 
+    /* 期間を切り替えるたびにここへ戻ってくる。前回のぶんを片づけてから組み直す */
+    clearTileCharts();
+    host.innerHTML = "";
+
     rows.forEach(function (row) {
       var section = rowTpl.content.cloneNode(true);
       setText(section, ".row__title", row.title);
       var tileHost = section.querySelector(".row__tiles");
 
       row.tiles.forEach(function (tile) {
+        var view = viewOf(tile, range);
+        var move = changeOf(tile, view);
         var node = tileTpl.content.cloneNode(true);
         var article = node.querySelector(".tile");
+
         article.dataset.symbol = tile.symbol;
-        article.dataset.direction = String(tile.direction);
+        article.dataset.direction = String(move.direction);
         setText(node, ".tile__label", tile.label);
         setText(node, ".tile__price", tile.price_text);
-        setText(node, ".tile__change", tile.arrow + " " + tile.change_text);
-        setText(node, ".tile__session", tile.session + " のセッション");
+        setText(node, ".tile__change", move.arrow + " " + move.text);
+        setText(node, ".tile__session",
+                view ? view.span : "この期間のデータは取得できていません");
 
         var chart = node.querySelector(".tile__chart");
         chart.id = "chart-tile-" + tile.slug;
-        pending.push([chart.id, tile]);
+        if (view) {
+          view.direction = move.direction;
+          pending.push([chart.id, tile, view]);
+        } else {
+          chart.hidden = true;
+        }
         tileHost.appendChild(node);
       });
 
@@ -729,7 +883,42 @@
     });
 
     pending.forEach(function (item) {
-      tileChart(document.getElementById(item[0]), item[1]);
+      tileChart(document.getElementById(item[0]), item[1], item[2]);
+    });
+  }
+
+  /* 期間のボタン。データを持っていない期間は出さない
+     （更新が一度も回っていないうちは daily / weekly がまだ無い） */
+  function renderRanges(rows) {
+    var host = document.getElementById("ranges");
+    if (!host) { return; }
+
+    var usable = RANGES.filter(function (def) {
+      if (!def.series) { return true; }
+      return rows.some(function (row) {
+        return row.tiles.some(function (tile) { return tile[def.series]; });
+      });
+    });
+
+    if (usable.length < 2) { host.hidden = true; return; }
+
+    host.innerHTML = "";
+    usable.forEach(function (def) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "range";
+      button.dataset.range = def.key;
+      button.textContent = def.label;
+      button.setAttribute("aria-pressed", String(def.key === range));
+      button.addEventListener("click", function () {
+        if (range === def.key) { return; }
+        range = def.key;
+        [].forEach.call(host.querySelectorAll(".range"), function (other) {
+          other.setAttribute("aria-pressed", String(other.dataset.range === range));
+        });
+        renderRows(rows);
+      });
+      host.appendChild(button);
     });
   }
 
@@ -768,6 +957,11 @@
 
   function signed(value) {
     return (value > 0 ? "+" : "") + value.toFixed(2);
+  }
+
+  /* 符号つき・桁指定つき。Python側の f"{x:+,.{digits}f}" と同じ見た目にする */
+  function signedFmt(value, digits) {
+    return (value >= 0 ? "+" : "") + fmt(value, digits);
   }
 
   function colorize(el, direction) {
@@ -926,6 +1120,7 @@
     if (sessionLine) { sessionLine.hidden = !data.session_text; }
 
     var bands = data.bands || {};
+    renderRanges(data.rows);
     renderRows(data.rows);
     renderHeatmap(data.heatmap);
     renderFund(data.fund, data.fund_series);

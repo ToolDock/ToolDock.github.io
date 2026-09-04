@@ -85,17 +85,41 @@ body {
   color: var(--text-muted);
 }
 
-/* ── 1・2段目：4つ段組のタイル ───────────── */
+/* ── 表示期間の切り替え ─────────────────── */
+.ranges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 var(--gap);
+}
+
+.range {
+  padding: 7px 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.range:hover { border-color: #9fb0c4; color: var(--text); }
+
+.range[aria-pressed="true"] {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--surface);
+}
+
+/* ── 1・2段目：タイル ───────────────────── */
 .row { margin-bottom: var(--section-gap); }
 
 .row__tiles {
+  /* 1列。期間を切り替えて形を読むには、2列だと図が小さすぎる */
   display: grid;
-  /* 2列。数字を読める大きさを優先する。
-
-     auto-fit だと器の幅しだいで2列にも3列にもなってしまう。
-     右レールが出ると本文が860pxから580pxまで狭まるので、
-     画面幅のメディアクエリでも決められない。
-     器の幅を見るコンテナクエリで、狭いときだけ1列に落とす */
   grid-template-columns: 1fr;
   gap: var(--gap);
 }
@@ -129,7 +153,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.tile__chart { height: 112px; margin-top: auto; padding-top: 4px; }
+.tile__chart { height: 180px; margin-top: auto; padding-top: 4px; }
 
 .tile__session {
   margin: 0;
@@ -345,16 +369,14 @@ body {
   .heat__change { font-size: 10px; }
 }
 
-/* タイルは器の幅で1列と2列を切り替える */
+/* 図の高さは器の幅で決める。右レールが出ると本文が860pxから580pxまで
+   狭まるので、画面幅のメディアクエリでは決められない */
 .board__rows { container-type: inline-size; }
 
-@container (min-width: 400px) {
-  .row__tiles { grid-template-columns: repeat(2, 1fr); }
-}
-
-/* 2列にして横に広がったぶん、図も少し高くする */
-@container (min-width: 400px) {
-  .tile__chart { height: 128px; }
+/* 右レールが出ているときの本文幅（580px）でも高いほうを使う。
+   引っかかるのは携帯だけ */
+@container (min-width: 480px) {
+  .tile__chart { height: 240px; }
 }
 
 /* ── S&P500の月ごとの騰落 ─────────────────── */

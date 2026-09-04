@@ -52,8 +52,52 @@ def slug(symbol):
 
 
 # ── 各パートのデータ ──────────────────────────────────────────
+# タイルの期間切り替えに渡す日足の長さ（日数）。
+# 本数で切ると、毎日動くBTCだけ1年に届かない（週5日の市場と本数が違う）。
+# 400日あれば、1年ぶんと、年初来の起点になる前年末の終値が必ず入る
+DAILY_WINDOW_DAYS = 400
+
+
+def _round(value, digits):
+    """表示桁で丸める。JSONを無駄に長くしないため。"""
+    return round(value, digits) if digits else round(value)
+
+
+def weekly_closes(rows):
+    """各週の最終営業日の終値だけを残す。
+
+    5年ぶんを日足のまま渡すと market.json が3倍近くに膨らむが、
+    小さな図では点が潰れて日足と週足の区別がつかない。
+    """
+    last = {}
+    for day, close in rows:
+        year, week, _ = date.fromisoformat(day).isocalendar()
+        last[(year, week)] = (day, close)
+    return [last[key] for key in sorted(last)]
+
+
+def history_payload(symbol, digits):
+    """期間切り替え用の系列。直近1年は日足、5年は週足。
+
+    1ヶ月・年初来・1年は daily を切って使う。
+    年初来の起点には前年末の終値が要るので、daily は1年ぶん持たせてある。
+    """
+    rows = um.load_daily(symbol, days=None)
+    if len(rows) < 30:
+        return None, None
+
+    first = date.fromisoformat(rows[-1][0]) - timedelta(days=DAILY_WINDOW_DAYS)
+    year = [r for r in rows if date.fromisoformat(r[0]) >= first]
+    week = weekly_closes(rows)
+    return (
+        {"dates": [d for d, _ in year], "values": [_round(v, digits) for _, v in year]},
+        {"dates": [d for d, _ in week], "values": [_round(v, digits) for _, v in week]},
+    )
+
+
 def tile_payload(tile):
     change_text, sign = um.format_change(tile)
+    daily, weekly = history_payload(tile["symbol"], tile["digits"])
     return {
         "symbol": tile["symbol"],
         "slug": slug(tile["symbol"]),
@@ -75,6 +119,11 @@ def tile_payload(tile):
         "digits": tile["digits"],
         "times": [str(t)[11:16] for t in tile["times"]],
         "values": tile["values"],
+
+        # 期間切り替え用。1ヶ月・年初来・1年は daily を、5年は weekly を切って使う。
+        # 取れていなければ null で、その期間のボタンはブラウザ側が引っ込める
+        "daily": daily,
+        "weekly": weekly,
     }
 
 
