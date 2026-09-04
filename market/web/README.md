@@ -1,4 +1,4 @@
-# 今日の米国市場 ── GitHub Pages 用の静的ダッシュボード
+# 昨日の米国株 ── GitHub Pages 用の静的ダッシュボード
 
 `build_static.py` が出力する `dist/` を、そのまま GitHub Pages に置けば動きます。
 サーバー処理はなく、ブラウザが `market.json` を読んで描画するだけです。
@@ -81,7 +81,11 @@ python build_static.py --refresh
 
 ```jsonc
 {
-  "title": "今日の米国市場",
+  // ページ全体がどの取引日のものか。米国株（^GSPC）の最終セッションに合わせる。
+  // ドル円・BTCは24時間動いているので、この日にそろえて終値を出す
+  "session": "2026-08-28",
+  "session_text": "2026年8月28日",
+
   "generated_at": "2026-08-30T22:00:00+09:00",   // ISO8601
   "generated_at_text": "2026-08-30 22:00",
 
@@ -94,6 +98,8 @@ python build_static.py --refresh
           "slug": "gspc",         // HTMLのid用
           "label": "S&P500",
           "session": "2026-08-28", // どのセッションの値か（取引所ローカル日付）
+                                   // 通常は上の "session" と同じ。その市場だけ
+                                   // 休場だった場合のみ、その前の営業日に落ちる
           "price": 7711.76,
           "price_text": "7,711.76",
           "prev_close": 7730.99,
@@ -198,7 +204,7 @@ python build_static.py --refresh
 
 | 項目 | 出典 | 更新のタイミング |
 |---|---|---|
-| 指数・為替・金利・コモディティ・BTC | Yahoo Finance chart API | 5分足。米国市場の最終セッション |
+| 指数・為替・金利・コモディティ・BTC | Yahoo Finance chart API | 5分足。米国株の最終セッションにそろえる |
 | eMAXIS Slim 米国株式（S&P500）基準価額 | 三菱UFJアセットマネジメント ファンド情報API | 営業日の夜に前営業日分が確定 |
 | Fear & Greed | CNN Business | 1日1回 |
 

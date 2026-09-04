@@ -14,6 +14,9 @@ from db import DB_PATH  # noqa: E402
 ROW1 = ["^GSPC", "^NDX", "^NYFANG", "JPY=X"]
 ROW2 = ["GC=F", "^TNX", "BTC-USD", "^SOX"]
 
+# ページ全体がどの取引日のものかを決める銘柄
+ANCHOR_SYMBOL = "^GSPC"
+
 
 def _conn():
     conn = sqlite3.connect(DB_PATH)
@@ -22,28 +25,90 @@ def _conn():
 
 
 # ── 指数・為替・金利・コモディティ ─────────────────────────────
-def load_tile(symbol, conn=None):
-    """1銘柄ぶんの数値と日中チャート。データがなければ None。"""
+def reference_session(conn=None):
+    """ページ全体が指す取引日。米国株の最終セッションに合わせる。
+
+    ドル円とBTCは24時間動いているので、素直に最新値を出すと
+    「今まさに動いている今日」の値になり、米国株の終値と日付がずれる。
+    このページを朝に見る日本のユーザーが知りたいのは昨夜引けた米国市場なので、
+    24時間市場のほうを米国株の取引日に寄せる。
+    """
+    own = conn is None
+    conn = conn or _conn()
+    try:
+        row = conn.execute("SELECT session FROM market_quote WHERE symbol = ?",
+                           (ANCHOR_SYMBOL,)).fetchone()
+        return row["session"] if row else None
+    finally:
+        if own:
+            conn.close()
+
+
+def _target_session(conn, symbol, wanted):
+    """その銘柄で実際に使えるセッション日を返す。
+
+    指定した日にデータが無いことがある（その市場だけ休場、
+    取引所ローカル日付のずれ、取得漏れ）。その場合は指定日以前で
+    いちばん新しい日に落とす。それも無ければ銘柄自身の最新日。
+    """
+    row = conn.execute(
+        "SELECT session FROM market_intraday WHERE symbol = ? AND session <= ? "
+        "ORDER BY session DESC LIMIT 1", (symbol, wanted)).fetchone()
+    if row is None:
+        row = conn.execute(
+            "SELECT session FROM market_intraday WHERE symbol = ? "
+            "ORDER BY session DESC LIMIT 1", (symbol,)).fetchone()
+    return row["session"] if row else None
+
+
+def load_tile(symbol, conn=None, session=None):
+    """1銘柄ぶんの数値と日中チャート。データがなければ None。
+
+    session を渡すと、その取引日の終値を返す。
+    渡さなければ、その銘柄自身の最新セッションを使う。
+    """
     own = conn is None
     conn = conn or _conn()
     try:
         quote = conn.execute("SELECT * FROM market_quote WHERE symbol = ?", (symbol,)).fetchone()
         if quote is None:
             return None
+
+        # 日中足がまったく無くても、クオートだけでタイルは出せる
+        # （グラフが空になるだけ）。ここで落とすと --strict が
+        # 「タイルが欠けている」と見なして書き出しごと止めてしまう
+        target = _target_session(conn, symbol, session or quote["session"]) \
+            or quote["session"]
+
         points = conn.execute(
             "SELECT ts, value FROM market_intraday WHERE symbol = ? AND session = ? ORDER BY ts",
-            (symbol, quote["session"])).fetchall()
+            (symbol, target)).fetchall()
+
+        if target == quote["session"]:
+            # その銘柄自身の最新セッション。
+            # 取引所が出している正式な前セッション終値をそのまま使える
+            price = quote["price"]
+            prev = quote["prev_close"]
+        else:
+            # 過去のセッションに戻した場合（ドル円・BTCがこちらに来る）。
+            # その日の最終値と、ひとつ前のセッションの最終値を突き合わせる
+            price = points[-1]["value"] if points else None
+            prev_row = conn.execute(
+                "SELECT value FROM market_intraday WHERE symbol = ? AND session < ? "
+                "ORDER BY session DESC, ts DESC LIMIT 1", (symbol, target)).fetchone()
+            prev = prev_row["value"] if prev_row else None
     finally:
         if own:
             conn.close()
 
+    if price is None:
+        return None
+
     meta = SYMBOLS.get(symbol, {})
     offset = quote["tz_offset"] or 0
-    price = quote["price"]
-    prev = quote["prev_close"]
 
     # 前日比。金利だけは % ではなく bp（0.01%）で見るのが慣習。
-    change = None if (price is None or prev is None) else price - prev
+    change = None if prev is None else price - prev
     change_pct = None if (change is None or not prev) else change / prev * 100
     change_bp = None if change is None else change * 100
 
@@ -53,7 +118,7 @@ def load_tile(symbol, conn=None):
         "digits": meta.get("digits", 2),
         "unit": meta.get("unit", ""),
         "change_mode": meta.get("change", "pct"),
-        "session": quote["session"],
+        "session": target,
         "price": price,
         "prev_close": prev,
         "change": change,
@@ -65,10 +130,10 @@ def load_tile(symbol, conn=None):
     }
 
 
-def load_tiles(symbols):
+def load_tiles(symbols, session=None):
     conn = _conn()
     try:
-        return [t for t in (load_tile(s, conn) for s in symbols) if t]
+        return [t for t in (load_tile(s, conn, session) for s in symbols) if t]
     finally:
         conn.close()
 
@@ -287,8 +352,8 @@ def load_fear_greed():
     }
 
 
-def load_vix():
-    tile = load_tile("^VIX")
+def load_vix(session=None):
+    tile = load_tile("^VIX", session=session)
     if not tile or tile["price"] is None:
         return None
     label, color = vix_band(tile["price"])
