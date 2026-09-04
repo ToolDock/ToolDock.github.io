@@ -76,15 +76,31 @@ def weekly_closes(rows):
     return [last[key] for key in sorted(last)]
 
 
-def history_payload(symbol, digits):
+def history_payload(symbol, digits, session=None, close=None):
     """期間切り替え用の系列。直近1年は日足、5年は週足。
 
     1ヶ月・年初来・1年は daily を切って使う。
     年初来の起点には前年末の終値が要るので、daily は1年ぶん持たせてある。
+
+    末尾は日足をそのまま使わず、基準日より前で打ち切って、
+    基準日ぶんはタイルの値で置き直す。Yahooの日足は当日ぶんの扱いが
+    銘柄によって違うため。実際に返ってきたもの（2026-09-04 07:34 UTC 時点、
+    基準日は9/3）:
+
+      ^GSPC   … 9/2 まで。9/3 の足がまだ無い
+      JPY=X   … 9/4 まで。取得した瞬間の、まだ途中の値が入っている
+      GC=F    … 9/2 の次が 9/4。9/3 が飛んでいる
+
+    このまま渡すと、図の右端がタイルの数字と合わない。
+    タイルの値（5分足から取った基準日の終値）に合わせておけば、
+    どの銘柄でも右端が必ず一致する。
     """
     rows = um.load_daily(symbol, days=None)
     if len(rows) < 30:
         return None, None
+
+    if session and close is not None:
+        rows = [r for r in rows if r[0] < session] + [(session, close)]
 
     first = date.fromisoformat(rows[-1][0]) - timedelta(days=DAILY_WINDOW_DAYS)
     year = [r for r in rows if date.fromisoformat(r[0]) >= first]
@@ -97,7 +113,8 @@ def history_payload(symbol, digits):
 
 def tile_payload(tile):
     change_text, sign = um.format_change(tile)
-    daily, weekly = history_payload(tile["symbol"], tile["digits"])
+    daily, weekly = history_payload(tile["symbol"], tile["digits"],
+                                    tile["session"], tile["price"])
     return {
         "symbol": tile["symbol"],
         "slug": slug(tile["symbol"]),
