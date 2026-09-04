@@ -78,7 +78,28 @@ def tile_payload(tile):
     }
 
 
+def business_days_behind(day, today=None):
+    """day の翌日から today までに平日が何日あるか。
+
+    基準価額は営業日の夜に確定するので、当日ぶんは当日には出ない。
+    したがって1は正常で、2は週末や休場を挟んだ範囲。
+    3以上になっていたら、取得が止まっている疑いがある。
+    """
+    today = today or date.today()
+    n, cur = 0, day + timedelta(days=1)
+    while cur <= today:
+        if cur.weekday() < 5:
+            n += 1
+        cur += timedelta(days=1)
+    return n
+
+
+# これ以上さかのぼっていたら「古い」として画面に出す
+STALE_LIMIT = 3
+
+
 def fund_payload(stats):
+    behind = business_days_behind(stats["date"])
     change = stats["change"]
     sign = 1 if (change or 0) > 0 else (-1 if (change or 0) < 0 else 0)
     return {
@@ -101,6 +122,10 @@ def fund_payload(stats):
         "ytd_pct": round(stats["ytd_pct"], 2),
         "peak": stats["peak"],
         "from_peak_pct": round(stats["from_peak_pct"], 2),
+
+        # 取得が止まったときに、古い数字を黙って新しいかのように見せない
+        "days_behind": behind,
+        "stale": behind >= STALE_LIMIT,
     }
 
 
@@ -374,6 +399,12 @@ def build(out_dir="dist", refresh=False, nav_csv=None, strict=False):
         print(f"基準価額の履歴を書き出し: {saved}件（{nav_csv}）")
 
     payload = build_payload()
+
+    fund = payload.get("fund")
+    if fund and fund.get("stale"):
+        print(f"！基準価額が{fund['days_behind']}営業日ぶん古いままです"
+              f"（最新の取得: {fund['date']}）。取得元で失敗が続いていないか確認してください")
+
     problems = missing_parts(payload)
     if problems:
         print("欠けているデータ: " + "、".join(problems))

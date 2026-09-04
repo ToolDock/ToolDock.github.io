@@ -59,3 +59,18 @@ jobs:
           git add "$OUT_DIR" "$NAV_CSV"
           git commit -m "chore: 米国市場ダッシュボードを更新 ($(date -u '+%Y-%m-%d %H:%M UTC'))"
           git push
+
+      # 取れたぶんは先にコミットしたうえで、止まっていれば赤くして知らせる。
+      # ログを見に行かないと気づけない状態にしないため
+      - name: 基準価額が止まっていないか確認
+        run: |
+          python - <<'PY'
+          import json, sys
+          d = json.load(open("us-market/market.json", encoding="utf-8"))
+          f = d.get("fund") or {}
+          if f.get("stale"):
+              print(f"::error::基準価額が{f['days_behind']}営業日ぶん古いままです"
+                    f"（最新の取得: {f['date']}）。取得元で失敗が続いています")
+              sys.exit(1)
+          print(f"基準価額は最新です（{f.get('date')}）")
+          PY

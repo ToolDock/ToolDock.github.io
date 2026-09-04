@@ -389,3 +389,16 @@ body {
 .monthly .up { color: var(--up); font-weight: 700; }
 .monthly .down { color: var(--down); font-weight: 700; }
 .monthly .flat { color: var(--text-muted); }
+
+/* 基準価額の取得が止まっているときの注記 */
+.stale {
+  margin: 8px 0 0;
+  padding: 7px 10px;
+  border-left: 3px solid var(--down);
+  border-radius: 4px;
+  background: #fdf2f2;
+  color: var(--down);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.6;
+}
