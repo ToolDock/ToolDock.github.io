@@ -134,6 +134,7 @@ def tile_payload(tile):
         # 日中足そのもの。描画はブラウザ側（Chart.js）で行う。
         # 時刻は "HH:MM" だけあれば足りる（日付はタイルの session が持っている）
         "digits": tile["digits"],
+        "unit": tile["unit"],
         "times": [str(t)[11:16] for t in tile["times"]],
         "values": tile["values"],
 

@@ -155,8 +155,20 @@ body {
 
 .tile__chart { height: 180px; margin-top: auto; padding-top: 4px; }
 
+/* その期間の高値と安値。図から目盛りで読むより速い */
+.tile__range {
+  margin: 6px 0 0;
+  font-size: .78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tile__range b { font-weight: 600; }
+.tile__range .when { color: var(--text-faint); }
+.tile__range .sep { margin: 0 .5em; color: var(--border); }
+
 .tile__session {
-  margin: 0;
+  margin: 2px 0 0;
   font-size: .72rem;
   color: var(--text-faint);
 }
