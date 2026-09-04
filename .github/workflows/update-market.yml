@@ -8,7 +8,7 @@ name: 昨日の米国株を更新
 
 on:
   schedule:
-    # 米国市場が引けて基準価額も出たあと。UTC 22:00 = 日本時間 翌07:00
+    # 米国市場が引けたあと。UTC 22:00 = 日本時間 翌07:00
     - cron: "0 22 * * 1-5"
   workflow_dispatch: {}      # 手動実行も可能にしておく
 
@@ -22,7 +22,6 @@ permissions:
 env:
   SRC_DIR: market                       # 収集・ビルド用スクリプトの置き場所
   OUT_DIR: us-market                    # 公開ディレクトリ（サイト直下 /us-market/）
-  NAV_CSV: market/data/fund_nav.csv     # 基準価額の履歴（このワークフローが更新する）
 
 jobs:
   update:
@@ -45,32 +44,16 @@ jobs:
           python build_static.py \
             --refresh \
             --strict \
-            --nav-csv "data/fund_nav.csv" \
             --out "${{ github.workspace }}/${{ env.OUT_DIR }}"
 
       - name: 変更があればコミット
         run: |
-          if git diff --quiet -- "$OUT_DIR" "$NAV_CSV"; then
+          if git diff --quiet -- "$OUT_DIR"; then
             echo "変更なし。コミットしません。"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$OUT_DIR" "$NAV_CSV"
+          git add "$OUT_DIR"
           git commit -m "chore: 米国市場ダッシュボードを更新 ($(date -u '+%Y-%m-%d %H:%M UTC'))"
           git push
-
-      # 取れたぶんは先にコミットしたうえで、止まっていれば赤くして知らせる。
-      # ログを見に行かないと気づけない状態にしないため
-      - name: 基準価額が止まっていないか確認
-        run: |
-          python - <<'PY'
-          import json, sys
-          d = json.load(open("us-market/market.json", encoding="utf-8"))
-          f = d.get("fund") or {}
-          if f.get("stale"):
-              print(f"::error::基準価額が{f['days_behind']}営業日ぶん古いままです"
-                    f"（最新の取得: {f['date']}）。取得元で失敗が続いています")
-              sys.exit(1)
-          print(f"基準価額は最新です（{f.get('date')}）")
-          PY

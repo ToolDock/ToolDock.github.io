@@ -2,23 +2,33 @@
 
 データ源:
 - Yahoo Finance chart API（無料・キー不要）→ 主要指数・為替・金利・コモディティの
-  日中5分足と直近クオート
-- 三菱UFJアセットマネジメント ファンド情報WEB-API（developer.am.mufg.jp）
-  → eMAXIS Slim 米国株式（S&P500）の基準価額（円建て・日次）
+  日中5分足と直近クオート、および日足5年ぶん
 - CNN Business Fear & Greed Index
 
 取得結果は investment_ai.db にキャッシュし、再実行時は不足分だけ取りに行く。
 
-    python collect_us_market.py            # 直近分のみ更新
-    python collect_us_market.py --backfill # 基準価額を2025-01-01まで遡って取得
+    python collect_us_market.py
+
+■ 基準価額をやめた経緯（2026-09）
+
+以前は三菱UFJアセットマネジメントのファンド情報WEB-APIから
+eMAXIS Slim 米国株式（S&P500）の基準価額を取っていたが、
+2026-08-31 から 403 が返り続けるようになった。
+ランナーから確かめたところ、トップページも含めてドメイン全体が403で、
+ブラウザ相当のヘッダーを全部つけても変わらなかった。
+GitHub Actions の出口は米国のデータセンター（確認時は Phoenix, Arizona）で、
+そこが弾かれている。ヘッダーで抜けられる類ではない。
+
+代わりに、円建てS&P500を自前で計算している（build_static.py の yen_index）。
+S&P500（配当込み）とドル円を掛け合わせたもので、実際の基準価額とは
+信託報酬や反映時刻のぶんだけずれるが、手元の実績403日ぶんと
+突き合わせたところ、ずれはおおむね1%台に収まっていた。
 """
 
-import csv
 import io
 import json
-import sys
 import time
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import requests
@@ -41,16 +51,13 @@ SYMBOLS = {
 
 # 日足を取る銘柄。タイルの期間切り替え（1ヶ月・年初来・1年・5年）と、
 # VIX／S&P500の1年チャートに使う。5分足とは別のテーブルに入れる
-DAILY_SYMBOLS = list(SYMBOLS)
+# ^SP500TR は配当込みのS&P500。円建てS&P500の計算に使う。
+# 配当を含まない ^GSPC で作ると、実際のファンドより年0.7%ほど下に離れていく。
+# タイルには出さないので SYMBOLS には入れない。取れなければ ^GSPC に落とす
+DAILY_SYMBOLS = list(SYMBOLS) + ["^SP500TR"]
 DAILY_RANGE = "5y"
 
-# eMAXIS Slim 米国株式（S&P500）
-FUND_CD = "253266"
-FUND_NAME = "eMAXIS Slim 米国株式（S&P500）"
-FUND_START = date(2025, 1, 1)   # 年初来ドローダウンを「今年・去年」の2本描くための起点
-
 YAHOO_HOST = "https://query2.finance.yahoo.com"
-MUFG_HOST = "https://developer.am.mufg.jp"
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
 
@@ -95,15 +102,6 @@ def init_tables():
             prev_close REAL,
             change_pct REAL,
             fetched_at TEXT
-        )
-    """)
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS fund_nav (
-            fund_cd TEXT,
-            date TEXT,
-            nav REAL,        -- NULL は「基準価額の算出がない日」の記録（再取得を避けるため）
-            change_pct REAL,
-            PRIMARY KEY (fund_cd, date)
         )
     """)
     cur.execute("""
@@ -319,118 +317,6 @@ def refresh_heatmap(pause=1.0, verbose=False, limit=None):
     return len(rows), failed
 
 
-# ── eMAXIS Slim S&P500 の基準価額 ────────────────────────────
-def _known_nav_dates(fund_cd):
-    conn = get_connection()
-    rows = conn.execute("SELECT date FROM fund_nav WHERE fund_cd = ?", (fund_cd,)).fetchall()
-    conn.close()
-    return {r[0] for r in rows}
-
-
-def fetch_nav(fund_cd, target):
-    """指定日の基準価額。休業日など算出がない日は None。"""
-    url = f"{MUFG_HOST}/fund_information_date/fund_cd/{fund_cd}/base_date/{target:%Y%m%d}"
-    # ブラウザからは通るのに CI から 403 が返る状態が続いたため、
-    # 参照元も添えてみる。IPで弾かれているなら効かないが、試す価値はある
-    res = _http().get(url, timeout=30,
-                      headers={"Referer": MUFG_HOST + "/", "Origin": MUFG_HOST})
-    res.raise_for_status()
-    data = res.json().get("datasets") or []
-    if not data:
-        return None
-    item = data[0]
-    try:
-        return float(item["nav"]), float(item["percentage_change"])
-    except (TypeError, ValueError):
-        return None
-
-
-def refresh_fund_nav(fund_cd=FUND_CD, start=None, end=None, pause=0.05, verbose=False):
-    """未取得の営業日だけ基準価額を取りに行く。
-
-    まだ公表されていないだけの直近数日は「なし」を記録せず、次回あらためて取得する。
-    """
-    start = start or FUND_START
-    end = end or date.today()
-    known = _known_nav_dates(fund_cd)
-    settled_before = date.today() - timedelta(days=4)  # これより古い空振りは休業日として確定
-
-    todo = []
-    day = start
-    while day <= end:
-        if day.weekday() < 5 and day.isoformat() not in known:
-            todo.append(day)
-        day += timedelta(days=1)
-
-    saved = 0
-    conn = get_connection()
-    for i, day in enumerate(todo):
-        try:
-            got = fetch_nav(fund_cd, day)
-        except Exception as e:
-            if verbose:
-                print(f"  {day} 失敗: {e}")
-            continue
-        if got:
-            conn.execute("INSERT OR REPLACE INTO fund_nav (fund_cd, date, nav, change_pct) "
-                         "VALUES (?,?,?,?)", (fund_cd, day.isoformat(), got[0], got[1]))
-            saved += 1
-        elif day < settled_before:
-            conn.execute("INSERT OR REPLACE INTO fund_nav (fund_cd, date, nav, change_pct) "
-                         "VALUES (?,?,NULL,NULL)", (fund_cd, day.isoformat()))
-        if i % 50 == 49:
-            conn.commit()
-            if verbose:
-                print(f"  ...{i + 1}/{len(todo)}")
-        time.sleep(pause)
-    conn.commit()
-    conn.close()
-    return saved, len(todo)
-
-
-def export_nav_csv(path, fund_cd=FUND_CD):
-    """基準価額の履歴をCSVに書き出す。
-
-    GitHub Actions で毎日ビルドする場合、DBのバイナリをコミットし続けると
-    履歴が膨らむので、テキストで持ち回れるようにしておく。
-    """
-    conn = get_connection()
-    rows = conn.execute(
-        "SELECT date, nav, change_pct FROM fund_nav WHERE fund_cd = ? ORDER BY date",
-        (fund_cd,)).fetchall()
-    conn.close()
-
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["date", "nav", "change_pct"])
-        for day, nav, change in rows:
-            writer.writerow([day, "" if nav is None else nav,
-                             "" if change is None else change])
-    return len(rows)
-
-
-def import_nav_csv(path, fund_cd=FUND_CD):
-    """export_nav_csv が書いたCSVをDBに読み込む。取得済みの日は上書きしない。"""
-    path = Path(path)
-    if not path.exists():
-        return 0
-    with path.open(encoding="utf-8", newline="") as f:
-        rows = [(fund_cd, r["date"],
-                 float(r["nav"]) if r["nav"] else None,
-                 float(r["change_pct"]) if r["change_pct"] else None)
-                for r in csv.DictReader(f)]
-    if not rows:
-        return 0
-    conn = get_connection()
-    conn.executemany("INSERT OR IGNORE INTO fund_nav (fund_cd, date, nav, change_pct) "
-                     "VALUES (?,?,?,?)", rows)
-    conn.commit()
-    conn.close()
-    return len(rows)
-
-
 # ── Fear & Greed ───────────────────────────────────────────
 def refresh_fear_greed():
     """CNNのFear & Greed Index（当日値＋ヒストリカル）を保存。"""
@@ -460,8 +346,8 @@ def refresh_fear_greed():
 
 
 # ── まとめて更新 ─────────────────────────────────────────────
-def refresh_all(nav_lookback_days=14, verbose=False):
-    """ダッシュボード表示前の通常更新。基準価額は直近ぶんだけ見に行く。"""
+def refresh_all(verbose=False):
+    """ダッシュボード表示前の通常更新。"""
     init_tables()
     failed = refresh_market(verbose=verbose)
     failed += refresh_dailies(verbose=verbose)
@@ -480,10 +366,6 @@ def refresh_all(nav_lookback_days=14, verbose=False):
                   + (f"（{len(hm_failed)}件失敗）" if hm_failed else ""))
     except Exception as e:
         print(f"  ヒートマップの取得に失敗しました（本体には影響しません）: {e}")
-    try:
-        refresh_fund_nav(start=date.today() - timedelta(days=nav_lookback_days), verbose=verbose)
-    except Exception as e:
-        failed.append((FUND_CD, str(e)))
     return failed
 
 
@@ -493,17 +375,15 @@ if __name__ == "__main__":
     print("■ 指数・為替・金利・コモディティ")
     failures = refresh_market(verbose=True)
 
+    print("■ 日足（期間切り替えと円建てS&P500に使う）")
+    failures += refresh_dailies(verbose=True)
+
     print("■ Fear & Greed")
     try:
         score, rating, n = refresh_fear_greed()
         print(f"  今日: {score} ({rating}) / ヒストリカル{n}件")
     except Exception as e:
         print(f"  失敗: {e}")
-
-    print(f"■ {FUND_NAME} 基準価額")
-    begin = FUND_START if "--backfill" in sys.argv else date.today() - timedelta(days=14)
-    saved_count, todo_count = refresh_fund_nav(start=begin, verbose=True)
-    print(f"  {saved_count}件保存（対象{todo_count}営業日）")
 
     if failures:
         print("\n取得できなかったもの:")

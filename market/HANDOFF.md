@@ -27,7 +27,7 @@ Chart.js に描き直しました。
 | 描くもの | どこで |
 |---|---|
 | タイルの日中足（8枚） | `tileChart()` … Chart.js の折れ線 |
-| 基準価額の年初来 | `fundChart()` … Chart.js の折れ線 |
+| 円建てS&P500の年初来 | `yenSpxChart()` … Chart.js の折れ線 |
 | 年初来ドローダウン | `drawdownChart()` … Chart.js の折れ線2本 |
 | Fear & Greed のメーター | `fgGauge()` … 素のSVG |
 | VIX のメーター | `vixMeter()` … 素のSVG |
@@ -46,7 +46,7 @@ Chart.js に描き直しました。
 ```
 market/                          <- 公開されない。データ取得とビルド
 |-- build_static.py              ビルド本体
-|-- collect_us_market.py         データ取得（Yahoo / MUFG / CNN）
+|-- collect_us_market.py         データ取得（Yahoo / CNN）
 |-- db.py                        SQLite接続
 |-- requirements.txt             requests のみ
 |-- utils/
@@ -57,7 +57,6 @@ market/                          <- 公開されない。データ取得とビ�
 |   |-- board.js
 |   `-- README.md                market.json の全構造とスタイル変更手順
 |-- data/
-|   `-- fund_nav.csv             基準価額の履歴433件（2025-01-01〜）
 `-- HANDOFF.md                   これ
 
 us-market/                       <- 公開候補。ビルドしたもの
@@ -125,8 +124,8 @@ VIX と S&P500 の1年チャートは日足で、こちらは2リクエストし
 - `rows[].tiles[]` … 8枚のタイル。`price` / `change_pct` などの生値と、
   `price_text` / `change_text` の整形済みテキストの両方が入っています。
   日中足そのものも `digits` / `times` / `values` として同じ場所にあります
-- `fund` … 基準価額、前日比、年初来騰落、年初来高値からの位置
-- `fund_series` … 基準価額の年初来。`dates` / `values`
+- `yenspx` … 円建てS&P500の年初来騰落、年初来高値からの位置、内訳（米国株ぶんと為替ぶん）
+- `yenspx_series` … 年初からの騰落率。`dates` / `values`
 - `drawdown.years["2026"|"2025"]` … `dates` / `values`（下落率%）/ `max` / `max_date`
 - `fear_greed` / `vix` … 値・区分ラベル・区分色
 - `bands` … メーターの区分と色。境目や色を変えるときは Python 側の
@@ -142,12 +141,12 @@ VIX と S&P500 の1年チャートは日足で、こちらは2リクエストし
 | 項目 | 出典 | 備考 |
 |---|---|---|
 | S&P500 / NASDAQ100 / NYSE FANG+ / ドル円 / ゴールド / 米国債10年 / BTC / SOX / VIX | Yahoo Finance chart API | 5分足。キー不要だが非公式 |
-| eMAXIS Slim 米国株式（S&P500）基準価額 | 三菱UFJアセットマネジメント ファンド情報API | 公式。ファンドコード `253266` |
+| 円建てS&P500 | 上記のS&P500（配当込み）とドル円から当方で計算 | 参考値。実際の基準価額ではない |
 | Fear & Greed Index | CNN Business | |
 
 - 週末・米国休場日は直近営業日の値になります。BTC だけ24時間動くので日付が
   ずれることがあり、各タイルにセッション日を出しています。
-- 基準価額は営業日の夜に前営業日分が確定します。当日分はその日には出ません。
+- 円建てS&P500は参考値です。信託報酬も、株価と為替を反映する時刻の違いも入っていません。
 
 ### Yahoo Finance について（自動更新を有効にする前に）
 
@@ -161,7 +160,12 @@ VIX と S&P500 の1年チャートは日足で、こちらは2リクエストし
 
 連続して失敗するようなら、ワークフローを止めて手元ビルドに切り替えるか、
 キーのあるAPI（FMP / Finnhub）に `collect_us_market.py` を差し替えてください。
-MUFG と CNN は CI からでも問題なく取れます。
+CNN は CI からでも問題なく取れます。
+
+なお三菱UFJのファンド情報API（`developer.am.mufg.jp`）は、
+2026-08-31 からドメイン全体が403を返すようになり、使うのをやめました。
+GitHub Actions の出口が米国のデータセンターで、そこが弾かれています。
+ブラウザ相当のヘッダーを全部つけても変わりません。日本から叩けば通ります。
 
 ---
 
@@ -172,7 +176,7 @@ cd market
 pip install -r requirements.txt
 
 # データを取得して /us-market/ に書き出す
-python build_static.py --refresh --nav-csv data/fund_nav.csv --out ../us-market
+python build_static.py --refresh --out ../us-market
 ```
 
 `--strict` を足すと、データが欠けているときに書き出さず終了します（自動更新向け）。

@@ -8,7 +8,7 @@ import sqlite3
 from datetime import date, datetime, timedelta, timezone
 
 # collect_us_market と同じ定義を使う（循環importを避けるためこちらでは再定義しない）
-from collect_us_market import FUND_CD, FUND_NAME, SYMBOLS  # noqa: E402
+from collect_us_market import SYMBOLS  # noqa: E402
 from db import DB_PATH  # noqa: E402
 
 ROW1 = ["^GSPC", "^NDX", "^NYFANG", "JPY=X"]
@@ -158,21 +158,66 @@ def format_change(tile):
     return f"{tile['change']:+,.{digits}f}（{tile['change_pct']:+.2f}%）", sign
 
 
-# ── eMAXIS Slim 米国株式（S&P500）の基準価額 ──────────────────
-def load_nav_series(fund_cd=FUND_CD, start=None):
-    """[(date, nav), ...] を日付昇順で返す。"""
-    conn = _conn()
-    try:
-        sql = "SELECT date, nav, change_pct FROM fund_nav WHERE fund_cd = ? AND nav IS NOT NULL"
-        args = [fund_cd]
-        if start:
-            sql += " AND date >= ?"
-            args.append(start.isoformat() if hasattr(start, "isoformat") else start)
-        sql += " ORDER BY date"
-        return [(date.fromisoformat(r["date"]), r["nav"], r["change_pct"])
-                for r in conn.execute(sql, args)]
-    finally:
-        conn.close()
+# ── 円建てS&P500 ────────────────────────────────────────────
+#
+# 以前は三菱UFJのAPIから eMAXIS Slim 米国株式（S&P500）の基準価額を
+# 取っていたが、2026-08-31 からドメインごと403になった（詳しくは
+# collect_us_market.py の冒頭）。代わりに、ここで自前で組み立てる。
+#
+# 配当込みのS&P500にドル円を掛けたもの。日本から積み立てている人が
+# 持っている形に近いが、信託報酬も為替の反映時刻の差も入っていない。
+# 実際の基準価額403日ぶんと突き合わせたときのずれは、おおむね1%台だった。
+
+SPX_TOTAL_RETURN = "^SP500TR"    # 配当込み。これが本命
+SPX_PRICE = "^GSPC"              # 配当なし。上が取れなかったときの代わり
+
+
+def yen_spx_series(start=None):
+    """[(date, 指数, 前日比%), ...] を日付昇順で返す。
+
+    値そのものに意味は無い（S&P500 × ドル円）。使うのは変化率だけなので、
+    表示側で年初＝100 に正規化する。
+    """
+    spx = dict(load_daily(SPX_TOTAL_RETURN, days=None))
+    source = SPX_TOTAL_RETURN
+    if len(spx) < 200:
+        spx = dict(load_daily(SPX_PRICE, days=None))
+        source = SPX_PRICE
+
+    fx = dict(load_daily("JPY=X", days=None))
+    days = sorted(set(spx) & set(fx))
+    if start:
+        first = start.isoformat() if hasattr(start, "isoformat") else start
+        days = [d for d in days if d >= first]
+
+    out = []
+    prev = None
+    for day in days:
+        value = spx[day] * fx[day]
+        change = None if prev is None else (value / prev - 1) * 100
+        out.append((date.fromisoformat(day), value, change))
+        prev = value
+    return out, source
+
+
+def yen_spx_parts(start_day, end_day):
+    """年初来の内訳。米国株ぶんと為替ぶんに分ける。
+
+    円建ての騰落は (1+株) × (1+為替) - 1 にきれいに分かれる。
+    「円建てで上がったのは株か円安か」は、このページで一番聞かれそうなところ。
+    """
+    spx = dict(load_daily(SPX_TOTAL_RETURN, days=None))
+    if len(spx) < 200:
+        spx = dict(load_daily(SPX_PRICE, days=None))
+    fx = dict(load_daily("JPY=X", days=None))
+
+    a, b = start_day.isoformat(), end_day.isoformat()
+    if not all(k in spx and k in fx for k in (a, b)):
+        return None
+    return {
+        "stock_pct": (spx[b] / spx[a] - 1) * 100,
+        "fx_pct": (fx[b] / fx[a] - 1) * 100,
+    }
 
 
 def year_slice(series, year):
@@ -180,7 +225,11 @@ def year_slice(series, year):
 
 
 def ytd_stats(series, year):
-    """年初来の騰落・前日比・直近値をまとめる。"""
+    """年初来の騰落・前日比・直近値をまとめる。
+
+    series は [(date, 値, 前日比%), ...]。円建てS&P500でも
+    基準価額でも、同じ形なら通る。
+    """
     rows = year_slice(series, year)
     if not rows:
         return None

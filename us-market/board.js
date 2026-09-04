@@ -3,7 +3,7 @@
  * チャートは Chart.js（/js/vendor/chart.umd.min.js）で描く。
  * market.json に入っているのは数値と系列だけで、図の定義は持たない。
  *
- * 折れ線3種（タイルの値動き・基準価額・ドローダウン）は Chart.js。
+ * 折れ線3種（タイルの値動き・円建てS&P500・ドローダウン）は Chart.js。
  * Fear & Greed のメーターと VIX のメーターは図形なので、
  * Chart.js を曲げるより素のSVGで描くほうが短く正確になる。
  * 触るとしたら COLORS（色）と、各 render〜()（文言・並び）で足りるようにしてある。
@@ -42,6 +42,12 @@
 
   function directionClass(direction) {
     return direction > 0 ? "up" : (direction < 0 ? "down" : "flat");
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
   function setText(root, selector, text) {
@@ -206,7 +212,84 @@
       }
     });
 
+    /* 系列の始まりが区切りの途中だと、最初の目盛りだけ次と間が詰まる。
+       5年を2021年9月から描くと「2021 2022」が重なった。
+       次との間が、そのあとの並びの半分も無ければ落とす */
+    var at = [];
+    for (var i = 0; i < out.length; i++) {
+      if (out[i]) { at.push(i); }
+    }
+    if (at.length >= 3 && (at[1] - at[0]) < (at[2] - at[1]) * 0.5) {
+      out[at[0]] = "";
+    }
+
     return out;
+  }
+
+  /* 単位のつけ方はサーバー側の format_price と合わせる */
+  function priceText(tile, value) {
+    var text = fmt(value, tile.digits);
+    return tile.unit === "$" ? "$" + text : text + (tile.unit || "");
+  }
+
+  /* 高値・安値がいつだったか。1日は "HH:MM"、それ以外は "YYYY-MM-DD" が来る。
+     日付はそのまま出す。「10月14日」だけだと、5年で見たときに
+     どの年のことか分からない */
+  function whenText(label) {
+    return typeof label === "string" ? label : "";
+  }
+
+  function extremes(view) {
+    var values = view.values || [];
+    var hi = null, lo = null, hiAt = -1, loAt = -1;
+    for (var i = 0; i < values.length; i++) {
+      var v = values[i];
+      if (v == null) { continue; }
+      if (hi === null || v > hi) { hi = v; hiAt = i; }
+      if (lo === null || v < lo) { lo = v; loAt = i; }
+    }
+    if (hiAt < 0) { return null; }
+    return {
+      high: hi, low: lo,
+      highWhen: whenText((view.labels || [])[hiAt]),
+      lowWhen: whenText((view.labels || [])[loAt])
+    };
+  }
+
+  /* 横線の間隔。1 / 2 / 2.5 / 5 の倍数から、
+     4本以上引ける中でいちばん粗いものを選ぶ。
+
+     「範囲 ÷ 本数」を丸める素直なやり方だと、境目のすぐ上に来たときに
+     ひとつ粗い刻みへ飛んで線が2本しか残らない
+     （NASDAQ100の1日が実際そうなった）。本数から決めるほうが外さない */
+  function niceStep(low, high) {
+    var range = high - low;
+    if (!(range > 0)) { return 0; }
+
+    var mag = Math.pow(10, Math.floor(Math.log10(range)));
+    var ladder = [];
+    for (var m = mag / 100; m <= mag * 10; m *= 10) {
+      ladder.push(m, 2 * m, 2.5 * m, 5 * m);
+    }
+    ladder.sort(function (a, b) { return a - b; });
+
+    var best = 0;
+    var loose = 0;
+    for (var i = 0; i < ladder.length; i++) {
+      var n = Math.floor(high / ladder[i]) - Math.ceil(low / ladder[i]) + 1;
+      if (n >= 4) { best = ladder[i]; }
+      if (n >= 2) { loose = ladder[i]; }
+    }
+    return best || loose;
+  }
+
+  /* 刻み幅を書くのに要る小数の桁数 */
+  function decimalsFor(step) {
+    if (!(step > 0)) { return 0; }
+    for (var d = 0; d < 6; d++) {
+      if (Math.abs(step * Math.pow(10, d) % 1) < 1e-9) { return d; }
+    }
+    return 6;
   }
 
   function tileChart(host, tile, view) {
@@ -245,6 +328,16 @@
     var high = Math.max.apply(null, span);
     var pad = (high - low) * 0.15 || (Math.abs(high) * 0.001 + 0.01);
 
+    /* 軸の上下はデータに合わせて詰める。刻み幅の倍数まで広げると、
+       BTCのように値が大きい銘柄で軸が0から始まってしまう。
+       線のほうを、範囲に収まるきりのいい値に置く */
+    low -= pad;
+    high += pad;
+    var step = niceStep(low, high);
+
+    /* 目盛りの小数は刻み幅ぶんだけ。指数を「8,500.00」と出しても意味がない */
+    var tickDigits = Math.min(tile.digits, decimalsFor(step));
+
     /* 1日は "HH:MM" で重複しないので、素直に間引かせる。
        日付の期間だけ、こちらで目盛りの位置を決める */
     var ticks = { color: fontColor(), font: { size: 10 }, maxRotation: 0 };
@@ -278,7 +371,33 @@
             border: { display: false },
             ticks: ticks
           },
-          y: { display: false, min: low - pad, max: high + pad }
+          y: {
+            min: low,
+            max: high,
+            /* 横線。目盛りが無いと、図から水準が読めない */
+            grid: { color: COLORS.grid },
+            border: { display: false },
+            ticks: {
+              color: fontColor(),
+              font: { size: 10 },
+              /* maxTicksLimit を併せると stepSize より優先され、
+                 「7,666.67」のような半端な目盛りに戻ってしまう */
+              callback: function (v) { return fmt(v, tickDigits); }
+            },
+
+            /* 刻み幅の倍数を、軸の範囲に収まるぶんだけ置く。
+               Chart.js に stepSize を渡すと軸の下端から数え始めるので、
+               「6,125 / 6,625 / …」と半端な値から並んでしまう */
+            afterBuildTicks: function (axis) {
+              if (!(step > 0)) { return; }
+              var ticks = [];
+              var first = Math.ceil(axis.min / step) * step;
+              for (var v = first; v <= axis.max + step * 1e-6; v += step) {
+                ticks.push({ value: Math.round(v / step) * step });
+              }
+              if (ticks.length) { axis.ticks = ticks; }
+            }
+          }
         }
       }
     });
@@ -286,17 +405,18 @@
     if (chart) { tileCharts.push(chart); }
   }
 
-  /* ── 3段目：基準価額の年初来 ────────────────── */
-  function fundChart(host, series) {
+  /* ── 3段目：円建てS&P500の年初来（年初＝100） ── */
+  function yenSpxChart(host, series) {
+    /* 値は年初からの騰落率（%）。0が年初 */
     var values = series.values;
-    var color = values[values.length - 1] >= values[0] ? COLORS.up : COLORS.down;
-    var low = Math.min.apply(null, values);
-    var high = Math.max.apply(null, values);
-    var pad = (high - low) * 0.12;
+    var color = values[values.length - 1] >= 0 ? COLORS.up : COLORS.down;
+    var low = Math.min.apply(null, values.concat([0]));
+    var high = Math.max.apply(null, values.concat([0]));
+    var pad = (high - low) * 0.12 || 1;
 
-    /* 端をそのまま渡すと目盛りに「46,752円」と生の値が出るので、
-       きりのいい単位まで外側に丸める */
-    var step = 1000;
+    /* 端をそのまま渡すと目盛りに「13.185%」と生の値が出るので、
+       5%きざみまで外側に丸める */
+    var step = 5;
     low = Math.floor((low - pad) / step) * step;
     high = Math.ceil((high + pad) / step) * step;
 
@@ -319,7 +439,9 @@
           borderWidth: 2.4,
           pointRadius: 0,
           pointHitRadius: 6,
-          fill: "origin",
+          /* 0（年初）を境に塗る。上げている区間と下げている区間が分かれる */
+          fill: { target: { value: 0 },
+                  above: rgba(COLORS.up, 0.14), below: rgba(COLORS.down, 0.14) },
           backgroundColor: rgba(color, 0.12)
         }]
       },
@@ -328,7 +450,7 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: function (item) { return fmt(item.parsed.y, 0) + "円"; }
+              label: function (item) { return signed(item.parsed.y) + "%"; }
             }
           }
         },
@@ -347,7 +469,8 @@
             border: { display: false },
             ticks: {
               color: fontColor(),
-              callback: function (v) { return fmt(v, 0) + "円"; }
+              /* 5%きざみなので小数は出さない */
+              callback: function (v) { return (v > 0 ? "+" : "") + v + "%"; }
             }
           }
         }
@@ -868,6 +991,22 @@
         setText(node, ".tile__session",
                 view ? view.span : "この期間のデータは取得できていません");
 
+        /* その期間の高値と安値。図の目盛りから読むより速い。
+           変数名を range にすると、選択中の期間を持つ外側の range を
+           巻き上げで隠してしまい、viewOf(tile, undefined) になる */
+        var rangeEl = node.querySelector(".tile__range");
+        var peak = view ? extremes(view) : null;
+        if (peak) {
+          rangeEl.innerHTML =
+            "高値 <b>" + escapeHtml(priceText(tile, peak.high)) + "</b>" +
+            (peak.highWhen ? ' <span class="when">' + escapeHtml(peak.highWhen) + "</span>" : "") +
+            '<span class="sep">/</span>' +
+            "安値 <b>" + escapeHtml(priceText(tile, peak.low)) + "</b>" +
+            (peak.lowWhen ? ' <span class="when">' + escapeHtml(peak.lowWhen) + "</span>" : "");
+        } else {
+          rangeEl.hidden = true;
+        }
+
         var chart = node.querySelector(".tile__chart");
         chart.id = "chart-tile-" + tile.slug;
         if (view) {
@@ -922,34 +1061,22 @@
     });
   }
 
-  function renderFund(fund, series) {
-    var section = document.getElementById("fund");
-    if (!fund) { section.hidden = true; return; }
+  function renderYenSpx(data, series) {
+    var section = document.getElementById("yenspx");
+    if (!data) { section.hidden = true; return; }
 
-    bind(section, "fund.nav_text", fund.nav_text);
-    bind(section, "fund.date_text", fund.date_text);
-    bind(section, "fund.start_date_text", fund.start_date_text);
-    bind(section, "fund.change_line", fund.arrow + " " + fund.change_text);
-    bind(section, "fund.ytd_text", signed(fund.ytd_pct) + "%");
-    bind(section, "fund.from_peak_text", signed(fund.from_peak_pct) + "%");
-    bind(section, "fund.peak_text", Math.round(fund.peak).toLocaleString("ja-JP"));
+    bind(section, "yenspx.date_text", data.date_text);
+    bind(section, "yenspx.start_date_text", data.start_date_text);
+    bind(section, "yenspx.ytd_text", data.ytd_text);
+    bind(section, "yenspx.from_peak_text", data.from_peak_text);
+    bind(section, "yenspx.parts_stock", data.parts ? data.parts.stock_text : "—");
+    bind(section, "yenspx.parts_fx", data.parts ? data.parts.fx_text : "");
+    bind(section, "yenspx.note", data.note);
 
-    /* 取得が止まっているときに、古い数字を黙って出さない。
-       日付は元から出ているが、それが何営業日前かは読者に分からない */
-    const stale = document.getElementById("fund-stale");
-    if (stale) {
-      stale.hidden = !fund.stale;
-      if (fund.stale) {
-        stale.textContent = "この値は" + fund.days_behind +
-          "営業日前のものです。取得が止まっている可能性があります";
-      }
-    }
-
-    colorize(section.querySelector('[data-bind="fund.change_line"]'), fund.direction);
-    colorize(section.querySelector('[data-bind="fund.ytd_text"]'), sign(fund.ytd_pct));
+    colorize(section.querySelector('[data-bind="yenspx.ytd_text"]'), sign(data.ytd_pct));
 
     if (series && series.values && series.values.length) {
-      fundChart(document.getElementById("chart-nav"), series);
+      yenSpxChart(document.getElementById("chart-yenspx"), series);
     }
   }
 
@@ -1109,7 +1236,7 @@
     payload = data;
     bind(document, "session_text", data.session_text);
     bind(document, "generated_at_text", data.generated_at_text);
-    bind(document, "fund_chart_title", data.fund_chart_title);
+    bind(document, "yenspx_chart_title", data.yenspx_chart_title);
 
     var updated = document.querySelector('time[data-bind="generated_at_text"]');
     if (updated) { updated.dateTime = data.generated_at; }
@@ -1123,7 +1250,7 @@
     renderRanges(data.rows);
     renderRows(data.rows);
     renderHeatmap(data.heatmap);
-    renderFund(data.fund, data.fund_series);
+    renderYenSpx(data.yenspx, data.yenspx_series);
     renderDrawdown(data.drawdown);
     renderMonthly(data.sp500_monthly);
     renderFearGreed(data.fear_greed, bands.fear_greed || [], data.fg_chart);
