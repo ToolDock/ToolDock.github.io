@@ -328,7 +328,10 @@ def _known_nav_dates(fund_cd):
 def fetch_nav(fund_cd, target):
     """指定日の基準価額。休業日など算出がない日は None。"""
     url = f"{MUFG_HOST}/fund_information_date/fund_cd/{fund_cd}/base_date/{target:%Y%m%d}"
-    res = _http().get(url, timeout=30)
+    # ブラウザからは通るのに CI から 403 が返る状態が続いたため、
+    # 参照元も添えてみる。IPで弾かれているなら効かないが、試す価値はある
+    res = _http().get(url, timeout=30,
+                      headers={"Referer": MUFG_HOST + "/", "Origin": MUFG_HOST})
     res.raise_for_status()
     data = res.json().get("datasets") or []
     if not data:

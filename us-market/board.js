@@ -745,6 +745,17 @@
     bind(section, "fund.from_peak_text", signed(fund.from_peak_pct) + "%");
     bind(section, "fund.peak_text", Math.round(fund.peak).toLocaleString("ja-JP"));
 
+    /* 取得が止まっているときに、古い数字を黙って出さない。
+       日付は元から出ているが、それが何営業日前かは読者に分からない */
+    const stale = document.getElementById("fund-stale");
+    if (stale) {
+      stale.hidden = !fund.stale;
+      if (fund.stale) {
+        stale.textContent = "この値は" + fund.days_behind +
+          "営業日前のものです。取得が止まっている可能性があります";
+      }
+    }
+
     colorize(section.querySelector('[data-bind="fund.change_line"]'), fund.direction);
     colorize(section.querySelector('[data-bind="fund.ytd_text"]'), sign(fund.ytd_pct));
 
