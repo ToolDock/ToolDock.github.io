@@ -3,7 +3,7 @@
  * チャートは Chart.js（/js/vendor/chart.umd.min.js）で描く。
  * market.json に入っているのは数値と系列だけで、図の定義は持たない。
  *
- * 折れ線3種（タイルの値動き・基準価額・ドローダウン）は Chart.js。
+ * 折れ線3種（タイルの値動き・円建てS&P500・ドローダウン）は Chart.js。
  * Fear & Greed のメーターと VIX のメーターは図形なので、
  * Chart.js を曲げるより素のSVGで描くほうが短く正確になる。
  * 触るとしたら COLORS（色）と、各 render〜()（文言・並び）で足りるようにしてある。
@@ -286,17 +286,18 @@
     if (chart) { tileCharts.push(chart); }
   }
 
-  /* ── 3段目：基準価額の年初来 ────────────────── */
-  function fundChart(host, series) {
+  /* ── 3段目：円建てS&P500の年初来（年初＝100） ── */
+  function yenSpxChart(host, series) {
+    /* 値は年初からの騰落率（%）。0が年初 */
     var values = series.values;
-    var color = values[values.length - 1] >= values[0] ? COLORS.up : COLORS.down;
-    var low = Math.min.apply(null, values);
-    var high = Math.max.apply(null, values);
-    var pad = (high - low) * 0.12;
+    var color = values[values.length - 1] >= 0 ? COLORS.up : COLORS.down;
+    var low = Math.min.apply(null, values.concat([0]));
+    var high = Math.max.apply(null, values.concat([0]));
+    var pad = (high - low) * 0.12 || 1;
 
-    /* 端をそのまま渡すと目盛りに「46,752円」と生の値が出るので、
-       きりのいい単位まで外側に丸める */
-    var step = 1000;
+    /* 端をそのまま渡すと目盛りに「13.185%」と生の値が出るので、
+       5%きざみまで外側に丸める */
+    var step = 5;
     low = Math.floor((low - pad) / step) * step;
     high = Math.ceil((high + pad) / step) * step;
 
@@ -319,7 +320,9 @@
           borderWidth: 2.4,
           pointRadius: 0,
           pointHitRadius: 6,
-          fill: "origin",
+          /* 0（年初）を境に塗る。上げている区間と下げている区間が分かれる */
+          fill: { target: { value: 0 },
+                  above: rgba(COLORS.up, 0.14), below: rgba(COLORS.down, 0.14) },
           backgroundColor: rgba(color, 0.12)
         }]
       },
@@ -328,7 +331,7 @@
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: function (item) { return fmt(item.parsed.y, 0) + "円"; }
+              label: function (item) { return signed(item.parsed.y) + "%"; }
             }
           }
         },
@@ -347,7 +350,8 @@
             border: { display: false },
             ticks: {
               color: fontColor(),
-              callback: function (v) { return fmt(v, 0) + "円"; }
+              /* 5%きざみなので小数は出さない */
+              callback: function (v) { return (v > 0 ? "+" : "") + v + "%"; }
             }
           }
         }
@@ -922,34 +926,22 @@
     });
   }
 
-  function renderFund(fund, series) {
-    var section = document.getElementById("fund");
-    if (!fund) { section.hidden = true; return; }
+  function renderYenSpx(data, series) {
+    var section = document.getElementById("yenspx");
+    if (!data) { section.hidden = true; return; }
 
-    bind(section, "fund.nav_text", fund.nav_text);
-    bind(section, "fund.date_text", fund.date_text);
-    bind(section, "fund.start_date_text", fund.start_date_text);
-    bind(section, "fund.change_line", fund.arrow + " " + fund.change_text);
-    bind(section, "fund.ytd_text", signed(fund.ytd_pct) + "%");
-    bind(section, "fund.from_peak_text", signed(fund.from_peak_pct) + "%");
-    bind(section, "fund.peak_text", Math.round(fund.peak).toLocaleString("ja-JP"));
+    bind(section, "yenspx.date_text", data.date_text);
+    bind(section, "yenspx.start_date_text", data.start_date_text);
+    bind(section, "yenspx.ytd_text", data.ytd_text);
+    bind(section, "yenspx.from_peak_text", data.from_peak_text);
+    bind(section, "yenspx.parts_stock", data.parts ? data.parts.stock_text : "—");
+    bind(section, "yenspx.parts_fx", data.parts ? data.parts.fx_text : "");
+    bind(section, "yenspx.note", data.note);
 
-    /* 取得が止まっているときに、古い数字を黙って出さない。
-       日付は元から出ているが、それが何営業日前かは読者に分からない */
-    const stale = document.getElementById("fund-stale");
-    if (stale) {
-      stale.hidden = !fund.stale;
-      if (fund.stale) {
-        stale.textContent = "この値は" + fund.days_behind +
-          "営業日前のものです。取得が止まっている可能性があります";
-      }
-    }
-
-    colorize(section.querySelector('[data-bind="fund.change_line"]'), fund.direction);
-    colorize(section.querySelector('[data-bind="fund.ytd_text"]'), sign(fund.ytd_pct));
+    colorize(section.querySelector('[data-bind="yenspx.ytd_text"]'), sign(data.ytd_pct));
 
     if (series && series.values && series.values.length) {
-      fundChart(document.getElementById("chart-nav"), series);
+      yenSpxChart(document.getElementById("chart-yenspx"), series);
     }
   }
 
@@ -1109,7 +1101,7 @@
     payload = data;
     bind(document, "session_text", data.session_text);
     bind(document, "generated_at_text", data.generated_at_text);
-    bind(document, "fund_chart_title", data.fund_chart_title);
+    bind(document, "yenspx_chart_title", data.yenspx_chart_title);
 
     var updated = document.querySelector('time[data-bind="generated_at_text"]');
     if (updated) { updated.dateTime = data.generated_at; }
@@ -1123,7 +1115,7 @@
     renderRanges(data.rows);
     renderRows(data.rows);
     renderHeatmap(data.heatmap);
-    renderFund(data.fund, data.fund_series);
+    renderYenSpx(data.yenspx, data.yenspx_series);
     renderDrawdown(data.drawdown);
     renderMonthly(data.sp500_monthly);
     renderFearGreed(data.fear_greed, bands.fear_greed || [], data.fg_chart);

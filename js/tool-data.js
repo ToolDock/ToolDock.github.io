@@ -54,7 +54,7 @@ window.TOOLS = [
     title: "昨日の米国株",
     desc: "S&P500・ドル円・VIXなど、昨夜引けた米国市場を一面にまとめたダッシュボード。",
     seoTitle: "昨日の米国株｜S&P500・ドル円・VIXをまとめて見るダッシュボード",
-    seoDesc: "昨夜引けた米国市場を一面にまとめた無料ダッシュボード。S&P500・NASDAQ100・NYSE FANG+・ドル円・ゴールド・米国債10年・BTC・SOX指数を、すべて同じ取引日の終値でそろえて掲載。eMAXIS Slim 米国株式（S&P500）の基準価額と年初来ドローダウン、Fear & Greed Index、VIX、主要銘柄のヒートマップも。平日の朝に自動更新されます。",
+    seoDesc: "昨夜引けた米国市場を一面にまとめた無料ダッシュボード。S&P500・NASDAQ100・NYSE FANG+・ドル円・ゴールド・米国債10年・BTC・SOX指数を、すべて同じ取引日の終値でそろえて掲載。円建てS&P500の年初来と年初来ドローダウン、Fear & Greed Index、VIX、主要銘柄のヒートマップも。平日の朝に自動更新されます。",
     category: "finance",
     url: "/us-market/"
   },

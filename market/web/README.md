@@ -54,7 +54,7 @@ python build_static.py --refresh
 ### 段組み
 
 - 1・2段目のタイル … `.row__tiles`（`grid-template-columns: repeat(4, 1fr)`）
-- 3段目の基準価額 … `.fund`（数値 : チャート ＝ `1fr : 2.4fr`）
+- 3段目の円建てS&P500 … `.yenspx`（数値 : チャート ＝ `1fr : 2.4fr`）
 - 5段目のセンチメント … `.sentiment`（左右2分割）
 
 `@media (max-width: 1000px)` で2列、`560px` で1列に落としています。
@@ -67,7 +67,7 @@ python build_static.py --refresh
 | 描くもの | どこで |
 |---|---|
 | タイルの日中足（8枚） | `tileChart()` … Chart.js の折れ線。前日終値の線との差を塗る |
-| 基準価額の年初来 | `fundChart()` … Chart.js の折れ線 |
+| 円建てS&P500の年初来 | `yenSpxChart()` … Chart.js の折れ線 |
 | 年初来ドローダウン | `drawdownChart()` … Chart.js の折れ線2本 |
 | Fear & Greed のメーター | `fgGauge()` … 素のSVG |
 | VIX のメーター | `vixMeter()` … 素のSVG |
@@ -119,18 +119,21 @@ python build_static.py --refresh
     }
   ],
 
-  "fund_chart_title": "eMAXIS Slim 米国株式（S&P500）（円建て・基準価額）",
-  "fund": {                                       // 3段目。データがなければ null
-    "name": "eMAXIS Slim 米国株式（S&P500）",
-    "fund_cd": "253266",
+  "yenspx_chart_title": "円建てS&P500の2026年（年初からの騰落）",
+  "yenspx": {                                     // 3段目。データがなければ null
+    "title": "円建てS&P500（参考値）",
     "year": 2026,
-    "date": "2026-08-28", "date_text": "2026年8月28日",
-    "nav": 45344, "nav_text": "45,344",
-    "change": 386, "change_pct": 0.86,
-    "change_text": "+386円（+0.86%）", "direction": 1, "arrow": "▲",
-    "start_date": "2026-01-05", "start_date_text": "1月5日", "start_nav": 39457,
-    "ytd_pct": 14.92,                             // 年初来騰落率(%)
-    "peak": 45727, "from_peak_pct": -0.84         // 年初来高値と、そこからの位置(%)
+    "source": "^SP500TR",                         // 実際に使えた指数
+    "dividends": true,                            // 配当込みか。false なら ^GSPC に落ちた
+    "date": "2026-09-03", "date_text": "2026年9月3日",
+    "ytd_pct": 12.53, "ytd_text": "+12.53%",      // 年初来騰落率(%)
+    "start_date": "2026-01-02", "start_date_text": "1月2日",
+    "from_peak_pct": -2.66, "from_peak_text": "-2.66%",
+    "parts": {                                    // 年初来の内訳。なければ null
+      "stock_pct": 12.97, "fx_pct": -0.39,        // (1+株)×(1+為替)-1 = 年初来
+      "stock_text": "米国株 +12.97%", "fx_text": "為替 -0.39%"
+    },
+    "note": "…"                                   // 参考値である旨。取得元で書き分ける
   },
 
   "drawdown": {                                   // 4段目
@@ -162,9 +165,9 @@ python build_static.py --refresh
     "note": "…"
   },
 
-  "fund_series": {                                // 3段目のチャート用。なければ null
-    "dates":  ["2026-01-05", "…"],
-    "values": [39457.0, "…"]
+  "yenspx_series": {                              // 3段目のチャート用。なければ null
+    "dates":  ["2026-01-02", "…"],
+    "values": [0.0, 0.31, "…"]                    // 年初からの騰落率(%)。0が年初
   },
 
   "bands": {                                      // メーターの区分。色もここ
@@ -205,7 +208,7 @@ python build_static.py --refresh
 | 項目 | 出典 | 更新のタイミング |
 |---|---|---|
 | 指数・為替・金利・コモディティ・BTC | Yahoo Finance chart API | 5分足。米国株の最終セッションにそろえる |
-| eMAXIS Slim 米国株式（S&P500）基準価額 | 三菱UFJアセットマネジメント ファンド情報API | 営業日の夜に前営業日分が確定 |
+| 円建てS&P500 | 上記のS&P500（配当込み）とドル円から当方で計算 | 参考値。実際の基準価額ではない |
 | Fear & Greed | CNN Business | 1日1回 |
 
 米国休場日・週末は、直近の営業日のデータが出ます。BTCだけは24時間動くので

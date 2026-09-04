@@ -9,12 +9,12 @@ Streamlit はPythonのサーバーが要るのでGitHub Pagesでは動かない�
     python build_static.py --refresh              # 先にデータを取得してから書き出し
     python build_static.py --out docs/us-market   # 出力先を変える
 
-GitHub Actions など、DBを持ち回らない環境向け:
+GitHub Actions 向け:
 
-    python build_static.py --refresh --strict --nav-csv data/fund_nav.csv --out docs/us-market
+    python build_static.py --refresh --strict --out docs/us-market
 
---nav-csv は基準価額の履歴をCSVで読み書きする（毎回400件以上を取り直さないため）。
 --strict はデータが欠けていたら書き出さずに終了する（公開中のページを壊さないため）。
+DBは持ち回らなくてよい。毎回、日足を5年ぶん取り直している。
 
 出力:
     dist/index.html   ページの骨組み（web/index.html のコピー）
@@ -38,9 +38,9 @@ WEB_DIR = ROOT / "web"
 STATIC_FILES = ["index.html", "board.css", "board.js"]
 
 SOURCES = [
-    "指数・為替・金利・コモディティ・BTC: Yahoo Finance",
-    "基準価額: 三菱UFJアセットマネジメント ファンド情報API",
+    "指数・為替・金利・コモディティ・BTC・個別銘柄: Yahoo Finance",
     "Fear & Greed: CNN Business",
+    "円建てS&P500: 上記のS&P500とドル円から当方で計算",
 ]
 DISCLAIMER = ("本ページは市況の把握を目的とした情報提供であり、"
               "特定の銘柄・商品の売買を勧めるものではありません。")
@@ -144,54 +144,49 @@ def tile_payload(tile):
     }
 
 
-def business_days_behind(day, today=None):
-    """day の翌日から today までに平日が何日あるか。
+def yenspx_payload(stats, parts, source):
+    """円建てS&P500の年初来。
 
-    基準価額は営業日の夜に確定するので、当日ぶんは当日には出ない。
-    したがって1は正常で、2は週末や休場を挟んだ範囲。
-    3以上になっていたら、取得が止まっている疑いがある。
+    値そのもの（S&P500 × ドル円）に意味は無いので、率で見せる。
+    図は年初＝100 に正規化して渡す。
     """
-    today = today or date.today()
-    n, cur = 0, day + timedelta(days=1)
-    while cur <= today:
-        if cur.weekday() < 5:
-            n += 1
-        cur += timedelta(days=1)
-    return n
-
-
-# これ以上さかのぼっていたら「古い」として画面に出す
-STALE_LIMIT = 3
-
-
-def fund_payload(stats):
-    behind = business_days_behind(stats["date"])
-    change = stats["change"]
-    sign = 1 if (change or 0) > 0 else (-1 if (change or 0) < 0 else 0)
+    ytd = round(stats["ytd_pct"], 2)
     return {
-        "name": um.FUND_NAME,
-        "fund_cd": um.FUND_CD,
+        "title": "円建てS&P500（参考値）",
         "year": stats["year"],
+        "source": source,
+        "dividends": source == um.SPX_TOTAL_RETURN,
         "date": stats["date"].isoformat(),
         "date_text": f"{stats['date'].year}年{stats['date'].month}月{stats['date'].day}日",
-        "nav": stats["nav"],
-        "nav_text": f"{stats['nav']:,.0f}",
-        "change": change,
-        "change_pct": stats["change_pct"],
-        "change_text": "—" if change is None else
-                       f"{change:+,.0f}円（{stats['change_pct']:+.2f}%）",
-        "direction": sign,
-        "arrow": "▲" if sign > 0 else ("▼" if sign < 0 else "―"),
+        "ytd_pct": ytd,
+        "ytd_text": f"{ytd:+.2f}%",
+
+        # 前日比はここでは出さない。日足のドル円は取引時間の区切りが
+        # タイルと1日ずれることがあり、出すと上の
+        # 「S&P500 +1.06%」「ドル円 -1.68%」と突き合わない数字になる。
+        # 日々の増減は上のタイルが持っているので、ここは年単位の話に絞る
         "start_date": stats["start_date"].isoformat(),
         "start_date_text": f"{stats['start_date'].month}月{stats['start_date'].day}日",
-        "start_nav": stats["start_nav"],
-        "ytd_pct": round(stats["ytd_pct"], 2),
-        "peak": stats["peak"],
         "from_peak_pct": round(stats["from_peak_pct"], 2),
+        "from_peak_text": f"{stats['from_peak_pct']:+.2f}%",
 
-        # 取得が止まったときに、古い数字を黙って新しいかのように見せない
-        "days_behind": behind,
-        "stale": behind >= STALE_LIMIT,
+        # 円建ての騰落は (1+株) × (1+為替) - 1 にきれいに分かれる。
+        # 「上がったのは株か円安か」を1行で見せる
+        "parts": None if not parts else {
+            "stock_pct": round(parts["stock_pct"], 2),
+            "fx_pct": round(parts["fx_pct"], 2),
+            # 「米国株 +12.97%」で1かたまり。狭いときは
+            # かたまりの境目で折り返してほしいので、分けて渡す
+            "stock_text": f"米国株 {parts['stock_pct']:+.2f}%",
+            "fx_text": f"為替 {parts['fx_pct']:+.2f}%",
+        },
+
+        "note": ("S&P500" + ("（配当込み）" if source == um.SPX_TOTAL_RETURN else "")
+                 + "とドル円を掛け合わせた参考値です。"
+                 "実際の投資信託の基準価額ではなく、信託報酬や、"
+                 "株価と為替を反映する時刻の違いのぶんだけずれます。"
+                 "eMAXIS Slim 米国株式（S&P500）の実績403日ぶんと突き合わせたところ、"
+                 "ずれはおおむね1%台に収まっていました。"),
     }
 
 
@@ -365,7 +360,8 @@ def build_payload(today=None):
     today = today or date.today()
     this_year, last_year = today.year, today.year - 1
 
-    series = um.load_nav_series()
+    # 円建てS&P500。去年ぶんもドローダウンの比較用に要る
+    series, spx_source = um.yen_spx_series(date(last_year, 1, 1))
     stats = um.ytd_stats(series, this_year)
     fg = um.load_fear_greed()
 
@@ -400,14 +396,18 @@ def build_payload(today=None):
         "values": [v for _, v in fg_hist],
     } if len(fg_hist) >= 30 else None
 
-    # 基準価額の年初来。日付と値だけ渡し、描画はブラウザ側に任せる
-    fund_series = None
+    # 円建てS&P500の年初来。値そのもの（S&P500 × ドル円）に意味は無いので、
+    # 年初からの騰落率にして渡す
+    yenspx_series = None
+    parts = None
     if stats:
         year_rows = um.year_slice(series, this_year)
-        fund_series = {
+        base = year_rows[0][1]
+        yenspx_series = {
             "dates": [r[0].isoformat() for r in year_rows],
-            "values": [r[1] for r in year_rows],
+            "values": [round((r[1] / base - 1) * 100, 3) for r in year_rows],
         }
+        parts = um.yen_spx_parts(year_rows[0][0], year_rows[-1][0])
 
     generated = datetime.now().astimezone()
     ref_date = date.fromisoformat(ref) if ref else None
@@ -420,8 +420,8 @@ def build_payload(today=None):
         "generated_at": generated.isoformat(timespec="seconds"),
         "generated_at_text": generated.strftime("%Y-%m-%d %H:%M"),
         "rows": rows,
-        "fund": fund_payload(stats) if stats else None,
-        "fund_chart_title": f"{um.FUND_NAME}（円建て・基準価額）",
+        "yenspx": yenspx_payload(stats, parts, spx_source) if stats else None,
+        "yenspx_chart_title": f"円建てS&P500の{this_year}年（年初からの騰落）",
         "drawdown": {
             "title": f"年初来ドローダウンの推移（{this_year}年 と {last_year}年）",
             "note": ("その年の年初からの最高値を更新するたびに基準を引き上げ、"
@@ -432,7 +432,7 @@ def build_payload(today=None):
         },
         "fear_greed": fg_out,
         "vix": vix_out,
-        "fund_series": fund_series,
+        "yenspx_series": yenspx_series,
         "vix_chart": vix_chart,
         "fg_chart": fg_chart,
         "heatmap": heatmap_payload(),
@@ -451,7 +451,8 @@ def missing_parts(payload):
     for symbol in um.ROW1 + um.ROW2:
         if symbol not in got:
             problems.append(f"タイル {symbol}")
-    for key, label in (("fund", "基準価額"), ("fear_greed", "Fear & Greed"), ("vix", "VIX")):
+    for key, label in (("yenspx", "円建てS&P500"), ("fear_greed", "Fear & Greed"),
+                       ("vix", "VIX")):
         if not payload.get(key):
             problems.append(label)
     if not payload["drawdown"]["years"]:
@@ -459,28 +460,19 @@ def missing_parts(payload):
     return problems
 
 
-def build(out_dir="dist", refresh=False, nav_csv=None, strict=False):
-    if nav_csv:
-        # CIではDBを持ち回らないので、リポジトリのCSVから履歴を復元してから取得する
-        collector.init_tables()
-        restored = collector.import_nav_csv(nav_csv)
-        print(f"基準価額の履歴を読み込み: {restored}件（{nav_csv}）")
-
+def build(out_dir="dist", refresh=False, strict=False):
     if refresh:
         failures = collector.refresh_all(verbose=True)
         if failures:
             print("取得できなかったもの:", failures)
 
-    if nav_csv:
-        saved = collector.export_nav_csv(nav_csv)
-        print(f"基準価額の履歴を書き出し: {saved}件（{nav_csv}）")
-
     payload = build_payload()
 
-    fund = payload.get("fund")
-    if fund and fund.get("stale"):
-        print(f"！基準価額が{fund['days_behind']}営業日ぶん古いままです"
-              f"（最新の取得: {fund['date']}）。取得元で失敗が続いていないか確認してください")
+    yenspx = payload.get("yenspx")
+    if yenspx and not yenspx["dividends"]:
+        print(f"！配当込み指数（{um.SPX_TOTAL_RETURN}）が取れず、"
+              f"配当なしの {um.SPX_PRICE} で円建てS&P500を作りました。"
+              "実際のファンドより年0.7%ほど低めに出ます")
 
     problems = missing_parts(payload)
     if problems:
@@ -506,13 +498,11 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="GitHub Pages 用の静的ダッシュボードを書き出す")
     parser.add_argument("--out", default="dist", help="出力先ディレクトリ（既定: dist）")
     parser.add_argument("--refresh", action="store_true", help="先に最新データを取得する")
-    parser.add_argument("--nav-csv", help="基準価額の履歴CSV。読み込んでから取得し、最後に書き戻す")
     parser.add_argument("--strict", action="store_true",
                         help="データが欠けていたら書き出さずに終了（自動更新向け）")
     args = parser.parse_args(argv)
 
-    result = build(out_dir=args.out, refresh=args.refresh,
-                   nav_csv=args.nav_csv, strict=args.strict)
+    result = build(out_dir=args.out, refresh=args.refresh, strict=args.strict)
     return 0 if result else 1
 
 
