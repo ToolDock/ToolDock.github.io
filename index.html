@@ -123,13 +123,68 @@
 <p>
 ToolDockは、ブラウザだけで使える無料のWebツールを集めたサイトです。
 インストールも会員登録も不要で、ページを開けばその場で使えます。
-現在<strong id="tool-count">-</strong>種類を、生活・金融・業務・数学・ゲームの5分野で公開しています。
+現在<strong id="tool-count">35</strong>種類を、生活・金融・業務・数学・ゲームの5分野で公開しています。
 </p>
 
 <!-- カテゴリ別のツール一覧。
-     中身は js/tool-data.js を唯一の情報源として生成する。
-     ここを手で書くと、ツールを足したときに載せ忘れる -->
-<div id="tool-list"></div>
+     情報源は js/tool-data.js のままだが、JSで組み立てるのをやめて
+     生のHTMLに焼いてある。JSを動かさないとリンクが1本も存在しない状態だと、
+     Googlebot がツールのページを見つけるのがレンダリング待ちのぶんだけ遅れる。
+     ツールを足したら python3 scripts/build_index.py を走らせること -->
+<div id="tool-list">
+  <!-- ここから scripts/build_index.py が生成する。手で書き換えない -->
+  <h2>生活</h2>
+  <ul>
+    <li><a href="/roulette/">ルーレットツール</a></li>
+    <li><a href="/i_roulette/">イカサマルーレット</a></li>
+    <li><a href="/h_roulette/">ギリギリまで結果が分からないヒリつくルーレット</a></li>
+    <li><a href="/seiza/">星座占い｜12星座の運勢チェック</a></li>
+    <li><a href="/omikuji/">おみくじ</a></li>
+    <li><a href="/mojibake/">文字化け生成・復元ツール</a></li>
+    <li><a href="/whichcheap/">どっちが安い？コスパ計算ツール</a></li>
+  </ul>
+  <h2>金融</h2>
+  <ul>
+    <li><a href="/us-market/">昨日の米国株</a></li>
+    <li><a href="/fukuri/">複利計算・積立シミュレーター</a></li>
+    <li><a href="/torikuzushi/">取り崩しシミュレーター</a></li>
+    <li><a href="/ikkatsu/">一括投資と積立投資の比較</a></li>
+    <li><a href="/kuriage/">繰り上げ返済と投資はどっちが得？</a></li>
+  </ul>
+  <h2>業務</h2>
+  <ul>
+    <li><a href="/todolist/">Todoリスト</a></li>
+    <li><a href="/genkoyosi/">Web原稿用紙エディタ</a></li>
+    <li><a href="/timer/">Webタイマー・ストップウォッチ</a></li>
+    <li><a href="/makejson/">JSON成形・圧縮ツール</a></li>
+    <li><a href="/seiki/">正規表現テスター</a></li>
+    <li><a href="/qr/">QRコード作成ツール</a></li>
+    <li><a href="/counter/">文字数カウント</a></li>
+  </ul>
+  <h2>数学</h2>
+  <ul>
+    <li><a href="/hakohige/">きれいな箱ひげ図を描写するツール</a></li>
+    <li><a href="/matrix/">行列計算ツール</a></li>
+    <li><a href="/circuit/">論理回路図メーカー</a></li>
+    <li><a href="/insubunkai/">因数分解の計算</a></li>
+    <li><a href="/renritsu/">連立方程式の計算</a></li>
+    <li><a href="/hakidasi/">途中式付き・掃き出し法ツール</a></li>
+    <li><a href="/koyuchi/">固有値・固有ベクトルの計算</a></li>
+    <li><a href="/yukosuji/">有効数字の計算</a></li>
+    <li><a href="/ode/">途中式付き・微分方程式ツール</a></li>
+    <li><a href="/radix/">n進数変換ツール</a></li>
+  </ul>
+  <h2>ゲーム</h2>
+  <ul>
+    <li><a href="/typing-game/">横文字ばっかりのタイピングゲーム</a></li>
+    <li><a href="/eikan-kintoku/">栄冠ナイン 金特の入手方法まとめ</a></li>
+    <li><a href="/shippo/">マイライフ 尻尾 入手方法一覧</a></li>
+    <li><a href="/crystal-banno/">マイライフ 万能クリスタル（小）（大）入手方法一覧</a></li>
+    <li><a href="/crystal/">マイライフ イベントクリスタル（小）（大）入手方法一覧</a></li>
+    <li><a href="/kintoku/">パワプロ2026-2027 マイライフ 能力研究所の金特ミッション一覧</a></li>
+  </ul>
+  <!-- ここまで -->
+</div>
 
 <h2>ToolDockのツールの特徴</h2>
 
@@ -177,30 +232,9 @@ ToolDockは、ブラウザだけで使える無料のWebツールを集めたサ
   <li><a href="/contact/">お問い合わせ</a>｜ご要望・不具合のご報告</li>
 </ul>
 
+<!-- ヘッダーのカテゴリメニューが tool-data を読む。
+     一覧そのものは上に生のHTMLで書いてあるので、ここでは組み立てない -->
 <script src="/js/tool-data.js"></script>
-
-<script>
-  document.getElementById("tool-list").innerHTML =
-    Object.entries(window.CATEGORY_NAMES)
-      .map(([key, name]) => {
-
-        const items = TOOLS.filter(t => !t.hidden && t.category === key);
-
-        if (items.length === 0) return "";
-
-        return `
-          <h2>${name}</h2>
-          <ul>
-            ${items.map(t => `<li><a href="${t.url}">${t.title}</a></li>`).join("")}
-          </ul>
-        `;
-      })
-      .join("");
-
-  /* 件数も同じ情報源から出す。手で書くと必ず古くなる */
-  document.getElementById("tool-count").textContent =
-    TOOLS.filter(t => !t.hidden).length;
-</script>
 
 
 <!-- 共通ヘッダーとフッター。

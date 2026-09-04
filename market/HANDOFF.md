@@ -82,9 +82,10 @@ us-market/                       <- 公開候補。ビルドしたもの
   AdSense、末尾の `#related-tools` + `/js/related.js`。
   静的な `<title>` / `<meta name="description">` / `<link rel="canonical">` も
   置いてあります（`head.js` は「既に無ければ補う」作りなので、順序が重要）。
-- `js/tool-data.js` に登録（カテゴリは `life`）
+- `js/tool-data.js` に登録（カテゴリは `finance`）
 - `/ogp/us-market.png` を既存のテンプレートに合わせて作成
-- `sitemap-tools.xml` に追加
+- トップページの一覧は `python3 scripts/build_index.py` で生成する
+  （サイトマップは2026-09に廃止しました）
 - `board.css` の配色・書体・角丸を `/crystal/` `/kintoku/` にそろえました。
   意味のある色（上げ／下げ、区分の色）だけは残しています。
 - **ダークテーマは外しました。** サイトの他のページが持っていないため、
