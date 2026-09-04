@@ -1,4 +1,4 @@
-/* 今日の米国市場 ── market.json を読んでページを組み立てる。
+/* 昨日の米国株 ── market.json を読んでページを組み立てる。
  *
  * チャートは Chart.js（/js/vendor/chart.umd.min.js）で描く。
  * market.json に入っているのは数値と系列だけで、図の定義は持たない。
@@ -913,11 +913,17 @@
 
   function render(data) {
     payload = data;
-    bind(document, "title", data.title);
+    bind(document, "session_text", data.session_text);
     bind(document, "generated_at_text", data.generated_at_text);
     bind(document, "fund_chart_title", data.fund_chart_title);
-    var time = document.querySelector("time[data-bind]");
-    if (time) { time.dateTime = data.generated_at; }
+
+    var updated = document.querySelector('time[data-bind="generated_at_text"]');
+    if (updated) { updated.dateTime = data.generated_at; }
+    var session = document.querySelector('time[data-bind="session_text"]');
+    if (session) { session.dateTime = data.session || ""; }
+    /* 取引日が取れていないときは、行ごと出さない */
+    var sessionLine = document.querySelector(".board__session");
+    if (sessionLine) { sessionLine.hidden = !data.session_text; }
 
     var bands = data.bands || {};
     renderRows(data.rows);

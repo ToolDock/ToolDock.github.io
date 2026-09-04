@@ -1,4 +1,4 @@
-/* 今日の米国市場 ── 静的ページの見た目
+/* 昨日の米国株 ── 静的ページの見た目
  *
  * デザインの差し替えはこのファイルだけで足りるように、
  * 色・角丸・間隔はすべて :root の変数に寄せてある。
@@ -50,7 +50,10 @@ body {
 /* ── ヘッダー ───────────────────────────── */
 .board__header { margin-bottom: var(--section-gap); }
 .board__title { margin: 0; font-size: 2rem; font-weight: 700; letter-spacing: .01em; }
-.board__updated { margin: 4px 0 0; font-size: .8rem; color: var(--text-faint); }
+/* このページがどの取引日のものかは、いちばん先に伝わってほしい情報なので
+   「最終更新」より大きく、本文寄りの濃さで出す */
+.board__session { margin: 6px 0 0; font-size: .95rem; color: var(--text-muted); font-weight: 600; }
+.board__updated { margin: 2px 0 0; font-size: .8rem; color: var(--text-faint); }
 
 /* ── 共通のカード・見出し ────────────────── */
 /* 表が器より広いときは、表の中だけ横に流す。

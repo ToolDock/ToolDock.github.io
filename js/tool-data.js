@@ -51,10 +51,10 @@ window.TOOLS = [
 
   {
     id: "us-market",
-    title: "今日の米国市場",
-    desc: "S&P500・ドル円・VIXなど、その日の米国市場を一面にまとめたダッシュボード。",
-    seoTitle: "今日の米国市場｜S&P500・ドル円・VIXを一面で見るダッシュボード",
-    seoDesc: "S&P500・NASDAQ100・NYSE FANG+・ドル円・ゴールド・米国債10年・BTC・SOX指数の一日の値動きを一面にまとめた無料ダッシュボード。eMAXIS Slim 米国株式（S&P500）の基準価額と年初来ドローダウン、Fear & Greed Index、VIX指数も掲載。平日の朝に自動更新されます。",
+    title: "昨日の米国株",
+    desc: "S&P500・ドル円・VIXなど、昨夜引けた米国市場を一面にまとめたダッシュボード。",
+    seoTitle: "昨日の米国株｜S&P500・ドル円・VIXをまとめて見るダッシュボード",
+    seoDesc: "昨夜引けた米国市場を一面にまとめた無料ダッシュボード。S&P500・NASDAQ100・NYSE FANG+・ドル円・ゴールド・米国債10年・BTC・SOX指数を、すべて同じ取引日の終値でそろえて掲載。eMAXIS Slim 米国株式（S&P500）の基準価額と年初来ドローダウン、Fear & Greed Index、VIX、主要銘柄のヒートマップも。平日の朝に自動更新されます。",
     category: "finance",
     url: "/us-market/"
   },

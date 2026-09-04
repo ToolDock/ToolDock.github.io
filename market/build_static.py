@@ -302,13 +302,19 @@ def build_payload(today=None):
     series = um.load_nav_series()
     stats = um.ytd_stats(series, this_year)
     fg = um.load_fear_greed()
-    vix = um.load_vix()
+
+    # ページ全体を米国株の最終セッションにそろえる。
+    # そうしないと、24時間動いているドル円とBTCだけが「今この瞬間」の値になり、
+    # 米国株の終値と日付が食い違う
+    ref = um.reference_session()
+
+    vix = um.load_vix(ref)
     fg_out, vix_out = sentiment_payload(fg, vix)
 
     rows = []
     for title, symbols in (("主要指数・為替", um.ROW1),
                            ("コモディティ・金利・暗号資産・半導体", um.ROW2)):
-        tiles = [tile_payload(tile) for tile in um.load_tiles(symbols)]
+        tiles = [tile_payload(tile) for tile in um.load_tiles(symbols, ref)]
         rows.append({"title": title, "tiles": tiles})
 
     # VIX と S&P500 の1年チャート。日付をそろえて2本重ねる
@@ -338,8 +344,13 @@ def build_payload(today=None):
         }
 
     generated = datetime.now().astimezone()
+    ref_date = date.fromisoformat(ref) if ref else None
     return {
-        "title": "今日の米国市場",
+        # 見出しはHTML側に置いてある（web/index.html）。
+        # ここから流し込むと、データの更新が回るまで古い見出しが残る
+        "session": ref,
+        "session_text": (f"{ref_date.year}年{ref_date.month}月{ref_date.day}日"
+                         if ref_date else ""),
         "generated_at": generated.isoformat(timespec="seconds"),
         "generated_at_text": generated.strftime("%Y-%m-%d %H:%M"),
         "rows": rows,
