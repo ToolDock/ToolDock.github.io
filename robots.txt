@@ -1,5 +1,2 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://tooldock.github.io/sitemap-tools.xml
-Sitemap: https://tooldock.github.io/sitemap.xml
