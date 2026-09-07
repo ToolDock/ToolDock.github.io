@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- 検索結果で切られる先頭30字ほどに、探している語を入れる。
+     サイト名は付けない（この長さでは席がもったいない） -->
+<title>パワプロ2026-2027 マイライフ 経歴とドラフト順位｜初期能力の計算</title>
+<meta name="description" content="パワプロ2026-2027のマイライフをプロ野球人生編で始めるときの、経歴・ドラフト順位・アピールポイント・ウィークポイントのまとめです。選ぶだけで初期能力を計算できるので、どの組み合わせがいちばん高くなるかをその場で比べられます。経歴とドラフト順位で決まる成長タイプと、衰えはじめる年齢の目安も載せています。">
+<link rel="canonical" href="https://tooldock.github.io/mylife-start/">
+
+<script> const CURRENT_TOOL = "mylife-start"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<style>
+:root{
+    --ink:#222; --ink-strong:#111; --ink-deep:#0f172a; --ink-sub:#555; --ink-mute:#777;
+    --line:#d6dbe2; --line-soft:#dfe4ea; --head-bg:#eceff3; --tint:#fafcff;
+    --dash:#b8c2d1; --accent:#2563eb;
+    --up:#15803d; --down:#b91c1c;
+}
+*{ box-sizing:border-box; }
+body{
+    margin:0; padding:0 0 48px;
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
+    color:var(--ink); line-height:1.75; background:#f5f5f5;
+}
+.page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
+header{ background:var(--ink); color:#fff; padding:20px 16px; margin-bottom:22px; }
+header .page-wrapper{ padding:0; }
+h1{ margin:0; font-size:1.35rem; line-height:1.5; }
+header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
+h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
+    border-bottom:2px solid var(--line); }
+h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
+    border-left:4px solid var(--accent); }
+p{ margin:0 0 12px; }
+
+/* 表が器より広いときは、表の中だけ横に流す */
+.scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+.tbl{ width:100%; border-collapse:collapse; background:#fff; font-size:0.93rem; }
+.tbl caption{ text-align:left; padding:8px 0; font-weight:bold; color:var(--ink-deep); }
+.tbl th,.tbl td{ border:1px solid var(--line-soft); padding:7px 10px; text-align:left;
+                 white-space:nowrap; }
+.tbl thead th{ background:var(--head-bg); color:var(--ink-deep); font-size:0.88rem; }
+.tbl tbody th{ background:var(--tint); font-weight:600; }
+.tbl td.n{ text-align:right; font-variant-numeric:tabular-nums; }
+.tbl td.up{ color:var(--up); font-weight:600; }
+.tbl td.down{ color:var(--down); font-weight:600; }
+.tbl td.zero{ color:var(--ink-mute); }
+.tbl tr.dim th,.tbl tr.dim td{ color:var(--ink-mute); background:#fbfcfd; }
+.points th[scope="row"]{ white-space:nowrap; }
+
+/* 成長タイプ表は条件の欄が長い。折り返さないと右の列が見切れる */
+.growth td{ white-space:normal; }
+.growth td:first-of-type{ min-width:190px; }
+
+/* 横に流れる表には、その旨を出す */
+.scroll-hint{ margin:0 0 6px; font-size:0.8rem; color:var(--ink-mute); }
+
+/* ── 計算機 ───────────────────────────── */
+.sim{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
+.sim__form{ display:grid; gap:12px; grid-template-columns:1fr; }
+@media (min-width:700px){ .sim__form{ grid-template-columns:repeat(2,1fr); } }
+.field{ display:flex; flex-direction:column; gap:5px; }
+.field label{ font-size:0.85rem; font-weight:600; color:var(--ink-sub); }
+.field select{ font:inherit; font-size:0.95rem; padding:8px 10px; border:1px solid var(--line);
+               border-radius:8px; background:#fff; color:var(--ink); width:100%; }
+.seg{ display:flex; gap:6px; }
+.seg button{ flex:1; font:inherit; font-size:0.95rem; font-weight:600; padding:9px 10px;
+             border:1px solid var(--line); border-radius:8px; background:#fff;
+             color:var(--ink-sub); cursor:pointer; }
+.seg button[aria-pressed="true"]{ background:var(--ink); border-color:var(--ink); color:#fff; }
+
+.result{ margin-top:16px; border-top:1px dashed var(--dash); padding-top:14px; }
+.result__head{ display:flex; flex-wrap:wrap; gap:8px 20px; margin-bottom:12px; font-size:0.92rem; }
+.result__head b{ color:var(--ink-deep); }
+.stats{ display:grid; gap:8px; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
+.stat{ border:1px solid var(--line-soft); border-radius:8px; padding:8px 10px; background:var(--tint); }
+.stat__k{ font-size:0.78rem; color:var(--ink-sub); }
+.stat__v{ font-size:1.3rem; font-weight:700; line-height:1.3; font-variant-numeric:tabular-nums; }
+.stat__b{ font-size:0.76rem; color:var(--ink-mute); font-variant-numeric:tabular-nums; }
+.skills{ margin-top:12px; font-size:0.9rem; }
+.skills b{ color:var(--ink-deep); }
+.note{ margin-top:10px; font-size:0.82rem; color:var(--ink-mute); }
+
+.tool-article{ margin-top:34px; }
+.tool-article table{ margin-bottom:14px; }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="page-wrapper">
+        <h1>パワプロ2026-2027 マイライフ 経歴とドラフト順位の選び方</h1>
+        <p>プロ野球人生編。選ぶだけで初期能力と成長タイプが出ます</p>
+    </div>
+</header>
+
+<div class="page-wrapper">
+
+<main>
+
+<h2>初期能力シミュレーター</h2>
+
+<p>
+経歴・ドラフト順位・アピールポイント・ウィークポイントを選ぶと、
+その組み合わせで始めたときの初期能力が出ます。
+下の数字の小さいほうは「基礎値と、そこからの増減」です。
+</p>
+
+<div class="sim">
+    <div class="seg" role="group" aria-label="投手か野手か">
+        <button type="button" data-kind="pitcher" aria-pressed="true">投手</button>
+        <button type="button" data-kind="batter" aria-pressed="false">野手</button>
+    </div>
+
+    <div class="sim__form">
+        <div class="field">
+            <label for="career">経歴</label>
+            <select id="career"></select>
+        </div>
+        <div class="field">
+            <label for="rank">ドラフト順位</label>
+            <select id="rank"></select>
+        </div>
+        <div class="field">
+            <label for="appeal">アピールポイント</label>
+            <select id="appeal"></select>
+        </div>
+        <div class="field">
+            <label for="weak">ウィークポイント</label>
+            <select id="weak"></select>
+        </div>
+    </div>
+
+    <div class="result">
+        <p class="result__head">
+            <span>成長タイプ <b id="growth">−</b></span>
+            <span>衰えはじめ <b id="decline">−</b></span>
+        </p>
+        <div class="stats" id="stats"></div>
+        <p class="skills" id="skills"></p>
+        <p class="note">
+            弾道・肩力・走力・守備力・捕球には、ドラフト順位の上乗せが入らないものがあります。
+            表のとおりに計算しています。
+        </p>
+    </div>
+</div>
+
+<h2>経歴とドラフト順位で決まる成長タイプ</h2>
+
+<p>
+プロ野球人生編では、経歴とドラフト順位の組み合わせで成長タイプが決まります。
+憧れ現役選手編とオリジナル選手編では、その選手にもともと設定されている成長タイプが反映されます。
+</p>
+
+<div class="scroll"><table class="tbl growth"><thead><tr><th>成長タイプ</th><th>プロ野球人生編</th><th>憧れ・オリジナル選手編</th><th>衰えはじめ</th></tr></thead><tbody><tr class="dim"><th scope="row">早熟2</th><td>−</td><td>−</td><td class="n">21歳ごろ</td></tr><tr class="dim"><th scope="row">早熟1</th><td>−</td><td>−</td><td class="n">23歳ごろ</td></tr><tr class="dim"><th scope="row">早め2</th><td>−</td><td>−</td><td class="n">25歳ごろ</td></tr><tr><th scope="row">早め1</th><td>高卒ドラフト1〜2位</td><td>超早熟</td><td class="n">27歳ごろ</td></tr><tr><th scope="row">普通早2</th><td>高卒ドラフト3〜4位／大卒ドラフト1〜2位</td><td>早熟</td><td class="n">29歳ごろ</td></tr><tr><th scope="row">普通早1</th><td>高卒ドラフト5〜6位／大卒ドラフト3〜4位／社会人ドラフト1〜2位</td><td>−</td><td class="n">30歳ごろ</td></tr><tr><th scope="row">普通</th><td>大卒ドラフト5〜6位／社会人ドラフト3〜4位</td><td>普通</td><td class="n">31歳ごろ</td></tr><tr><th scope="row">普通遅1</th><td>社会人ドラフト5〜6位</td><td>−</td><td class="n">32歳ごろ</td></tr><tr><th scope="row">普通遅2</th><td>−</td><td>晩成</td><td class="n">33歳ごろ</td></tr><tr><th scope="row">遅め1</th><td>−</td><td>超晩成</td><td class="n">35歳ごろ</td></tr><tr class="dim"><th scope="row">遅め2</th><td>−</td><td>−</td><td class="n">37歳ごろ</td></tr><tr class="dim"><th scope="row">晩成1</th><td>−</td><td>−</td><td class="n">39歳ごろ</td></tr><tr class="dim"><th scope="row">晩成2</th><td>−</td><td>−</td><td class="n">41歳ごろ</td></tr></tbody></table></div>
+
+<p class="note">
+灰色の行は、プロ野球人生編でも憧れ現役選手編・オリジナル選手編でも選べないものです。
+尻尾や早熟チョコで動かした先として存在します。
+</p>
+
+<h2>経歴ごとの初期能力</h2>
+
+<p>ドラフト順位やアピールポイントを足す前の、経歴だけで決まる基礎値です。</p>
+
+<div class="scroll"><table class="tbl"><caption>投手</caption><thead><tr><th>能力</th><th>高校卒</th><th>大学卒</th><th>社会人・独立リーグ</th></tr></thead><tbody><tr><th scope="row">球速</th><td class="n">135</td><td class="n">136</td><td class="n">137</td></tr><tr><th scope="row">コントロール</th><td class="n">19</td><td class="n">23</td><td class="n">27</td></tr><tr><th scope="row">スタミナ</th><td class="n">19</td><td class="n">23</td><td class="n">27</td></tr><tr><th scope="row">変化球</th><td class="n">2</td><td class="n">3</td><td class="n">4</td></tr><tr><th scope="row">最大球種</th><td class="n">2</td><td class="n">2</td><td class="n">2</td></tr><tr><th scope="row">弾道</th><td class="n">1</td><td class="n">1</td><td class="n">1</td></tr><tr><th scope="row">肩力</th><td class="n">45</td><td class="n">50</td><td class="n">55</td></tr><tr><th scope="row">走力</th><td class="n">35</td><td class="n">35</td><td class="n">35</td></tr><tr><th scope="row">守備力</th><td class="n">30</td><td class="n">39</td><td class="n">48</td></tr><tr><th scope="row">捕球</th><td class="n">25</td><td class="n">35</td><td class="n">45</td></tr></tbody></table></div>
+<div class="scroll"><table class="tbl"><caption>野手</caption><thead><tr><th>能力</th><th>高校卒</th><th>大学卒</th><th>社会人・独立リーグ</th></tr></thead><tbody><tr><th scope="row">弾道</th><td class="n">2</td><td class="n">2</td><td class="n">2</td></tr><tr><th scope="row">ミート</th><td class="n">19</td><td class="n">23</td><td class="n">27</td></tr><tr><th scope="row">パワー</th><td class="n">19</td><td class="n">23</td><td class="n">27</td></tr><tr><th scope="row">肩力</th><td class="n">19</td><td class="n">20</td><td class="n">20</td></tr><tr><th scope="row">走力</th><td class="n">19</td><td class="n">20</td><td class="n">20</td></tr><tr><th scope="row">守備力</th><td class="n">19</td><td class="n">23</td><td class="n">27</td></tr><tr><th scope="row">捕球</th><td class="n">19</td><td class="n">23</td><td class="n">27</td></tr></tbody></table></div>
+
+<h2>ドラフト順位による上乗せ</h2>
+
+<p>
+上位ほど大きく上乗せされます。投手のコントロールとスタミナは1位と6位で30、
+野手は6つの能力すべてが1位と6位で28ちがいます。ここがいちばん差の付くところです。
+</p>
+
+<div class="scroll"><table class="tbl"><caption>投手</caption><thead><tr><th>能力</th><th>1位</th><th>2位</th><th>3位</th><th>4位</th><th>5位</th><th>6位</th></tr></thead><tbody><tr><th scope="row">球速</th><td class="n">＋10</td><td class="n">＋8</td><td class="n">＋6</td><td class="n">＋4</td><td class="n">＋2</td><td class="n">±0</td></tr><tr><th scope="row">コントロール</th><td class="n">＋30</td><td class="n">＋24</td><td class="n">＋18</td><td class="n">＋12</td><td class="n">＋6</td><td class="n">±0</td></tr><tr><th scope="row">スタミナ</th><td class="n">＋30</td><td class="n">＋24</td><td class="n">＋18</td><td class="n">＋12</td><td class="n">＋6</td><td class="n">±0</td></tr><tr><th scope="row">変化球</th><td class="n">＋2</td><td class="n">＋2</td><td class="n">＋1</td><td class="n">＋1</td><td class="n">±0</td><td class="n">±0</td></tr></tbody></table></div>
+<div class="scroll"><table class="tbl"><caption>野手</caption><thead><tr><th>能力</th><th>1位</th><th>2位</th><th>3位</th><th>4位</th><th>5位</th><th>6位</th></tr></thead><tbody><tr><th scope="row">ミート</th><td class="n">＋28</td><td class="n">＋22</td><td class="n">＋17</td><td class="n">＋11</td><td class="n">＋6</td><td class="n">±0</td></tr><tr><th scope="row">パワー</th><td class="n">＋28</td><td class="n">＋22</td><td class="n">＋17</td><td class="n">＋11</td><td class="n">＋6</td><td class="n">±0</td></tr><tr><th scope="row">肩力</th><td class="n">＋28</td><td class="n">＋22</td><td class="n">＋17</td><td class="n">＋11</td><td class="n">＋6</td><td class="n">±0</td></tr><tr><th scope="row">走力</th><td class="n">＋28</td><td class="n">＋22</td><td class="n">＋17</td><td class="n">＋11</td><td class="n">＋6</td><td class="n">±0</td></tr><tr><th scope="row">守備力</th><td class="n">＋28</td><td class="n">＋22</td><td class="n">＋17</td><td class="n">＋11</td><td class="n">＋6</td><td class="n">±0</td></tr><tr><th scope="row">捕球</th><td class="n">＋28</td><td class="n">＋22</td><td class="n">＋17</td><td class="n">＋11</td><td class="n">＋6</td><td class="n">±0</td></tr></tbody></table></div>
+
+<h2>アピールポイント・ウィークポイント（投手）</h2>
+
+<p class="scroll-hint">※ 表は横にスクロールします</p><div class="scroll"><table class="tbl points"><caption>アピールポイント</caption><thead><tr><th>名前</th><th>球速</th><th>コントロール</th><th>スタミナ</th><th>変化球</th><th>特殊能力</th><th>野手能力</th></tr></thead><tbody><tr><th scope="row">唸る剛速球</th><td class="n up">＋8</td><td class="n down">−15</td><td class="n zero">−</td><td class="n zero">−</td><td>−</td><td>−</td></tr><tr><th scope="row">球威のある速球</th><td class="n up">＋3</td><td class="n down">−12</td><td class="n zero">−</td><td class="n zero">−</td><td>重い球</td><td>−</td></tr><tr><th scope="row">ノビのある速球</th><td class="n up">＋3</td><td class="n down">−12</td><td class="n zero">−</td><td class="n zero">−</td><td>ノビB</td><td>−</td></tr><tr><th scope="row">抜群の制球力</th><td class="n zero">−</td><td class="n up">＋12</td><td class="n down">−7</td><td class="n zero">−</td><td>低め〇</td><td>−</td></tr><tr><th scope="row">針穴を通す正確さ</th><td class="n zero">−</td><td class="n up">＋21</td><td class="n down">−9</td><td class="n zero">−</td><td>−</td><td>−</td></tr><tr><th scope="row">七色の変化球</th><td class="n down">−5</td><td class="n zero">−</td><td class="n down">−9</td><td class="n up">＋1</td><td>球種最大＋3</td><td>−</td></tr><tr><th scope="row">キレのある変化球</th><td class="n down">−3</td><td class="n zero">−</td><td class="n down">−9</td><td class="n up">＋1</td><td>球種最大＋2／キレ〇</td><td>−</td></tr><tr><th scope="row">決め球があります</th><td class="n down">−3</td><td class="n zero">−</td><td class="n down">−9</td><td class="n up">＋1</td><td>球種最大＋1</td><td>−</td></tr><tr><th scope="row">頑丈な体</th><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋11</td><td class="n zero">−</td><td>ケガしにくさB</td><td>−</td></tr><tr><th scope="row">使い減りしない投手</th><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋11</td><td class="n zero">−</td><td>回復B</td><td>−</td></tr><tr><th scope="row">無類のタフネス</th><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋21</td><td class="n zero">−</td><td>−</td><td>−</td></tr><tr><th scope="row">アイドルばりの甘いマスク</th><td class="n up">＋1</td><td class="n up">＋5</td><td class="n up">＋5</td><td class="n zero">−</td><td>人気者</td><td>−</td></tr><tr><th scope="row">何かを持っている</th><td class="n up">＋1</td><td class="n up">＋5</td><td class="n up">＋5</td><td class="n zero">−</td><td>勝ち運</td><td>−</td></tr><tr><th scope="row">先発もできる</th><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋10</td><td class="n zero">−</td><td>先発適性がつく</td><td>−</td></tr><tr><th scope="row">中継ぎもできる</th><td class="n zero">−</td><td class="n up">＋10</td><td class="n zero">−</td><td class="n zero">−</td><td>中継ぎ適性がつく</td><td>−</td></tr><tr><th scope="row">抑えもできる</th><td class="n up">＋1</td><td class="n up">＋10</td><td class="n down">−10</td><td class="n zero">−</td><td>抑え適性がつく</td><td>−</td></tr><tr><th scope="row">捕手も守れる</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>キャッチャーF</td><td>弾道＋1／ミート＋30／パワー＋20／サブポジ：捕手</td></tr><tr><th scope="row">一塁も守れる</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>−</td><td>弾道＋1／ミート＋30／パワー＋20／サブポジ：一塁手</td></tr><tr><th scope="row">二塁も守れる</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>−</td><td>弾道＋1／ミート＋30／パワー＋20／サブポジ：二塁手</td></tr><tr><th scope="row">三塁も守れる</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>−</td><td>弾道＋1／ミート＋30／パワー＋20／サブポジ：三塁手</td></tr><tr><th scope="row">遊撃も守れる</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>−</td><td>弾道＋1／ミート＋30／パワー＋20／サブポジ：遊撃手</td></tr><tr><th scope="row">外野も守れる</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>−</td><td>弾道＋1／ミート＋30／パワー＋20／サブポジ：外野手</td></tr></tbody></table></div>
+<p class="scroll-hint">※ 表は横にスクロールします</p><div class="scroll"><table class="tbl points"><caption>ウィークポイント</caption><thead><tr><th>名前</th><th>球速</th><th>コントロール</th><th>スタミナ</th><th>変化球</th><th>特殊能力</th><th>野手能力</th></tr></thead><tbody><tr><th scope="row">これといってないです</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>変化なし</td><td>−</td></tr><tr><th scope="row">ノミの心臓</th><td class="n zero">−</td><td class="n up">＋8</td><td class="n zero">−</td><td class="n zero">−</td><td>対ピンチF</td><td>−</td></tr><tr><th scope="row">左打者が苦手</th><td class="n zero">−</td><td class="n up">＋8</td><td class="n zero">−</td><td class="n zero">−</td><td>対左打者F</td><td>−</td></tr><tr><th scope="row">泣き虫</th><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋8</td><td class="n zero">−</td><td>打たれ強さF</td><td>−</td></tr><tr><th scope="row">ノビのない速球</th><td class="n up">＋3</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>ノビF</td><td>−</td></tr><tr><th scope="row">クイックができない</th><td class="n up">＋3</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>クイックF</td><td>−</td></tr><tr><th scope="row">回復がおそい</th><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋8</td><td class="n zero">−</td><td>回復F</td><td>−</td></tr><tr><th scope="row">失投が多い</th><td class="n zero">−</td><td class="n up">＋8</td><td class="n zero">−</td><td class="n zero">−</td><td>一発</td><td>−</td></tr><tr><th scope="row">最後のツメが甘い</th><td class="n zero">−</td><td class="n up">＋4</td><td class="n up">＋4</td><td class="n zero">−</td><td>寸前</td><td>−</td></tr><tr><th scope="row">四球が多い</th><td class="n zero">−</td><td class="n up">＋8</td><td class="n zero">−</td><td class="n zero">−</td><td>四球</td><td>−</td></tr><tr><th scope="row">エンジンのかかりが遅い</th><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋8</td><td class="n zero">−</td><td>スロースターター</td><td>−</td></tr><tr><th scope="row">手をぬく</th><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋8</td><td class="n zero">−</td><td>力配分</td><td>−</td></tr><tr><th scope="row">シュート気味の直球</th><td class="n up">＋3</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>シュート回転</td><td>−</td></tr><tr><th scope="row">球質が軽い</th><td class="n up">＋3</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>軽い球</td><td>−</td></tr><tr><th scope="row">サブポジションが苦手</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>サブポジ能力低下</td><td>ミート＋10／パワー＋10</td></tr></tbody></table></div>
+
+<h2>アピールポイント・ウィークポイント（野手）</h2>
+
+<p class="scroll-hint">※ 表は横にスクロールします</p><div class="scroll"><table class="tbl points"><caption>アピールポイント</caption><thead><tr><th>名前</th><th>弾道</th><th>ミート</th><th>パワー</th><th>走力</th><th>肩力</th><th>守備力</th><th>捕球</th><th>特殊能力</th></tr></thead><tbody><tr><th scope="row">安打製造機</th><td class="n zero">−</td><td class="n up">＋11</td><td class="n down">−9</td><td class="n up">＋15</td><td class="n zero">−</td><td class="n down">−9</td><td class="n down">−9</td><td>内野安打〇</td></tr><tr><th scope="row">抜群のバットコントロール</th><td class="n zero">−</td><td class="n up">＋21</td><td class="n down">−9</td><td class="n up">＋5</td><td class="n zero">−</td><td class="n down">−9</td><td class="n down">−9</td><td>−</td></tr><tr><th scope="row">相手を選ばない対応力</th><td class="n zero">−</td><td class="n up">＋11</td><td class="n up">＋4</td><td class="n zero">−</td><td class="n zero">−</td><td class="n down">−9</td><td class="n down">−9</td><td>対左投手B</td></tr><tr><th scope="row">圧倒的なパワー</th><td class="n up">＋1</td><td class="n down">−9</td><td class="n up">＋21</td><td class="n down">−9</td><td class="n up">＋4</td><td class="n down">−9</td><td class="n down">−9</td><td>−</td></tr><tr><th scope="row">勝負強い打撃</th><td class="n up">＋1</td><td class="n up">＋11</td><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋4</td><td class="n down">−9</td><td class="n down">−9</td><td>チャンスB</td></tr><tr><th scope="row">抜群の打撃センス</th><td class="n up">＋1</td><td class="n up">＋11</td><td class="n up">＋15</td><td class="n down">−9</td><td class="n down">−9</td><td class="n down">−19</td><td class="n down">−19</td><td>−</td></tr><tr><th scope="row">50m5秒台の俊足</th><td class="n zero">−</td><td class="n zero">−</td><td class="n down">−10</td><td class="n up">＋31</td><td class="n zero">−</td><td class="n zero">−</td><td class="n down">−10</td><td>走塁B</td></tr><tr><th scope="row">最高のスタートダッシュ</th><td class="n zero">−</td><td class="n zero">−</td><td class="n down">−10</td><td class="n up">＋31</td><td class="n zero">−</td><td class="n zero">−</td><td class="n down">−10</td><td>盗塁B</td></tr><tr><th scope="row">鉄壁の守り</th><td class="n down">−1</td><td class="n down">−9</td><td class="n down">−9</td><td class="n up">＋5</td><td class="n up">＋5</td><td class="n up">＋21</td><td class="n up">＋5</td><td>−</td></tr><tr><th scope="row">地味だが堅実な守備</th><td class="n down">−1</td><td class="n down">−9</td><td class="n down">−9</td><td class="n up">＋5</td><td class="n up">＋5</td><td class="n up">＋5</td><td class="n up">＋21</td><td>−</td></tr><tr><th scope="row">正確な送球</th><td class="n down">−1</td><td class="n down">−9</td><td class="n down">−9</td><td class="n up">＋5</td><td class="n up">＋25</td><td class="n up">＋4</td><td class="n up">＋4</td><td>送球B</td></tr><tr><th scope="row">アイドルばりの甘いマスク</th><td class="n zero">−</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td>人気者</td></tr><tr><th scope="row">捕手も守れる</th><td class="n zero">−</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n zero">−</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td>サブポジ：捕手／キャッチャーF</td></tr><tr><th scope="row">一塁も守れる</th><td class="n zero">−</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n zero">−</td><td class="n up">＋2</td><td>サブポジ：一塁手</td></tr><tr><th scope="row">二塁も守れる</th><td class="n zero">−</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n zero">−</td><td class="n up">＋2</td><td class="n up">＋2</td><td>サブポジ：二塁手</td></tr><tr><th scope="row">三塁も守れる</th><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td>サブポジ：三塁手</td></tr><tr><th scope="row">遊撃も守れる</th><td class="n zero">−</td><td class="n up">＋2</td><td class="n zero">−</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td>サブポジ：遊撃手</td></tr><tr><th scope="row">外野も守れる</th><td class="n zero">−</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n up">＋2</td><td class="n zero">−</td><td>サブポジ：外野手</td></tr><tr><th scope="row">これといってないです</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>変化なし</td></tr></tbody></table></div>
+<p class="scroll-hint">※ 表は横にスクロールします</p><div class="scroll"><table class="tbl points"><caption>ウィークポイント</caption><thead><tr><th>名前</th><th>弾道</th><th>ミート</th><th>パワー</th><th>走力</th><th>肩力</th><th>守備力</th><th>捕球</th><th>特殊能力</th></tr></thead><tbody><tr><th scope="row">これといってないです</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>変化なし</td></tr><tr><th scope="row">チャンスに弱い</th><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋5</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>チャンスF</td></tr><tr><th scope="row">左投手が苦手</th><td class="n zero">−</td><td class="n up">＋5</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>対左投手F</td></tr><tr><th scope="row">盗塁がヘタ</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋5</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>盗塁F</td></tr><tr><th scope="row">ベースランニングが苦手</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋5</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>走塁F</td></tr><tr><th scope="row">送球が不安定</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋5</td><td class="n zero">−</td><td class="n zero">−</td><td>送球F</td></tr><tr><th scope="row">追い込まれるとリキむ</th><td class="n zero">−</td><td class="n up">＋5</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>三振</td></tr><tr><th scope="row">プレッシャーに弱い</th><td class="n zero">−</td><td class="n up">＋5</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td>エラー</td></tr><tr><th scope="row">サブポジションが苦手</th><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n zero">−</td><td class="n up">＋5</td><td class="n up">＋5</td><td>サブポジ能力低下</td></tr></tbody></table></div>
+
+</main>
+
+<article class="tool-article">
+
+<h2>選び方</h2>
+
+<h3>ドラフト順位は上位ほど得</h3>
+
+<p>
+初期能力でいちばん差が付くのはドラフト順位です。
+投手ならコントロールとスタミナが1位と6位で30ちがい、野手は6つの能力すべてで28ちがいます。
+経歴による基礎値の差（投手のコントロールで高校卒19、社会人27）より大きいので、
+まず順位を上げることを考えてください。
+</p>
+
+<h3>成長タイプは、あとから動かせる</h3>
+
+<p>
+経歴とドラフト順位で決まる成長タイプは、あとから変えられます。
+マイライフで手に入る<a href="/shippo/">尻尾</a>を使うと晩成の側へ動き、
+ショッピングモールで買える早熟チョコを使うと早熟の側へ動きます。
+</p>
+
+<p>
+マイライフにはサクセスのような「成長期前」がほぼ無いので、
+<strong>晩成にすることのデメリットはありません</strong>。
+若いうちに能力が上がりにくくなる、といったことは起きず、
+衰えはじめる年齢が後ろにずれるぶん、長く伸ばせます。
+尻尾は手に入れたそばから使って構いません。
+</p>
+
+<p>
+他モードで作った選手をマイライフに持ち込む場合も同じで、
+<strong>超晩成</strong>にしておくのがおすすめです。表の遅め1にあたり、35歳ごろまで衰えません。
+</p>
+
+<h3>アピールポイントは、投手なら変化球</h3>
+
+<p>
+投手は、鋭い変化球を持っていないと抑えるのが難しくなります。
+変化球を伸ばせるものを選んでください。
+先発でいくなら、長いイニングを投げるためのスタミナも要るので、
+「無類のタフネス」でスタミナを21伸ばすのも有力です。
+</p>
+
+<p>
+野手は打撃がそのまま成績になるので、ミートかパワーを伸ばすものを選びます。
+「抜群のバットコントロール」はミートを21、「圧倒的なパワー」はパワーを21伸ばします。
+</p>
+
+<h3>ウィークポイントは「これといってないです」が無難</h3>
+
+<p>
+能力の増減が無い「これといってないです」を選んでおけば、余計なものが付きません。
+</p>
+
+<p>
+ただし<strong>マイライフは特殊能力を取りやすく、赤特殊能力は後から簡単に消せます</strong>。
+プレイに自信があるなら、赤特殊能力は気にせず、能力値の上乗せが大きいものを選ぶ手もあります。
+たとえば投手の「ノミの心臓」はコントロールが8上がり、代わりに対ピンチFが付きます。
+</p>
+
+<h2>マイライフの他のまとめ</h2>
+
+<ul>
+<li><a href="/kintoku/">能力研究所の金特ミッション一覧</a></li>
+<li><a href="/crystal/">イベントクリスタル（小）（大）の入手方法</a></li>
+<li><a href="/crystal-banno/">万能クリスタル（小）（大）の入手方法</a></li>
+<li><a href="/shippo/">尻尾の入手方法</a>｜成長タイプを晩成の側へ動かせます</li>
+</ul>
+
+<h2>よくある質問</h2>
+
+<h3>マイライフの初期能力はどうやって決まりますか？</h3>
+<p>経歴（高校卒・大学卒・社会人／独立リーグ）で決まる基礎値に、ドラフト順位ぶんの上乗せを足し、そこへアピールポイントとウィークポイントの増減を反映したものが初期能力になります。ドラフト1位と6位では、投手のコントロールとスタミナで30、野手の各能力で28の差がつきます。</p>
+
+<h3>経歴とドラフト順位で成長タイプが変わりますか？</h3>
+<p>プロ野球人生編では変わります。高卒ドラフト1〜2位が早め1、高卒3〜4位と大卒1〜2位が普通早2、高卒5〜6位・大卒3〜4位・社会人1〜2位が普通早1、大卒5〜6位と社会人3〜4位が普通、社会人5〜6位が普通遅1です。憧れ現役選手編とオリジナル選手編では、その選手にもともと設定されている成長タイプがそのまま反映されます。</p>
+
+<h3>晩成型にするとデメリットはありますか？</h3>
+<p>マイライフにはサクセスのような「成長期前」がほぼ無いため、晩成にしても若いうちに能力が上がりにくくなる、といったことは起きません。衰えはじめる年齢が後ろにずれるぶん、長く伸ばせます。尻尾を使えば成長タイプを晩成の側へ動かせるので、手に入れたそばから使って構いません。</p>
+
+<h3>アピールポイントは何を選ぶのがおすすめですか？</h3>
+<p>投手は変化球を伸ばすものです。鋭い変化球が無いと抑えるのが難しいためです。先発でいくなら、長いイニングを投げるためにスタミナを伸ばす「無類のタフネス」も有力です。野手は打撃がそのまま成績になるので、ミートかパワーを伸ばすものを選んでください。</p>
+
+<h3>ウィークポイントは何を選ぶのがおすすめですか？</h3>
+<p>能力が変わらない「これといってないです」が無難です。ただしマイライフは特殊能力を取りやすく、ウィークポイントで付いた赤特殊能力は後から簡単に消せます。プレイに自信があるなら、赤特殊能力は気にせず、能力値の上乗せが大きいものを選ぶ手もあります。</p>
+
+<h3>マイライフの他のまとめもありますか？</h3>
+<p>能力研究所の金特ミッション一覧、イベントクリスタルと万能クリスタルの入手方法、尻尾の入手方法をまとめています。尻尾は成長タイプを晩成の側へ動かせるので、このページと合わせて見てください。</p>
+
+<h3>他モードで作った選手をマイライフで使う場合、成長タイプは何がいいですか？</h3>
+<p>超晩成にしておくのがおすすめです。マイライフでは晩成のデメリットがほぼ無く、衰えはじめる年齢が遅いほど長く伸ばせるためです。超晩成は遅め1にあたり、35歳ごろまで衰えません。</p>
+
+</article>
+
+</div>
+
+<script>
+window.__MYLIFE__ = {"careers":["高校卒","大学卒","社会人・独立リーグ"],"pitcher":{"base":{"高校卒":{"球速":135,"コントロール":19,"スタミナ":19,"変化球":2,"最大球種":2,"弾道":1,"肩力":45,"走力":35,"守備力":30,"捕球":25},"大学卒":{"球速":136,"コントロール":23,"スタミナ":23,"変化球":3,"最大球種":2,"弾道":1,"肩力":50,"走力":35,"守備力":39,"捕球":35},"社会人・独立リーグ":{"球速":137,"コントロール":27,"スタミナ":27,"変化球":4,"最大球種":2,"弾道":1,"肩力":55,"走力":35,"守備力":48,"捕球":45}},"order":["球速","コントロール","スタミナ","変化球","最大球種","弾道","肩力","走力","守備力","捕球"],"draft":{"1":{"球速":10,"コントロール":30,"スタミナ":30,"変化球":2},"2":{"球速":8,"コントロール":24,"スタミナ":24,"変化球":2},"3":{"球速":6,"コントロール":18,"スタミナ":18,"変化球":1},"4":{"球速":4,"コントロール":12,"スタミナ":12,"変化球":1},"5":{"球速":2,"コントロール":6,"スタミナ":6,"変化球":0},"6":{"球速":0,"コントロール":0,"スタミナ":0,"変化球":0}},"appeal":[{"name":"唸る剛速球","d":{"球速":8,"コントロール":-15},"s":"","f":""},{"name":"球威のある速球","d":{"球速":3,"コントロール":-12},"s":"重い球","f":""},{"name":"ノビのある速球","d":{"球速":3,"コントロール":-12},"s":"ノビB","f":""},{"name":"抜群の制球力","d":{"コントロール":12,"スタミナ":-7},"s":"低め〇","f":""},{"name":"針穴を通す正確さ","d":{"コントロール":21,"スタミナ":-9},"s":"","f":""},{"name":"七色の変化球","d":{"球速":-5,"スタミナ":-9,"変化球":1},"s":"球種最大＋3","f":""},{"name":"キレのある変化球","d":{"球速":-3,"スタミナ":-9,"変化球":1},"s":"球種最大＋2／キレ〇","f":""},{"name":"決め球があります","d":{"球速":-3,"スタミナ":-9,"変化球":1},"s":"球種最大＋1","f":""},{"name":"頑丈な体","d":{"スタミナ":11},"s":"ケガしにくさB","f":""},{"name":"使い減りしない投手","d":{"スタミナ":11},"s":"回復B","f":""},{"name":"無類のタフネス","d":{"スタミナ":21},"s":"","f":""},{"name":"アイドルばりの甘いマスク","d":{"球速":1,"コントロール":5,"スタミナ":5},"s":"人気者","f":""},{"name":"何かを持っている","d":{"球速":1,"コントロール":5,"スタミナ":5},"s":"勝ち運","f":""},{"name":"先発もできる","d":{"スタミナ":10},"s":"先発適性がつく","f":""},{"name":"中継ぎもできる","d":{"コントロール":10},"s":"中継ぎ適性がつく","f":""},{"name":"抑えもできる","d":{"球速":1,"コントロール":10,"スタミナ":-10},"s":"抑え適性がつく","f":""},{"name":"捕手も守れる","d":{},"s":"キャッチャーF","f":"弾道＋1／ミート＋30／パワー＋20／サブポジ：捕手"},{"name":"一塁も守れる","d":{},"s":"","f":"弾道＋1／ミート＋30／パワー＋20／サブポジ：一塁手"},{"name":"二塁も守れる","d":{},"s":"","f":"弾道＋1／ミート＋30／パワー＋20／サブポジ：二塁手"},{"name":"三塁も守れる","d":{},"s":"","f":"弾道＋1／ミート＋30／パワー＋20／サブポジ：三塁手"},{"name":"遊撃も守れる","d":{},"s":"","f":"弾道＋1／ミート＋30／パワー＋20／サブポジ：遊撃手"},{"name":"外野も守れる","d":{},"s":"","f":"弾道＋1／ミート＋30／パワー＋20／サブポジ：外野手"}],"weak":[{"name":"これといってないです","d":{},"s":"変化なし","f":""},{"name":"ノミの心臓","d":{"コントロール":8},"s":"対ピンチF","f":""},{"name":"左打者が苦手","d":{"コントロール":8},"s":"対左打者F","f":""},{"name":"泣き虫","d":{"スタミナ":8},"s":"打たれ強さF","f":""},{"name":"ノビのない速球","d":{"球速":3},"s":"ノビF","f":""},{"name":"クイックができない","d":{"球速":3},"s":"クイックF","f":""},{"name":"回復がおそい","d":{"スタミナ":8},"s":"回復F","f":""},{"name":"失投が多い","d":{"コントロール":8},"s":"一発","f":""},{"name":"最後のツメが甘い","d":{"コントロール":4,"スタミナ":4},"s":"寸前","f":""},{"name":"四球が多い","d":{"コントロール":8},"s":"四球","f":""},{"name":"エンジンのかかりが遅い","d":{"スタミナ":8},"s":"スロースターター","f":""},{"name":"手をぬく","d":{"スタミナ":8},"s":"力配分","f":""},{"name":"シュート気味の直球","d":{"球速":3},"s":"シュート回転","f":""},{"name":"球質が軽い","d":{"球速":3},"s":"軽い球","f":""},{"name":"サブポジションが苦手","d":{},"s":"サブポジ能力低下","f":"ミート＋10／パワー＋10"}]},"batter":{"base":{"高校卒":{"弾道":2,"ミート":19,"パワー":19,"肩力":19,"走力":19,"守備力":19,"捕球":19},"大学卒":{"弾道":2,"ミート":23,"パワー":23,"肩力":20,"走力":20,"守備力":23,"捕球":23},"社会人・独立リーグ":{"弾道":2,"ミート":27,"パワー":27,"肩力":20,"走力":20,"守備力":27,"捕球":27}},"order":["弾道","ミート","パワー","肩力","走力","守備力","捕球"],"draftAll":{"1":28,"2":22,"3":17,"4":11,"5":6,"6":0},"draftKeys":["ミート","パワー","肩力","走力","守備力","捕球"],"appeal":[{"name":"安打製造機","d":{"ミート":11,"パワー":-9,"走力":15,"守備力":-9,"捕球":-9},"s":"内野安打〇"},{"name":"抜群のバットコントロール","d":{"ミート":21,"パワー":-9,"走力":5,"守備力":-9,"捕球":-9},"s":""},{"name":"相手を選ばない対応力","d":{"ミート":11,"パワー":4,"守備力":-9,"捕球":-9},"s":"対左投手B"},{"name":"圧倒的なパワー","d":{"弾道":1,"ミート":-9,"パワー":21,"走力":-9,"肩力":4,"守備力":-9,"捕球":-9},"s":""},{"name":"勝負強い打撃","d":{"弾道":1,"ミート":11,"肩力":4,"守備力":-9,"捕球":-9},"s":"チャンスB"},{"name":"抜群の打撃センス","d":{"弾道":1,"ミート":11,"パワー":15,"走力":-9,"肩力":-9,"守備力":-19,"捕球":-19},"s":""},{"name":"50m5秒台の俊足","d":{"パワー":-10,"走力":31,"捕球":-10},"s":"走塁B"},{"name":"最高のスタートダッシュ","d":{"パワー":-10,"走力":31,"捕球":-10},"s":"盗塁B"},{"name":"鉄壁の守り","d":{"弾道":-1,"ミート":-9,"パワー":-9,"走力":5,"肩力":5,"守備力":21,"捕球":5},"s":""},{"name":"地味だが堅実な守備","d":{"弾道":-1,"ミート":-9,"パワー":-9,"走力":5,"肩力":5,"守備力":5,"捕球":21},"s":""},{"name":"正確な送球","d":{"弾道":-1,"ミート":-9,"パワー":-9,"走力":5,"肩力":25,"守備力":4,"捕球":4},"s":"送球B"},{"name":"アイドルばりの甘いマスク","d":{"ミート":2,"パワー":2,"走力":2,"肩力":2,"守備力":2,"捕球":2},"s":"人気者"},{"name":"捕手も守れる","d":{"ミート":2,"パワー":2,"肩力":2,"守備力":2,"捕球":2},"s":"サブポジ：捕手／キャッチャーF"},{"name":"一塁も守れる","d":{"ミート":2,"パワー":2,"走力":2,"肩力":2,"捕球":2},"s":"サブポジ：一塁手"},{"name":"二塁も守れる","d":{"ミート":2,"パワー":2,"走力":2,"守備力":2,"捕球":2},"s":"サブポジ：二塁手"},{"name":"三塁も守れる","d":{"パワー":2,"走力":2,"肩力":2,"守備力":2,"捕球":2},"s":"サブポジ：三塁手"},{"name":"遊撃も守れる","d":{"ミート":2,"走力":2,"肩力":2,"守備力":2,"捕球":2},"s":"サブポジ：遊撃手"},{"name":"外野も守れる","d":{"ミート":2,"パワー":2,"走力":2,"肩力":2,"守備力":2},"s":"サブポジ：外野手"},{"name":"これといってないです","d":{},"s":"変化なし"}],"weak":[{"name":"これといってないです","d":{},"s":"変化なし"},{"name":"チャンスに弱い","d":{"パワー":5},"s":"チャンスF"},{"name":"左投手が苦手","d":{"ミート":5},"s":"対左投手F"},{"name":"盗塁がヘタ","d":{"走力":5},"s":"盗塁F"},{"name":"ベースランニングが苦手","d":{"走力":5},"s":"走塁F"},{"name":"送球が不安定","d":{"肩力":5},"s":"送球F"},{"name":"追い込まれるとリキむ","d":{"ミート":5},"s":"三振"},{"name":"プレッシャーに弱い","d":{"ミート":5},"s":"エラー"},{"name":"サブポジションが苦手","d":{"守備力":5,"捕球":5},"s":"サブポジ能力低下"}]},"growthMap":{"高校卒|1":"早め1","高校卒|2":"早め1","高校卒|3":"普通早2","高校卒|4":"普通早2","高校卒|5":"普通早1","高校卒|6":"普通早1","大学卒|1":"普通早2","大学卒|2":"普通早2","大学卒|3":"普通早1","大学卒|4":"普通早1","大学卒|5":"普通","大学卒|6":"普通","社会人・独立リーグ|1":"普通早1","社会人・独立リーグ|2":"普通早1","社会人・独立リーグ|3":"普通","社会人・独立リーグ|4":"普通","社会人・独立リーグ|5":"普通遅1","社会人・独立リーグ|6":"普通遅1"},"growthAge":{"早熟2":21,"早熟1":23,"早め2":25,"早め1":27,"普通早2":29,"普通早1":30,"普通":31,"普通遅1":32,"普通遅2":33,"遅め1":35,"遅め2":37,"晩成1":39,"晩成2":41}};
+</script>
+
+<script>
+(function () {
+    "use strict";
+
+    var D = window.__MYLIFE__;
+    var kind = "pitcher";           /* pitcher | batter */
+
+    function $(id) { return document.getElementById(id); }
+
+    function fill(sel, names) {
+        sel.innerHTML = names.map(function (n) {
+            return '<option value="' + n + '">' + n + "</option>";
+        }).join("");
+    }
+
+    function side() { return D[kind]; }
+
+    /* 選んだものを全部足す。基礎値＋ドラフト補正＋アピール＋ウィーク */
+    function compute() {
+        var s = side();
+        var career = $("career").value;
+        var rank = Number($("rank").value);
+        var appeal = s.appeal.filter(function (a) { return a.name === $("appeal").value; })[0];
+        var weak = s.weak.filter(function (a) { return a.name === $("weak").value; })[0];
+
+        var base = s.base[career];
+        var draft = {};
+        if (kind === "pitcher") {
+            draft = s.draft[rank] || {};
+        } else {
+            s.draftKeys.forEach(function (k) { draft[k] = s.draftAll[rank] || 0; });
+        }
+
+        var out = [];
+        s.order.forEach(function (k) {
+            if (k === "最大球種") { return; }        /* 球種は特殊能力の欄で扱う */
+            var b = base[k] || 0;
+            var add = (draft[k] || 0) + ((appeal && appeal.d[k]) || 0) + ((weak && weak.d[k]) || 0);
+            out.push({ key: k, base: b, add: add, total: b + add });
+        });
+
+        var skills = [];
+        if (appeal && appeal.s) { skills.push(appeal.s); }
+        if (weak && weak.s && weak.s !== "変化なし") { skills.push(weak.s); }
+
+        var fielder = [];
+        if (kind === "pitcher") {
+            if (appeal && appeal.f) { fielder.push(appeal.f); }
+            if (weak && weak.f) { fielder.push(weak.f); }
+        }
+
+        var growth = D.growthMap[career + "|" + rank] || "";
+        return { rows: out, skills: skills, fielder: fielder, growth: growth,
+                 age: D.growthAge[growth], base: base };
+    }
+
+    function signed(v) { return v > 0 ? "＋" + v : (v < 0 ? "−" + Math.abs(v) : "±0"); }
+
+    function render() {
+        var r = compute();
+
+        $("growth").textContent = r.growth || "−";
+        $("decline").textContent = r.age ? r.age + "歳ごろから" : "−";
+
+        $("stats").innerHTML = r.rows.map(function (x) {
+            return '<div class="stat"><div class="stat__k">' + x.key + "</div>" +
+                   '<div class="stat__v">' + x.total + "</div>" +
+                   '<div class="stat__b">' + x.base + " " + signed(x.add) + "</div></div>";
+        }).join("");
+
+        var pieces = [];
+        if (r.skills.length) { pieces.push("<b>特殊能力</b> " + r.skills.join("／")); }
+        if (r.fielder.length) { pieces.push("<b>野手能力</b> " + r.fielder.join("／")); }
+        if (kind === "pitcher") {
+            var max = 2;
+            var m = /球種最大＋(\d)/.exec(r.skills.join("／"));
+            if (m) { max += Number(m[1]); }
+            pieces.unshift("<b>最大球種</b> " + max);
+        }
+        $("skills").innerHTML = pieces.join("<br>") || "特殊能力の増減はありません";
+    }
+
+    function setKind(next) {
+        kind = next;
+        [].forEach.call(document.querySelectorAll(".seg button"), function (b) {
+            b.setAttribute("aria-pressed", String(b.dataset.kind === kind));
+        });
+        var s = side();
+        fill($("appeal"), s.appeal.map(function (a) { return a.name; }));
+        fill($("weak"), s.weak.map(function (a) { return a.name; }));
+        /* 増減の無いものを最初に見せる。まず素の値を知りたいはず */
+        $("weak").value = "これといってないです";
+        render();
+    }
+
+    fill($("career"), D.careers);
+    $("rank").innerHTML = [1, 2, 3, 4, 5, 6].map(function (i) {
+        return '<option value="' + i + '">' + i + "位</option>";
+    }).join("");
+
+    [].forEach.call(document.querySelectorAll(".seg button"), function (b) {
+        b.addEventListener("click", function () { setKind(b.dataset.kind); });
+    });
+    ["career", "rank", "appeal", "weak"].forEach(function (id) {
+        $(id).addEventListener("change", render);
+    });
+
+    setKind("pitcher");
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "マイライフの初期能力はどうやって決まりますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "経歴（高校卒・大学卒・社会人／独立リーグ）で決まる基礎値に、ドラフト順位ぶんの上乗せを足し、そこへアピールポイントとウィークポイントの増減を反映したものが初期能力になります。ドラフト1位と6位では、投手のコントロールとスタミナで30、野手の各能力で28の差がつきます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "経歴とドラフト順位で成長タイプが変わりますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "プロ野球人生編では変わります。高卒ドラフト1〜2位が早め1、高卒3〜4位と大卒1〜2位が普通早2、高卒5〜6位・大卒3〜4位・社会人1〜2位が普通早1、大卒5〜6位と社会人3〜4位が普通、社会人5〜6位が普通遅1です。憧れ現役選手編とオリジナル選手編では、その選手にもともと設定されている成長タイプがそのまま反映されます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "晩成型にするとデメリットはありますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "マイライフにはサクセスのような「成長期前」がほぼ無いため、晩成にしても若いうちに能力が上がりにくくなる、といったことは起きません。衰えはじめる年齢が後ろにずれるぶん、長く伸ばせます。尻尾を使えば成長タイプを晩成の側へ動かせるので、手に入れたそばから使って構いません。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "アピールポイントは何を選ぶのがおすすめですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "投手は変化球を伸ばすものです。鋭い変化球が無いと抑えるのが難しいためです。先発でいくなら、長いイニングを投げるためにスタミナを伸ばす「無類のタフネス」も有力です。野手は打撃がそのまま成績になるので、ミートかパワーを伸ばすものを選んでください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "ウィークポイントは何を選ぶのがおすすめですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "能力が変わらない「これといってないです」が無難です。ただしマイライフは特殊能力を取りやすく、ウィークポイントで付いた赤特殊能力は後から簡単に消せます。プレイに自信があるなら、赤特殊能力は気にせず、能力値の上乗せが大きいものを選ぶ手もあります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "マイライフの他のまとめもありますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "能力研究所の金特ミッション一覧、イベントクリスタルと万能クリスタルの入手方法、尻尾の入手方法をまとめています。尻尾は成長タイプを晩成の側へ動かせるので、このページと合わせて見てください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "他モードで作った選手をマイライフで使う場合、成長タイプは何がいいですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "超晩成にしておくのがおすすめです。マイライフでは晩成のデメリットがほぼ無く、衰えはじめる年齢が遅いほど長く伸ばせるためです。超晩成は遅め1にあたり、35歳ごろまで衰えません。"
+      }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
