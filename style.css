@@ -170,4 +170,43 @@ footer {
   color: #475569;
 }
 
+/* 公開後に誤りが見つかった箇所。もとの文は取り消し線で残し、
+   訂正はこの赤い箱に書く。読者がどちらを読んだかで話が食い違わないようにするため */
+.tool-article s,
+.tool-article del {
+  color: #8a8a8a;
+  text-decoration-color: #d64545;
+}
+
+.tool-article .correction {
+  margin: 18px 0;
+  padding: 14px 18px;
+
+  background: #fff1f1;
+  border: 1px solid #f3bcbc;
+  border-left: 5px solid #d64545;
+  border-radius: 8px;
+
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.tool-article .correction p {
+  margin: 0 0 8px;
+}
+
+.tool-article .correction ul,
+.tool-article .correction ol {
+  margin: 0 0 8px;
+}
+
+.tool-article .correction > :last-child {
+  margin-bottom: 0;
+}
+
+.tool-article .correction__title {
+  font-weight: 700;
+  color: #b02525;
+}
+
 /* .breadcrumb 系のスタイルは js/head.js が注入する */
