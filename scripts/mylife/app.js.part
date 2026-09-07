@@ -1,0 +1,108 @@
+(function () {
+    "use strict";
+
+    var D = window.__MYLIFE__;
+    var kind = "pitcher";           /* pitcher | batter */
+
+    function $(id) { return document.getElementById(id); }
+
+    function fill(sel, names) {
+        sel.innerHTML = names.map(function (n) {
+            return '<option value="' + n + '">' + n + "</option>";
+        }).join("");
+    }
+
+    function side() { return D[kind]; }
+
+    /* 選んだものを全部足す。基礎値＋ドラフト補正＋アピール＋ウィーク */
+    function compute() {
+        var s = side();
+        var career = $("career").value;
+        var rank = Number($("rank").value);
+        var appeal = s.appeal.filter(function (a) { return a.name === $("appeal").value; })[0];
+        var weak = s.weak.filter(function (a) { return a.name === $("weak").value; })[0];
+
+        var base = s.base[career];
+        var draft = {};
+        if (kind === "pitcher") {
+            draft = s.draft[rank] || {};
+        } else {
+            s.draftKeys.forEach(function (k) { draft[k] = s.draftAll[rank] || 0; });
+        }
+
+        var out = [];
+        s.order.forEach(function (k) {
+            if (k === "最大球種") { return; }        /* 球種は特殊能力の欄で扱う */
+            var b = base[k] || 0;
+            var add = (draft[k] || 0) + ((appeal && appeal.d[k]) || 0) + ((weak && weak.d[k]) || 0);
+            out.push({ key: k, base: b, add: add, total: b + add });
+        });
+
+        var skills = [];
+        if (appeal && appeal.s) { skills.push(appeal.s); }
+        if (weak && weak.s && weak.s !== "変化なし") { skills.push(weak.s); }
+
+        var fielder = [];
+        if (kind === "pitcher") {
+            if (appeal && appeal.f) { fielder.push(appeal.f); }
+            if (weak && weak.f) { fielder.push(weak.f); }
+        }
+
+        var growth = D.growthMap[career + "|" + rank] || "";
+        return { rows: out, skills: skills, fielder: fielder, growth: growth,
+                 age: D.growthAge[growth], base: base };
+    }
+
+    function signed(v) { return v > 0 ? "＋" + v : (v < 0 ? "−" + Math.abs(v) : "±0"); }
+
+    function render() {
+        var r = compute();
+
+        $("growth").textContent = r.growth || "−";
+        $("decline").textContent = r.age ? r.age + "歳ごろから" : "−";
+
+        $("stats").innerHTML = r.rows.map(function (x) {
+            return '<div class="stat"><div class="stat__k">' + x.key + "</div>" +
+                   '<div class="stat__v">' + x.total + "</div>" +
+                   '<div class="stat__b">' + x.base + " " + signed(x.add) + "</div></div>";
+        }).join("");
+
+        var pieces = [];
+        if (r.skills.length) { pieces.push("<b>特殊能力</b> " + r.skills.join("／")); }
+        if (r.fielder.length) { pieces.push("<b>野手能力</b> " + r.fielder.join("／")); }
+        if (kind === "pitcher") {
+            var max = 2;
+            var m = /球種最大＋(\d)/.exec(r.skills.join("／"));
+            if (m) { max += Number(m[1]); }
+            pieces.unshift("<b>最大球種</b> " + max);
+        }
+        $("skills").innerHTML = pieces.join("<br>") || "特殊能力の増減はありません";
+    }
+
+    function setKind(next) {
+        kind = next;
+        [].forEach.call(document.querySelectorAll(".seg button"), function (b) {
+            b.setAttribute("aria-pressed", String(b.dataset.kind === kind));
+        });
+        var s = side();
+        fill($("appeal"), s.appeal.map(function (a) { return a.name; }));
+        fill($("weak"), s.weak.map(function (a) { return a.name; }));
+        /* 増減の無いものを最初に見せる。まず素の値を知りたいはず */
+        $("weak").value = "これといってないです";
+        render();
+    }
+
+    fill($("career"), D.careers);
+    $("rank").innerHTML = [1, 2, 3, 4, 5, 6].map(function (i) {
+        return '<option value="' + i + '">' + i + "位</option>";
+    }).join("");
+
+    [].forEach.call(document.querySelectorAll(".seg button"), function (b) {
+        b.addEventListener("click", function () { setKind(b.dataset.kind); });
+    });
+    ["career", "rank", "appeal", "weak"].forEach(function (id) {
+        $(id).addEventListener("change", render);
+    });
+
+    setKind("pitcher");
+})();
