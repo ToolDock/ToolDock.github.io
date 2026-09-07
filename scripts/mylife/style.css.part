@@ -20,6 +20,7 @@ h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-s
 h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
     border-left:4px solid var(--accent); }
 p{ margin:0 0 12px; }
+h4{ margin:18px 0 8px; font-size:0.95rem; color:var(--ink-sub); }
 
 /* 表が器より広いときは、表の中だけ横に流す */
 .scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -72,3 +73,14 @@ p{ margin:0 0 12px; }
 
 .tool-article{ margin-top:34px; }
 .tool-article table{ margin-bottom:14px; }
+
+/* ── おすすめ編成 ─────────────────────── */
+.build{ border:1px solid var(--line); border-radius:12px; padding:14px 16px;
+        background:#fff; margin-bottom:12px; }
+.build__name{ margin:0; font-size:1.05rem; font-weight:700; color:var(--ink-deep); }
+.build__setup{ margin:2px 0 10px; font-size:0.85rem; color:var(--ink-sub); }
+.build .stats{ grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); }
+.build .stat{ padding:6px 8px; }
+.build .stat__v{ font-size:1.15rem; }
+.build__extra{ margin:10px 0 0; font-size:0.88rem; color:var(--ink-deep); }
+.build__memo{ margin:8px 0 0; font-size:0.85rem; color:var(--ink-mute); }

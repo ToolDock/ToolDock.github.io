@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """静的な表と、計算機が読むJSONを、data.py から作る。"""
-import html, json
+import html, json, re
 import data as d
 
 def sign(v):
@@ -105,3 +105,64 @@ def payload():
         "growthMap": {f"{c}|{r}": g for (c, r), g in d.GROWTH_MAP.items()},
         "growthAge": {n: a for n, _, _, a in d.GROWTH},
     }, ensure_ascii=False, separators=(",", ":"))
+
+
+# ── おすすめ編成 ────────────────────────────────────────
+def _find(items, name):
+    for it in items:
+        if it[0] == name:
+            return it
+    raise KeyError(name)
+
+def build_stats(kind, career, rank, appeal_name, weak_name):
+    """計算機と同じ足し算を Python 側でもやる。表の数字を手で書かないため。"""
+    if kind == "pitcher":
+        base, order = d.PITCHER_BASE[career], ["球速", "コントロール", "スタミナ", "変化球"]
+        draft = d.PITCHER_DRAFT[rank]
+        ap, wk = _find(d.P_APPEAL, appeal_name), _find(d.P_WEAK, weak_name)
+    else:
+        base, order = d.BATTER_BASE[career], d.BATTER_ORDER
+        draft = {k: d.BATTER_DRAFT_ALL[rank] for k in d.BATTER_DRAFT_KEYS}
+        ap, wk = _find(d.B_APPEAL, appeal_name), _find(d.B_WEAK, weak_name)
+
+    vals = {}
+    for k in order:
+        vals[k] = base.get(k, 0) + draft.get(k, 0) + ap[1].get(k, 0) + wk[1].get(k, 0)
+
+    skills = [x for x in (ap[2], wk[2]) if x and x != "変化なし"]
+    kinds = 2
+    for s in skills:
+        m = re.search(r"球種最大＋(\d)", s)
+        if m:
+            kinds += int(m.group(1))
+    return vals, order, "／".join(skills), kinds
+
+def _build_card(title, setup, memo, pairs, extra=""):
+    chips = "".join(
+        f'<div class="stat"><div class="stat__k">{html.escape(k)}</div>'
+        f'<div class="stat__v">{v}</div></div>' for k, v in pairs)
+    tail = f'<p class="build__extra">{extra}</p>' if extra else ""
+    return (f'<div class="build"><p class="build__name">{html.escape(title)}</p>'
+            f'<p class="build__setup">{html.escape(setup)}</p>'
+            f'<div class="stats">{chips}</div>{tail}'
+            f'<p class="build__memo">{html.escape(memo)}</p></div>')
+
+def builds_batter():
+    out = []
+    for career, rank, ap, wk, memo in d.BUILDS_BATTER:
+        vals, order, _, _ = build_stats("batter", career, rank, ap, wk)
+        out.append(_build_card(
+            ap, f"{career}ドラフト{rank}位／ウィークポイント {wk}", memo,
+            [(k, vals[k]) for k in order]))
+    return "".join(out)
+
+def builds_pitcher():
+    keys = ["球速", "コントロール", "スタミナ", "変化球"]
+    out = []
+    for career, rank, ap, wk, memo in d.BUILDS_PITCHER:
+        vals, _, skills, kinds = build_stats("pitcher", career, rank, ap, wk)
+        extra = f"最大球種 {kinds}" + (f"／特殊能力 {html.escape(skills)}" if skills else "")
+        out.append(_build_card(
+            ap, f"{career}ドラフト{rank}位／ウィークポイント {wk}", memo,
+            [(k, vals[k]) for k in keys], extra))
+    return "".join(out)
