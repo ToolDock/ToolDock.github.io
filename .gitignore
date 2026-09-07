@@ -144,4 +144,4 @@ vite.config.ts.timestamp-*
 
 # 米国市場ダッシュボードのビルド中間物
 market/investment_ai.db
-market/**/__pycache__/
+**/__pycache__/
