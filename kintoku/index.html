@@ -310,24 +310,26 @@ tr.acquired .skill{
         margin-left:0;
     }
 
-    table,
-    thead,
-    tbody,
-    tr,
-    th,
-    td{
+    /* 一覧の表だけをカード化する。記事中の表まで巻き込まないよう
+       .region で囲っておくこと */
+    .region table,
+    .region thead,
+    .region tbody,
+    .region tr,
+    .region th,
+    .region td{
         display:block;
     }
 
-    thead{
+    .region thead{
         display:none;
     }
 
-    tr{
+    .region tr{
         border-bottom:2px solid #ddd;
     }
 
-    td::before{
+    .region td::before{
         display:block;
         font-weight:bold;
         margin-bottom:6px;
@@ -336,15 +338,15 @@ tr.acquired .skill{
 
     /* 1列目は取得済みチェック欄なのでラベルを出さない */
 
-    td:nth-child(2)::before{
+    .region td:nth-child(2)::before{
         content:"金特";
     }
 
-    td:nth-child(3)::before{
+    .region td:nth-child(3)::before{
         content:"取得条件";
     }
 
-    td.done-cell{
+    .region td.done-cell{
         width:auto;
         padding-bottom:0;
     }
@@ -500,7 +502,7 @@ figure.shot figcaption{
 <h3 class="skill-name">鉄腕</h3>
 <div class="mission-box">
 <p class="mission-label">ミッションメモ</p>
-<div class="placeholder">ミッション情報は準備中です</div>
+<div class="placeholder">4試合中に登板した全試合を1失点以内に抑える。</div>
 </div>
 </td>
 
@@ -869,7 +871,7 @@ figure.shot figcaption{
 <td class="skill">
 <h3 class="skill-name">ガソリンタンク</h3>
 <div class="mission-box"><p class="mission-label">ミッションメモ</p>
-<div class="placeholder">ミッション情報は準備中です</div>
+<div class="placeholder">3試合中に登板した全試合を完投する。</div>
 </div>
 </td>
 <td class="condition">
@@ -893,7 +895,7 @@ figure.shot figcaption{
 <td class="skill">
 <h3 class="skill-name">強心臓</h3>
 <div class="mission-box"><p class="mission-label">ミッションメモ</p>
-<div class="placeholder">ミッション情報は準備中です</div>
+<div class="placeholder">得点圏にランナーを置いた状態でランナーを返さず、15打数連続で無安打に抑える。</div>
 </div>
 </td>
 <td class="condition">「対ピンチA」を取得済み</td>
@@ -1098,7 +1100,10 @@ figure.shot figcaption{
 const STORAGE_KEY = "tooldock-kintoku-acquired";
 
 /* 投手専用かどうかは取得条件の文面から判定する */
-const PITCHER_PATTERN = /先発投手|中継ぎ|抑え/;
+/* ポジションの指定が無い行もあるので、投手しか持てない特殊能力の名前でも拾う。
+   「対左投手」は野手の能力なので、「対左打者」とは取り違えないこと */
+const PITCHER_PATTERN =
+    /先発投手|中継ぎ|抑え|対ピンチ|対左打者|初球〇|内角攻め|ジャイロボール|打たれ強さ/;
 
 const searchInput = document.getElementById("skillSearch");
 const regionSelect = document.getElementById("regionFilter");
@@ -1338,12 +1343,32 @@ apply();
 </p>
 
 <p>
-金特は地域ごとに用意されているものがあり、
-どの球団に所属しているかで受けられるミッションが変わります。
-「海外」だけは所属球団ではなく、<strong>世界大会で海外に遠征しているあいだ</strong>に受けられます。
+金特は地域ごとに用意されていて、
+<strong>その地域にいるあいだ</strong>に受けられます。
+その地域の球団に所属している必要はなく、
+<strong>ビジターの遠征でその地域を訪れているときでも受けられます</strong>。
+「海外」も同じで、世界大会で海外に遠征しているあいだが対象です。
 上の一覧では<strong>金特名・取得条件での検索</strong>、
 <strong>地域での絞り込み</strong>、投手／野手の切り替え、
 すでに取得した金特を隠す表示ができます。
+</p>
+
+<h2 id="region">別リーグ・地方・海外の研究所に行ける時期</h2>
+
+<p>
+研究所は<strong>今いる場所の地域のもの</strong>しか訪れられません。
+遠征でしか行けない地域は、行ける時期が決まっています。
+</p>
+
+<ul>
+<li><strong>別リーグの地域</strong>— 交流戦、オールスター、日本シリーズ</li>
+<li><strong>地方</strong>— 主にオープン戦の期間</li>
+<li><strong>海外</strong>— 世界大会</li>
+</ul>
+
+<p class="note">
+どれも期間が限られます。交流戦やオールスター、オープン戦の期間に入ったら、
+その地域の研究所をのぞいておくと取りこぼしが減ります。
 </p>
 
 <h2>パワプロ2026-2027と2024-2025の違い</h2>
@@ -1360,7 +1385,8 @@ apply();
 
 <ul>
 <li><strong>先に条件を確認してから動く</strong>— ミッションによっては特定の成績や試合状況が必要です。シーズンが始まってからでは間に合わないものもあります</li>
-<li><strong>地域は所属球団で決まる</strong>— 狙っている金特が別地域のものなら、移籍まで取得できません。ただし「海外」だけは別で、世界大会の遠征中に受けられます</li>
+<li><strong>地域は今いる場所で決まる</strong>— 所属球団の地域でなくても、ビジターの遠征でその地域に行けば受けられます。移籍を待つ必要はありません</li>
+<li><strong>遠征中は研究所をのぞく</strong>— 別リーグは交流戦・オールスター・日本シリーズ、地方は主にオープン戦、海外は世界大会と、行ける時期が限られます。逃すと次の機会まで待つことになります</li>
 <li><strong>取得済みを隠して使う</strong>— 上の一覧の「取得済みを隠す」を有効にすると、残っているミッションだけが並びます</li>
 <li><strong>投手／野手で絞る</strong>— 自分のポジションに関係のない金特を除いてから探すと早く見つかります</li>
 </ul>
@@ -1402,6 +1428,12 @@ A. お使いのブラウザに保存され、次に開いたときも残りま�
 
 <p><strong>★3　金特ミッションを受領する</strong><br>
 ここまで進むと、上の一覧にある金特ミッションを受けられるようになります。</p>
+
+<p><strong>Q. 別の地域の金特は、その球団に移籍しないと取れませんか？</strong><br>
+A. 移籍しなくても取れます。<strong>ビジターの遠征でその地域を訪れているあいだ</strong>に、
+現地の能力研究所でミッションを受けられます。
+別リーグの地域は交流戦・オールスター・日本シリーズ、
+地方は主にオープン戦の期間、海外は世界大会のときに訪れられます。</p>
 
 <p><strong>Q. おかわりとストレートキラーはマイライフで取れますか？</strong><br>
 A. 取れます。世界大会で海外に遠征しているあいだの能力研究所で受領できることを、
@@ -1448,6 +1480,14 @@ A. マイライフとは取り方がまったく違い、金特本と国際大�
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "地域の絞り込みや投手・野手の切り替えが残っていないか確認してください。「取得済みを隠す」を有効にしているとチェック済みの金特は表示されません。リセットボタンですべての条件を解除できます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "別の地域の金特は、その球団に移籍しないと取れませんか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "移籍しなくても取れます。ビジターの遠征でその地域を訪れているあいだに、現地の能力研究所でミッションを受けられます。別リーグの地域は交流戦・オールスター・日本シリーズ、地方は主にオープン戦の期間、海外は世界大会のときに訪れられます。"
       }
     },
     {
