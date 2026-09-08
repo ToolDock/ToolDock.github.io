@@ -502,7 +502,7 @@ figure.shot figcaption{
 <h3 class="skill-name">鉄腕</h3>
 <div class="mission-box">
 <p class="mission-label">ミッションメモ</p>
-<div class="placeholder">ミッション情報は準備中です</div>
+<div class="placeholder">4試合中に登板した全試合を1失点以内に抑える。</div>
 </div>
 </td>
 
@@ -871,7 +871,7 @@ figure.shot figcaption{
 <td class="skill">
 <h3 class="skill-name">ガソリンタンク</h3>
 <div class="mission-box"><p class="mission-label">ミッションメモ</p>
-<div class="placeholder">ミッション情報は準備中です</div>
+<div class="placeholder">3試合中に登板した全試合を完投する。</div>
 </div>
 </td>
 <td class="condition">
@@ -895,7 +895,7 @@ figure.shot figcaption{
 <td class="skill">
 <h3 class="skill-name">強心臓</h3>
 <div class="mission-box"><p class="mission-label">ミッションメモ</p>
-<div class="placeholder">ミッション情報は準備中です</div>
+<div class="placeholder">得点圏にランナーを置いた状態でランナーを返さず、15打数連続で無安打に抑える。</div>
 </div>
 </td>
 <td class="condition">「対ピンチA」を取得済み</td>
@@ -1100,7 +1100,10 @@ figure.shot figcaption{
 const STORAGE_KEY = "tooldock-kintoku-acquired";
 
 /* 投手専用かどうかは取得条件の文面から判定する */
-const PITCHER_PATTERN = /先発投手|中継ぎ|抑え/;
+/* ポジションの指定が無い行もあるので、投手しか持てない特殊能力の名前でも拾う。
+   「対左投手」は野手の能力なので、「対左打者」とは取り違えないこと */
+const PITCHER_PATTERN =
+    /先発投手|中継ぎ|抑え|対ピンチ|対左打者|初球〇|内角攻め|ジャイロボール|打たれ強さ/;
 
 const searchInput = document.getElementById("skillSearch");
 const regionSelect = document.getElementById("regionFilter");
@@ -1350,32 +1353,21 @@ apply();
 すでに取得した金特を隠す表示ができます。
 </p>
 
-<h2 id="region">地域ごとに、いつ研究所へ行けるか</h2>
+<h2 id="region">別リーグ・地方・海外の研究所に行ける時期</h2>
 
 <p>
-研究所は<strong>今いる場所の地域のもの</strong>を訪れられます。
-所属球団の地域はいつでも行けますが、ほかの地域は
-<strong>遠征でその土地にいるあいだだけ</strong>です。
+研究所は<strong>今いる場所の地域のもの</strong>しか訪れられません。
+遠征でしか行けない地域は、行ける時期が決まっています。
 </p>
 
-<div class="table-scroll">
-<table>
-<thead>
-<tr><th>地域</th><th>訪れられる時期</th></tr>
-</thead>
-<tbody>
-<tr><td>所属球団の地域</td><td>いつでも</td></tr>
-<tr><td>同じリーグの他球団の地域</td><td>シーズン中のビジター遠征</td></tr>
-<tr><td>別リーグの地域</td><td>交流戦、オールスター、日本シリーズ</td></tr>
-<tr><td>地方</td><td>主にオープン戦の期間</td></tr>
-<tr><td>海外</td><td>世界大会</td></tr>
-</tbody>
-</table>
-</div>
+<ul>
+<li><strong>別リーグの地域</strong>— 交流戦、オールスター、日本シリーズ</li>
+<li><strong>地方</strong>— 主にオープン戦の期間</li>
+<li><strong>海外</strong>— 世界大会</li>
+</ul>
 
 <p class="note">
-別リーグ・地方・海外は<strong>行ける時期が限られます</strong>。
-交流戦やオールスター、オープン戦の期間に入ったら、
+どれも期間が限られます。交流戦やオールスター、オープン戦の期間に入ったら、
 その地域の研究所をのぞいておくと取りこぼしが減ります。
 </p>
 
