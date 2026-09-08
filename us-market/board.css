@@ -54,6 +54,9 @@ body {
    「最終更新」より大きく、本文寄りの濃さで出す */
 .board__session { margin: 6px 0 0; font-size: .95rem; color: var(--text-muted); font-weight: 600; }
 .board__updated { margin: 2px 0 0; font-size: .8rem; color: var(--text-faint); }
+/* いつ次が来るのか分からないと、朝いちばんに開いた人が
+   更新が止まったと受け取ってしまう。更新の周期をここで伝える */
+.board__cycle { display: block; }
 
 /* ── 共通のカード・見出し ────────────────── */
 /* 表が器より広いときは、表の中だけ横に流す。
