@@ -64,7 +64,10 @@
         $("stats").innerHTML = r.rows.map(function (x) {
             return '<div class="stat"><div class="stat__k">' + x.key + "</div>" +
                    '<div class="stat__v">' + x.total + "</div>" +
-                   '<div class="stat__b">' + x.base + " " + signed(x.add) + "</div></div>";
+                   '<div class="stat__b">' + x.base +
+                   '<span class="stat__d ' +
+                   (x.add > 0 ? "up" : x.add < 0 ? "down" : "zero") + '">' +
+                   signed(x.add) + "</span></div></div>";
         }).join("");
 
         var pieces = [];
