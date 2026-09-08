@@ -28,6 +28,7 @@ import json
 import shutil
 import sys
 from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 import collect_us_market as collector
@@ -407,7 +408,9 @@ def build_payload(today=None):
         }
         parts = um.yen_spx_parts(year_rows[0][0], year_rows[-1][0])
 
-    generated = datetime.now().astimezone()
+    # 実行はGitHubのランナー（UTC）だが、読むのは日本の人。
+    # そのまま出すと9時間ずれて「昨日の夜」に見え、更新が止まったと誤解される
+    generated = datetime.now(ZoneInfo("Asia/Tokyo"))
     ref_date = date.fromisoformat(ref) if ref else None
     return {
         # 見出しはHTML側に置いてある（web/index.html）。
@@ -416,7 +419,7 @@ def build_payload(today=None):
         "session_text": (f"{ref_date.year}年{ref_date.month}月{ref_date.day}日"
                          if ref_date else ""),
         "generated_at": generated.isoformat(timespec="seconds"),
-        "generated_at_text": generated.strftime("%Y-%m-%d %H:%M"),
+        "generated_at_text": generated.strftime("%Y-%m-%d %H:%M") + "（日本時間）",
         "rows": rows,
         "yenspx": yenspx_payload(stats, parts, spx_source) if stats else None,
         "yenspx_chart_title": f"円建てS&P500の{this_year}年（年初からの騰落）",
