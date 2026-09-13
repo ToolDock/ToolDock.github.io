@@ -637,19 +637,30 @@ function gradeBadge(cx, cy, letter, r) {
            text(cx, cy + 5, letter, { size: 15, color: "#fff", weight: "800", anchor: "middle" });
 }
 
-function statBarRow(x, y, w, label, gradeLetter, num, max, trend, barColor) {
+/* 実機の能力値表示にバーは無い。ラベル・グレード・大きめの数字・
+   矢印（任意）だけを横に並べる */
+function statLine(x, y, label, gradeLetter, num, unit) {
     var svg = "";
     svg += text(x, y + 15, label, { size: 14, color: "#334155", weight: "600" });
     var labelW = 92;
-    if (gradeLetter) svg += gradeBadge(x + labelW + 14, y + 10, gradeLetter, 14);
-    var barX = x + labelW + 36, barW = w - labelW - 36 - 62;
-    svg += rect(barX, y + 2, barW, 16, 8, "#e2e8f0");
-    var pct = Math.max(0, Math.min(1, num / max));
-    svg += rect(barX, y + 2, Math.max(10, barW * pct), 16, 8, barColor || "#2563eb");
-    svg += text(barX + barW + 8, y + 15, String(num), { size: 14, color: "#0f172a", weight: "700" });
-    if (trend === "up") svg += text(x + w - 4, y + 15, "▲", { size: 13, color: "#dc2626", anchor: "end" });
-    if (trend === "down") svg += text(x + w - 4, y + 15, "▼", { size: 13, color: "#2563eb", anchor: "end" });
+    var cx = x + labelW;
+    var numColor = "#0f172a";
+    if (gradeLetter) {
+        svg += gradeBadge(cx + 14, y + 9, gradeLetter, 14);
+        numColor = GRADE_COLORS[gradeLetter] || numColor;
+        cx += 34;
+    }
+    svg += text(cx + 10, y + 19, String(num), { size: 23, color: numColor, weight: "800" });
+    if (unit) svg += text(cx + 10 + textWidth(String(num), 23) + 5, y + 17, unit, { size: 13, color: "#64748b", weight: "600" });
     return svg;
+}
+
+function trendArrow(cx, cy, up) {
+    var color = up ? "#e0245e" : "#2563eb";
+    var pts = up
+        ? [[cx, cy - 7], [cx - 7, cy + 6], [cx + 7, cy + 6]]
+        : [[cx, cy + 7], [cx - 7, cy - 6], [cx + 7, cy - 6]];
+    return '<polygon points="' + pts.map(function (p) { return p[0] + "," + p[1]; }).join(" ") + '" fill="' + color + '"/>';
 }
 
 function pitchDiagramSVG(cx, cy, radius) {
@@ -776,16 +787,24 @@ function buildCard() {
     svg += rect(24, y, W - 48, 2, 1, "#e2e8f0");
     y += 20;
 
+    function statRowWithArrow(label, gradeLetter, num, trend, unit) {
+        svg += statLine(24, y, label, gradeLetter, num, unit);
+        if (trend === "up" || trend === "down") {
+            var arrowX = 24 + 92 + (gradeLetter ? 34 : 10) + textWidth(String(num), 23) +
+                         (unit ? textWidth(unit, 13) + 10 : 0) + 22;
+            svg += trendArrow(arrowX, y + 12, trend === "up");
+        }
+        y += 34;
+    }
+
     if (kind === "pitcher") {
         var vel = document.getElementById("p-velocity-num").value;
-        svg += statBarRow(24, y, W - 48, "球速", null, parseInt(vel, 10) || 0, 175, null, "#0f172a");
-        y += 34;
+        statRowWithArrow("球速", null, parseInt(vel, 10) || 0, null, "km/h");
         [["コントロール", "p-control"], ["スタミナ", "p-stamina"]].forEach(function (s) {
             var grade = document.getElementById(s[1] + "-grade").value;
             var num = parseInt(document.getElementById(s[1] + "-num").value, 10) || 0;
             var trend = document.getElementById(s[1] + "-trend").value;
-            svg += statBarRow(24, y, W - 48, s[0], grade, num, 100, trend, teamColor);
-            y += 34;
+            statRowWithArrow(s[0], grade, num, trend);
         });
     } else {
         BATTER_STATS.forEach(function (s) {
@@ -793,8 +812,7 @@ function buildCard() {
             var grade = document.getElementById(s[1] + "-grade").value;
             var num = parseInt(document.getElementById(s[1] + "-num").value, 10) || 0;
             var trend = document.getElementById(s[1] + "-trend").value;
-            svg += statBarRow(24, y, W - 48, s[0], grade, num, isTraj ? 4 : 100, trend, teamColor);
-            y += 34;
+            statRowWithArrow(s[0], isTraj ? null : grade, num, trend);
         });
     }
 
