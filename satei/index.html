@@ -246,6 +246,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
             <span class="label">合計</span>
         </div>
         <div class="breakdown" id="breakdown"></div>
+        <p class="note">合計は実機と同じく☆1〜☆999の範囲で表示します。内訳の数字はそのままなので、マイナスや1000を超える値が混じることがあります。</p>
 
         <div class="combo" id="combo" hidden>
             <div class="result__total">
@@ -322,6 +323,11 @@ A. 投手タブの「サブポジション適性」を無以外にすると、�
 （小0.3・中以上0.4・2以上0.7）で計算した合計☆が表示されます。投手側の☆は、
 二刀流にすると少し目減りする点に注意してください。</p>
 
+<p><strong>Q. 合計☆がマイナスや1000以上になりました。</strong><br>
+A. 実機では☆1が下限、☆999が上限なので、表示する合計はその範囲に収めています。
+内訳の数字はそのまま計算結果を出しているため、マイナスや1000を超える値が
+混じることがあります。</p>
+
 <p><strong>Q. 特殊能力はいくつでもチェックできますか？</strong><br>
 A. はい、上限はありません。実際に持っている特殊能力をすべてチェックしてください。</p>
 
@@ -356,6 +362,14 @@ A. 保存されません。ページを閉じると入力内容は消えます�
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "投手タブの「サブポジション適性」を無以外にすると、投手☆×0.95＋野手☆×適性の倍率（小0.3・中以上0.4・2以上0.7）で計算した合計☆が表示されます。投手側の☆は、二刀流にすると少し目減りする点に注意してください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "合計☆がマイナスや1000以上になりました。",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "実機では☆1が下限、☆999が上限なので、表示する合計はその範囲に収めています。内訳の数字はそのまま計算結果を出しているため、マイナスや1000を超える値が混じることがあります。"
       }
     },
     {
@@ -641,7 +655,11 @@ function compute() {
     var batterResult = computeBatter();
     var r = kind === "pitcher" ? pitcherResult : batterResult;
 
-    document.getElementById("totalStar").textContent = r.total;
+    /* 査定は実機でも☆1が下限、☆999が上限。内訳の数字自体は
+       素の計算結果のまま出し、クランプは合計の表示だけにかける */
+    function clampStar(v) { return Math.max(1, Math.min(999, v)); }
+
+    document.getElementById("totalStar").textContent = clampStar(r.total);
     renderBreakdown("breakdown", r, kind);
 
     /* ---- 二刀流（野手のサブポジション適性）---- */
@@ -652,7 +670,7 @@ function compute() {
         var pStar = Math.floor(pitcherResult.total * 0.95);
         var bStar = Math.floor(batterResult.total * multiplier);
         combo.hidden = false;
-        document.getElementById("comboStar").textContent = pStar + bStar;
+        document.getElementById("comboStar").textContent = clampStar(pStar + bStar);
         document.getElementById("comboBreakdown").innerHTML =
             '<div class="item"><div class="k">投手☆×0.95</div><div class="v">' + pStar + '</div></div>' +
             '<div class="item"><div class="k">野手☆×' + multiplier + '</div><div class="v">' + bStar + '</div></div>';
