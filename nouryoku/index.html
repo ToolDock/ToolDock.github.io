@@ -363,24 +363,28 @@ var AB_CATS = [
 ];
 
 /* サブ能力。hasH が真の項目だけ H ランクまで選べる（対ピンチ・打たれ強さ） */
+/* sAlias/hAlias は、実機のExcel（野手/投手シート）の
+     =IF($C11="S","勝負師","チャンス")
+   という分岐と同じ組み合わせ。Sランク（対ピンチ・打たれ強さはHランクも）に
+   達すると、行から消えて特殊能力側に色付きチップとして混ざる */
 var SUB_ABILITIES = {
     pitcher: [
-        { id: "p-pinch", label: "対ピンチ", note: "S:強心臓 / H:ノミの心臓", hasH: true },
-        { id: "p-vsleft", label: "対左打者", note: "S:左キラー", hasH: false },
-        { id: "p-tough", label: "打たれ強さ", note: "S:不屈の魂 / H:ガラスのハート", hasH: true },
-        { id: "p-nobi", label: "ノビ", note: "S:怪童", hasH: false },
-        { id: "p-quick", label: "クイック", note: "S:走者釘付", hasH: false },
-        { id: "p-recover", label: "回復", note: "S:ガソリンタンク", hasH: false },
-        { id: "p-injury", label: "ケガしにくさ", note: "S:鉄人", hasH: false }
+        { id: "p-pinch", label: "対ピンチ", sAlias: "強心臓", hAlias: "ノミの心臓", hasH: true },
+        { id: "p-vsleft", label: "対左打者", sAlias: "左キラー", hasH: false },
+        { id: "p-tough", label: "打たれ強さ", sAlias: "不屈の魂", hAlias: "ガラスのハート", hasH: true },
+        { id: "p-nobi", label: "ノビ", sAlias: "怪童", hasH: false },
+        { id: "p-quick", label: "クイック", sAlias: "走者釘付", hasH: false },
+        { id: "p-recover", label: "回復", sAlias: "ガソリンタンク", hasH: false },
+        { id: "p-injury", label: "ケガしにくさ", sAlias: "鉄人", hasH: false }
     ],
     batter: [
-        { id: "b-chance", label: "チャンス", note: "S:勝負師", hasH: false },
-        { id: "b-vsleft", label: "対左投手", note: "S:左腕キラー", hasH: false },
-        { id: "b-catcher", label: "キャッチャー", note: "S:球界の頭脳", hasH: false },
-        { id: "b-steal", label: "盗塁", note: "S:電光石火", hasH: false },
-        { id: "b-run", label: "走塁", note: "S:高速ベースラン", hasH: false },
-        { id: "b-throw", label: "送球", note: "S:ストライク送球", hasH: false },
-        { id: "b-injury", label: "ケガしにくさ", note: "S:鉄人", hasH: false }
+        { id: "b-chance", label: "チャンス", sAlias: "勝負師", hasH: false },
+        { id: "b-vsleft", label: "対左投手", sAlias: "左腕キラー", hasH: false },
+        { id: "b-catcher", label: "キャッチャー", sAlias: "球界の頭脳", hasH: false },
+        { id: "b-steal", label: "盗塁", sAlias: "電光石火", hasH: false },
+        { id: "b-run", label: "走塁", sAlias: "高速ベースラン", hasH: false },
+        { id: "b-throw", label: "送球", sAlias: "ストライク送球", hasH: false },
+        { id: "b-injury", label: "ケガしにくさ", sAlias: "鉄人", hasH: false }
     ]
 };
 
@@ -434,9 +438,10 @@ renderPosChecks("bPosition", BATTER_POSITION, ["外"]);
 function renderSubRows(containerId, list) {
     var el = document.getElementById(containerId);
     el.innerHTML = list.map(function (a) {
+        var note = "S:" + a.sAlias + (a.hAlias ? " / H:" + a.hAlias : "");
         return '<div class="stat-row"><span>' + a.label + '</span>' +
                buildGradeSelect(a.id, a.hasH, "D") +
-               '<span class="note" style="margin:0;font-size:0.72rem;grid-column:3 / span 2;">' + a.note + '</span></div>';
+               '<span class="note" style="margin:0;font-size:0.72rem;grid-column:3 / span 2;">' + note + '</span></div>';
     }).join("");
 }
 renderSubRows("pSubRows", SUB_ABILITIES.pitcher);
@@ -671,6 +676,21 @@ function checkedAbilities(kind) {
     return out;
 }
 
+/* サブ能力がS（対ピンチ・打たれ強さはHも）に達すると、実機では
+   行から消えて特殊能力側に昇格した名前で表示される
+   （Excel の =IF($C11="S","勝負師","チャンス") と同じ分岐）。
+   ここでそれを判定し、行に残すものと昇格させるものに仕分ける */
+function splitSubAbilities(kind) {
+    var rows = [], promotedGold = [], promotedRed = [];
+    SUB_ABILITIES[kind].forEach(function (a) {
+        var grade = document.getElementById(a.id).value;
+        if (grade === "S") { promotedGold.push(a.sAlias); }
+        else if (grade === "H" && a.hasH) { promotedRed.push(a.hAlias); }
+        else { rows.push({ def: a, grade: grade }); }
+    });
+    return { rows: rows, promotedGold: promotedGold, promotedRed: promotedRed };
+}
+
 function checkedPositions(containerId) {
     return [].slice.call(document.querySelectorAll('#' + containerId + ' input:checked')).map(function (b) { return b.value; });
 }
@@ -768,19 +788,22 @@ function buildCard() {
 
     y += 14;
 
-    /* ── サブ能力 ── */
-    svg += text(24, y, "サブ能力", { size: 16, color: "#0f172a", weight: "800" });
-    y += 12;
-    var subList = SUB_ABILITIES[kind];
-    var colW = (W - 48 - 20) / 2;
-    subList.forEach(function (a, i) {
-        var col = i % 2, row = Math.floor(i / 2);
-        var sx = 24 + col * (colW + 20), sy = y + row * 36;
-        var grade = document.getElementById(a.id).value;
-        svg += gradeBadge(sx + 15, sy + 12, grade, 15);
-        svg += text(sx + 40, sy + 17, a.label, { size: 14, color: "#334155", weight: "600" });
-    });
-    y += Math.ceil(subList.length / 2) * 36 + 20;
+    /* ── サブ能力 ──
+       Sランク（対ピンチ・打たれ強さはHも）に達したものは、行から消えて
+       下の特殊能力グリッドに昇格して出るので、ここには残りだけ並べる */
+    var subSplit = splitSubAbilities(kind);
+    if (subSplit.rows.length) {
+        svg += text(24, y, "サブ能力", { size: 16, color: "#0f172a", weight: "800" });
+        y += 12;
+        var colW = (W - 48 - 20) / 2;
+        subSplit.rows.forEach(function (r, i) {
+            var col = i % 2, row = Math.floor(i / 2);
+            var sx = 24 + col * (colW + 20), sy = y + row * 36;
+            svg += gradeBadge(sx + 15, sy + 12, r.grade, 15);
+            svg += text(sx + 40, sy + 17, r.def.label, { size: 14, color: "#334155", weight: "600" });
+        });
+        y += Math.ceil(subSplit.rows.length / 2) * 36 + 20;
+    }
 
     /* ── 球種ダイアグラム（投手のみ） ── */
     if (kind === "pitcher") {
@@ -791,8 +814,12 @@ function buildCard() {
         y = diagCy + diagR + 44;
     }
 
-    /* ── 特殊能力 ── */
+    /* ── 特殊能力 ──
+       サブ能力から昇格した名前（勝負師・ノミの心臓など）を、
+       対応する色の一覧の先頭に混ぜる */
     var abilities = checkedAbilities(kind);
+    abilities.kintoku = subSplit.promotedGold.concat(abilities.kintoku);
+    abilities.aka = subSplit.promotedRed.concat(abilities.aka);
     var anyAbility = AB_CATS.some(function (c) { return abilities[c.key].length; });
     if (anyAbility) {
         svg += text(24, y, "特殊能力", { size: 16, color: "#0f172a", weight: "800" });
