@@ -146,7 +146,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <div class="page-wrapper">
 
 <header>
-    <h1>パワプロ2026-2027 査定☆計算機</h1>
+    <h1>パワプロ2026-2027 ⭐︎(星)計算ツール</h1>
     <p>能力値と所持する特殊能力を入力すると、査定である☆(星)を計算します</p>
 </header>
 
@@ -163,16 +163,16 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 
     <div class="field-grid pitch-only">
         <div class="field">
-            <label for="p-velocity">球速（120〜175）</label>
-            <input type="number" id="p-velocity" min="120" max="175" value="150">
+            <label for="p-velocity">球速（80〜175）</label>
+            <input type="number" id="p-velocity" min="80" max="175" value="150">
         </div>
         <div class="field">
-            <label for="p-control">コントロール（1〜99）</label>
-            <input type="number" id="p-control" min="1" max="99" value="50">
+            <label for="p-control">コントロール（1〜100）</label>
+            <input type="number" id="p-control" min="1" max="100" value="50">
         </div>
         <div class="field">
-            <label for="p-stamina">スタミナ（1〜99）</label>
-            <input type="number" id="p-stamina" min="1" max="99" value="50">
+            <label for="p-stamina">スタミナ（1〜100）</label>
+            <input type="number" id="p-stamina" min="1" max="100" value="50">
         </div>
     </div>
 
@@ -187,32 +187,32 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
             </select>
         </div>
         <div class="field">
-            <label for="b-mi">ミート（1〜99）</label>
-            <input type="number" id="b-mi" min="1" max="99" value="50">
+            <label for="b-mi">ミート（1〜100）</label>
+            <input type="number" id="b-mi" min="1" max="100" value="50">
         </div>
         <div class="field">
-            <label for="b-pw">パワー（1〜99）</label>
-            <input type="number" id="b-pw" min="1" max="99" value="50">
+            <label for="b-pw">パワー（1〜100）</label>
+            <input type="number" id="b-pw" min="1" max="100" value="50">
         </div>
         <div class="field">
-            <label for="b-sp">走力（1〜99）</label>
-            <input type="number" id="b-sp" min="1" max="99" value="50">
+            <label for="b-sp">走力（1〜100）</label>
+            <input type="number" id="b-sp" min="1" max="100" value="50">
         </div>
         <div class="field">
-            <label for="b-sh">肩力（1〜99）</label>
-            <input type="number" id="b-sh" min="1" max="99" value="50">
+            <label for="b-sh">肩力（1〜100）</label>
+            <input type="number" id="b-sh" min="1" max="100" value="50">
         </div>
         <div class="field">
-            <label for="b-df">守備力（1〜99）</label>
-            <input type="number" id="b-df" min="1" max="99" value="50">
+            <label for="b-df">守備力（1〜100）</label>
+            <input type="number" id="b-df" min="1" max="100" value="50">
         </div>
         <div class="field">
-            <label for="b-ca">捕球（1〜99）</label>
-            <input type="number" id="b-ca" min="1" max="99" value="50">
+            <label for="b-ca">捕球（1〜100）</label>
+            <input type="number" id="b-ca" min="1" max="100" value="50">
         </div>
     </div>
 
-    <h3>サブ能力</h3>
+    <h3>特殊能力上段</h3>
 
     <div class="field-grid pitch-only" id="p-sub-grid"></div>
     <div class="field-grid batter-only" id="b-sub-grid"></div>
@@ -231,7 +231,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
         </label>
     </div>
 
-    <div class="batter-only">
+    <div class="pitch-only">
         <h3>サブポジション適性（二刀流）</h3>
         <p class="note" style="margin-top:0">
         投手として登板するときに、野手としても守れる適性です。投手を兼ねない場合は「無」のままで構いません。
@@ -293,10 +293,10 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <ol>
 <li>「投手」「野手」を切り替えます</li>
 <li>能力値を入力します</li>
-<li>サブ能力（対左投手・ノビ など）のランクを選びます。投手は先発・中継ぎ・抑えの適性も選びます</li>
+<li>特殊能力上段（対左投手・ノビ など）のランクを選びます。投手は先発・中継ぎ・抑えの適性も選びます</li>
 <li>投手は変化球の方向ごとの変化量も入力します</li>
 <li>下の一覧から、所持している金特・青特・赤特・緑特にチェックを入れます</li>
-<li>投手と野手を両方兼ねる場合は、野手タブの「サブポジション適性」を選ぶと、二刀流としての合計☆も表示されます</li>
+<li>投手と野手を両方兼ねる場合は、投手タブの「サブポジション適性」を選ぶと、二刀流としての合計☆も表示されます</li>
 </ol>
 
 <p>
@@ -318,7 +318,7 @@ A. 使えます。☆の計算式はモードを問わず共通です。マイ�
 <a href="/mylife-start/">アピールポイントのすゝめ</a>で計算できます。</p>
 
 <p><strong>Q. 二刀流の合計☆はどう計算されますか？</strong><br>
-A. 野手タブの「サブポジション適性」を無以外にすると、投手☆×0.95＋野手☆×適性の倍率
+A. 投手タブの「サブポジション適性」を無以外にすると、投手☆×0.95＋野手☆×適性の倍率
 （小0.3・中以上0.4・2以上0.7）で計算した合計☆が表示されます。投手側の☆は、
 二刀流にすると少し目減りする点に注意してください。</p>
 
@@ -355,7 +355,7 @@ A. 保存されません。ページを閉じると入力内容は消えます�
       "name": "二刀流の合計☆はどう計算されますか？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "野手タブの「サブポジション適性」を無以外にすると、投手☆×0.95＋野手☆×適性の倍率（小0.3・中以上0.4・2以上0.7）で計算した合計☆が表示されます。投手側の☆は、二刀流にすると少し目減りする点に注意してください。"
+        "text": "投手タブの「サブポジション適性」を無以外にすると、投手☆×0.95＋野手☆×適性の倍率（小0.3・中以上0.4・2以上0.7）で計算した合計☆が表示されます。投手側の☆は、二刀流にすると少し目減りする点に注意してください。"
       }
     },
     {
@@ -411,7 +411,7 @@ var SCALES = { main8: DATA.gradeMain8, alt8: DATA.gradeAlt8, main9: DATA.gradeMa
 
 /* ---- 能力値カーブの補間（Data!E2:P2 と同じ） ---- */
 function statStar(v, weight) {
-    v = Math.max(0, Math.min(99, Math.floor(v) || 0));
+    v = Math.max(0, Math.min(100, Math.floor(v) || 0));
     var bucket = Math.floor(v / 10);
     var rem = v % 10;
     var c = DATA.statCurve;
@@ -626,7 +626,7 @@ function computeBatter() {
 }
 
 function renderBreakdown(elId, r, kind) {
-    var rows = [["基本能力", r.base], ["サブ能力", r.sub]];
+    var rows = [["基本能力", r.base], ["特殊能力上段", r.sub]];
     if (kind === "pitcher") rows.push(["適性・変化球", r.extra]);
     rows.push(["特殊能力", r.ability]);
     document.getElementById(elId).innerHTML = rows.map(function (row) {
