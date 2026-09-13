@@ -353,6 +353,12 @@ A. 保存されません。ページを閉じると入力内容は消えます�
    データ（査定☆計算機のものと同じ特殊能力名を使う。
    ここでは☆の点数は使わない。見た目だけの生成ツールなので）
    ========================================================== */
+/* 丸ゴシック（Hiragino Maru Gothic ProN）が使える環境ではそちらを優先する。
+   Webフォントを読み込む方式だと、画像として書き出すときにフォントが
+   反映されない（別ドキュメントとして描画されるため）ので、
+   端末に入っている書体だけで組んでいる */
+var FONT_STACK = "'Hiragino Maru Gothic ProN','Hiragino Kaku Gothic ProN','Hiragino Sans','BIZ UDPGothic','Yu Gothic Medium','Yu Gothic',Meiryo,sans-serif";
+
 var AB_NAMES = {"batterKintoku":["威圧感","安打製造機","アーチスト","芸術的流し打ち","一球入魂","切り込み隊長","恐怖の満塁男","伝説のサヨナラ男","代打の神様","気迫ヘッド","高速レーザー","魔術師","鉄の壁","重戦車","ささやき戦術","火事場の馬鹿力","大番狂わせ","広角砲","バズーカ送球","メッタ打ち","ロケットスタート","高球必打","低球必打","内角必打","外角必打","精神的支柱","エースキラー","引っ張り屋","トリックスター","ストレートキラー","渾身の決勝打","おかわり","逆襲"],"batterAoto":["アベレージヒッター","パワーヒッター","広角打法","プルヒッター","流し打ち","固め打ち","粘り打ち","バント職人","バント〇","内野安打〇","初球〇","チャンスメーカー","満塁男(安打)","満塁男(本塁打)","満塁男(両方)","サヨナラ男(安打)","サヨナラ男(本塁打)","サヨナラ男(両方)","逆境〇","代打〇","ハイボールヒッター","ローボールヒッター","ヘッドスライディング","いぶし銀","レーザービーム","守備職人","高速チャージ","ホーム死守","ムード〇","意外性","対エース〇","ホーム突入","プレッシャーラン","〇〇キラー","春男","夏男","秋男","お祭り男","かく乱","インコースヒッター","アウトコースヒッター","対変化球〇","ダメ押し","国際大会〇","ラインドライブ","カット打ち","対ストレート〇","決勝打","マルチ弾","リベンジ","窮地○","存在感","帳尻合わせ","ささやき破り","ブロッキング","フレーミング〇","フレーミング◎"],"batterAka":["悪球打ち","死球集中","三振","ムード✕","エラー","併殺","扇風機","国際大会✕"],"batterMidori":["人気者","強振多用","ミート多用","積極打法","慎重打法","積極盗塁","慎重盗塁","積極走塁","積極守備","チームプレイ〇","チームプレイ✕","選球眼","調子安定","調子極端","フル出場"],"pitcherKintoku":["威圧感","驚異の切れ味","鉄腕","怪物球威","本塁打厳禁","ドクターＫ","精密機械","変幻自在","ハイスピンジャイロ","勝利の星","ド根性","終盤力","内角無双","主砲キラー","ギアチェンジ","闘魂","ディレイドアーム","クロスキャノン","暴れ球","超投打躍動","トップギア","完全燃焼"],"pitcherAoto":["キレ〇","ジャイロボール","重い球","逃げ球","尻上がり","奪三振","牽制〇","リリース〇","打球反応〇","勝ち運","闘志","根性〇","クロスファイヤー","球持ち〇","低め〇","緩急〇","対強打者〇","〇〇キラー","緊急登板〇","球速安定","内角攻め","回またぎ〇","国際大会〇","対ランナー〇","真っスラ","ナチュラルシュート","投打躍動","立ち上がり〇","要所〇","存在感","安全圏〇","火消し","ストライク先行"],"pitcherAka":["ポーカーフェイス","力配分","フライボールピッチャー","ゴロピッチャー","荒れ球","全開","軽い球","一発","寸前","四球","スロースターター","負け運","短気","抜け球","乱調","国際大会✕"],"pitcherMidori":["人気者","速球中心","変化球中心","テンポ〇","投手位置左","投手位置右","調子安定","調子極端"]};
 
 var AB_CATS = [
@@ -587,7 +593,7 @@ function text(x, y, str, opts) {
     var weight = opts.weight || "400";
     var anchor = opts.anchor || "start";
     return '<text x="' + x + '" y="' + y + '" font-size="' + size + '" font-weight="' + weight +
-           '" fill="' + color + '" text-anchor="' + anchor + '" font-family="Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif">' +
+           '" fill="' + color + '" text-anchor="' + anchor + '" font-family="' + FONT_STACK + '">' +
            esc(str) + '</text>';
 }
 
@@ -625,7 +631,9 @@ var GRADE_COLORS = {
 function gradeBadge(cx, cy, letter, r) {
     r = r || 15;
     var fill = GRADE_COLORS[letter] || "#0f172a";
-    return rect(cx - r, cy - r, r * 2, r * 2, 6, fill) +
+    return rect(cx - r, cy - r, r * 2, r * 2, r * 0.6, fill) +
+           '<rect x="' + (cx - r) + '" y="' + (cy - r) + '" width="' + (r * 2) + '" height="' + (r * 2) +
+           '" rx="' + (r * 0.6) + '" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/>' +
            text(cx, cy + 5, letter, { size: 15, color: "#fff", weight: "800", anchor: "middle" });
 }
 
@@ -712,8 +720,12 @@ function buildCard() {
 
     /* ── ヘッダー ── */
     var headerH = 150;
-    svg += rect(0, 0, W, headerH, 18, teamColor);
-    svg += rect(0, 0, W, headerH, 18, "url(#headerFade)");
+    svg += '<clipPath id="headerClip"><rect x="0" y="0" width="' + W + '" height="' + headerH + '" rx="18"/></clipPath>';
+    svg += '<g clip-path="url(#headerClip)">';
+    svg += rect(0, 0, W, headerH, 0, teamColor);
+    svg += rect(0, 0, W, headerH, 0, "url(#headerFade)");
+    svg += rect(0, 0, W, headerH, 0, "url(#headerDiamonds)");
+    svg += '</g>';
 
     var avatarR = 46, avatarCx = 80, avatarCy = headerH / 2;
     svg += '<circle cx="' + avatarCx + '" cy="' + avatarCy + '" r="' + (avatarR + 4) + '" fill="#fff"/>';
@@ -843,9 +855,17 @@ function buildCard() {
     y += 14;
 
     var H = y + 10;
-    var defs = '<defs><linearGradient id="headerFade" x1="0" y1="0" x2="1" y2="1">' +
-               '<stop offset="0" stop-color="#ffffff" stop-opacity="0.08"/>' +
-               '<stop offset="1" stop-color="#000000" stop-opacity="0.12"/></linearGradient></defs>';
+    var defs = '<defs>' +
+               '<linearGradient id="headerFade" x1="0" y1="0" x2="1" y2="1">' +
+               '<stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>' +
+               '<stop offset="1" stop-color="#000000" stop-opacity="0.14"/></linearGradient>' +
+               /* ヘッダーに敷く、斜めのダイヤ柄。実機の背景を写すのではなく、
+                  同じ雰囲気を出すためのオリジナルの模様 */
+               '<pattern id="headerDiamonds" width="46" height="46" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">' +
+               '<rect width="46" height="46" fill="none"/>' +
+               '<rect x="4" y="4" width="30" height="30" fill="#ffffff" opacity="0.07"/>' +
+               '</pattern>' +
+               '</defs>';
 
     return { svg: defs + svg, width: W, height: H };
 }
