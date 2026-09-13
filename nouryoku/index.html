@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>パワプロ2026-2027 能力画像ジェネレーター</title>
+<meta name="description" content="選手名・成績・能力値・特殊能力を入力するだけで、パワプロ風の能力画像を作れる無料ツールです。投手能力・野手能力どちらにも対応し、球種ダイアグラムも自由に編集できます。実在のロゴやフォントは使わず、オリジナルデザインで作成します。">
+<link rel="canonical" href="https://tooldock.github.io/nouryoku/">
+
+<script> const CURRENT_TOOL = "nouryoku"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="パワプロ,能力画像,ジェネレーター,査定カード,金特,青特,赤特,緑特,球種,能力値">
+
+<style>
+*{ box-sizing:border-box; }
+
+:root{
+    --ink:#222; --ink-strong:#111; --ink-deep:#0f172a; --ink-sub:#4a5568; --ink-mute:#5c6673;
+    --line:#c2cad6; --line-soft:#ccd3dd; --head-bg:#e6ebf1; --tint:#f2f6fb;
+    --dash:#9aa6b8; --accent:#2563eb;
+}
+
+body{
+    margin:0; padding:0 0 48px;
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
+    color:var(--ink); line-height:1.75; background:#f5f5f5;
+}
+
+.page-wrapper{ max-width:1100px; margin:0 auto; padding:0 16px; }
+
+header{ background:var(--ink); color:#fff; padding:20px 16px; margin-bottom:22px; }
+header .page-wrapper{ padding:0; }
+h1{ margin:0; font-size:1.35rem; line-height:1.5; }
+header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
+
+h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
+    border-bottom:2px solid var(--line); }
+h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
+    border-left:4px solid var(--accent); }
+p{ margin:0 0 12px; }
+
+/* 本文の実際の幅は style.css の body{max-width:900px} と、
+   1300px以上でのみ現れる右レール（300px）で決まる。
+   最も狭いときは600px弱まで縮むため、2段組みにはせず縦に積む */
+.layout{ display:flex; flex-direction:column; gap:20px; }
+
+/* ── 入力フォーム ───────────────────────── */
+.form{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
+
+.seg{ display:flex; gap:6px; margin-bottom:14px; }
+.seg button{ flex:1; font:inherit; font-size:0.92rem; font-weight:700; padding:9px 6px;
+             border:1px solid var(--line); border-radius:8px; background:#fff;
+             color:var(--ink-sub); cursor:pointer; }
+.seg button[aria-pressed="true"]{ background:var(--ink); border-color:var(--ink); color:#fff; }
+
+.field-grid{ display:grid; gap:10px 12px; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); margin-bottom:10px; }
+.field{ display:flex; flex-direction:column; gap:4px; }
+.field.wide{ grid-column:1 / -1; }
+.field label{ font-size:0.82rem; font-weight:600; color:var(--ink-sub); }
+.field input[type="text"], .field input[type="number"], .field select{
+    font:inherit; font-size:0.92rem; padding:7px 8px; border:1px solid var(--line);
+    border-radius:8px; background:#fff; color:var(--ink); width:100%;
+}
+.field input[type="color"]{ width:100%; height:34px; padding:2px; border:1px solid var(--line); border-radius:8px; }
+
+.pitch-only, .batter-only{ display:none; }
+[data-kind="pitcher"] .pitch-only{ display:block; }
+[data-kind="batter"] .batter-only{ display:block; }
+[data-kind="pitcher"] .pitch-field-row{ display:grid; }
+[data-kind="batter"] .pitch-field-row{ display:none; }
+
+.pos-check{ display:flex; flex-wrap:wrap; gap:8px 14px; margin-bottom:10px; }
+.pos-check label{ font-size:0.85rem; color:var(--ink-sub); display:flex; align-items:center; gap:4px; }
+
+.pitch-row{ display:grid; grid-template-columns:1fr 1.4fr 70px; gap:6px; align-items:center; margin-bottom:6px; }
+.pitch-row span{ font-size:0.82rem; color:var(--ink-sub); }
+.pitch-row input[type="text"]{ font:inherit; font-size:0.86rem; padding:6px 8px; border:1px solid var(--line); border-radius:6px; }
+.pitch-row input[type="range"]{ width:100%; }
+
+.avatar-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.avatar-row input[type="file"]{ font-size:0.82rem; }
+.avatar-row button{ font:inherit; font-size:0.78rem; padding:5px 10px; border:1px solid var(--line);
+                     border-radius:14px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+
+/* ── 能力値行 ───────────────────────────── */
+.stat-row{ display:grid; grid-template-columns:70px 60px 70px 60px; gap:6px; align-items:center; margin-bottom:6px; }
+.stat-row span{ font-size:0.85rem; color:var(--ink-sub); }
+.stat-row select, .stat-row input{ font:inherit; font-size:0.85rem; padding:5px 6px; border:1px solid var(--line); border-radius:6px; }
+
+/* ── 特殊能力チェックリスト（satei/ と同じ考え方） ───── */
+.ab-search{ width:100%; font:inherit; font-size:0.92rem; padding:8px 10px; border:1px solid var(--line);
+            border-radius:8px; margin-bottom:8px; }
+.ab-toolbar{ display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; margin-bottom:10px; }
+.ab-toolbar__check{ font-size:0.82rem; color:var(--ink-sub); display:flex; align-items:center; gap:5px; cursor:pointer; }
+.ab-toolbar button{ font:inherit; font-size:0.76rem; padding:4px 10px; border:1px solid var(--line);
+                     border-radius:20px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+.ab-count{ font-size:0.76rem; color:var(--ink-mute); }
+
+.ab-cat{ margin-bottom:6px; border:1px solid var(--line-soft); border-radius:8px; padding:0 10px; background:#fff; }
+.ab-cat[open]{ padding-bottom:8px; }
+.ab-cat.hidden{ display:none; }
+.ab-cat__title{ font-size:0.86rem; font-weight:700; color:var(--ink-deep); padding:8px 0;
+                 display:flex; align-items:center; gap:6px; cursor:pointer; list-style:none; }
+.ab-cat__title::-webkit-details-marker{ display:none; }
+.ab-cat__title .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+.ab-cat__title .checked-count{ margin-left:auto; font-size:0.74rem; font-weight:600; color:var(--accent); }
+.dot--kintoku{ background:#d4a017; }
+.dot--aoto{ background:#2563eb; }
+.dot--aka{ background:#dc2626; }
+.dot--midori{ background:#16a34a; }
+
+.ab-grid{ display:flex; flex-wrap:wrap; gap:4px; }
+.ab-item{ display:flex; align-items:center; gap:4px; font-size:0.8rem; padding:3px 6px; border-radius:6px; cursor:pointer; }
+.ab-item:hover{ background:var(--tint); }
+.ab-item.hidden{ display:none; }
+
+/* ── プレビュー ─────────────────────────── */
+.preview{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
+.preview__toolbar{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:12px; }
+.preview__toolbar button{ font:inherit; font-size:0.92rem; font-weight:700; padding:9px 16px;
+                           border:none; border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
+.preview__toolbar button:hover{ filter:brightness(1.08); }
+.preview__scroll{ overflow-x:auto; background:#e9edf3; border-radius:10px; padding:12px; }
+#cardSvg{ display:block; margin:0 auto; max-width:100%; height:auto; }
+
+.note{ margin-top:10px; font-size:0.84rem; color:var(--ink-mute); }
+.tool-article{ margin-top:34px; }
+
+footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); border-top:1px solid var(--line-soft); padding-top:14px; }
+</style>
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>パワプロ2026-2027 能力画像ジェネレーター</h1>
+    <p>選手名・成績・能力値・特殊能力を入力すると、パワプロ風の能力画像を作れます</p>
+</header>
+
+<div class="container">
+
+<div class="layout">
+
+<div class="form" id="form" data-kind="pitcher">
+
+    <div class="seg" role="group" aria-label="投手・野手の切り替え">
+        <button type="button" data-kind="pitcher" aria-pressed="true">投手能力</button>
+        <button type="button" data-kind="batter" aria-pressed="false">野手能力</button>
+    </div>
+
+    <h3>基本情報</h3>
+
+    <div class="avatar-row">
+        <input type="file" id="avatarFile" accept="image/*">
+        <button type="button" id="avatarClear">画像を外す</button>
+    </div>
+
+    <div class="field-grid">
+        <div class="field wide">
+            <label for="playerName">選手名</label>
+            <input type="text" id="playerName" maxlength="12" value="美上セリ">
+        </div>
+        <div class="field">
+            <label for="uniformNo">背番号</label>
+            <input type="text" id="uniformNo" maxlength="3" value="19">
+        </div>
+        <div class="field">
+            <label for="teamName">チーム表記</label>
+            <input type="text" id="teamName" maxlength="6" value="K">
+        </div>
+        <div class="field">
+            <label for="teamColor">チームカラー</label>
+            <input type="color" id="teamColor" value="#e0245e">
+        </div>
+        <div class="field">
+            <label for="throwBat">投打</label>
+            <select id="throwBat">
+                <option>右投右打</option>
+                <option>右投左打</option>
+                <option>右投両打</option>
+                <option>左投左打</option>
+                <option>左投右打</option>
+                <option>左投両打</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="formName">フォーム</label>
+            <input type="text" id="formName" maxlength="16" value="オーバースロー52">
+        </div>
+        <div class="field wide pitch-only">
+            <label for="pStats">成績（投手）</label>
+            <input type="text" id="pStats" maxlength="24" value="防0.46 28勝0敗0HP0S">
+        </div>
+        <div class="field wide batter-only">
+            <label for="bStats">成績（野手）</label>
+            <input type="text" id="bStats" maxlength="24" value="率.349 8本 32点 4盗">
+        </div>
+    </div>
+
+    <div class="pitch-only">
+        <label style="font-size:0.82rem;font-weight:600;color:var(--ink-sub);">適性</label>
+        <div class="pos-check" id="pAptitude"></div>
+    </div>
+    <div class="batter-only">
+        <label style="font-size:0.82rem;font-weight:600;color:var(--ink-sub);">守備位置</label>
+        <div class="pos-check" id="bPosition"></div>
+    </div>
+
+    <h3 class="pitch-only">能力値</h3>
+    <div class="pitch-only" id="pStatRows"></div>
+
+    <h3 class="batter-only">能力値</h3>
+    <div class="batter-only" id="bStatRows"></div>
+
+    <h3>サブ能力</h3>
+    <div class="pitch-only" id="pSubRows"></div>
+    <div class="batter-only" id="bSubRows"></div>
+
+    <div class="pitch-only">
+        <h3>球種ダイアグラム</h3>
+        <p class="note" style="margin-top:0">名前を入れた球種だけ図に表示されます。変化量（0〜7）はバーの長さです。</p>
+        <div id="pitchRows"></div>
+    </div>
+
+    <h3>特殊能力</h3>
+    <input type="text" class="ab-search" id="abSearch" placeholder="特殊能力名で検索">
+    <div class="ab-toolbar">
+        <label class="ab-toolbar__check"><input type="checkbox" id="abOnlyChecked"> 選択中のみ表示</label>
+        <button type="button" id="abClearAll">すべて解除</button>
+        <span class="ab-count" id="abCount"></span>
+    </div>
+    <div id="abilityArea"></div>
+
+</div>
+
+<div class="preview">
+    <div class="preview__toolbar">
+        <button type="button" id="downloadBtn">画像として保存（PNG）</button>
+        <span class="note" style="margin:0">入力するたびに、下の画像がその場で更新されます</span>
+    </div>
+    <div class="preview__scroll">
+        <svg id="cardSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+</div>
+
+</div>
+
+<article class="tool-article">
+
+<h2>このツールについて</h2>
+
+<p class="note" style="margin-top:0">
+このページは<strong>据え置き機の実況パワフルプロ野球2026-2027</strong>（Nintendo Switch など）を対象としています。
+</p>
+
+<p>
+選手名・成績・能力値・特殊能力を入力すると、査定画面の形式に似せた<strong>能力画像</strong>を作れるツールです。
+実在のチームロゴやゲーム内のフォント・背景素材は使わず、<strong>オリジナルのデザインで生成</strong>しています。
+作成した選手が実在の選手・実際のプレイ結果であるかのように誤解を招く使い方はお控えください。
+</p>
+
+<h2>使い方</h2>
+
+<ol>
+<li>「投手能力」「野手能力」を切り替えます</li>
+<li>選手名・背番号・チーム表記・成績などの基本情報を入力します</li>
+<li>能力値とサブ能力のランクを選びます</li>
+<li>投手は、球種ごとに名前と変化量を入力すると球種ダイアグラムに反映されます</li>
+<li>下の一覧から、表示したい特殊能力にチェックを入れます</li>
+<li>「画像として保存」でPNG画像をダウンロードできます</li>
+</ol>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 投手能力と野手能力、両方を1枚の画像にできますか？</strong><br>
+A. できません。切り替えたときの面がそのまま画像になります。両方欲しい場合は、
+それぞれ切り替えて2枚保存してください。</p>
+
+<p><strong>Q. アップロードした画像はサーバーに送信されますか？</strong><br>
+A. されません。すべてブラウザの中だけで処理され、画像として保存するときも
+お使いの端末の中で完結します。</p>
+
+<p><strong>Q. 特殊能力の数に上限はありますか？</strong><br>
+A. ありません。選んだ数だけ画像に並びます。ただし選びすぎると画像が縦に長くなります。</p>
+
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. 保存されません。ページを閉じると入力内容は消えます。</p>
+
+</article>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "投手能力と野手能力、両方を1枚の画像にできますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "できません。切り替えたときの面がそのまま画像になります。両方欲しい場合は、それぞれ切り替えて2枚保存してください。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "アップロードした画像はサーバーに送信されますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "されません。すべてブラウザの中だけで処理され、画像として保存するときもお使いの端末の中で完結します。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "特殊能力の数に上限はありますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "ありません。選んだ数だけ画像に並びます。ただし選びすぎると画像が縦に長くなります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "入力した内容は保存されますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "保存されません。ページを閉じると入力内容は消えます。"
+      }
+    }
+  ]
+}
+</script>
+
+<footer class="disclaimer">
+このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+</footer>
+
+</div>
+
+</div>
+
+<script>
+"use strict";
+
+/* ==========================================================
+   データ（査定☆計算機のものと同じ特殊能力名を使う。
+   ここでは☆の点数は使わない。見た目だけの生成ツールなので）
+   ========================================================== */
+var AB_NAMES = {"batterKintoku":["威圧感","安打製造機","アーチスト","芸術的流し打ち","一球入魂","切り込み隊長","恐怖の満塁男","伝説のサヨナラ男","代打の神様","気迫ヘッド","高速レーザー","魔術師","鉄の壁","重戦車","ささやき戦術","火事場の馬鹿力","大番狂わせ","広角砲","バズーカ送球","メッタ打ち","ロケットスタート","高球必打","低球必打","内角必打","外角必打","精神的支柱","エースキラー","引っ張り屋","トリックスター","ストレートキラー","渾身の決勝打","おかわり","逆襲"],"batterAoto":["アベレージヒッター","パワーヒッター","広角打法","プルヒッター","流し打ち","固め打ち","粘り打ち","バント職人","バント〇","内野安打〇","初球〇","チャンスメーカー","満塁男(安打)","満塁男(本塁打)","満塁男(両方)","サヨナラ男(安打)","サヨナラ男(本塁打)","サヨナラ男(両方)","逆境〇","代打〇","ハイボールヒッター","ローボールヒッター","ヘッドスライディング","いぶし銀","レーザービーム","守備職人","高速チャージ","ホーム死守","ムード〇","意外性","対エース〇","ホーム突入","プレッシャーラン","〇〇キラー","春男","夏男","秋男","お祭り男","かく乱","インコースヒッター","アウトコースヒッター","対変化球〇","ダメ押し","国際大会〇","ラインドライブ","カット打ち","対ストレート〇","決勝打","マルチ弾","リベンジ","窮地○","存在感","帳尻合わせ","ささやき破り","ブロッキング","フレーミング〇","フレーミング◎"],"batterAka":["悪球打ち","死球集中","三振","ムード✕","エラー","併殺","扇風機","国際大会✕"],"batterMidori":["人気者","強振多用","ミート多用","積極打法","慎重打法","積極盗塁","慎重盗塁","積極走塁","積極守備","チームプレイ〇","チームプレイ✕","選球眼","調子安定","調子極端","フル出場"],"pitcherKintoku":["威圧感","驚異の切れ味","鉄腕","怪物球威","本塁打厳禁","ドクターＫ","精密機械","変幻自在","ハイスピンジャイロ","勝利の星","ド根性","終盤力","内角無双","主砲キラー","ギアチェンジ","闘魂","ディレイドアーム","クロスキャノン","暴れ球","超投打躍動","トップギア","完全燃焼"],"pitcherAoto":["キレ〇","ジャイロボール","重い球","逃げ球","尻上がり","奪三振","牽制〇","リリース〇","打球反応〇","勝ち運","闘志","根性〇","クロスファイヤー","球持ち〇","低め〇","緩急〇","対強打者〇","〇〇キラー","緊急登板〇","球速安定","内角攻め","回またぎ〇","国際大会〇","対ランナー〇","真っスラ","ナチュラルシュート","投打躍動","立ち上がり〇","要所〇","存在感","安全圏〇","火消し","ストライク先行"],"pitcherAka":["ポーカーフェイス","力配分","フライボールピッチャー","ゴロピッチャー","荒れ球","全開","軽い球","一発","寸前","四球","スロースターター","負け運","短気","抜け球","乱調","国際大会✕"],"pitcherMidori":["人気者","速球中心","変化球中心","テンポ〇","投手位置左","投手位置右","調子安定","調子極端"]};
+
+var AB_CATS = [
+    { key: "kintoku", label: "金特", dot: "dot--kintoku", fill: "#f6c453", text: "#7a5200", pitcher: "pitcherKintoku", batter: "batterKintoku" },
+    { key: "aoto", label: "青特", dot: "dot--aoto", fill: "#bcd6fb", text: "#1e3a8a", pitcher: "pitcherAoto", batter: "batterAoto" },
+    { key: "aka", label: "赤特", dot: "dot--aka", fill: "#f7b9b9", text: "#7f1d1d", pitcher: "pitcherAka", batter: "batterAka" },
+    { key: "midori", label: "緑特", dot: "dot--midori", fill: "#bfe6c8", text: "#14532d", pitcher: "pitcherMidori", batter: "batterMidori" }
+];
+
+/* サブ能力。hasH が真の項目だけ H ランクまで選べる（対ピンチ・打たれ強さ） */
+var SUB_ABILITIES = {
+    pitcher: [
+        { id: "p-pinch", label: "対ピンチ", note: "S:強心臓 / H:ノミの心臓", hasH: true },
+        { id: "p-vsleft", label: "対左打者", note: "S:左キラー", hasH: false },
+        { id: "p-tough", label: "打たれ強さ", note: "S:不屈の魂 / H:ガラスのハート", hasH: true },
+        { id: "p-nobi", label: "ノビ", note: "S:怪童", hasH: false },
+        { id: "p-quick", label: "クイック", note: "S:走者釘付", hasH: false },
+        { id: "p-recover", label: "回復", note: "S:ガソリンタンク", hasH: false },
+        { id: "p-injury", label: "ケガしにくさ", note: "S:鉄人", hasH: false }
+    ],
+    batter: [
+        { id: "b-chance", label: "チャンス", note: "S:勝負師", hasH: false },
+        { id: "b-vsleft", label: "対左投手", note: "S:左腕キラー", hasH: false },
+        { id: "b-catcher", label: "キャッチャー", note: "S:球界の頭脳", hasH: false },
+        { id: "b-steal", label: "盗塁", note: "S:電光石火", hasH: false },
+        { id: "b-run", label: "走塁", note: "S:高速ベースラン", hasH: false },
+        { id: "b-throw", label: "送球", note: "S:ストライク送球", hasH: false },
+        { id: "b-injury", label: "ケガしにくさ", note: "S:鉄人", hasH: false }
+    ]
+};
+
+var PITCHER_APTITUDE = ["先発", "中継ぎ", "抑え"];
+var BATTER_POSITION = ["投", "捕", "一", "二", "三", "遊", "外"];
+
+/* 球種ダイアグラムの8方向。角度は12時方向を0度として時計回り */
+var PITCH_SLOTS = [
+    { id: "straight", label: "ストレート", angle: 0 },
+    { id: "second-straight", label: "第二ストレート", angle: 45 },
+    { id: "right", label: "→", angle: 90 },
+    { id: "down-right", label: "↘", angle: 135 },
+    { id: "down", label: "↓", angle: 180 },
+    { id: "down-left", label: "↙", angle: 225 },
+    { id: "left", label: "←", angle: 270 },
+    { id: "second-type", label: "第二球種", angle: 315 }
+];
+var PITCH_COLORS = ["#e0245e", "#2563eb", "#16a34a", "#d97706", "#7c3aed", "#0891b2", "#db2777", "#65a30d"];
+
+var GRADES_8 = ["S", "A", "B", "C", "D", "E", "F", "G"];
+var GRADES_9 = ["S", "A", "B", "C", "D", "E", "F", "G", "H"];
+
+/* ==========================================================
+   状態
+   ========================================================== */
+var avatarDataUrl = null;
+
+/* ==========================================================
+   フォームの組み立て
+   ========================================================== */
+function buildGradeSelect(id, hasH, defaultVal) {
+    var letters = hasH ? GRADES_9 : GRADES_8;
+    var opts = letters.map(function (g) {
+        var sel = g === defaultVal ? " selected" : "";
+        return '<option value="' + g + '"' + sel + '>' + g + '</option>';
+    }).join("");
+    return '<select id="' + id + '">' + opts + '</select>';
+}
+
+function renderPosChecks(containerId, list, checkedDefaults) {
+    var el = document.getElementById(containerId);
+    el.innerHTML = list.map(function (label, i) {
+        var id = containerId + "-" + i;
+        var checked = checkedDefaults.indexOf(label) !== -1 ? " checked" : "";
+        return '<label><input type="checkbox" id="' + id + '" value="' + label + '"' + checked + '>' + label + '</label>';
+    }).join("");
+}
+renderPosChecks("pAptitude", PITCHER_APTITUDE, ["先発"]);
+renderPosChecks("bPosition", BATTER_POSITION, ["外"]);
+
+function renderSubRows(containerId, list) {
+    var el = document.getElementById(containerId);
+    el.innerHTML = list.map(function (a) {
+        return '<div class="stat-row"><span>' + a.label + '</span>' +
+               buildGradeSelect(a.id, a.hasH, "D") +
+               '<span class="note" style="margin:0;font-size:0.72rem;grid-column:3 / span 2;">' + a.note + '</span></div>';
+    }).join("");
+}
+renderSubRows("pSubRows", SUB_ABILITIES.pitcher);
+renderSubRows("bSubRows", SUB_ABILITIES.batter);
+
+function statRow(label, id, opts) {
+    opts = opts || {};
+    var gradeHtml = opts.noGrade
+        ? '<span></span>'
+        : buildGradeSelect(id + "-grade", false, "B");
+    var numHtml = '<input type="number" id="' + id + '-num" min="' + (opts.min || 1) + '" max="' + (opts.max || 100) + '" value="' + (opts.def || 50) + '">';
+    var trendHtml = opts.noTrend
+        ? '<span></span>'
+        : ('<select id="' + id + '-trend"><option value="">―</option><option value="up">▲上昇</option><option value="down">▼下降</option></select>');
+    return '<div class="stat-row"><span>' + label + '</span>' + gradeHtml + numHtml + trendHtml + '</div>';
+}
+
+document.getElementById("pStatRows").innerHTML =
+    statRow("球速(km/h)", "p-velocity", { noGrade: true, noTrend: true, min: 120, max: 175, def: 150 }) +
+    statRow("コントロール", "p-control", { min: 1, max: 100, def: 60 }) +
+    statRow("スタミナ", "p-stamina", { min: 1, max: 100, def: 60 });
+
+var BATTER_STATS = [["弾道", "b-traj"], ["ミート", "b-mi"], ["パワー", "b-pw"], ["走力", "b-sp"], ["肩力", "b-sh"], ["守備力", "b-df"], ["捕球", "b-ca"]];
+document.getElementById("bStatRows").innerHTML = BATTER_STATS.map(function (s) {
+    var opts = s[1] === "b-traj" ? { min: 1, max: 4, def: 2 } : { min: 1, max: 100, def: 50 };
+    return statRow(s[0], s[1], opts);
+}).join("");
+
+document.getElementById("pitchRows").innerHTML = PITCH_SLOTS.map(function (s) {
+    return '<div class="pitch-row"><span>' + s.label + '</span>' +
+           '<input type="text" id="pitch-' + s.id + '-name" maxlength="14" placeholder="球種名（空欄なら図に出ません）"' +
+           (s.id === "straight" ? ' value="ストレート"' : '') + '>' +
+           '<input type="range" id="pitch-' + s.id + '-mag" min="0" max="7" value="' + (s.id === "straight" ? 6 : 0) + '"></div>';
+}).join("");
+
+/* ---- 特殊能力チェックリスト（satei/ の作りを流用） ---- */
+function renderAbilityArea() {
+    var area = document.getElementById("abilityArea");
+    var kinds = ["pitcher", "batter"];
+    var html = "";
+    kinds.forEach(function (kind) {
+        html += '<div class="' + (kind === "pitcher" ? "pitch-only" : "batter-only") + '">';
+        AB_CATS.forEach(function (cat) {
+            var items = AB_NAMES[cat[kind]];
+            html += '<details class="ab-cat" data-cat="' + cat.key + '">' +
+                    '<summary class="ab-cat__title"><span class="dot ' + cat.dot + '"></span>' + cat.label +
+                    '（' + items.length + '）<span class="checked-count"></span></summary>' +
+                    '<div class="ab-grid">' +
+                    items.map(function (name) {
+                        var id = "ab-" + kind + "-" + cat.key + "-" + name;
+                        return '<label class="ab-item" data-name="' + name + '" style="background:' + cat.fill + '22">' +
+                               '<input type="checkbox" data-kind="' + kind + '" data-cat="' + cat.key + '" id="' + id + '">' +
+                               '<span>' + name + '</span></label>';
+                    }).join("") +
+                    '</div></details>';
+        });
+        html += '</div>';
+    });
+    area.innerHTML = html;
+}
+renderAbilityArea();
+
+function updateCheckedCounts() {
+    document.querySelectorAll('#abilityArea .ab-cat').forEach(function (cat) {
+        var n = cat.querySelectorAll('input[type="checkbox"]:checked').length;
+        var el = cat.querySelector('.checked-count');
+        el.textContent = n > 0 ? ("選択中 " + n) : "";
+    });
+}
+
+function filterAbilities() {
+    var kind = document.getElementById("form").dataset.kind;
+    var q = document.getElementById("abSearch").value.trim();
+    var onlyChecked = document.getElementById("abOnlyChecked").checked;
+    var scope = document.querySelector('#abilityArea > div.' + (kind === "pitcher" ? "pitch-only" : "batter-only"));
+    var shown = 0;
+
+    scope.querySelectorAll(".ab-cat").forEach(function (catEl) {
+        var visibleInCat = 0;
+        catEl.querySelectorAll(".ab-item").forEach(function (it) {
+            var match = !q || it.dataset.name.indexOf(q) !== -1;
+            var checkedOk = !onlyChecked || it.querySelector("input").checked;
+            var visible = match && checkedOk;
+            it.classList.toggle("hidden", !visible);
+            if (visible) { visibleInCat++; shown++; }
+        });
+        catEl.classList.toggle("hidden", visibleInCat === 0);
+        if ((q || onlyChecked) && visibleInCat > 0) catEl.open = true;
+    });
+
+    updateCheckedCounts();
+    if (q && onlyChecked) document.getElementById("abCount").textContent = "「" + q + "」に一致する選択中：" + shown + "件";
+    else if (q) document.getElementById("abCount").textContent = "「" + q + "」に一致：" + shown + "件";
+    else if (onlyChecked) document.getElementById("abCount").textContent = "選択中：" + shown + "件";
+    else document.getElementById("abCount").textContent = "";
+}
+document.getElementById("abSearch").addEventListener("input", filterAbilities);
+document.getElementById("abOnlyChecked").addEventListener("change", filterAbilities);
+document.getElementById("abClearAll").addEventListener("click", function () {
+    document.querySelectorAll('#abilityArea input[type="checkbox"]').forEach(function (b) { b.checked = false; });
+    filterAbilities();
+    render();
+});
+
+/* ---- アバター ---- */
+document.getElementById("avatarFile").addEventListener("change", function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () { avatarDataUrl = reader.result; render(); };
+    reader.readAsDataURL(file);
+});
+document.getElementById("avatarClear").addEventListener("click", function () {
+    avatarDataUrl = null;
+    document.getElementById("avatarFile").value = "";
+    render();
+});
+
+/* ==========================================================
+   SVG組み立て用の小道具
+   ========================================================== */
+function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/* ざっくりした文字幅の見積もり。CJKは全角、それ以外は半角相当として計算する */
+function textWidth(str, fontSize) {
+    var w = 0;
+    for (var i = 0; i < str.length; i++) {
+        var c = str.codePointAt(i);
+        w += (c > 0x2E80) ? 1.0 : 0.58;
+    }
+    return w * fontSize;
+}
+
+function rect(x, y, w, h, r, fill, extra) {
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + r + '" fill="' + fill + '" ' + (extra || "") + '/>';
+}
+function text(x, y, str, opts) {
+    opts = opts || {};
+    var size = opts.size || 14;
+    var color = opts.color || "#222";
+    var weight = opts.weight || "400";
+    var anchor = opts.anchor || "start";
+    return '<text x="' + x + '" y="' + y + '" font-size="' + size + '" font-weight="' + weight +
+           '" fill="' + color + '" text-anchor="' + anchor + '" font-family="Hiragino Kaku Gothic ProN, Hiragino Sans, Yu Gothic, Meiryo, sans-serif">' +
+           esc(str) + '</text>';
+}
+
+/* チップを左詰めで折り返しながら並べる。1行に入りきらなければ次の行へ */
+function packChips(items, x0, y0, maxWidth) {
+    var padX = 10, gap = 6, rowGap = 7, h = 26, fontSize = 13;
+    var rows = [], row = [], rowW = 0;
+    items.forEach(function (it) {
+        var w = textWidth(it.text, fontSize) + padX * 2;
+        if (row.length && rowW + gap + w > maxWidth) { rows.push(row); row = []; rowW = 0; }
+        row.push({ text: it.text, fill: it.fill, textColor: it.textColor, w: w });
+        rowW += (row.length > 1 ? gap : 0) + w;
+    });
+    if (row.length) rows.push(row);
+
+    var svg = "", y = y0;
+    rows.forEach(function (r) {
+        var x = x0;
+        r.forEach(function (it) {
+            svg += rect(x, y, it.w, h, h / 2, it.fill);
+            svg += text(x + it.w / 2, y + h / 2 + 4.5, it.text, { size: fontSize, color: it.textColor, weight: "700", anchor: "middle" });
+            x += it.w + gap;
+        });
+        y += h + rowGap;
+    });
+    return { svg: svg, height: rows.length ? (y - y0 - rowGap) : 0 };
+}
+
+function gradeBadge(cx, cy, letter, r) {
+    r = r || 15;
+    return rect(cx - r, cy - r, r * 2, r * 2, 6, "#0f172a") +
+           text(cx, cy + 5, letter, { size: 15, color: "#fff", weight: "800", anchor: "middle" });
+}
+
+function statBarRow(x, y, w, label, gradeLetter, num, max, trend, barColor) {
+    var svg = "";
+    svg += text(x, y + 15, label, { size: 14, color: "#334155", weight: "600" });
+    var labelW = 92;
+    if (gradeLetter) svg += gradeBadge(x + labelW + 14, y + 10, gradeLetter, 14);
+    var barX = x + labelW + 36, barW = w - labelW - 36 - 62;
+    svg += rect(barX, y + 2, barW, 16, 8, "#e2e8f0");
+    var pct = Math.max(0, Math.min(1, num / max));
+    svg += rect(barX, y + 2, Math.max(10, barW * pct), 16, 8, barColor || "#2563eb");
+    svg += text(barX + barW + 8, y + 15, String(num), { size: 14, color: "#0f172a", weight: "700" });
+    if (trend === "up") svg += text(x + w - 4, y + 15, "▲", { size: 13, color: "#dc2626", anchor: "end" });
+    if (trend === "down") svg += text(x + w - 4, y + 15, "▼", { size: 13, color: "#2563eb", anchor: "end" });
+    return svg;
+}
+
+function pitchDiagramSVG(cx, cy, radius) {
+    var svg = "";
+    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + radius + '" fill="none" stroke="#dbe3ee" stroke-width="1" stroke-dasharray="3 4"/>';
+    PITCH_SLOTS.forEach(function (s, i) {
+        var name = document.getElementById("pitch-" + s.id + "-name").value.trim();
+        var mag = parseInt(document.getElementById("pitch-" + s.id + "-mag").value, 10) || 0;
+        if (!name) return;
+        var rad = s.angle * Math.PI / 180;
+        var len = radius * (0.2 + 0.8 * (mag / 7));
+        var x2 = cx + len * Math.sin(rad), y2 = cy - len * Math.cos(rad);
+        var color = PITCH_COLORS[i % PITCH_COLORS.length];
+        svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="7" stroke-linecap="round"/>';
+        var lx = cx + (radius + 20) * Math.sin(rad), ly = cy - (radius + 20) * Math.cos(rad);
+        var anchor = Math.abs(Math.sin(rad)) < 0.3 ? "middle" : (Math.sin(rad) > 0 ? "start" : "end");
+        svg += text(lx, ly + 4, name, { size: 13, color: "#334155", weight: "700", anchor: anchor });
+    });
+    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="7" fill="#0f172a"/>';
+    return svg;
+}
+
+/* ==========================================================
+   カード全体の組み立て
+   ========================================================== */
+function checkedAbilities(kind) {
+    var out = {};
+    AB_CATS.forEach(function (cat) { out[cat.key] = []; });
+    document.querySelectorAll('#abilityArea input[type="checkbox"][data-kind="' + kind + '"]:checked').forEach(function (b) {
+        out[b.dataset.cat].push(b.closest(".ab-item").dataset.name);
+    });
+    return out;
+}
+
+function checkedPositions(containerId) {
+    return [].slice.call(document.querySelectorAll('#' + containerId + ' input:checked')).map(function (b) { return b.value; });
+}
+
+function buildCard() {
+    var kind = document.getElementById("form").dataset.kind;
+    var W = 900;
+    var teamColor = document.getElementById("teamColor").value;
+    var name = document.getElementById("playerName").value || "選手名";
+    var no = document.getElementById("uniformNo").value;
+    var team = document.getElementById("teamName").value;
+    var throwBat = document.getElementById("throwBat").value;
+    var formName = document.getElementById("formName").value;
+    var statsLine = kind === "pitcher" ? document.getElementById("pStats").value : document.getElementById("bStats").value;
+    var positions = kind === "pitcher" ? checkedPositions("pAptitude") : checkedPositions("bPosition");
+
+    var svg = "";
+    var y = 0;
+
+    /* ── ヘッダー ── */
+    var headerH = 150;
+    svg += rect(0, 0, W, headerH, 18, teamColor);
+    svg += rect(0, 0, W, headerH, 18, "url(#headerFade)");
+
+    var avatarR = 46, avatarCx = 80, avatarCy = headerH / 2;
+    svg += '<circle cx="' + avatarCx + '" cy="' + avatarCy + '" r="' + (avatarR + 4) + '" fill="#fff"/>';
+    if (avatarDataUrl) {
+        svg += '<clipPath id="avatarClip"><circle cx="' + avatarCx + '" cy="' + avatarCy + '" r="' + avatarR + '"/></clipPath>';
+        svg += '<image href="' + avatarDataUrl + '" x="' + (avatarCx - avatarR) + '" y="' + (avatarCy - avatarR) +
+               '" width="' + (avatarR * 2) + '" height="' + (avatarR * 2) + '" preserveAspectRatio="xMidYMid slice" clip-path="url(#avatarClip)"/>';
+    } else {
+        svg += '<circle cx="' + avatarCx + '" cy="' + avatarCy + '" r="' + avatarR + '" fill="#eef2f7"/>';
+        svg += text(avatarCx, avatarCy + 14, (name.slice(0, 1) || "選"), { size: 40, color: teamColor, weight: "800", anchor: "middle" });
+    }
+
+    var hx = avatarCx + avatarR + 26;
+    svg += rect(hx, 24, textWidth(name, 26) + 28, 40, 10, "#ffffff");
+    svg += text(hx + 14, 51, name, { size: 26, color: teamColor, weight: "800" });
+
+    var badgeX = hx + textWidth(name, 26) + 44;
+    if (no) {
+        svg += rect(badgeX, 26, 44, 36, 8, "rgba(255,255,255,.92)");
+        svg += text(badgeX + 22, 50, no, { size: 18, color: "#0f172a", weight: "800", anchor: "middle" });
+        badgeX += 54;
+    }
+    if (team) {
+        var tw = Math.max(44, textWidth(team, 15) + 20);
+        svg += rect(badgeX, 26, tw, 36, 8, "rgba(255,255,255,.92)");
+        svg += text(badgeX + tw / 2, 50, team, { size: 15, color: "#0f172a", weight: "800", anchor: "middle" });
+    }
+
+    svg += text(hx, 82, throwBat, { size: 14, color: "rgba(255,255,255,.92)", weight: "700" });
+    svg += text(hx, 104, "フォーム " + formName, { size: 13, color: "rgba(255,255,255,.85)" });
+    svg += text(hx, 124, statsLine, { size: 15, color: "#fff", weight: "700" });
+
+    if (positions.length) {
+        var px = hx;
+        positions.forEach(function (p) {
+            var w = Math.max(30, textWidth(p, 13) + 16);
+            svg += rect(px, 132, w, 22, 11, "rgba(255,255,255,.25)");
+            svg += text(px + w / 2, 147, p, { size: 12, color: "#fff", weight: "700", anchor: "middle" });
+            px += w + 6;
+        });
+    }
+
+    y = headerH + 24;
+
+    /* ── 能力値 ── */
+    svg += text(24, y, kind === "pitcher" ? "投手能力" : "野手能力", { size: 17, color: "#0f172a", weight: "800" });
+    y += 14;
+    svg += rect(24, y, W - 48, 2, 1, "#e2e8f0");
+    y += 20;
+
+    if (kind === "pitcher") {
+        var vel = document.getElementById("p-velocity-num").value;
+        svg += statBarRow(24, y, W - 48, "球速", null, parseInt(vel, 10) || 0, 175, null, "#0f172a");
+        y += 34;
+        [["コントロール", "p-control"], ["スタミナ", "p-stamina"]].forEach(function (s) {
+            var grade = document.getElementById(s[1] + "-grade").value;
+            var num = parseInt(document.getElementById(s[1] + "-num").value, 10) || 0;
+            var trend = document.getElementById(s[1] + "-trend").value;
+            svg += statBarRow(24, y, W - 48, s[0], grade, num, 100, trend, teamColor);
+            y += 34;
+        });
+    } else {
+        BATTER_STATS.forEach(function (s) {
+            var isTraj = s[1] === "b-traj";
+            var grade = document.getElementById(s[1] + "-grade").value;
+            var num = parseInt(document.getElementById(s[1] + "-num").value, 10) || 0;
+            var trend = document.getElementById(s[1] + "-trend").value;
+            svg += statBarRow(24, y, W - 48, s[0], grade, num, isTraj ? 4 : 100, trend, teamColor);
+            y += 34;
+        });
+    }
+
+    y += 14;
+
+    /* ── サブ能力 ── */
+    svg += text(24, y, "サブ能力", { size: 16, color: "#0f172a", weight: "800" });
+    y += 12;
+    var subList = SUB_ABILITIES[kind];
+    var colW = (W - 48 - 20) / 2;
+    subList.forEach(function (a, i) {
+        var col = i % 2, row = Math.floor(i / 2);
+        var sx = 24 + col * (colW + 20), sy = y + row * 36;
+        var grade = document.getElementById(a.id).value;
+        svg += gradeBadge(sx + 15, sy + 12, grade, 15);
+        svg += text(sx + 40, sy + 17, a.label, { size: 14, color: "#334155", weight: "600" });
+    });
+    y += Math.ceil(subList.length / 2) * 36 + 20;
+
+    /* ── 球種ダイアグラム（投手のみ） ── */
+    if (kind === "pitcher") {
+        svg += text(24, y, "球種", { size: 16, color: "#0f172a", weight: "800" });
+        y += 16;
+        var diagR = 130, diagCx = W / 2, diagCy = y + diagR + 24;
+        svg += pitchDiagramSVG(diagCx, diagCy, diagR);
+        y = diagCy + diagR + 44;
+    }
+
+    /* ── 特殊能力 ── */
+    var abilities = checkedAbilities(kind);
+    var anyAbility = AB_CATS.some(function (c) { return abilities[c.key].length; });
+    if (anyAbility) {
+        svg += text(24, y, "特殊能力", { size: 16, color: "#0f172a", weight: "800" });
+        y += 14;
+        AB_CATS.forEach(function (cat) {
+            var list = abilities[cat.key];
+            if (!list.length) return;
+            svg += rect(24, y, 9, 9, 2, cat.fill);
+            svg += text(40, y + 9, cat.label, { size: 13, color: "#334155", weight: "700" });
+            y += 18;
+            var packed = packChips(list.map(function (n) { return { text: n, fill: cat.fill, textColor: cat.text }; }), 24, y, W - 48);
+            svg += packed.svg;
+            y += packed.height + 14;
+        });
+    }
+
+    y += 10;
+    svg += rect(24, y, W - 48, 1, 0, "#e2e8f0");
+    y += 22;
+    svg += text(W - 24, y, "ToolDock（tooldock.github.io）で作成 ／ 非公式のファンメイド画像です", { size: 11, color: "#94a3b8", anchor: "end" });
+    y += 14;
+
+    var H = y + 10;
+    var defs = '<defs><linearGradient id="headerFade" x1="0" y1="0" x2="1" y2="1">' +
+               '<stop offset="0" stop-color="#ffffff" stop-opacity="0.08"/>' +
+               '<stop offset="1" stop-color="#000000" stop-opacity="0.12"/></linearGradient></defs>';
+
+    return { svg: defs + svg, width: W, height: H };
+}
+
+function render() {
+    var card = buildCard();
+    var el = document.getElementById("cardSvg");
+    el.setAttribute("viewBox", "0 0 " + card.width + " " + card.height);
+    el.setAttribute("width", card.width);
+    el.setAttribute("height", card.height);
+    el.innerHTML = '<rect x="0" y="0" width="' + card.width + '" height="' + card.height + '" fill="#ffffff"/>' + card.svg;
+}
+
+/* ==========================================================
+   画像として保存
+   ========================================================== */
+document.getElementById("downloadBtn").addEventListener("click", function () {
+    var svgEl = document.getElementById("cardSvg");
+    var w = parseInt(svgEl.getAttribute("width"), 10);
+    var h = parseInt(svgEl.getAttribute("height"), 10);
+    var xml = new XMLSerializer().serializeToString(svgEl);
+    var svg64 = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(xml)));
+
+    var scale = 2;
+    var canvas = document.createElement("canvas");
+    canvas.width = w * scale;
+    canvas.height = h * scale;
+    var ctx = canvas.getContext("2d");
+
+    var img = new Image();
+    img.onload = function () {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0, w, h);
+        var pngUrl = canvas.toDataURL("image/png");
+        var a = document.createElement("a");
+        var name = (document.getElementById("playerName").value || "player").replace(/[\\/:*?"<>|]/g, "");
+        a.href = pngUrl;
+        a.download = "nouryoku-" + name + ".png";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+    img.src = svg64;
+});
+
+/* ==========================================================
+   モード切り替え・入力イベント
+   ========================================================== */
+function setKind(next) {
+    var form = document.getElementById("form");
+    form.dataset.kind = next;
+    [].forEach.call(document.querySelectorAll(".seg button"), function (b) {
+        b.setAttribute("aria-pressed", String(b.dataset.kind === next));
+    });
+    filterAbilities();
+    render();
+}
+[].forEach.call(document.querySelectorAll(".seg button"), function (b) {
+    b.addEventListener("click", function () { setKind(b.dataset.kind); });
+});
+
+document.getElementById("form").addEventListener("input", render);
+document.getElementById("form").addEventListener("change", render);
+document.getElementById("abilityArea").addEventListener("change", function () {
+    filterAbilities();
+    render();
+});
+
+filterAbilities();
+render();
+
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+</body>
+</html>
