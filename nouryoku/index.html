@@ -611,9 +611,16 @@ function packChips(items, x0, y0, maxWidth) {
     return { svg: svg, height: rows.length ? (y - y0 - rowGap) : 0 };
 }
 
+/* ランクが上がるほど派手な色になるよう並べた、グレード文字の色分け表 */
+var GRADE_COLORS = {
+    S: "#e0245e", A: "#f59e0b", B: "#0ea5e9", C: "#22c55e",
+    D: "#64748b", E: "#78716c", F: "#92400e", G: "#1f2937", H: "#7f1d1d"
+};
+
 function gradeBadge(cx, cy, letter, r) {
     r = r || 15;
-    return rect(cx - r, cy - r, r * 2, r * 2, 6, "#0f172a") +
+    var fill = GRADE_COLORS[letter] || "#0f172a";
+    return rect(cx - r, cy - r, r * 2, r * 2, 6, fill) +
            text(cx, cy + 5, letter, { size: 15, color: "#fff", weight: "800", anchor: "middle" });
 }
 
