@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>パワプロ2026-2027 サクセス 査定☆計算機</title>
-<meta name="description" content="能力値と特殊能力を入力するだけで、査定の☆を自動計算する無料ツールです。投手・野手どちらにも対応し、金特・青特・赤特・緑特すべてを反映します。プレイヤーが検証した換算式をもとにしています。">
+<title>パワプロ2026-2027 査定☆計算機</title>
+<meta name="description" content="能力値と特殊能力を入力するだけで、査定の☆を自動計算する無料ツールです。投手・野手どちらにも対応し、金特・青特・赤特・緑特すべてを反映します。二刀流のサブポジション適性にも対応しています。プレイヤーが検証した換算式をもとにしています。">
 <link rel="canonical" href="https://tooldock.github.io/satei/">
 
 <script> const CURRENT_TOOL = "satei"; </script>
@@ -16,7 +16,7 @@
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
 
-<meta name="keywords" content="パワプロ,サクセス,査定,星,計算機,金特,青特,赤特,緑特,能力値">
+<meta name="keywords" content="パワプロ,査定,星,計算機,金特,青特,赤特,緑特,能力値,二刀流">
 
 <style>
 *{ box-sizing:border-box; }
@@ -88,13 +88,29 @@ h4{ margin:18px 0 8px; font-size:0.95rem; color:var(--ink-sub); }
 .breakdown .k{ font-size:0.78rem; color:var(--ink-sub); }
 .breakdown .v{ font-size:1.15rem; font-weight:700; color:var(--ink-strong); font-variant-numeric:tabular-nums; }
 
+/* 二刀流の合計。投手・野手どちらの数字とも別枠なので、色を変えて区別する */
+.combo{ margin-top:16px; border-top:1px dashed var(--dash); padding-top:16px; }
+.combo .result__total .num{ color:var(--accent); }
+
 /* ── 特殊能力 ─────────────────────────── */
 .ab-search{ width:100%; font:inherit; font-size:0.95rem; padding:9px 12px; border:1px solid var(--line);
-            border-radius:8px; margin-bottom:14px; }
-.ab-cat{ margin-bottom:16px; }
-.ab-cat__title{ font-size:0.92rem; font-weight:700; color:var(--ink-deep); margin-bottom:8px;
-                 display:flex; align-items:center; gap:6px; }
+            border-radius:8px; margin-bottom:10px; }
+
+.ab-toolbar{ display:flex; align-items:center; flex-wrap:wrap; gap:10px 16px; margin-bottom:14px; }
+.ab-toolbar__check{ font-size:0.88rem; color:var(--ink-sub); display:flex; align-items:center; gap:5px; cursor:pointer; }
+.ab-toolbar button{ font:inherit; font-size:0.82rem; padding:5px 12px; border:1px solid var(--line);
+                     border-radius:20px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+.ab-toolbar button:hover{ background:var(--tint); }
+
+/* カテゴリは折りたたみ式。開いていても数が多いので、まとめて見るときだけ開く */
+.ab-cat{ margin-bottom:8px; border:1px solid var(--line-soft); border-radius:10px; padding:0 12px; background:#fff; }
+.ab-cat[open]{ padding-bottom:12px; }
+.ab-cat.hidden{ display:none; }
+.ab-cat__title{ font-size:0.92rem; font-weight:700; color:var(--ink-deep); padding:10px 0;
+                 display:flex; align-items:center; gap:6px; cursor:pointer; list-style:none; }
+.ab-cat__title::-webkit-details-marker{ display:none; }
 .ab-cat__title .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+.ab-cat__title .checked-count{ margin-left:auto; font-size:0.78rem; font-weight:600; color:var(--accent); }
 .dot--kintoku{ background:#d4a017; }
 .dot--aoto{ background:#2563eb; }
 .dot--aka{ background:#dc2626; }
@@ -108,7 +124,7 @@ h4{ margin:18px 0 8px; font-size:0.95rem; color:var(--ink-sub); }
 .ab-item span{ flex:1 1 auto; }
 .ab-item b{ flex:0 0 auto; font-variant-numeric:tabular-nums; color:var(--ink-mute); font-weight:600; font-size:0.8rem; }
 .ab-item.hidden{ display:none; }
-.ab-count{ font-size:0.82rem; color:var(--ink-mute); margin-bottom:8px; }
+.ab-count{ font-size:0.82rem; color:var(--ink-mute); }
 
 .note{ margin-top:10px; font-size:0.86rem; color:var(--ink-mute); }
 
@@ -130,7 +146,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <div class="page-wrapper">
 
 <header>
-    <h1>パワプロ2026-2027 サクセス 査定☆計算機</h1>
+    <h1>パワプロ2026-2027 査定☆計算機</h1>
     <p>能力値と所持する特殊能力を入力すると、査定の☆を自動で計算します</p>
 </header>
 
@@ -215,6 +231,14 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
         </label>
     </div>
 
+    <div class="batter-only">
+        <h3>サブポジション適性（二刀流）</h3>
+        <p class="note" style="margin-top:0">
+        投手として登板するときに、野手としても守れる適性です。投手を兼ねない場合は「無」のままで構いません。
+        </p>
+        <div class="field-grid" id="b-subpos-grid"></div>
+    </div>
+
     <div class="result">
         <div class="result__total">
             <span class="star">☆</span>
@@ -222,6 +246,15 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
             <span class="label">合計</span>
         </div>
         <div class="breakdown" id="breakdown"></div>
+
+        <div class="combo" id="combo" hidden>
+            <div class="result__total">
+                <span class="star">☆</span>
+                <span class="num" id="comboStar">0</span>
+                <span class="label">投手＋野手 合計（二刀流）</span>
+            </div>
+            <div class="breakdown" id="comboBreakdown"></div>
+        </div>
     </div>
 
 </div>
@@ -229,7 +262,14 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <h2>特殊能力</h2>
 
 <input type="text" class="ab-search" id="abSearch" placeholder="特殊能力名で検索（例：おかわり、ノビ）">
-<p class="ab-count" id="abCount"></p>
+
+<div class="ab-toolbar">
+    <label class="ab-toolbar__check">
+        <input type="checkbox" id="abOnlyChecked"> 選択中のみ表示
+    </label>
+    <button type="button" id="abClearAll">すべて解除</button>
+    <span class="ab-count" id="abCount"></span>
+</div>
 
 <div id="abilityArea"></div>
 
@@ -238,15 +278,14 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <h2>このツールについて</h2>
 
 <p class="note" style="margin-top:0">
-このページは<strong>据え置き機の実況パワフルプロ野球2026-2027</strong>（Nintendo Switch など）の
-<strong>サクセス</strong>を対象としています。マイライフとは別のモードです。
+このページは<strong>据え置き機の実況パワフルプロ野球2026-2027</strong>（Nintendo Switch など）を対象としています。
 </p>
 
 <p>
-サクセスでは、育てた選手を最後に送り出すとき、能力値や所持する特殊能力から
-<strong>査定（☆の数）</strong>が算出されます。
-このツールは、能力値と特殊能力を入力するだけで、その☆を試合前に計算できるようにしたものです。
-経験点を使い切る前に、どの能力・特殊能力を優先すべきか確認する用途を想定しています。
+能力値や所持する特殊能力から算出される<strong>査定（☆の数）</strong>は、
+サクセス・マイライフなど<strong>モードを問わず共通の仕組み</strong>です。
+このツールは、能力値と特殊能力を入力するだけで、その☆をその場で計算できるようにしたものです。
+どの能力・特殊能力を優先すべきか確認する用途を想定しています。
 </p>
 
 <h2>使い方</h2>
@@ -257,6 +296,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <li>サブ能力（対左投手・ノビ など）のランクを選びます。投手は先発・中継ぎ・抑えの適性も選びます</li>
 <li>投手は変化球の方向ごとの変化量も入力します</li>
 <li>下の一覧から、所持している金特・青特・赤特・緑特にチェックを入れます</li>
+<li>投手と野手を両方兼ねる場合は、野手タブの「サブポジション適性」を選ぶと、二刀流としての合計☆も表示されます</li>
 </ol>
 
 <p>
@@ -274,8 +314,13 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <h2>よくある質問</h2>
 
 <p><strong>Q. マイライフでも使えますか？</strong><br>
-A. このツールはサクセスの査定を対象にしています。マイライフの能力については、
-<a href="/mylife-start/">アピールポイントのすゝめ</a>で初期能力を計算できます。</p>
+A. 使えます。☆の計算式はモードを問わず共通です。マイライフの初期能力そのものを知りたい場合は、
+<a href="/mylife-start/">アピールポイントのすゝめ</a>で計算できます。</p>
+
+<p><strong>Q. 二刀流の合計☆はどう計算されますか？</strong><br>
+A. 野手タブの「サブポジション適性」を無以外にすると、投手☆×0.95＋野手☆×適性の倍率
+（小0.3・中以上0.4・2以上0.7）で計算した合計☆が表示されます。投手側の☆は、
+二刀流にすると少し目減りする点に注意してください。</p>
 
 <p><strong>Q. 特殊能力はいくつでもチェックできますか？</strong><br>
 A. はい、上限はありません。実際に持っている特殊能力をすべてチェックしてください。</p>
@@ -302,7 +347,15 @@ A. 保存されません。ページを閉じると入力内容は消えます�
       "name": "マイライフでも使えますか？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "このツールはサクセスの査定を対象にしています。マイライフの能力については、アピールポイントのすゝめのページで初期能力を計算できます。"
+        "text": "使えます。☆の計算式はモードを問わず共通です。マイライフの初期能力そのものを知りたい場合は、アピールポイントのすゝめのページで計算できます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "二刀流の合計☆はどう計算されますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "野手タブの「サブポジション適性」を無以外にすると、投手☆×0.95＋野手☆×適性の倍率（小0.3・中以上0.4・2以上0.7）で計算した合計☆が表示されます。投手側の☆は、二刀流にすると少し目減りする点に注意してください。"
       }
     },
     {
@@ -352,7 +405,7 @@ A. 保存されません。ページを閉じると入力内容は消えます�
 <script>
 "use strict";
 
-var DATA = {"statCurve":[0,5,10,20,30,45,60,80,105,135,170,0],"trajTable":[0,10,23,40],"gradeMain8":{"S":25,"A":10,"B":7,"C":4,"D":0,"E":-4,"F":-7,"G":-10},"gradeAlt8":{"S":22,"A":7,"B":5,"C":3,"D":0,"E":-3,"F":-5,"G":-7},"gradeMain9":{"S":25,"A":10,"B":7,"C":4,"D":0,"E":-4,"F":-7,"G":-10,"H":-20},"roleTable":{"×":0,"○":1,"◎":2},"batterKintoku":[["威圧感",20],["安打製造機",25],["アーチスト",25],["芸術的流し打ち",22],["一球入魂",22],["切り込み隊長",22],["恐怖の満塁男",22],["伝説のサヨナラ男",22],["代打の神様",22],["気迫ヘッド",21],["高速レーザー",22],["魔術師",22],["鉄の壁",22],["重戦車",22],["ささやき戦術",15],["火事場の馬鹿力",22],["大番狂わせ",22],["広角砲",25],["バズーカ送球",15],["メッタ打ち",22],["ロケットスタート",22],["高球必打",22],["低球必打",22],["内角必打",22],["外角必打",22],["精神的支柱",22],["エースキラー",22],["引っ張り屋",25],["トリックスター",22],["ストレートキラー",22],["渾身の決勝打",22],["おかわり",22],["逆襲",22]],"batterAoto":[["アベレージヒッター",10],["パワーヒッター",10],["広角打法",10],["プルヒッター",10],["流し打ち",7],["固め打ち",7],["粘り打ち",7],["バント職人",7],["バント〇",4],["内野安打〇",7],["初球〇",7],["チャンスメーカー",7],["満塁男(安打)",0],["満塁男(本塁打)",0],["満塁男(両方)",7],["サヨナラ男(安打)",0],["サヨナラ男(本塁打)",0],["サヨナラ男(両方)",7],["逆境〇",7],["代打〇",7],["ハイボールヒッター",7],["ローボールヒッター",7],["ヘッドスライディング",6],["いぶし銀",7],["レーザービーム",7],["守備職人",7],["高速チャージ",7],["ホーム死守",7],["ムード〇",7],["意外性",7],["対エース〇",7],["ホーム突入",7],["プレッシャーラン",7],["〇〇キラー",7],["春男",7],["夏男",7],["秋男",7],["お祭り男",7],["かく乱",7],["インコースヒッター",7],["アウトコースヒッター",7],["対変化球〇",7],["ダメ押し",7],["国際大会〇",7],["ラインドライブ",7],["カット打ち",7],["対ストレート〇",7],["決勝打",7],["マルチ弾",7],["リベンジ",7],["窮地○",7],["存在感",7],["帳尻合わせ",7],["ささやき破り",7],["ブロッキング",7],["フレーミング〇",5],["フレーミング◎",7]],"batterAka":[["悪球打ち",3],["死球集中",3],["三振",-7],["ムード✕",-7],["エラー",-7],["併殺",-7],["扇風機",-17],["国際大会✕",-7]],"batterMidori":[["人気者",2],["強振多用",2],["ミート多用",2],["積極打法",2],["慎重打法",2],["積極盗塁",2],["慎重盗塁",2],["積極走塁",2],["積極守備",2],["チームプレイ〇",2],["チームプレイ✕",-2],["選球眼",2],["調子安定",2],["調子極端",2],["フル出場",7]],"pitcherKintoku":[["威圧感",20],["驚異の切れ味",22],["鉄腕",17],["怪物球威",22],["本塁打厳禁",22],["ドクターＫ",25],["精密機械",22],["変幻自在",22],["ハイスピンジャイロ",22],["勝利の星",22],["ド根性",22],["終盤力",22],["内角無双",22],["主砲キラー",22],["ギアチェンジ",15],["闘魂",22],["ディレイドアーム",22],["クロスキャノン",22],["暴れ球",24],["超投打躍動",21],["トップギア",21],["完全燃焼",21]],"pitcherAoto":[["キレ〇",7],["ジャイロボール",7],["重い球",10],["逃げ球",7],["尻上がり",7],["奪三振",10],["牽制〇",7],["リリース〇",7],["打球反応〇",7],["勝ち運",7],["闘志",7],["根性〇",7],["クロスファイヤー",7],["球持ち〇",7],["低め〇",7],["緩急〇",7],["対強打者〇",7],["〇〇キラー",7],["緊急登板〇",7],["球速安定",7],["内角攻め",7],["回またぎ〇",7],["国際大会〇",0],["対ランナー〇",6],["真っスラ",7],["ナチュラルシュート",7],["投打躍動",6],["立ち上がり〇",6],["要所〇",6],["存在感",7],["安全圏〇",7],["火消し",7],["ストライク先行",7]],"pitcherAka":[["ポーカーフェイス",3],["力配分",3],["フライボールピッチャー",6],["ゴロピッチャー",6],["荒れ球",9],["全開",6],["軽い球",-10],["一発",-7],["寸前",-7],["四球",-7],["スロースターター",-7],["負け運",-7],["短気",-7],["抜け球",-7],["乱調",-7],["国際大会✕",0]],"pitcherMidori":[["人気者",2],["速球中心",2],["変化球中心",2],["テンポ〇",2],["投手位置左",2],["投手位置右",2],["調子安定",2],["調子極端",2]],"pitchTable":[[4,8,12,17,22,27,33],[null,10,15,22,28,35,42,50,58,67,76,85,96,106],[null,null,18,25,33,40,49,58,67,78,88,99,111,123,135,148,162,175,190,205,220],[null,null,null,27,35,43,52,62,72,83,94,105,118,131,144,158,172,187,203,219,235,252,270,288,307,326,345,366],[null,null,null,null,37,45,56,66,76,88,100,112,125,139,153,168,183,198,215,232,249,268,287,306,326,346,367,389,411,433,457,481,504,530,555],[null,null,null,null,null,48,59,70,81,93,106,118,133,147,162,178,194,210,228,246,264,284,304,324,345,367,388,412,435,459,484,509,534,561,588,615,642,669,696,723,750,777],[null,null,null,null,null,null,62,74,85,98,112,125,140,155,171,188,205,222,241,260,279,300,321,342,364,387,410,435,459,484,511,537,564,592,621,649,678,706,735,763,792,820,849]]};
+var DATA = {"statCurve":[0,5,10,20,30,45,60,80,105,135,170,0],"trajTable":[0,10,23,40],"gradeMain8":{"S":25,"A":10,"B":7,"C":4,"D":0,"E":-4,"F":-7,"G":-10},"gradeAlt8":{"S":22,"A":7,"B":5,"C":3,"D":0,"E":-3,"F":-5,"G":-7},"gradeMain9":{"S":25,"A":10,"B":7,"C":4,"D":0,"E":-4,"F":-7,"G":-10,"H":-20},"roleTable":{"×":0,"○":1,"◎":2},"batterKintoku":[["威圧感",20],["安打製造機",25],["アーチスト",25],["芸術的流し打ち",22],["一球入魂",22],["切り込み隊長",22],["恐怖の満塁男",22],["伝説のサヨナラ男",22],["代打の神様",22],["気迫ヘッド",21],["高速レーザー",22],["魔術師",22],["鉄の壁",22],["重戦車",22],["ささやき戦術",15],["火事場の馬鹿力",22],["大番狂わせ",22],["広角砲",25],["バズーカ送球",15],["メッタ打ち",22],["ロケットスタート",22],["高球必打",22],["低球必打",22],["内角必打",22],["外角必打",22],["精神的支柱",22],["エースキラー",22],["引っ張り屋",25],["トリックスター",22],["ストレートキラー",22],["渾身の決勝打",22],["おかわり",22],["逆襲",22]],"batterAoto":[["アベレージヒッター",10],["パワーヒッター",10],["広角打法",10],["プルヒッター",10],["流し打ち",7],["固め打ち",7],["粘り打ち",7],["バント職人",7],["バント〇",4],["内野安打〇",7],["初球〇",7],["チャンスメーカー",7],["満塁男(安打)",0],["満塁男(本塁打)",0],["満塁男(両方)",7],["サヨナラ男(安打)",0],["サヨナラ男(本塁打)",0],["サヨナラ男(両方)",7],["逆境〇",7],["代打〇",7],["ハイボールヒッター",7],["ローボールヒッター",7],["ヘッドスライディング",6],["いぶし銀",7],["レーザービーム",7],["守備職人",7],["高速チャージ",7],["ホーム死守",7],["ムード〇",7],["意外性",7],["対エース〇",7],["ホーム突入",7],["プレッシャーラン",7],["〇〇キラー",7],["春男",7],["夏男",7],["秋男",7],["お祭り男",7],["かく乱",7],["インコースヒッター",7],["アウトコースヒッター",7],["対変化球〇",7],["ダメ押し",7],["国際大会〇",7],["ラインドライブ",7],["カット打ち",7],["対ストレート〇",7],["決勝打",7],["マルチ弾",7],["リベンジ",7],["窮地○",7],["存在感",7],["帳尻合わせ",7],["ささやき破り",7],["ブロッキング",7],["フレーミング〇",5],["フレーミング◎",7]],"batterAka":[["悪球打ち",3],["死球集中",3],["三振",-7],["ムード✕",-7],["エラー",-7],["併殺",-7],["扇風機",-17],["国際大会✕",-7]],"batterMidori":[["人気者",2],["強振多用",2],["ミート多用",2],["積極打法",2],["慎重打法",2],["積極盗塁",2],["慎重盗塁",2],["積極走塁",2],["積極守備",2],["チームプレイ〇",2],["チームプレイ✕",-2],["選球眼",2],["調子安定",2],["調子極端",2],["フル出場",7]],"pitcherKintoku":[["威圧感",20],["驚異の切れ味",22],["鉄腕",17],["怪物球威",22],["本塁打厳禁",22],["ドクターＫ",25],["精密機械",22],["変幻自在",22],["ハイスピンジャイロ",22],["勝利の星",22],["ド根性",22],["終盤力",22],["内角無双",22],["主砲キラー",22],["ギアチェンジ",15],["闘魂",22],["ディレイドアーム",22],["クロスキャノン",22],["暴れ球",24],["超投打躍動",21],["トップギア",21],["完全燃焼",21]],"pitcherAoto":[["キレ〇",7],["ジャイロボール",7],["重い球",10],["逃げ球",7],["尻上がり",7],["奪三振",10],["牽制〇",7],["リリース〇",7],["打球反応〇",7],["勝ち運",7],["闘志",7],["根性〇",7],["クロスファイヤー",7],["球持ち〇",7],["低め〇",7],["緩急〇",7],["対強打者〇",7],["〇〇キラー",7],["緊急登板〇",7],["球速安定",7],["内角攻め",7],["回またぎ〇",7],["国際大会〇",0],["対ランナー〇",6],["真っスラ",7],["ナチュラルシュート",7],["投打躍動",6],["立ち上がり〇",6],["要所〇",6],["存在感",7],["安全圏〇",7],["火消し",7],["ストライク先行",7]],"pitcherAka":[["ポーカーフェイス",3],["力配分",3],["フライボールピッチャー",6],["ゴロピッチャー",6],["荒れ球",9],["全開",6],["軽い球",-10],["一発",-7],["寸前",-7],["四球",-7],["スロースターター",-7],["負け運",-7],["短気",-7],["抜け球",-7],["乱調",-7],["国際大会✕",0]],"pitcherMidori":[["人気者",2],["速球中心",2],["変化球中心",2],["テンポ〇",2],["投手位置左",2],["投手位置右",2],["調子安定",2],["調子極端",2]],"pitchTable":[[4,8,12,17,22,27,33],[null,10,15,22,28,35,42,50,58,67,76,85,96,106],[null,null,18,25,33,40,49,58,67,78,88,99,111,123,135,148,162,175,190,205,220],[null,null,null,27,35,43,52,62,72,83,94,105,118,131,144,158,172,187,203,219,235,252,270,288,307,326,345,366],[null,null,null,null,37,45,56,66,76,88,100,112,125,139,153,168,183,198,215,232,249,268,287,306,326,346,367,389,411,433,457,481,504,530,555],[null,null,null,null,null,48,59,70,81,93,106,118,133,147,162,178,194,210,228,246,264,284,304,324,345,367,388,412,435,459,484,509,534,561,588,615,642,669,696,723,750,777],[null,null,null,null,null,null,62,74,85,98,112,125,140,155,171,188,205,222,241,260,279,300,321,342,364,387,410,435,459,484,511,537,564,592,621,649,678,706,735,763,792,820,849]],"subposTable":{"無/野手のみ":0,"サブポジ1、適性小":0.3,"サブポジ1、適性中以上":0.4,"サブポジ2以上":0.7}};
 
 var SCALES = { main8: DATA.gradeMain8, alt8: DATA.gradeAlt8, main9: DATA.gradeMain9 };
 
@@ -429,6 +482,18 @@ function renderSubGrid(containerId, list) {
 renderSubGrid("p-sub-grid", SUB_ABILITIES.pitcher);
 renderSubGrid("b-sub-grid", SUB_ABILITIES.batter);
 
+/* ---- サブポジション適性（二刀流） ---- */
+(function () {
+    var order = ["無/野手のみ", "サブポジ1、適性小", "サブポジ1、適性中以上", "サブポジ2以上"];
+    var opts = order.map(function (label) {
+        var sel = label === "無/野手のみ" ? " selected" : "";
+        return '<option value="' + label + '"' + sel + '>' + label + '</option>';
+    }).join("");
+    document.getElementById("b-subpos-grid").innerHTML =
+        '<div class="field"><label for="b-subpos">サブポジション適性</label>' +
+        '<select id="b-subpos">' + opts + '</select></div>';
+})();
+
 /* ---- 先発・中継ぎ・抑え ---- */
 var ROLE_OPTIONS = ["×", "○", "◎"];
 (function () {
@@ -476,9 +541,11 @@ function renderAbilityArea() {
         html += '<div class="' + (kind === "pitcher" ? "pitch-only" : "batter-only") + '">';
         AB_CATS.forEach(function (cat) {
             var items = DATA[cat[kind]];
-            html += '<div class="ab-cat">' +
-                    '<div class="ab-cat__title"><span class="dot ' + cat.dot + '"></span>' + cat.label +
-                    '（' + items.length + '）</div>' +
+            /* カテゴリは <details> で折りたたむ。多すぎて一望できないので、
+               必要なものだけ開く運用を想定している */
+            html += '<details class="ab-cat" data-cat="' + cat.key + '">' +
+                    '<summary class="ab-cat__title"><span class="dot ' + cat.dot + '"></span>' + cat.label +
+                    '（' + items.length + '）<span class="checked-count"></span></summary>' +
                     '<div class="ab-grid">' +
                     items.map(function (pair) {
                         var name = pair[0], star = pair[1];
@@ -488,13 +555,21 @@ function renderAbilityArea() {
                                '<input type="checkbox" data-kind="' + kind + '" data-star="' + star + '" id="' + id + '">' +
                                '<span>' + name + '</span><b>' + sign + '</b></label>';
                     }).join("") +
-                    '</div></div>';
+                    '</div></details>';
         });
         html += '</div>';
     });
     area.innerHTML = html;
 }
 renderAbilityArea();
+
+function updateCheckedCounts() {
+    document.querySelectorAll('#abilityArea .ab-cat').forEach(function (cat) {
+        var n = cat.querySelectorAll('input[type="checkbox"]:checked').length;
+        var el = cat.querySelector('.checked-count');
+        el.textContent = n > 0 ? ("選択中 " + n) : "";
+    });
+}
 
 /* ---- 集計 ---- */
 function val(id) { var el = document.getElementById(id); return el ? (parseFloat(el.value) || 0) : 0; }
@@ -515,52 +590,75 @@ function subAbilityStars(kind) {
     return sum;
 }
 
+function roleStar(id) {
+    var v = sel(id);
+    return DATA.roleTable[v] || 0;
+}
+
+function computePitcher() {
+    var base = velocityStar(val("p-velocity")) +
+               statStar(val("p-control"), 1.1) +
+               statStar(val("p-stamina"), 1.1);
+    var sub = subAbilityStars("pitcher");
+    var extra = roleStar("p-role-start") + roleStar("p-role-relief") + roleStar("p-role-closer");
+
+    var dirVals = PITCH_DIRS.map(function (p) { return val(p[0]); });
+    var count = dirVals.filter(function (v) { return v > 0; }).length;
+    var pitchTotal = dirVals.reduce(function (a, b) { return a + b; }, 0);
+    extra += pitchStar(count, pitchTotal);
+    if (document.getElementById("p-orig").checked) extra += 10;
+
+    var ability = checkedAbilityStars("pitcher");
+    return { base: base, sub: sub, extra: extra, ability: ability, total: base + sub + extra + ability };
+}
+
+function computeBatter() {
+    var base = trajStar(val("b-traj")) +
+               statStar(val("b-mi"), 1) +
+               statStar(val("b-pw"), 1) +
+               statStar(val("b-sp"), 0.6) +
+               statStar(val("b-sh"), 0.6) +
+               statStar(val("b-df"), 0.6) +
+               statStar(val("b-ca"), 0.4);
+    var sub = subAbilityStars("batter");
+    var ability = checkedAbilityStars("batter");
+    return { base: base, sub: sub, extra: 0, ability: ability, total: base + sub + ability };
+}
+
+function renderBreakdown(elId, r, kind) {
+    var rows = [["基本能力", r.base], ["サブ能力", r.sub]];
+    if (kind === "pitcher") rows.push(["適性・変化球", r.extra]);
+    rows.push(["特殊能力", r.ability]);
+    document.getElementById(elId).innerHTML = rows.map(function (row) {
+        return '<div class="item"><div class="k">' + row[0] + '</div><div class="v">' + row[1] + '</div></div>';
+    }).join("");
+}
+
 function compute() {
     var calc = document.getElementById("calc");
     var kind = calc.dataset.kind;
-    var base = 0, sub = 0, extra = 0, ability = 0;
+    var pitcherResult = computePitcher();
+    var batterResult = computeBatter();
+    var r = kind === "pitcher" ? pitcherResult : batterResult;
 
-    if (kind === "pitcher") {
-        base += velocityStar(val("p-velocity"));
-        base += statStar(val("p-control"), 1.1);
-        base += statStar(val("p-stamina"), 1.1);
-        sub = subAbilityStars("pitcher");
-        var role = ROLE_OPTIONS;
-        function roleStar(id) {
-            var v = sel(id);
-            return { "×": DATA.roleTable["×"], "○": DATA.roleTable["○"], "◎": DATA.roleTable["◎"] }[v] || 0;
-        }
-        extra = roleStar("p-role-start") + roleStar("p-role-relief") + roleStar("p-role-closer");
+    document.getElementById("totalStar").textContent = r.total;
+    renderBreakdown("breakdown", r, kind);
 
-        var dirVals = PITCH_DIRS.map(function (p) { return val(p[0]); });
-        var count = dirVals.filter(function (v) { return v > 0; }).length;
-        var total = dirVals.reduce(function (a, b) { return a + b; }, 0);
-        extra += pitchStar(count, total);
-        if (document.getElementById("p-orig").checked) extra += 10;
-
-        ability = checkedAbilityStars("pitcher");
+    /* ---- 二刀流（野手のサブポジション適性）---- */
+    var subposLabel = sel("b-subpos");
+    var multiplier = DATA.subposTable[subposLabel] || 0;
+    var combo = document.getElementById("combo");
+    if (multiplier > 0) {
+        var pStar = Math.floor(pitcherResult.total * 0.95);
+        var bStar = Math.floor(batterResult.total * multiplier);
+        combo.hidden = false;
+        document.getElementById("comboStar").textContent = pStar + bStar;
+        document.getElementById("comboBreakdown").innerHTML =
+            '<div class="item"><div class="k">投手☆×0.95</div><div class="v">' + pStar + '</div></div>' +
+            '<div class="item"><div class="k">野手☆×' + multiplier + '</div><div class="v">' + bStar + '</div></div>';
     } else {
-        base += trajStar(val("b-traj"));
-        base += statStar(val("b-mi"), 1);
-        base += statStar(val("b-pw"), 1);
-        base += statStar(val("b-sp"), 0.6);
-        base += statStar(val("b-sh"), 0.6);
-        base += statStar(val("b-df"), 0.6);
-        base += statStar(val("b-ca"), 0.4);
-        sub = subAbilityStars("batter");
-        ability = checkedAbilityStars("batter");
+        combo.hidden = true;
     }
-
-    var total = base + sub + extra + ability;
-
-    document.getElementById("totalStar").textContent = total;
-    var bd = document.getElementById("breakdown");
-    var rows = [["基本能力", base], ["サブ能力", sub]];
-    if (kind === "pitcher") rows.push(["適性・変化球", extra]);
-    rows.push(["特殊能力", ability]);
-    bd.innerHTML = rows.map(function (r) {
-        return '<div class="item"><div class="k">' + r[0] + '</div><div class="v">' + r[1] + '</div></div>';
-    }).join("");
 }
 
 /* ---- モード切り替え ---- */
@@ -578,29 +676,56 @@ function setKind(next) {
     b.addEventListener("click", function () { setKind(b.dataset.kind); });
 });
 
-/* ---- 検索フィルタ ---- */
+/* ---- 検索フィルタ・選択中のみ表示 ---- */
 function filterAbilities() {
     var kind = document.getElementById("calc").dataset.kind;
     var q = document.getElementById("abSearch").value.trim();
+    var onlyChecked = document.getElementById("abOnlyChecked").checked;
     var scope = document.querySelector('#abilityArea > div.' + (kind === "pitcher" ? "pitch-only" : "batter-only"));
-    var items = document.querySelectorAll('#abilityArea .ab-item');
     var shown = 0;
-    items.forEach(function (it) {
-        var inScope = scope && scope.contains(it);
-        var match = !q || it.dataset.name.indexOf(q) !== -1;
-        var visible = inScope && match;
-        it.classList.toggle("hidden", !visible);
-        if (visible) shown++;
+
+    scope.querySelectorAll(".ab-cat").forEach(function (catEl) {
+        var visibleInCat = 0;
+        catEl.querySelectorAll(".ab-item").forEach(function (it) {
+            var match = !q || it.dataset.name.indexOf(q) !== -1;
+            var checkedOk = !onlyChecked || it.querySelector("input").checked;
+            var visible = match && checkedOk;
+            it.classList.toggle("hidden", !visible);
+            if (visible) { visibleInCat++; shown++; }
+        });
+        /* 一致するものが無いカテゴリは、見出しごと隠す。
+           同じカテゴリの無関係な特殊能力まで見せる必要は無いため */
+        catEl.classList.toggle("hidden", visibleInCat === 0);
+        if ((q || onlyChecked) && visibleInCat > 0) catEl.open = true;
     });
-    document.getElementById("abCount").textContent =
-        q ? ("「" + q + "」に一致：" + shown + "件") : "";
+
+    updateCheckedCounts();
+
+    if (q && onlyChecked) {
+        document.getElementById("abCount").textContent = "「" + q + "」に一致する選択中：" + shown + "件";
+    } else if (q) {
+        document.getElementById("abCount").textContent = "「" + q + "」に一致：" + shown + "件";
+    } else if (onlyChecked) {
+        document.getElementById("abCount").textContent = "選択中：" + shown + "件";
+    } else {
+        document.getElementById("abCount").textContent = "";
+    }
 }
 document.getElementById("abSearch").addEventListener("input", filterAbilities);
+document.getElementById("abOnlyChecked").addEventListener("change", filterAbilities);
+document.getElementById("abClearAll").addEventListener("click", function () {
+    document.querySelectorAll('#abilityArea input[type="checkbox"]').forEach(function (b) { b.checked = false; });
+    filterAbilities();
+    compute();
+});
 
 /* ---- 入力イベント ---- */
 document.getElementById("calc").addEventListener("input", compute);
 document.getElementById("calc").addEventListener("change", compute);
-document.getElementById("abilityArea").addEventListener("change", compute);
+document.getElementById("abilityArea").addEventListener("change", function () {
+    filterAbilities();
+    compute();
+});
 
 document.body.dataset.kind = "pitcher";
 filterAbilities();
