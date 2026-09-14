@@ -338,9 +338,9 @@ var STAT_RANK_COLOR = {
 /* 特殊能力バッジのランクタグ色（能力値とは別の配色に戻した）。
    良ランク(S〜C)=ティール、D=薄いティール、悪ランク(E〜G)=赤。 */
 var BADGE_RANK_TAG = {
-    S: "#0F8FB5", A: "#0F8FB5", B: "#0F8FB5", C: "#0F8FB5",
-    D: "#7FB8CC",
-    E: "#D9534F", F: "#C0392B", G: "#962D22"
+    S: "#0F8FB5", A: "#0F8FB5", B: "#0F8FB5",
+    C: "#7FB8CC", D: "#7FB8CC", E: "#7FB8CC",
+    F: "#C0392B", G: "#962D22"
 };
 function pillTier(rank) {
     return (rank === "F" || rank === "G") ? "bad" : "good";
@@ -639,11 +639,11 @@ function nameplateStripes(x, y, w, h, colors) {
 
 function trajArrow(cx, cy, value) {
     var spec = TRAJ_ARROW[value] || TRAJ_ARROW[1];
-    var w = 30, h = 30;
-    /* 右向きの矢印を基準に、値に応じて回転させる（矢じり部分を大きめにする） */
+    var w = 30, h = 40;
+    /* 右向きの矢印を基準に、値に応じて回転させる（矢じり部分の縦幅を大きめにする） */
     var pts = [
-        [w / 2, 0], [w * 0.34, -h / 2], [w * 0.34, -h * 0.2],
-        [-w / 2, -h * 0.2], [-w / 2, h * 0.2], [w * 0.34, h * 0.2], [w * 0.34, h / 2]
+        [w / 2, 0], [w * 0.34, -h / 2], [w * 0.34, -h * 0.16],
+        [-w / 2, -h * 0.16], [-w / 2, h * 0.16], [w * 0.34, h * 0.16], [w * 0.34, h / 2]
     ].map(function (p) { return (cx + p[0]) + "," + (cy + p[1]); }).join(" ");
     return '<polygon points="' + pts + '" fill="' + spec.color + '" stroke="#ffffff" stroke-width="1.5" transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')"/>';
 }
@@ -709,11 +709,11 @@ function renderCard() {
             /* A・Bは枠をつけて強調し、C・D・Eは文字を薄くして、B/Aとの違いが
                はっきり分かるようにする */
             var isHigh = b.rank === "A" || b.rank === "B";
-            var isMid = b.rank === "C" || b.rank === "D" || b.rank === "E";
-            var textColor = tier === "bad" ? "#7A2020" : (isMid ? "#9FB3C2" : "#154868");
+            var isPaleText = b.rank === "C" || b.rank === "E";
+            var textColor = tier === "bad" ? "#7A2020" : (isPaleText ? "#9FB3C2" : "#154868");
             var gid = "gRank" + i;
             var labelW = w - 56;
-            var border = isHigh ? ' stroke="#0F8FB5" stroke-width="2.5"' : "";
+            var border = isHigh ? ' stroke="#5FC1DE" stroke-width="2.5"' : "";
             return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
                    '<stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient></defs>' +
                    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid + ')"' + border + '/>' +
