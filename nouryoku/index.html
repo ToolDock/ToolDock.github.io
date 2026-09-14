@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>パワプロ風 能力画像ジェネレーター（野手）</title>
+<meta name="description" content="野手の能力値と特殊能力を入力すると、パワプロ風の選手能力カード画像をその場で作れる無料ツールです。ランクや数値、特殊能力は自由に編集でき、PNG画像として保存できます。">
+<link rel="canonical" href="https://tooldock.github.io/nouryoku/">
+
+<script> const CURRENT_TOOL = "nouryoku"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<!-- カード内のランク文字・数字に使うフォント（元デザインの ADLaM Display / Source Sans Pro を使用） -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Source+Sans+3:wght@700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
+
+<meta name="keywords" content="パワプロ,能力画像,ジェネレーター,選手カード,特殊能力,野手,画像生成,無料">
+
+<style>
+*{ box-sizing:border-box; }
+
+:root{
+    --ink:#222; --ink-strong:#111; --ink-deep:#0f172a; --ink-sub:#4a5568; --ink-mute:#5c6673;
+    --line:#c2cad6; --line-soft:#ccd3dd; --head-bg:#e6ebf1; --tint:#f2f6fb;
+    --dash:#9aa6b8; --accent:#2563eb;
+}
+
+body{
+    margin:0; padding:0 0 48px;
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
+    color:var(--ink); line-height:1.75; background:#f5f5f5;
+}
+
+.page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
+
+header{ background:var(--ink); color:#fff; padding:20px 16px; margin-bottom:22px; }
+header .page-wrapper{ padding:0; }
+h1{ margin:0; font-size:1.35rem; line-height:1.5; }
+header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
+
+h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
+    border-bottom:2px solid var(--line); }
+h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
+    border-left:4px solid var(--accent); }
+p{ margin:0 0 12px; }
+
+/* ── カードプレビュー ─────────────────── */
+.card-wrap{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:20px; }
+.card-preview{ width:100%; display:block; overflow:visible; }
+.card-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.card-actions button{ font:inherit; font-size:0.92rem; font-weight:700; padding:9px 18px;
+    border:1px solid var(--accent); border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
+.card-actions button.secondary{ background:#fff; color:var(--accent); }
+
+/* ── 編集フォーム ─────────────────────── */
+.editor{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:20px; }
+
+.field-grid{ display:grid; gap:10px 14px; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); margin-bottom:6px; }
+.field{ display:flex; flex-direction:column; gap:4px; }
+.field label{ font-size:0.85rem; font-weight:600; color:var(--ink-sub); }
+.field input[type="number"], .field input[type="text"], .field select{
+    font:inherit; font-size:0.95rem; padding:7px 8px; border:1px solid var(--line);
+    border-radius:8px; background:#fff; color:var(--ink); width:100%;
+}
+.field input[type="color"]{ width:100%; height:36px; padding:2px; border:1px solid var(--line); border-radius:8px; }
+
+.stat-rows{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
+.stat-row{ display:grid; grid-template-columns:100px 90px 1fr; gap:8px; align-items:center; }
+.stat-row label{ font-size:0.88rem; font-weight:600; color:var(--ink-sub); }
+.stat-row select, .stat-row input{ font:inherit; font-size:0.92rem; padding:6px 8px;
+    border:1px solid var(--line); border-radius:8px; }
+
+/* ── 特殊能力ピッカー ─────────────────── */
+.ab-search{ width:100%; font:inherit; font-size:0.95rem; padding:9px 12px; border:1px solid var(--line);
+            border-radius:8px; margin-bottom:10px; }
+.ab-toolbar{ display:flex; align-items:center; flex-wrap:wrap; gap:10px 16px; margin-bottom:14px; }
+.ab-toolbar__check{ font-size:0.88rem; color:var(--ink-sub); display:flex; align-items:center; gap:5px; cursor:pointer; }
+.ab-toolbar button{ font:inherit; font-size:0.82rem; padding:5px 12px; border:1px solid var(--line);
+                     border-radius:20px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+.ab-toolbar button:hover{ background:var(--tint); }
+
+.ab-cat{ margin-bottom:8px; border:1px solid var(--line-soft); border-radius:10px; padding:0 12px; background:#fff; }
+.ab-cat[open]{ padding-bottom:12px; }
+.ab-cat.hidden{ display:none; }
+.ab-cat__title{ font-size:0.92rem; font-weight:700; color:var(--ink-deep); padding:10px 0;
+                 display:flex; align-items:center; gap:6px; cursor:pointer; list-style:none; }
+.ab-cat__title::-webkit-details-marker{ display:none; }
+.ab-cat__title .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+.ab-cat__title .checked-count{ margin-left:auto; font-size:0.78rem; font-weight:600; color:var(--accent); }
+.dot--kintoku{ background:#d4a017; }
+.dot--aoto{ background:#2b8fc4; }
+.dot--aka{ background:linear-gradient(90deg,#dc2626 50%,#2b8fc4 50%); }
+.dot--midori{ background:#3a9a3a; }
+
+.ab-grid{ display:grid; gap:4px 10px; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); }
+.ab-item{ display:flex; align-items:flex-start; gap:6px; font-size:0.86rem; padding:4px 6px; border-radius:6px; cursor:pointer; }
+.ab-item:hover{ background:var(--tint); }
+.ab-item input{ flex:0 0 auto; margin-top:3px; }
+.ab-item span{ flex:1 1 auto; }
+.ab-item.hidden{ display:none; }
+.ab-count{ font-size:0.82rem; color:var(--ink-mute); }
+
+.sub-grid{ display:grid; gap:8px 14px; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); margin-bottom:6px; }
+.sub-field{ display:flex; flex-direction:column; gap:4px; }
+.sub-field label{ font-size:0.85rem; font-weight:600; color:var(--ink-sub); }
+.sub-field .row{ display:flex; gap:6px; }
+.sub-field select{ font:inherit; font-size:0.92rem; padding:6px; border:1px solid var(--line); border-radius:8px; }
+.sub-field .note{ font-size:0.72rem; color:var(--ink-mute); margin:0; }
+
+.note{ margin-top:10px; font-size:0.86rem; color:var(--ink-mute); }
+
+.tool-article{ margin-top:34px; }
+footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); border-top:1px solid var(--line-soft); padding-top:14px; }
+</style>
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>パワプロ風 能力画像ジェネレーター（野手）</h1>
+    <p>能力値と特殊能力を入力すると、選手能力カードの画像をその場で作れます</p>
+</header>
+
+<div class="container">
+
+<div class="card-wrap">
+    <div id="cardPreview" class="card-preview"></div>
+    <div class="card-actions">
+        <button type="button" id="btnDownload">PNG画像を保存</button>
+        <button type="button" class="secondary" id="btnReset">初期値に戻す</button>
+    </div>
+</div>
+
+<div class="editor">
+
+    <h3>選手情報</h3>
+    <div class="field-grid">
+        <div class="field">
+            <label for="p-name">選手名（左上のプレートに表示）</label>
+            <input type="text" id="p-name" value="ドック太郎" maxlength="10">
+        </div>
+        <div class="field">
+            <label for="p-teamcolor">球団旗の色</label>
+            <input type="color" id="p-teamcolor" value="#156082">
+        </div>
+        <div class="field">
+            <label for="p-pos">守備位置</label>
+            <select id="p-pos">
+                <option value="捕">捕</option>
+                <option value="一">一</option>
+                <option value="二" selected>二</option>
+                <option value="三">三</option>
+                <option value="遊">遊</option>
+                <option value="外">外</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="p-subpos">サブポジション（任意）</label>
+            <input type="text" id="p-subpos" value="" maxlength="4" placeholder="例：一">
+        </div>
+        <div class="field">
+            <label for="p-throwbat">投打</label>
+            <select id="p-throwbat">
+                <option value="右投右打">右投右打</option>
+                <option value="右投左打" selected>右投左打</option>
+                <option value="右投両打">右投両打</option>
+                <option value="左投左打">左投左打</option>
+                <option value="左投右打">左投右打</option>
+                <option value="左投両打">左投両打</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="p-form">フォーム</label>
+            <input type="text" id="p-form" value="スタンダード1" maxlength="10">
+        </div>
+    </div>
+
+    <div class="field-grid">
+        <div class="field">
+            <label for="p-avg">打率</label>
+            <input type="text" id="p-avg" value=".285" maxlength="5">
+        </div>
+        <div class="field">
+            <label for="p-hr">本塁打</label>
+            <input type="text" id="p-hr" value="27本" maxlength="5">
+        </div>
+        <div class="field">
+            <label for="p-rbi">打点</label>
+            <input type="text" id="p-rbi" value="67点" maxlength="5">
+        </div>
+        <div class="field">
+            <label for="p-sb">盗塁</label>
+            <input type="text" id="p-sb" value="14盗" maxlength="5">
+        </div>
+    </div>
+
+    <h3>能力値</h3>
+    <div class="stat-rows" id="statRows"></div>
+
+    <h3>特殊能力上段</h3>
+    <div class="sub-grid" id="subGrid"></div>
+
+    <h3>特殊能力</h3>
+    <input type="text" class="ab-search" id="abSearch" placeholder="特殊能力名で検索（例：おかわり、ノビ）">
+    <div class="ab-toolbar">
+        <label class="ab-toolbar__check">
+            <input type="checkbox" id="abOnlyChecked"> 選択中のみ表示
+        </label>
+        <button type="button" id="abClearAll">すべて解除</button>
+        <span class="ab-count" id="abCount"></span>
+    </div>
+    <div id="abilityArea"></div>
+
+</div>
+
+</div>
+
+<article class="tool-article">
+
+<h2>パワプロ風 能力画像ジェネレーターについて</h2>
+
+<p>
+野手の能力値・ランク・特殊能力を入力すると、選手能力カード風の画像をその場で作れる無料ツールです。
+文字やランクはすべてボタンとフォームで編集でき、実在の選手データを扱う必要はありません。
+できあがった画像はPNG形式で保存できます。
+</p>
+
+<p class="note" style="margin-top:0">
+このツールは実況パワフルプロ野球シリーズの公式ツールではなく、当サイトが独自にデザインしたものです。
+顔写真・球団旗の枠は色や図形のみで、実在の画像は含まれません。
+</p>
+
+<h2>使い方</h2>
+<ol>
+<li>選手名・球団旗の色・守備位置・投打などの基本情報を入力します</li>
+<li>能力値（ミート・パワーなど）の数値とランクを入力します</li>
+<li>特殊能力上段のランクを選びます</li>
+<li>下の一覧から、所持させたい金特・青特・赤特・緑特にチェックを入れます</li>
+<li>「PNG画像を保存」でカード画像をダウンロードできます</li>
+</ol>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 実在の特殊能力名を使えますか？</strong><br>
+A. 使えます。金特・青特・赤特・緑特は、査定☆計算ツールと同じ実データの一覧から選べます。</p>
+
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. 保存されません。ページを閉じると入力内容は消えます。サーバーに送信されることもありません。</p>
+
+<p><strong>Q. 投手カードも作れますか？</strong><br>
+A. 現在は野手カードのみです。投手カードは今後の対応を検討しています。</p>
+
+</article>
+
+<footer class="disclaimer">
+このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+「実況パワフルプロ野球」はコナミデジタルエンタテインメントの登録商標です。当サイトは同社とは無関係の非公式ツールです。
+</footer>
+
+</div>
+
+<script>
+"use strict";
+
+/* ---- 特殊能力データ（査定☆計算ツールと同じ実データ） ---- */
+var AB = {
+    kintoku: [["威圧感",20],["安打製造機",25],["アーチスト",25],["芸術的流し打ち",22],["一球入魂",22],["切り込み隊長",22],["恐怖の満塁男",22],["伝説のサヨナラ男",22],["代打の神様",22],["気迫ヘッド",21],["高速レーザー",22],["魔術師",22],["鉄の壁",22],["重戦車",22],["ささやき戦術",15],["火事場の馬鹿力",22],["大番狂わせ",22],["広角砲",25],["バズーカ送球",15],["メッタ打ち",22],["ロケットスタート",22],["高球必打",22],["低球必打",22],["内角必打",22],["外角必打",22],["精神的支柱",22],["エースキラー",22],["引っ張り屋",25],["トリックスター",22],["ストレートキラー",22],["渾身の決勝打",22],["おかわり",22],["逆襲",22]],
+    aoto: [["アベレージヒッター",10],["パワーヒッター",10],["広角打法",10],["プルヒッター",10],["流し打ち",7],["固め打ち",7],["粘り打ち",7],["バント職人",7],["バント〇",4],["内野安打〇",7],["初球〇",7],["チャンスメーカー",7],["満塁男(安打)",0],["満塁男(本塁打)",0],["満塁男(両方)",7],["サヨナラ男(安打)",0],["サヨナラ男(本塁打)",0],["サヨナラ男(両方)",7],["逆境〇",7],["代打〇",7],["ハイボールヒッター",7],["ローボールヒッター",7],["ヘッドスライディング",6],["いぶし銀",7],["レーザービーム",7],["守備職人",7],["高速チャージ",7],["ホーム死守",7],["ムード〇",7],["意外性",7],["対エース〇",7],["ホーム突入",7],["プレッシャーラン",7],["〇〇キラー",7],["春男",7],["夏男",7],["秋男",7],["お祭り男",7],["かく乱",7],["インコースヒッター",7],["アウトコースヒッター",7],["対変化球〇",7],["ダメ押し",7],["国際大会〇",7],["ラインドライブ",7],["カット打ち",7],["対ストレート〇",7],["決勝打",7],["マルチ弾",7],["リベンジ",7],["窮地○",7],["存在感",7],["帳尻合わせ",7],["ささやき破り",7],["ブロッキング",7],["フレーミング〇",5],["フレーミング◎",7]],
+    aka: [["悪球打ち",3],["死球集中",3],["三振",-7],["ムード✕",-7],["エラー",-7],["併殺",-7],["扇風機",-17],["国際大会✕",-7]],
+    midori: [["人気者",2],["強振多用",2],["ミート多用",2],["積極打法",2],["慎重打法",2],["積極盗塁",2],["慎重盗塁",2],["積極走塁",2],["積極守備",2],["チームプレイ〇",2],["チームプレイ✕",-2],["選球眼",2],["調子安定",2],["調子極端",2],["フル出場",7]]
+};
+
+var AB_CATS = [
+    { key: "kintoku", label: "金特", dot: "dot--kintoku" },
+    { key: "aoto", label: "青特", dot: "dot--aoto" },
+    { key: "aka", label: "赤特", dot: "dot--aka" },
+    { key: "midori", label: "緑特", dot: "dot--midori" }
+];
+
+/* 実機のスクリーンショット通りの並び（上段: チャンス/対左投手/キャッチャー/ケガしにくさ、
+   下段: 盗塁/走塁/送球/回復）。キャッチャーは守備位置が捕手のときだけ表示する。 */
+var SUB_ABILITIES = [
+    { id: "sub-chance", label: "チャンス", promote: { S: "勝負師" } },
+    { id: "sub-vsleft", label: "対左投手", promote: { S: "左腕キラー" } },
+    { id: "sub-catcher", label: "キャッチャー", promote: { S: "球界の頭脳" }, requiresPos: "捕" },
+    { id: "sub-injury", label: "ケガしにくさ", promote: { S: "鉄人" } },
+    { id: "sub-steal", label: "盗塁", promote: { S: "電光石火" } },
+    { id: "sub-run", label: "走塁", promote: { S: "高速ベースラン" } },
+    { id: "sub-throw", label: "送球", promote: { S: "ストライク送球" } },
+    { id: "sub-recover", label: "回復", promote: { S: "ガソリンタンク" } }
+];
+var GRADES = ["S", "A", "B", "C", "D", "E", "F", "G"];
+
+var STATS = [
+    { id: "traj", label: "弾道", min: 1, max: 4, value: 2, hasRank: false },
+    { id: "mi", label: "ミート", min: 1, max: 100, value: 83, hasRank: true, rank: "A" },
+    { id: "pw", label: "パワー", min: 1, max: 100, value: 90, hasRank: true, rank: "S" },
+    { id: "sp", label: "走力", min: 1, max: 100, value: 72, hasRank: true, rank: "B" },
+    { id: "sh", label: "肩力", min: 1, max: 100, value: 84, hasRank: true, rank: "A" },
+    { id: "df", label: "守備力", min: 1, max: 100, value: 91, hasRank: true, rank: "S" },
+    { id: "ca", label: "捕球", min: 1, max: 100, value: 60, hasRank: true, rank: "C" }
+];
+
+/* 能力値ランクの文字色。指定された配色（S=薄いピンク, A=濃いピンク, B=赤, C=オレンジ,
+   D=黄, E=黄緑, F=水色, G=灰色）。特殊能力バッジには使わず、能力値欄だけに使う。 */
+var STAT_RANK_COLOR = {
+    S: "#F6B8D6", A: "#E91E8C", B: "#E53935", C: "#F57C00",
+    D: "#F5C518", E: "#AFCA3B", F: "#4FC3E8", G: "#9E9E9E"
+};
+
+/* 特殊能力バッジのランクタグ色（能力値とは別の配色に戻した）。
+   良ランク(S〜C)=ティール、D=薄いティール、悪ランク(E〜G)=赤。 */
+var BADGE_RANK_TAG = {
+    S: "#0F8FB5", A: "#0F8FB5", B: "#0F8FB5", C: "#0F8FB5",
+    D: "#7FB8CC",
+    E: "#D9534F", F: "#C0392B", G: "#962D22"
+};
+function pillTier(rank) {
+    return (rank === "F" || rank === "G") ? "bad" : "good";
+}
+/* ランク付きバッジの土台（縦グラデーション）。実機の水色パイルを基準にした。 */
+var RANK_PILL_BG = {
+    good: ["#EAFBFF", "#B7ECF7"],
+    neutral: ["#F3FAFC", "#DCEAEF"],
+    bad: ["#FDEBE9", "#F6C2BE"]
+};
+
+/* ---- 能力値行の描画 ---- */
+function renderStatRows() {
+    var el = document.getElementById("statRows");
+    el.innerHTML = STATS.map(function (s) {
+        var rankCtrl = s.hasRank
+            ? '<select id="stat-rank-' + s.id + '">' + GRADES.map(function (g) {
+                  return '<option value="' + g + '"' + (g === s.rank ? " selected" : "") + '>' + g + '</option>';
+              }).join("") + '</select>'
+            : '<span></span>';
+        return '<div class="stat-row">' +
+               '<label>' + s.label + '</label>' +
+               rankCtrl +
+               '<input type="number" id="stat-val-' + s.id + '" min="' + s.min + '" max="' + s.max + '" value="' + s.value + '">' +
+               '</div>';
+    }).join("");
+}
+renderStatRows();
+
+/* ---- 特殊能力上段の描画 ---- */
+function renderSubGrid() {
+    var el = document.getElementById("subGrid");
+    el.innerHTML = SUB_ABILITIES.map(function (a) {
+        var note = Object.keys(a.promote).map(function (g) { return g + ":" + a.promote[g]; }).join(" / ");
+        return '<div class="sub-field">' +
+               '<label for="' + a.id + '">' + a.label + '</label>' +
+               '<div class="row"><select id="' + a.id + '">' +
+               GRADES.map(function (g) {
+                   return '<option value="' + g + '"' + (g === "D" ? " selected" : "") + '>' + g + '</option>';
+               }).join("") + '</select></div>' +
+               '<p class="note">' + note + '</p>' +
+               '</div>';
+    }).join("");
+}
+renderSubGrid();
+
+/* ---- 特殊能力チェックリストの描画 ---- */
+function renderAbilityArea() {
+    var area = document.getElementById("abilityArea");
+    var html = "";
+    AB_CATS.forEach(function (cat) {
+        var items = AB[cat.key];
+        html += '<details class="ab-cat" data-cat="' + cat.key + '">' +
+                '<summary class="ab-cat__title"><span class="dot ' + cat.dot + '"></span>' + cat.label +
+                '（' + items.length + '）<span class="checked-count"></span></summary>' +
+                '<div class="ab-grid">' +
+                items.map(function (pair) {
+                    var name = pair[0], star = pair[1];
+                    var id = "ab-" + cat.key + "-" + name;
+                    return '<label class="ab-item" data-name="' + name + '">' +
+                           '<input type="checkbox" data-cat="' + cat.key + '" data-star="' + star + '" id="' + id + '">' +
+                           '<span>' + name + '</span></label>';
+                }).join("") +
+                '</div></details>';
+    });
+    area.innerHTML = html;
+}
+renderAbilityArea();
+
+function updateCheckedCounts() {
+    document.querySelectorAll('#abilityArea .ab-cat').forEach(function (cat) {
+        var n = cat.querySelectorAll('input[type="checkbox"]:checked').length;
+        var elc = cat.querySelector('.checked-count');
+        elc.textContent = n > 0 ? ("選択中 " + n) : "";
+    });
+}
+
+function filterAbilities() {
+    var q = document.getElementById("abSearch").value.trim();
+    var onlyChecked = document.getElementById("abOnlyChecked").checked;
+    var total = 0, shown = 0;
+    document.querySelectorAll('#abilityArea .ab-cat').forEach(function (catEl) {
+        var anyShown = false;
+        catEl.querySelectorAll(".ab-item").forEach(function (item) {
+            total++;
+            var name = item.dataset.name;
+            var checked = item.querySelector("input").checked;
+            var matchQ = !q || name.indexOf(q) !== -1;
+            var matchChecked = !onlyChecked || checked;
+            var visible = matchQ && matchChecked;
+            item.classList.toggle("hidden", !visible);
+            if (visible) { anyShown = true; shown++; }
+        });
+        catEl.classList.toggle("hidden", !anyShown);
+        if (q || onlyChecked) catEl.open = anyShown;
+    });
+    document.getElementById("abCount").textContent = shown + " / " + total + " 件表示";
+}
+document.getElementById("abSearch").addEventListener("input", filterAbilities);
+document.getElementById("abOnlyChecked").addEventListener("change", filterAbilities);
+document.getElementById("abClearAll").addEventListener("click", function () {
+    document.querySelectorAll('#abilityArea input[type="checkbox"]').forEach(function (b) { b.checked = false; });
+    updateCheckedCounts();
+    filterAbilities();
+    renderCard();
+});
+filterAbilities();
+
+/* ---- SVGテキストを枠に収める ---- */
+function fitTexts(svgRoot) {
+    svgRoot.querySelectorAll("text[data-fit]").forEach(function (t) {
+        var maxW = parseFloat(t.getAttribute("data-fit"));
+        try {
+            var len = t.getComputedTextLength();
+            if (len > maxW && len > 0) {
+                var size = parseFloat(t.getAttribute("font-size"));
+                t.setAttribute("font-size", Math.max(9, size * (maxW / len)));
+            }
+        } catch (e) { /* 非表示要素などでは無視 */ }
+    });
+}
+
+/* ---- 特殊能力バッジの名前を中央揃え・均等配置にする ----
+   自然な文字幅が枠より狭ければ文字間隔だけを広げて均等に埋め
+   （lengthAdjust="spacing"、字形は歪めない）、枠より広ければ
+   文字間隔ではなくフォントサイズを縮めて収める（字形が潰れるのを防ぐ）。 */
+function justifyTexts(svgRoot) {
+    svgRoot.querySelectorAll("text[data-justify]").forEach(function (t) {
+        var maxW = parseFloat(t.getAttribute("data-justify"));
+        try {
+            var natural = t.getComputedTextLength();
+            if (natural <= 0) return;
+            if (natural <= maxW) {
+                t.setAttribute("textLength", maxW);
+                t.setAttribute("lengthAdjust", "spacing");
+            } else {
+                var size = parseFloat(t.getAttribute("font-size"));
+                t.setAttribute("font-size", Math.max(9, size * (maxW / natural)));
+            }
+        } catch (e) { /* 非表示要素などでは無視 */ }
+    });
+}
+
+function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/* 特殊能力バッジの名前。中央揃えにし、描画後にjustifyTexts()で
+   短い名前は文字間隔を広げて均等配置、長い名前は縮小して収める
+   （data-justifyで対象幅を持たせておく）。 */
+function badgeLabel(cx, cy, maxW, text, color) {
+    return '<text data-justify="' + maxW + '" x="' + cx + '" y="' + cy + '" text-anchor="middle" font-size="18" font-weight="700" fill="' + color + '" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(text) + '</text>';
+}
+
+/* =====================================================================
+   カードのレイアウト定数
+   元になったPowerPointの各シェイプの位置・サイズ（EMU）を、カード左上を
+   原点として px 換算（EMU/9525）した実測値。自己判断で配置を変えず、
+   このまま使う。
+   ===================================================================== */
+var CARD_W = 1082;
+var HEADER_H = 171;
+
+var L = {
+    namePlate:   { x: 29,  y: 25,  w: 161, h: 56 },
+    flagBox:     { x: 196, y: 25,  w: 79,  h: 58 },
+    photoBox:    { x: 287, y: 25,  w: 126, h: 130 },
+    posLabel:    { x: 29,  y: 104, w: 109, h: 36 },
+    posValue:    { x: 149, y: 99,  w: 126, h: 42 },
+    bioRow1:     { x: 426, y: 25,  w: 621, h: 62 },
+    bio1Label:   { x: 439, y: 41,  w: 109, h: 36 },
+    bio1Vals:    [
+        { x: 553, y: 36, w: 100, key: "avg", pre: "率 " },
+        { x: 663, y: 37, w: 70, key: "hr", pre: "" },
+        { x: 744, y: 37, w: 70, key: "rbi", pre: "" },
+        { x: 820, y: 35, w: 100, key: "sb", pre: "" }
+    ],
+    bioRow2:     { x: 426, y: 93,  w: 621, h: 62 },
+    bio2Label1:  { x: 439, y: 108, w: 109, h: 36 },
+    bio2Val1:    { x: 557, y: 105, w: 210, h: 42 },
+    bio2Label2:  { x: 767, y: 108, w: 109, h: 36 },
+    bio2Val2:    { x: 889, y: 104, w: 131, h: 42 },
+    bodyPanel:   { x: 18,  y: 171, w: 1036 },
+    statColX: 32, statColW: 328,
+    statLabelX: 43, statLabelW: 125,
+    statRankX: 185, statRankW: 60,
+    statNumX: 257, statNumW: 91,
+    statRows: [
+        { y: 181, h: 56 }, { y: 243, h: 51 }, { y: 300, h: 46 }, { y: 352, h: 51 },
+        { y: 408, h: 46 }, { y: 462, h: 51 }, { y: 519, h: 51 }
+    ],
+    gridColX: [372, 536, 703, 870],
+    gridColW: 165,
+    gridRowY0: 180,
+    gridRowH: 54
+};
+
+var POS_LABEL_MAP = { "捕": "捕", "一": "一", "二": "二", "三": "三", "遊": "遊", "外": "外" };
+
+/* ---- 特殊能力バッジの中身を組み立てる ----
+   実機同様、S昇格で専用名が付くものは金特と同じ色（タグ無し）で表示する。
+   キャッチャーは守備位置が捕手以外のとき、背景だけの空欄にする。 */
+function buildSubBadges() {
+    var badges = [];
+    var pos = document.getElementById("p-pos").value;
+    SUB_ABILITIES.forEach(function (a) {
+        if (a.requiresPos && a.requiresPos !== pos) {
+            badges.push({ type: "blank" });
+            return;
+        }
+        var rank = document.getElementById(a.id).value;
+        if (a.promote[rank]) {
+            /* Sランクで専用名が付くものだけ金特と同じ配色（タグ無し） */
+            badges.push({ type: "promoted", name: a.promote[rank] });
+        } else {
+            /* F・Gランクはタグ（アルファベット）を残したまま、土台だけ赤特色にする */
+            badges.push({ type: "ranked", name: a.label, rank: rank });
+        }
+    });
+    return badges;
+}
+
+function buildCatBadges() {
+    var badges = [];
+    AB_CATS.forEach(function (cat) {
+        document.querySelectorAll('#abilityArea .ab-cat[data-cat="' + cat.key + '"] input:checked').forEach(function (box) {
+            var name = box.closest(".ab-item").dataset.name;
+            if (cat.key === "aka") {
+                /* 赤特のうち☆がプラスのもの（悪球打ち・死球集中など）は「赤青特」として
+                   ツートンで表示する。三振・エラーなどマイナスのものは純粋な赤特のまま。 */
+                var star = parseInt(box.dataset.star, 10) || 0;
+                badges.push({ type: star > 0 ? "aka2tone" : "aka", name: name });
+            } else {
+                badges.push({ type: cat.key, name: name });
+            }
+        });
+    });
+    return badges;
+}
+
+/* カテゴリ別バッジの土台色（縦グラデーション）・枠線・文字色。
+   金特は実機スクリーンショットの配色。青特は実機の水色、緑特は指定により緑にした。
+   赤特は純粋な赤色の単色。赤青特（☆がプラスの赤特）だけ左赤・右青のツートンにする。 */
+var CAT_STYLE = {
+    kintoku: { bg: ["#FFF3D0", "#F5DFA8"], border: "#E0B03C", text: "#7A4520" },
+    aoto:    { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE", text: "#154868" },
+    midori:  { bg: ["#E8FFE8", "#B8F0B8"], border: "#4FAE5C", text: "#1B6B2C" },
+    aka:     { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82", text: "#7A2020" }
+};
+/* 赤青特: 名前とは逆に左が青、右が赤 */
+var AKA_LEFT = { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE" };
+var AKA_RIGHT = { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82" };
+
+/* 弾道の矢印アイコン。実機の4種類（1:黄・水平／2:橙・浅い角度／
+   3:赤・急な角度／4:紫がかったピンク・垂直）を再現する。 */
+var TRAJ_ARROW = {
+    1: { angle: 0, color: "#FFD400" },
+    2: { angle: -28, color: "#F5941C" },
+    3: { angle: -58, color: "#E5352E" },
+    4: { angle: -85, color: "#C2399C" }
+};
+function trajArrow(cx, cy, value) {
+    var spec = TRAJ_ARROW[value] || TRAJ_ARROW[1];
+    var w = 26, h = 20;
+    /* 右向きの矢印を基準に、値に応じて回転させる */
+    var pts = [
+        [w / 2, 0], [w * 0.15, -h / 2], [w * 0.15, -h * 0.2],
+        [-w / 2, -h * 0.2], [-w / 2, h * 0.2], [w * 0.15, h * 0.2], [w * 0.15, h / 2]
+    ].map(function (p) { return (cx + p[0]) + "," + (cy + p[1]); }).join(" ");
+    return '<polygon points="' + pts + '" fill="' + spec.color + '" stroke="#ffffff" stroke-width="1.5" transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')"/>';
+}
+
+function renderCard() {
+    var name = document.getElementById("p-name").value || "選手名";
+    var teamColor = document.getElementById("p-teamcolor").value;
+    var pos = document.getElementById("p-pos").value;
+    var subpos = document.getElementById("p-subpos").value;
+    var posText = pos + (subpos ? (" " + subpos) : "");
+    var throwbat = document.getElementById("p-throwbat").value;
+    var form = document.getElementById("p-form").value;
+    var avg = document.getElementById("p-avg").value;
+    var hr = document.getElementById("p-hr").value;
+    var rbi = document.getElementById("p-rbi").value;
+    var sb = document.getElementById("p-sb").value;
+
+    /* 特殊能力バッジ（4列固定）。
+       上段2行は特殊能力上段（固定8マス、パディングしない）。
+       下段は選んだ金特・青特・赤特・緑特を並べ、4列×6行になるまで
+       余ったマスをすべて空欄の枠で埋める（6行を超えたら最後の行だけ埋める）。 */
+    var cols = 4, catMinRows = 6;
+    var catMinCells = cols * catMinRows;
+    var badges = buildSubBadges();
+    var catBadges = buildCatBadges();
+    var padCount = catBadges.length < catMinCells
+        ? catMinCells - catBadges.length
+        : (cols - (catBadges.length % cols)) % cols;
+    for (var pad = 0; pad < padCount; pad++) catBadges.push({ type: "pad" });
+    badges = badges.concat(catBadges);
+    var rows = Math.ceil(badges.length / cols);
+    var badgeHTML = badges.map(function (b, i) {
+        var col = i % cols, row = Math.floor(i / cols);
+        var x = L.gridColX[col];
+        var y = L.gridRowY0 + row * L.gridRowH;
+        var w = L.gridColW, h = L.gridRowH - 4;
+        if (b.type === "pad") {
+            /* 行の余ったマスは、実機と同じく枠だけの空セルで埋める */
+            return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="#FBFEFF" stroke="#D9EBF2" stroke-width="2"/>';
+        }
+        if (b.type === "blank") {
+            /* 対象外のランク付き特殊能力（例: 捕手以外のキャッチャー適性）は
+               背景だけの空欄にする */
+            var bgN = RANK_PILL_BG.neutral;
+            var gidN = "gBlank" + i;
+            return '<defs><linearGradient id="' + gidN + '" x1="0" y1="0" x2="0" y2="1">' +
+                   '<stop offset="0" stop-color="' + bgN[0] + '"/><stop offset="1" stop-color="' + bgN[1] + '"/></linearGradient></defs>' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gidN + ')"/>' +
+                   '<rect x="' + (x + w - 42) + '" y="' + (y + 5) + '" width="34" height="' + (h - 10) + '" rx="7" fill="' + BADGE_RANK_TAG.D + '"/>';
+        }
+        if (b.type === "promoted") {
+            /* Sランクで専用名が付く特殊能力は、金特と同じ配色（タグ無し）で表示する */
+            var stP = CAT_STYLE.kintoku;
+            var gidP = "gProm" + i;
+            return '<defs><linearGradient id="' + gidP + '" x1="0" y1="0" x2="0" y2="1">' +
+                   '<stop offset="0" stop-color="' + stP.bg[0] + '"/><stop offset="1" stop-color="' + stP.bg[1] + '"/></linearGradient></defs>' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gidP + ')" stroke="' + stP.border + '" stroke-width="3"/>' +
+                   badgeLabel(x + w / 2, y + h / 2 + 7, w - 24, b.name, stP.text);
+        }
+        if (b.type === "ranked") {
+            var tier = pillTier(b.rank);
+            var bg = RANK_PILL_BG[tier];
+            var textColor = tier === "bad" ? "#7A2020" : "#154868";
+            var gid = "gRank" + i;
+            var labelW = w - 56;
+            return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+                   '<stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient></defs>' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid + ')"/>' +
+                   badgeLabel(x + 10 + labelW / 2, y + h / 2 + 7, labelW - 4, b.name, textColor) +
+                   '<rect x="' + (x + w - 42) + '" y="' + (y + 5) + '" width="34" height="' + (h - 10) + '" rx="7" fill="' + BADGE_RANK_TAG[b.rank] + '"/>' +
+                   '<text x="' + (x + w - 25) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
+        }
+        if (b.type === "aka2tone") {
+            /* 赤青特（☆がプラスの赤特）: 左半分を赤、右半分を青のツートンにする */
+            var gidL = "gAkaL" + i, gidR = "gAkaR" + i;
+            var half = w * 0.55;
+            return '<defs>' +
+                   '<linearGradient id="' + gidL + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + AKA_LEFT.bg[0] + '"/><stop offset="1" stop-color="' + AKA_LEFT.bg[1] + '"/></linearGradient>' +
+                   '<linearGradient id="' + gidR + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + AKA_RIGHT.bg[0] + '"/><stop offset="1" stop-color="' + AKA_RIGHT.bg[1] + '"/></linearGradient>' +
+                   '<clipPath id="clip' + i + '"><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10"/></clipPath>' +
+                   '</defs>' +
+                   '<g clip-path="url(#clip' + i + ')">' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + half + '" height="' + h + '" fill="url(#' + gidL + ')"/>' +
+                   '<rect x="' + (x + half) + '" y="' + y + '" width="' + (w - half) + '" height="' + h + '" fill="url(#' + gidR + ')"/>' +
+                   '</g>' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="none" stroke="' + AKA_LEFT.border + '" stroke-width="3"/>' +
+                   badgeLabel(x + w / 2, y + h / 2 + 7, w - 24, b.name, "#7A2020");
+        }
+        var st = CAT_STYLE[b.type];
+        var gid2 = "gCat" + i;
+        return '<defs><linearGradient id="' + gid2 + '" x1="0" y1="0" x2="0" y2="1">' +
+               '<stop offset="0" stop-color="' + st.bg[0] + '"/><stop offset="1" stop-color="' + st.bg[1] + '"/></linearGradient></defs>' +
+               '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid2 + ')" stroke="' + st.border + '" stroke-width="3"/>' +
+               badgeLabel(x + w / 2, y + h / 2 + 7, w - 24, b.name, st.text);
+    }).join("");
+
+    /* 能力値テーブル。水色パネルの上に行ごとの白いカードを敷き、
+       その上にラベル・ランク・数値を乗せる（添付画像の形式）。 */
+    var statCardW = (L.statNumX + L.statNumW) - L.statColX;
+    var statHTML = STATS.map(function (s) {
+        var band = L.statRows[STATS.indexOf(s)];
+        var y = band.y, h = band.h;
+        var rank = s.hasRank ? document.getElementById("stat-rank-" + s.id).value : null;
+        var v = document.getElementById("stat-val-" + s.id).value;
+        var rankText = rank
+            ? '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 12) + '" text-anchor="middle" font-size="28" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>'
+            : (s.id === "traj" ? trajArrow(L.statRankX + L.statRankW / 2, y + h / 2, parseInt(v, 10)) : "");
+        return '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
+               '<rect x="' + (L.statColX + 4) + '" y="' + (y + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (h - 8) + '" rx="8" fill="#F2F2F2"/>' +
+               '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(s.label) + '</text>' +
+               rankText +
+               '<text data-fit="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 22) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
+    }).join("");
+
+    var gridBottom = L.gridRowY0 + rows * L.gridRowH;
+    var statBottom = L.statRows[L.statRows.length - 1].y + L.statRows[L.statRows.length - 1].h;
+    var bodyBottom = Math.max(gridBottom, statBottom) + 20;
+    var H = bodyBottom + 10;
+
+    var bio1 = L.bio1Vals.map(function (b) {
+        var val = document.getElementById("p-" + b.key).value;
+        return '<text data-fit="' + b.w + '" x="' + b.x + '" y="' + (b.y + 27) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(b.pre) + esc(val) + '</text>';
+    }).join("");
+
+    var svg = '' +
+        '<svg viewBox="0 0 ' + CARD_W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' +
+
+        /* 外枠 */
+        '<rect x="2" y="2" width="' + (CARD_W - 4) + '" height="' + (H - 4) + '" rx="24" fill="#ffffff"/>' +
+
+        /* 本体パネル */
+        '<rect x="' + L.bodyPanel.x + '" y="' + L.bodyPanel.y + '" width="' + L.bodyPanel.w + '" height="' + (H - L.bodyPanel.y - 10) + '" rx="18" fill="#EAFAFF"/>' +
+
+        /* 選手名プレート */
+        '<rect x="' + L.namePlate.x + '" y="' + L.namePlate.y + '" width="' + L.namePlate.w + '" height="' + L.namePlate.h + '" rx="12" fill="#FFFF00"/>' +
+        '<text data-fit="' + (L.namePlate.w - 20) + '" x="' + (L.namePlate.x + L.namePlate.w / 2) + '" y="' + (L.namePlate.y + L.namePlate.h / 2 + 11) + '" text-anchor="middle" font-size="32" font-weight="800" fill="#111" font-family="\'Source Sans 3\',&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(name) + '</text>' +
+
+        /* 球団旗枠（色のみ。実際の旗・エンブレムは含まない） */
+        '<rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" rx="10" fill="' + teamColor + '"/>' +
+
+        /* 顔写真枠（プレースホルダー。実際の写真は含まない） */
+        '<rect x="' + L.photoBox.x + '" y="' + L.photoBox.y + '" width="' + L.photoBox.w + '" height="' + L.photoBox.h + '" rx="14" fill="#F2F2F2"/>' +
+
+        /* 守備位置 */
+        '<rect x="' + L.posLabel.x + '" y="' + L.posLabel.y + '" width="' + L.posLabel.w + '" height="' + L.posLabel.h + '" rx="8" fill="#F2F2F2"/>' +
+        '<text data-fit="' + (L.posLabel.w - 12) + '" x="' + (L.posLabel.x + L.posLabel.w / 2) + '" y="' + (L.posLabel.y + L.posLabel.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">守備位置</text>' +
+        '<text data-fit="' + (L.posValue.w - 10) + '" x="' + L.posValue.x + '" y="' + (L.posValue.y + L.posValue.h / 2 + 8) + '" font-size="20" font-weight="800" fill="#0f172a" font-family="\'Source Sans 3\',&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(posText) + '</text>' +
+
+        /* 成績・フォーム・投打（2段のパネル） */
+        '<rect x="' + L.bioRow1.x + '" y="' + L.bioRow1.y + '" width="' + L.bioRow1.w + '" height="' + L.bioRow1.h + '" rx="14" fill="#ffffff"/>' +
+        '<rect x="' + L.bio1Label.x + '" y="' + L.bio1Label.y + '" width="' + L.bio1Label.w + '" height="' + L.bio1Label.h + '" rx="8" fill="#F2F2F2"/>' +
+        '<text data-fit="' + (L.bio1Label.w - 12) + '" x="' + (L.bio1Label.x + L.bio1Label.w / 2) + '" y="' + (L.bio1Label.y + L.bio1Label.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">成績</text>' +
+        bio1 +
+
+        '<rect x="' + L.bioRow2.x + '" y="' + L.bioRow2.y + '" width="' + L.bioRow2.w + '" height="' + L.bioRow2.h + '" rx="14" fill="#ffffff"/>' +
+        '<rect x="' + L.bio2Label1.x + '" y="' + L.bio2Label1.y + '" width="' + L.bio2Label1.w + '" height="' + L.bio2Label1.h + '" rx="8" fill="#F2F2F2"/>' +
+        '<text data-fit="' + (L.bio2Label1.w - 12) + '" x="' + (L.bio2Label1.x + L.bio2Label1.w / 2) + '" y="' + (L.bio2Label1.y + L.bio2Label1.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">フォーム</text>' +
+        '<text data-fit="' + (L.bio2Val1.w - 10) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 7) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(form) + '</text>' +
+        '<rect x="' + L.bio2Label2.x + '" y="' + L.bio2Label2.y + '" width="' + L.bio2Label2.w + '" height="' + L.bio2Label2.h + '" rx="8" fill="#F2F2F2"/>' +
+        '<text data-fit="' + (L.bio2Label2.w - 12) + '" x="' + (L.bio2Label2.x + L.bio2Label2.w / 2) + '" y="' + (L.bio2Label2.y + L.bio2Label2.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">投打</text>' +
+        '<text data-fit="' + (L.bio2Val2.w - 10) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 7) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(throwbat) + '</text>' +
+
+        /* 能力値テーブル */
+        statHTML +
+
+        /* 特殊能力バッジ */
+        badgeHTML +
+
+        '</svg>';
+
+    var wrap = document.getElementById("cardPreview");
+    wrap.innerHTML = svg;
+    var svgEl = wrap.querySelector("svg");
+    fitTexts(svgEl);
+    justifyTexts(svgEl);
+}
+
+/* ---- 入力変更で再描画 ---- */
+document.querySelectorAll(".editor input, .editor select").forEach(function (el) {
+    el.addEventListener("input", function () { updateCheckedCounts(); renderCard(); });
+    el.addEventListener("change", function () { updateCheckedCounts(); renderCard(); });
+});
+
+document.getElementById("btnReset").addEventListener("click", function () {
+    document.querySelectorAll('#abilityArea input[type="checkbox"]').forEach(function (b) { b.checked = false; });
+    ["ab-kintoku-おかわり", "ab-kintoku-広角砲", "ab-aoto-チャンスメーカー", "ab-midori-調子安定"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.checked = true;
+    });
+    document.getElementById("sub-chance").value = "S";
+    updateCheckedCounts();
+    filterAbilities();
+    renderCard();
+});
+
+/* ---- PNG書き出し ---- */
+document.getElementById("btnDownload").addEventListener("click", function () {
+    var svgEl = document.querySelector("#cardPreview svg");
+    var vb = svgEl.getAttribute("viewBox").split(" ").map(Number);
+    var scale = 2;
+    var w = vb[2] * scale, h = vb[3] * scale;
+
+    var serializer = new XMLSerializer();
+    var svgStr = serializer.serializeToString(svgEl);
+    var svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+    var url = URL.createObjectURL(svgBlob);
+
+    var img = new Image();
+    img.onload = function () {
+        var canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(function (blob) {
+            var a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = (document.getElementById("p-name").value || "player") + "_card.png";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }, "image/png");
+    };
+    img.src = url;
+});
+
+updateCheckedCounts();
+renderCard();
+</script>
+
+</body>
+</html>
