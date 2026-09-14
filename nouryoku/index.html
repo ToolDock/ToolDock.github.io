@@ -140,6 +140,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
         <button type="button" id="btnDownload">PNG画像を保存</button>
         <button type="button" class="secondary" id="btnReset">初期値に戻す</button>
     </div>
+    <p class="note">スマートフォンで保存できない場合は、共有シートが表示されていないか確認してください。それでも保存できない場合は、画像を長押しするかスクリーンショットをご利用ください。</p>
 </div>
 
 <div class="editor">
@@ -898,9 +899,17 @@ document.getElementById("btnDownload").addEventListener("click", function () {
         ctx.drawImage(img, 0, 0, w, h);
         URL.revokeObjectURL(url);
         canvas.toBlob(function (blob) {
+            var filename = (document.getElementById("p-name").value || "player") + "_card.png";
+            var file = new File([blob], filename, { type: "image/png" });
+            /* スマホ（特にiOS Safari）はa[download]が効かないことがあるため、
+               共有シート経由で「画像を保存」できるWeb Share APIを優先する */
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({ files: [file], title: filename }).catch(function () { /* キャンセル時は無視 */ });
+                return;
+            }
             var a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
-            a.download = (document.getElementById("p-name").value || "player") + "_card.png";
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
