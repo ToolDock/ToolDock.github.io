@@ -382,10 +382,10 @@ function renderAbilityArea() {
                 '（' + items.length + '）<span class="checked-count"></span></summary>' +
                 '<div class="ab-grid">' +
                 items.map(function (pair) {
-                    var name = pair[0];
+                    var name = pair[0], star = pair[1];
                     var id = "ab-" + cat.key + "-" + name;
                     return '<label class="ab-item" data-name="' + name + '">' +
-                           '<input type="checkbox" data-cat="' + cat.key + '" id="' + id + '">' +
+                           '<input type="checkbox" data-cat="' + cat.key + '" data-star="' + star + '" id="' + id + '">' +
                            '<span>' + name + '</span></label>';
                 }).join("") +
                 '</div></details>';
@@ -517,7 +517,14 @@ function buildAbilityBadges() {
     AB_CATS.forEach(function (cat) {
         document.querySelectorAll('#abilityArea .ab-cat[data-cat="' + cat.key + '"] input:checked').forEach(function (box) {
             var name = box.closest(".ab-item").dataset.name;
-            badges.push({ type: cat.key, name: name });
+            if (cat.key === "aka") {
+                /* 赤特のうち☆がプラスのもの（悪球打ち・死球集中など）は「赤青特」として
+                   ツートンで表示する。三振・エラーなどマイナスのものは純粋な赤特のまま。 */
+                var star = parseInt(box.dataset.star, 10) || 0;
+                badges.push({ type: star > 0 ? "aka2tone" : "aka", name: name });
+            } else {
+                badges.push({ type: cat.key, name: name });
+            }
         });
     });
     return badges;
@@ -525,11 +532,12 @@ function buildAbilityBadges() {
 
 /* カテゴリ別バッジの土台色（縦グラデーション）・枠線・文字色。
    金特は実機スクリーンショットの配色。青特は実機の水色、緑特は指定により緑にした。
-   赤特（赤青特能）は指定により左赤・右青のツートンで描画する（renderCard側で処理）。 */
+   赤特は純粋な赤色の単色。赤青特（☆がプラスの赤特）だけ左赤・右青のツートンにする。 */
 var CAT_STYLE = {
     kintoku: { bg: ["#FFF3D0", "#F5DFA8"], border: "#E0B03C", text: "#7A4520" },
     aoto:    { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE", text: "#154868" },
-    midori:  { bg: ["#E8FFE8", "#B8F0B8"], border: "#4FAE5C", text: "#1B6B2C" }
+    midori:  { bg: ["#E8FFE8", "#B8F0B8"], border: "#4FAE5C", text: "#1B6B2C" },
+    aka:     { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82", text: "#7A2020" }
 };
 var AKA_LEFT = { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82" };
 var AKA_RIGHT = { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE" };
@@ -586,8 +594,8 @@ function renderCard() {
                    '<rect x="' + (x + w - 42) + '" y="' + (y + 5) + '" width="34" height="' + (h - 10) + '" rx="7" fill="' + BADGE_RANK_TAG[b.rank] + '"/>' +
                    '<text x="' + (x + w - 25) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
         }
-        if (b.type === "aka") {
-            /* 赤青特能: 左半分を赤、右半分を青のツートンにする */
+        if (b.type === "aka2tone") {
+            /* 赤青特（☆がプラスの赤特）: 左半分を赤、右半分を青のツートンにする */
             var gidL = "gAkaL" + i, gidR = "gAkaR" + i;
             var half = w * 0.55;
             return '<defs>' +
