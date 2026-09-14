@@ -543,16 +543,23 @@ var CAT_STYLE = {
 var AKA_LEFT = { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE" };
 var AKA_RIGHT = { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82" };
 
-/* 弾道の上向き矢印アイコン（実機の紫がかったピンクの矢印を再現） */
-function trajArrow(cx, cy) {
-    var w = 22, h = 26;
-    var x0 = cx - w / 2, y0 = cy - h / 2;
+/* 弾道の矢印アイコン。実機の4種類（1:黄・水平／2:橙・浅い角度／
+   3:赤・急な角度／4:紫がかったピンク・垂直）を再現する。 */
+var TRAJ_ARROW = {
+    1: { angle: 0, color: "#FFD400" },
+    2: { angle: -28, color: "#F5941C" },
+    3: { angle: -58, color: "#E5352E" },
+    4: { angle: -85, color: "#C2399C" }
+};
+function trajArrow(cx, cy, value) {
+    var spec = TRAJ_ARROW[value] || TRAJ_ARROW[1];
+    var w = 26, h = 20;
+    /* 右向きの矢印を基準に、値に応じて回転させる */
     var pts = [
-        [x0 + w * 0.5, y0], [x0 + w, y0 + h * 0.5], [x0 + w * 0.66, y0 + h * 0.5],
-        [x0 + w * 0.66, y0 + h], [x0 + w * 0.34, y0 + h], [x0 + w * 0.34, y0 + h * 0.5],
-        [x0, y0 + h * 0.5]
-    ].map(function (p) { return p[0] + "," + p[1]; }).join(" ");
-    return '<polygon points="' + pts + '" fill="#EF5DA8" stroke="#ffffff" stroke-width="1.5"/>';
+        [w / 2, 0], [w * 0.15, -h / 2], [w * 0.15, -h * 0.2],
+        [-w / 2, -h * 0.2], [-w / 2, h * 0.2], [w * 0.15, h * 0.2], [w * 0.15, h / 2]
+    ].map(function (p) { return (cx + p[0]) + "," + (cy + p[1]); }).join(" ");
+    return '<polygon points="' + pts + '" fill="' + spec.color + '" stroke="#ffffff" stroke-width="1.5" transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')"/>';
 }
 
 function renderCard() {
@@ -574,14 +581,12 @@ function renderCard() {
     var badges = buildAbilityBadges();
     var cols = 4, minRows = 6;
     var minCells = cols * minRows;
-    if (badges.length < minCells) {
-        for (var pad = 0; pad < minCells - badges.length; pad++) badges.push({ type: "pad" });
-    } else {
-        var remainder = badges.length % cols;
-        if (remainder !== 0) {
-            for (var pad2 = 0; pad2 < cols - remainder; pad2++) badges.push({ type: "pad" });
-        }
-    }
+    /* 埋める数を先に固定してからpushする（ループ中にbadges.lengthが増えて
+       条件が動いてしまい、途中で止まっていたバグを修正） */
+    var padCount = badges.length < minCells
+        ? minCells - badges.length
+        : (cols - (badges.length % cols)) % cols;
+    for (var pad = 0; pad < padCount; pad++) badges.push({ type: "pad" });
     var rows = Math.ceil(badges.length / cols);
     var badgeHTML = badges.map(function (b, i) {
         var col = i % cols, row = Math.floor(i / cols);
@@ -657,12 +662,12 @@ function renderCard() {
         var v = document.getElementById("stat-val-" + s.id).value;
         var rankText = rank
             ? '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 12) + '" text-anchor="middle" font-size="28" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>'
-            : (s.id === "traj" ? trajArrow(L.statRankX + L.statRankW / 2, y + h / 2) : "");
+            : (s.id === "traj" ? trajArrow(L.statRankX + L.statRankW / 2, y + h / 2, parseInt(v, 10)) : "");
         return '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                '<rect x="' + (L.statColX + 4) + '" y="' + (y + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (h - 8) + '" rx="8" fill="#F2F2F2"/>' +
                '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>' +
                rankText +
-               '<text data-fit="' + (L.statNumW - 10) + '" x="' + (L.statNumX + L.statNumW - 8) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
+               '<text data-fit="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 22) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
     }).join("");
 
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
