@@ -310,15 +310,20 @@ var STATS = [
     { id: "ca", label: "捕球", min: 1, max: 100, value: 60, hasRank: true, rank: "C" }
 ];
 
-/* ランク別の色。指定された配色（S=薄いピンク, A=濃いピンク, B=赤, C=オレンジ,
-   D=黄, E=黄緑, F=水色, G=灰色）をそのまま使う。能力値ランクの文字色・
-   特殊能力バッジのランクタグ色は共通でこの配色を使う。 */
-var RANK_COLOR = {
+/* 能力値ランクの文字色。指定された配色（S=薄いピンク, A=濃いピンク, B=赤, C=オレンジ,
+   D=黄, E=黄緑, F=水色, G=灰色）。特殊能力バッジには使わず、能力値欄だけに使う。 */
+var STAT_RANK_COLOR = {
     S: "#F6B8D6", A: "#E91E8C", B: "#E53935", C: "#F57C00",
     D: "#F5C518", E: "#AFCA3B", F: "#4FC3E8", G: "#9E9E9E"
 };
-var STAT_RANK_COLOR = RANK_COLOR;
-var BADGE_RANK_TAG = RANK_COLOR;
+
+/* 特殊能力バッジのランクタグ色（能力値とは別の配色に戻した）。
+   良ランク(S〜C)=ティール、D=薄いティール、悪ランク(E〜G)=赤。 */
+var BADGE_RANK_TAG = {
+    S: "#0F8FB5", A: "#0F8FB5", B: "#0F8FB5", C: "#0F8FB5",
+    D: "#7FB8CC",
+    E: "#D9534F", F: "#C0392B", G: "#962D22"
+};
 function pillTier(rank) {
     return "good";
 }
@@ -550,14 +555,20 @@ function renderCard() {
     var sb = document.getElementById("p-sb").value;
 
     /* 特殊能力バッジ（4列固定。元データと同じ列幅・行間で、選んだ数だけ並べる）。
-       実機同様、最後の行が余ったぶんは空欄の枠で埋める。 */
+       4列×6行になるまでは、余ったマスをすべて空欄の枠で埋める。
+       6行を超える数を選んだ場合は、最後の行だけ余りを埋めて行を追加する。 */
     var badges = buildAbilityBadges();
-    var cols = 4;
-    var remainder = badges.length % cols;
-    if (remainder !== 0) {
-        for (var pad = 0; pad < cols - remainder; pad++) badges.push({ type: "pad" });
+    var cols = 4, minRows = 6;
+    var minCells = cols * minRows;
+    if (badges.length < minCells) {
+        for (var pad = 0; pad < minCells - badges.length; pad++) badges.push({ type: "pad" });
+    } else {
+        var remainder = badges.length % cols;
+        if (remainder !== 0) {
+            for (var pad2 = 0; pad2 < cols - remainder; pad2++) badges.push({ type: "pad" });
+        }
     }
-    var rows = Math.max(5, Math.ceil(badges.length / cols));
+    var rows = Math.ceil(badges.length / cols);
     var badgeHTML = badges.map(function (b, i) {
         var col = i % cols, row = Math.floor(i / cols);
         var x = L.gridColX[col];
@@ -621,7 +632,9 @@ function renderCard() {
                '<text data-fit="' + (w - 20) + '" x="' + (x + w / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="18" font-weight="700" fill="' + st.text + '" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>';
     }).join("");
 
-    /* 能力値テーブル（枠なし。ランク文字と数字を直接パネルに乗せる） */
+    /* 能力値テーブル。水色パネルの上に行ごとの白いカードを敷き、
+       その上にラベル・ランク・数値を乗せる（添付画像の形式）。 */
+    var statCardW = (L.statNumX + L.statNumW) - L.statColX;
     var statHTML = STATS.map(function (s) {
         var band = L.statRows[STATS.indexOf(s)];
         var y = band.y, h = band.h;
@@ -630,7 +643,8 @@ function renderCard() {
         var rankText = rank
             ? '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 12) + '" text-anchor="middle" font-size="28" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>'
             : "";
-        return '<rect x="' + L.statColX + '" y="' + y + '" width="' + L.statLabelW + '" height="' + h + '" rx="8" fill="#F2F2F2"/>' +
+        return '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
+               '<rect x="' + (L.statColX + 4) + '" y="' + (y + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (h - 8) + '" rx="8" fill="#F2F2F2"/>' +
                '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>' +
                rankText +
                '<text data-fit="' + L.statNumW + '" x="' + (L.statNumX + L.statNumW) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
