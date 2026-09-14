@@ -70,6 +70,8 @@ p{ margin:0 0 12px; }
     border-radius:8px; background:#fff; color:var(--ink); width:100%;
 }
 .field input[type="color"]{ width:100%; height:36px; padding:2px; border:1px solid var(--line); border-radius:8px; }
+.name-color-picks{ display:flex; flex-wrap:wrap; gap:4px 12px; padding-top:6px; }
+.name-color-picks label{ display:flex; align-items:center; gap:4px; font-size:0.85rem; font-weight:400; color:var(--ink); }
 
 .stat-rows{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
 .stat-row{ display:grid; grid-template-columns:100px 90px 1fr; gap:8px; align-items:center; }
@@ -147,6 +149,14 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
         <div class="field">
             <label for="p-name">選手名（左上のプレートに表示）</label>
             <input type="text" id="p-name" value="ドック太郎" maxlength="10">
+        </div>
+        <div class="field">
+            <label>選手名プレートの色（複数選択でツートン）</label>
+            <div class="name-color-picks">
+                <label><input type="checkbox" id="p-color-yellow" checked> 黄色（内野）</label>
+                <label><input type="checkbox" id="p-color-water"> 水色（捕手）</label>
+                <label><input type="checkbox" id="p-color-green"> 緑色（外野）</label>
+            </div>
         </div>
         <div class="field">
             <label for="p-teamcolor">球団旗の色（画像未指定時）</label>
@@ -522,13 +532,33 @@ var L = {
         { y: 181, h: 56 }, { y: 243, h: 51 }, { y: 300, h: 46 }, { y: 352, h: 51 },
         { y: 408, h: 46 }, { y: 462, h: 51 }, { y: 519, h: 51 }
     ],
-    gridColX: [372, 536, 703, 870],
-    gridColW: 165,
+    gridColX: [372, 541, 710, 879], /* 列同士が重ならないよう間隔を確保（枠線が隣に隠れる問題の対策） */
+    gridColW: 160,
     gridRowY0: 180,
     gridRowH: 48.75 /* 能力値テーブルの下端(y=570)と特能8行の下端を揃える */
 };
 
 var POS_LABEL_MAP = { "捕": "捕", "一": "一", "二": "二", "三": "三", "遊": "遊", "外": "外" };
+
+/* 選手名プレートの色。守備位置ごとの「メインポジション色」が一番左に来て、
+   残りの選択色は 水>黄>緑 の優先順で左から並ぶ。 */
+var POS_COLOR_KEY = { "一": "yellow", "二": "yellow", "三": "yellow", "遊": "yellow", "捕": "water", "外": "green" };
+var NAME_PLATE_COLORS = { yellow: "#FFEB00", water: "#3FC1E0", green: "#4CAF50" };
+var NAME_COLOR_PRIORITY = { water: 0, yellow: 1, green: 2 };
+function buildNamePlateColors() {
+    var checked = [];
+    if (document.getElementById("p-color-yellow").checked) checked.push("yellow");
+    if (document.getElementById("p-color-water").checked) checked.push("water");
+    if (document.getElementById("p-color-green").checked) checked.push("green");
+    if (checked.length === 0) checked.push("yellow");
+    var mainKey = POS_COLOR_KEY[document.getElementById("p-pos").value];
+    checked.sort(function (a, b) {
+        if (a === mainKey) return -1;
+        if (b === mainKey) return 1;
+        return NAME_COLOR_PRIORITY[a] - NAME_COLOR_PRIORITY[b];
+    });
+    return checked.map(function (k) { return NAME_PLATE_COLORS[k]; });
+}
 
 /* ---- 特殊能力バッジの中身を組み立てる ----
    実機同様、S昇格で専用名が付くものは金特と同じ色（タグ無し）で表示する。
@@ -592,13 +622,28 @@ var TRAJ_ARROW = {
     3: { angle: -58, color: "#E5352E" },
     4: { angle: -85, color: "#C2399C" }
 };
+/* 選手名プレートの背景。色を1つなら単色、複数なら左から順に均等分割したツートン/スリートーンにする */
+function nameplateStripes(x, y, w, h, colors) {
+    if (colors.length <= 1) {
+        return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="12" fill="' + (colors[0] || "#FFEB00") + '"/>';
+    }
+    var stripeW = w / colors.length;
+    var clipId = "clipName";
+    var html = '<defs><clipPath id="' + clipId + '"><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="12"/></clipPath></defs><g clip-path="url(#' + clipId + ')">';
+    colors.forEach(function (c, i) {
+        html += '<rect x="' + (x + i * stripeW) + '" y="' + y + '" width="' + stripeW + '" height="' + h + '" fill="' + c + '"/>';
+    });
+    html += '</g>';
+    return html;
+}
+
 function trajArrow(cx, cy, value) {
     var spec = TRAJ_ARROW[value] || TRAJ_ARROW[1];
-    var w = 30, h = 28;
-    /* 右向きの矢印を基準に、値に応じて回転させる（実機同様、ごん太の矢印にする） */
+    var w = 28, h = 24;
+    /* 右向きの矢印を基準に、値に応じて回転させる */
     var pts = [
-        [w / 2, 0], [w * 0.28, -h / 2], [w * 0.28, -h * 0.32],
-        [-w / 2, -h * 0.32], [-w / 2, h * 0.32], [w * 0.28, h * 0.32], [w * 0.28, h / 2]
+        [w / 2, 0], [w * 0.32, -h / 2], [w * 0.32, -h * 0.24],
+        [-w / 2, -h * 0.24], [-w / 2, h * 0.24], [w * 0.32, h * 0.24], [w * 0.32, h / 2]
     ].map(function (p) { return (cx + p[0]) + "," + (cy + p[1]); }).join(" ");
     return '<polygon points="' + pts + '" fill="' + spec.color + '" stroke="#ffffff" stroke-width="1.5" transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')"/>';
 }
@@ -655,7 +700,7 @@ function renderCard() {
             var gidP = "gProm" + i;
             return '<defs><linearGradient id="' + gidP + '" x1="0" y1="0" x2="0" y2="1">' +
                    '<stop offset="0" stop-color="' + stP.bg[0] + '"/><stop offset="1" stop-color="' + stP.bg[1] + '"/></linearGradient></defs>' +
-                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gidP + ')" stroke="' + stP.border + '" stroke-width="3"/>' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gidP + ')" stroke="' + stP.border + '" stroke-width="2"/>' +
                    badgeLabel(x + w / 2, y + h / 2 + 7, w - 24, b.name, stP.text);
         }
         if (b.type === "ranked") {
@@ -684,14 +729,14 @@ function renderCard() {
                    '<rect x="' + x + '" y="' + y + '" width="' + half + '" height="' + h + '" fill="url(#' + gidL + ')"/>' +
                    '<rect x="' + (x + half) + '" y="' + y + '" width="' + (w - half) + '" height="' + h + '" fill="url(#' + gidR + ')"/>' +
                    '</g>' +
-                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="none" stroke="' + AKA_LEFT.border + '" stroke-width="3"/>' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="none" stroke="' + AKA_LEFT.border + '" stroke-width="2"/>' +
                    badgeLabel(x + w / 2, y + h / 2 + 7, w - 24, b.name, "#7A2020");
         }
         var st = CAT_STYLE[b.type];
         var gid2 = "gCat" + i;
         return '<defs><linearGradient id="' + gid2 + '" x1="0" y1="0" x2="0" y2="1">' +
                '<stop offset="0" stop-color="' + st.bg[0] + '"/><stop offset="1" stop-color="' + st.bg[1] + '"/></linearGradient></defs>' +
-               '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid2 + ')" stroke="' + st.border + '" stroke-width="3"/>' +
+               '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid2 + ')" stroke="' + st.border + '" stroke-width="2"/>' +
                badgeLabel(x + w / 2, y + h / 2 + 7, w - 24, b.name, st.text);
     }).join("");
 
@@ -733,7 +778,7 @@ function renderCard() {
         '<rect x="' + L.bodyPanel.x + '" y="' + L.bodyPanel.y + '" width="' + L.bodyPanel.w + '" height="' + (H - L.bodyPanel.y - 10) + '" rx="18" fill="#EAFAFF"/>' +
 
         /* 選手名プレート */
-        '<rect x="' + L.namePlate.x + '" y="' + L.namePlate.y + '" width="' + L.namePlate.w + '" height="' + L.namePlate.h + '" rx="12" fill="#FFFF00"/>' +
+        nameplateStripes(L.namePlate.x, L.namePlate.y, L.namePlate.w, L.namePlate.h, buildNamePlateColors()) +
         '<text data-fit="' + (L.namePlate.w - 20) + '" x="' + (L.namePlate.x + L.namePlate.w / 2) + '" y="' + (L.namePlate.y + L.namePlate.h / 2 + 11) + '" text-anchor="middle" font-size="32" font-weight="800" fill="#111" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(name) + '</text>' +
 
         /* 球団旗枠（アップロードした画像があればそれを表示、無ければ色のみ） */
