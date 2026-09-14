@@ -713,7 +713,8 @@ function renderCard() {
             /* A・Bは枠をつけて強調し、C・D・Eは文字を薄くして、B/Aとの違いが
                はっきり分かるようにする */
             var isHigh = b.rank === "A" || b.rank === "B";
-            var textColor = tier === "bad" ? "#7A2020" : "#154868";
+            var isPaleText = b.rank === "C" || b.rank === "E";
+            var textColor = tier === "bad" ? "#7A2020" : (isPaleText ? "#9FB3C2" : "#154868");
             var gid = "gRank" + i;
             var labelW = w - 56;
             var border = isHigh ? ' stroke="#5FC1DE" stroke-width="2.5"' : "";
