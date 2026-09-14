@@ -507,7 +507,11 @@ function buildAbilityBadges() {
         }
         var rank = document.getElementById(a.id).value;
         if (a.promote[rank]) {
+            /* Sランクで専用名が付くものは金特と同じ配色（タグ無し） */
             badges.push({ type: "promoted", name: a.promote[rank] });
+        } else if (rank === "F" || rank === "G") {
+            /* F・Gランクは他の赤特と同じ配色（タグ無し）にする */
+            badges.push({ type: "aka", name: a.label });
         } else {
             badges.push({ type: "ranked", name: a.label, rank: rank });
         }
