@@ -325,7 +325,7 @@ var BADGE_RANK_TAG = {
     E: "#D9534F", F: "#C0392B", G: "#962D22"
 };
 function pillTier(rank) {
-    return "good";
+    return (rank === "F" || rank === "G") ? "bad" : "good";
 }
 /* ランク付きバッジの土台（縦グラデーション）。実機の水色パイルを基準にした。 */
 var RANK_PILL_BG = {
@@ -507,12 +507,10 @@ function buildAbilityBadges() {
         }
         var rank = document.getElementById(a.id).value;
         if (a.promote[rank]) {
-            /* Sランクで専用名が付くものは金特と同じ配色（タグ無し） */
+            /* Sランクで専用名が付くものだけ金特と同じ配色（タグ無し） */
             badges.push({ type: "promoted", name: a.promote[rank] });
-        } else if (rank === "F" || rank === "G") {
-            /* F・Gランクは他の赤特と同じ配色（タグ無し）にする */
-            badges.push({ type: "aka", name: a.label });
         } else {
+            /* F・Gランクはタグ（アルファベット）を残したまま、土台だけ赤特色にする */
             badges.push({ type: "ranked", name: a.label, rank: rank });
         }
     });
@@ -544,6 +542,18 @@ var CAT_STYLE = {
 /* 赤青特: 名前とは逆に左が青、右が赤 */
 var AKA_LEFT = { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE" };
 var AKA_RIGHT = { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82" };
+
+/* 弾道の上向き矢印アイコン（実機の紫がかったピンクの矢印を再現） */
+function trajArrow(cx, cy) {
+    var w = 22, h = 26;
+    var x0 = cx - w / 2, y0 = cy - h / 2;
+    var pts = [
+        [x0 + w * 0.5, y0], [x0 + w, y0 + h * 0.5], [x0 + w * 0.66, y0 + h * 0.5],
+        [x0 + w * 0.66, y0 + h], [x0 + w * 0.34, y0 + h], [x0 + w * 0.34, y0 + h * 0.5],
+        [x0, y0 + h * 0.5]
+    ].map(function (p) { return p[0] + "," + p[1]; }).join(" ");
+    return '<polygon points="' + pts + '" fill="#EF5DA8" stroke="#ffffff" stroke-width="1.5"/>';
+}
 
 function renderCard() {
     var name = document.getElementById("p-name").value || "選手名";
@@ -604,11 +614,12 @@ function renderCard() {
         if (b.type === "ranked") {
             var tier = pillTier(b.rank);
             var bg = RANK_PILL_BG[tier];
+            var textColor = tier === "bad" ? "#7A2020" : "#154868";
             var gid = "gRank" + i;
             return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
                    '<stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient></defs>' +
                    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid + ')"/>' +
-                   '<text data-fit="' + (w - 56) + '" x="' + (x + 12) + '" y="' + (y + h / 2 + 7) + '" font-size="18" font-weight="700" fill="#154868" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>' +
+                   '<text data-fit="' + (w - 56) + '" x="' + (x + 12) + '" y="' + (y + h / 2 + 7) + '" font-size="18" font-weight="700" fill="' + textColor + '" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>' +
                    '<rect x="' + (x + w - 42) + '" y="' + (y + 5) + '" width="34" height="' + (h - 10) + '" rx="7" fill="' + BADGE_RANK_TAG[b.rank] + '"/>' +
                    '<text x="' + (x + w - 25) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
         }
@@ -646,12 +657,12 @@ function renderCard() {
         var v = document.getElementById("stat-val-" + s.id).value;
         var rankText = rank
             ? '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 12) + '" text-anchor="middle" font-size="28" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>'
-            : "";
+            : (s.id === "traj" ? trajArrow(L.statRankX + L.statRankW / 2, y + h / 2) : "");
         return '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                '<rect x="' + (L.statColX + 4) + '" y="' + (y + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (h - 8) + '" rx="8" fill="#F2F2F2"/>' +
                '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>' +
                rankText +
-               '<text data-fit="' + L.statNumW + '" x="' + (L.statNumX + L.statNumW) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
+               '<text data-fit="' + (L.statNumW - 10) + '" x="' + (L.statNumX + L.statNumW - 8) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
     }).join("");
 
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
