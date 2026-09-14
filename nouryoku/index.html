@@ -95,9 +95,9 @@ p{ margin:0 0 12px; }
 .ab-cat__title .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
 .ab-cat__title .checked-count{ margin-left:auto; font-size:0.78rem; font-weight:600; color:var(--accent); }
 .dot--kintoku{ background:#d4a017; }
-.dot--aoto{ background:#2e9e4f; }
-.dot--aka{ background:#dc2626; }
-.dot--midori{ background:#8a97a6; }
+.dot--aoto{ background:#2b8fc4; }
+.dot--aka{ background:linear-gradient(90deg,#dc2626 50%,#2b8fc4 50%); }
+.dot--midori{ background:#3a9a3a; }
 
 .ab-grid{ display:grid; gap:4px 10px; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); }
 .ab-item{ display:flex; align-items:flex-start; gap:6px; font-size:0.86rem; padding:4px 6px; border-radius:6px; cursor:pointer; }
@@ -286,14 +286,17 @@ var AB_CATS = [
     { key: "midori", label: "緑特", dot: "dot--midori" }
 ];
 
+/* 実機のスクリーンショット通りの並び（上段: チャンス/対左投手/キャッチャー/ケガしにくさ、
+   下段: 盗塁/走塁/送球/回復）。キャッチャーは守備位置が捕手のときだけ表示する。 */
 var SUB_ABILITIES = [
     { id: "sub-chance", label: "チャンス", promote: { S: "勝負師" } },
     { id: "sub-vsleft", label: "対左投手", promote: { S: "左腕キラー" } },
-    { id: "sub-catcher", label: "キャッチャー", promote: { S: "球界の頭脳" } },
+    { id: "sub-catcher", label: "キャッチャー", promote: { S: "球界の頭脳" }, requiresPos: "捕" },
+    { id: "sub-injury", label: "ケガしにくさ", promote: { S: "鉄人" } },
     { id: "sub-steal", label: "盗塁", promote: { S: "電光石火" } },
     { id: "sub-run", label: "走塁", promote: { S: "高速ベースラン" } },
     { id: "sub-throw", label: "送球", promote: { S: "ストライク送球" } },
-    { id: "sub-injury", label: "ケガしにくさ", promote: { S: "鉄人" } }
+    { id: "sub-recover", label: "回復", promote: { S: "ガソリンタンク" } }
 ];
 var GRADES = ["S", "A", "B", "C", "D", "E", "F", "G"];
 
@@ -307,30 +310,30 @@ var STATS = [
     { id: "ca", label: "捕球", min: 1, max: 100, value: 60, hasRank: true, rank: "C" }
 ];
 
-/* 能力値ランクの文字色。S/A/B/Cは元のPowerPointから実測した色そのまま。
-   D〜Gは元データに存在しないため、同系統で不足分を補った。 */
+/* 能力値ランクの文字色。実機のスクリーンショット（S=ピンク、G=グレー）を基準に、
+   未確認のA〜Fは同系統で補った。 */
 var STAT_RANK_COLOR = {
-    S: "#FFCCFF", A: "#FF3300", B: "#FF0000", C: "#FFC000",
-    D: "#8CA0AD", E: "#C0392B", F: "#962D22", G: "#6B1F1F"
+    S: "#F45CA0", A: "#FF8C1A", B: "#4A90D9", C: "#F5A623",
+    D: "#7B93A8", E: "#E0533D", F: "#C0392B", G: "#8C8C8C"
 };
 
-/* 特殊能力バッジのランクタグ色。B/A/Fの3色は元のバッジ画像から実測。
-   S/C/D/E/Gは同系統（良ランク=青緑、Dは薄め、悪ランク=赤茶）で補った。 */
+/* 特殊能力バッジのランクタグ色。実機スクリーンショットの水色系タグを基準にした。
+   良ランク(S〜C)=ティール、D=薄いティール、悪ランク(E〜G)=赤。 */
 var BADGE_RANK_TAG = {
-    S: "#0B76A0", A: "#0B76A0", B: "#0B76A0", C: "#0B76A0",
-    D: "#73A0B4",
-    E: "#C04F15", F: "#C04F15", G: "#8C3A10"
+    S: "#0F8FB5", A: "#0F8FB5", B: "#0F8FB5", C: "#0F8FB5",
+    D: "#7FB8CC",
+    E: "#D9534F", F: "#C0392B", G: "#962D22"
 };
 function pillTier(rank) {
     if (rank === "D") return "neutral";
     var idx = GRADES.indexOf(rank);
     return idx <= 3 ? "good" : "bad";
 }
-/* ランク付きバッジの土台（縦グラデーション）。元バッジ画像から実測。 */
+/* ランク付きバッジの土台（縦グラデーション）。実機の水色パイルを基準にした。 */
 var RANK_PILL_BG = {
-    good: ["#DCEAF7", "#9CCEEA"],
-    neutral: ["#EFF6FA", "#D7E6EC"],
-    bad: ["#FBDFD3", "#F2AFAF"]
+    good: ["#EAFBFF", "#B7ECF7"],
+    neutral: ["#F3FAFC", "#DCEAEF"],
+    bad: ["#FDEBE9", "#F6C2BE"]
 };
 
 /* ---- 能力値行の描画 ---- */
@@ -493,13 +496,23 @@ var L = {
 
 var POS_LABEL_MAP = { "捕": "捕", "一": "一", "二": "二", "三": "三", "遊": "遊", "外": "外" };
 
-/* ---- 特殊能力バッジの中身を組み立てる ---- */
+/* ---- 特殊能力バッジの中身を組み立てる ----
+   実機同様、S昇格で専用名が付くものは金特と同じ色（タグ無し）で表示する。
+   キャッチャーは守備位置が捕手以外のとき、背景だけの空欄にする。 */
 function buildAbilityBadges() {
     var badges = [];
+    var pos = document.getElementById("p-pos").value;
     SUB_ABILITIES.forEach(function (a) {
+        if (a.requiresPos && a.requiresPos !== pos) {
+            badges.push({ type: "blank" });
+            return;
+        }
         var rank = document.getElementById(a.id).value;
-        var name = a.promote[rank] || a.label;
-        badges.push({ type: "ranked", name: name, rank: rank });
+        if (a.promote[rank]) {
+            badges.push({ type: "promoted", name: a.promote[rank] });
+        } else {
+            badges.push({ type: "ranked", name: a.label, rank: rank });
+        }
     });
     AB_CATS.forEach(function (cat) {
         document.querySelectorAll('#abilityArea .ab-cat[data-cat="' + cat.key + '"] input:checked').forEach(function (box) {
@@ -510,13 +523,16 @@ function buildAbilityBadges() {
     return badges;
 }
 
-/* カテゴリ別バッジの土台色（縦グラデーション）・枠線・文字色。元バッジ画像から実測。 */
+/* カテゴリ別バッジの土台色（縦グラデーション）・枠線・文字色。
+   金特は実機スクリーンショットの配色。青特は実機の水色、緑特は指定により緑にした。
+   赤特（赤青特能）は指定により左赤・右青のツートンで描画する（renderCard側で処理）。 */
 var CAT_STYLE = {
-    kintoku: { bg: ["#FFF44D", "#FBC700"], border: "#C9960A", text: "#7A4A1E" },
-    aoto:    { bg: ["#D4F0CC", "#FFFFFF"], border: "#4FA8D8", text: "#1B6B2C" },
-    aka:     { bg: ["#FBDFD3", "#FFFFFF"], border: "#D98A4E", text: "#C00000" },
-    midori:  { bg: ["#FFFFFF", "#E2E8F0"], border: "#94A3B8", text: "#3C4A58" }
+    kintoku: { bg: ["#FFF3D0", "#F5DFA8"], border: "#E0B03C", text: "#7A4520" },
+    aoto:    { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE", text: "#154868" },
+    midori:  { bg: ["#E8FFE8", "#B8F0B8"], border: "#4FAE5C", text: "#1B6B2C" }
 };
+var AKA_LEFT = { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82" };
+var AKA_RIGHT = { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE" };
 
 function renderCard() {
     var name = document.getElementById("p-name").value || "選手名";
@@ -540,6 +556,25 @@ function renderCard() {
         var x = L.gridColX[col];
         var y = L.gridRowY0 + row * L.gridRowH;
         var w = L.gridColW, h = L.gridRowH - 4;
+        if (b.type === "blank") {
+            /* 対象外のランク付き特殊能力（例: 捕手以外のキャッチャー適性）は
+               背景だけの空欄にする */
+            var bgN = RANK_PILL_BG.neutral;
+            var gidN = "gBlank" + i;
+            return '<defs><linearGradient id="' + gidN + '" x1="0" y1="0" x2="0" y2="1">' +
+                   '<stop offset="0" stop-color="' + bgN[0] + '"/><stop offset="1" stop-color="' + bgN[1] + '"/></linearGradient></defs>' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gidN + ')"/>' +
+                   '<rect x="' + (x + w - 42) + '" y="' + (y + 5) + '" width="34" height="' + (h - 10) + '" rx="7" fill="' + BADGE_RANK_TAG.D + '"/>';
+        }
+        if (b.type === "promoted") {
+            /* Sランクで専用名が付く特殊能力は、金特と同じ配色（タグ無し）で表示する */
+            var stP = CAT_STYLE.kintoku;
+            var gidP = "gProm" + i;
+            return '<defs><linearGradient id="' + gidP + '" x1="0" y1="0" x2="0" y2="1">' +
+                   '<stop offset="0" stop-color="' + stP.bg[0] + '"/><stop offset="1" stop-color="' + stP.bg[1] + '"/></linearGradient></defs>' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gidP + ')" stroke="' + stP.border + '" stroke-width="3"/>' +
+                   '<text data-fit="' + (w - 20) + '" x="' + (x + w / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="18" font-weight="700" fill="' + stP.text + '" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>';
+        }
         if (b.type === "ranked") {
             var tier = pillTier(b.rank);
             var bg = RANK_PILL_BG[tier];
@@ -547,9 +582,25 @@ function renderCard() {
             return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
                    '<stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient></defs>' +
                    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid + ')"/>' +
-                   '<text data-fit="' + (w - 56) + '" x="' + (x + 12) + '" y="' + (y + h / 2 + 7) + '" font-size="18" font-weight="700" fill="#0f172a" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>' +
+                   '<text data-fit="' + (w - 56) + '" x="' + (x + 12) + '" y="' + (y + h / 2 + 7) + '" font-size="18" font-weight="700" fill="#154868" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>' +
                    '<rect x="' + (x + w - 42) + '" y="' + (y + 5) + '" width="34" height="' + (h - 10) + '" rx="7" fill="' + BADGE_RANK_TAG[b.rank] + '"/>' +
                    '<text x="' + (x + w - 25) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
+        }
+        if (b.type === "aka") {
+            /* 赤青特能: 左半分を赤、右半分を青のツートンにする */
+            var gidL = "gAkaL" + i, gidR = "gAkaR" + i;
+            var half = w * 0.55;
+            return '<defs>' +
+                   '<linearGradient id="' + gidL + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + AKA_LEFT.bg[0] + '"/><stop offset="1" stop-color="' + AKA_LEFT.bg[1] + '"/></linearGradient>' +
+                   '<linearGradient id="' + gidR + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + AKA_RIGHT.bg[0] + '"/><stop offset="1" stop-color="' + AKA_RIGHT.bg[1] + '"/></linearGradient>' +
+                   '<clipPath id="clip' + i + '"><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10"/></clipPath>' +
+                   '</defs>' +
+                   '<g clip-path="url(#clip' + i + ')">' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + half + '" height="' + h + '" fill="url(#' + gidL + ')"/>' +
+                   '<rect x="' + (x + half) + '" y="' + y + '" width="' + (w - half) + '" height="' + h + '" fill="url(#' + gidR + ')"/>' +
+                   '</g>' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="none" stroke="' + AKA_LEFT.border + '" stroke-width="3"/>' +
+                   '<text data-fit="' + (w - 20) + '" x="' + (x + w / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="18" font-weight="700" fill="#7A2020" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>';
         }
         var st = CAT_STYLE[b.type];
         var gid2 = "gCat" + i;
@@ -571,7 +622,7 @@ function renderCard() {
         return '<rect x="' + L.statColX + '" y="' + y + '" width="' + L.statLabelW + '" height="' + h + '" rx="8" fill="#F2F2F2"/>' +
                '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>' +
                rankText +
-               '<text data-fit="' + L.statNumW + '" x="' + (L.statNumX + L.statNumW) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#0f172a" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
+               '<text data-fit="' + L.statNumW + '" x="' + (L.statNumX + L.statNumW) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
     }).join("");
 
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
