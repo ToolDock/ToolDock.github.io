@@ -310,24 +310,17 @@ var STATS = [
     { id: "ca", label: "捕球", min: 1, max: 100, value: 60, hasRank: true, rank: "C" }
 ];
 
-/* 能力値ランクの文字色。実機のスクリーンショット（S=ピンク、G=グレー）を基準に、
-   未確認のA〜Fは同系統で補った。 */
-var STAT_RANK_COLOR = {
-    S: "#F45CA0", A: "#FF8C1A", B: "#4A90D9", C: "#F5A623",
-    D: "#7B93A8", E: "#E0533D", F: "#C0392B", G: "#8C8C8C"
+/* ランク別の色。指定された配色（S=薄いピンク, A=濃いピンク, B=赤, C=オレンジ,
+   D=黄, E=黄緑, F=水色, G=灰色）をそのまま使う。能力値ランクの文字色・
+   特殊能力バッジのランクタグ色は共通でこの配色を使う。 */
+var RANK_COLOR = {
+    S: "#F6B8D6", A: "#E91E8C", B: "#E53935", C: "#F57C00",
+    D: "#F5C518", E: "#AFCA3B", F: "#4FC3E8", G: "#9E9E9E"
 };
-
-/* 特殊能力バッジのランクタグ色。実機スクリーンショットの水色系タグを基準にした。
-   良ランク(S〜C)=ティール、D=薄いティール、悪ランク(E〜G)=赤。 */
-var BADGE_RANK_TAG = {
-    S: "#0F8FB5", A: "#0F8FB5", B: "#0F8FB5", C: "#0F8FB5",
-    D: "#7FB8CC",
-    E: "#D9534F", F: "#C0392B", G: "#962D22"
-};
+var STAT_RANK_COLOR = RANK_COLOR;
+var BADGE_RANK_TAG = RANK_COLOR;
 function pillTier(rank) {
-    if (rank === "D") return "neutral";
-    var idx = GRADES.indexOf(rank);
-    return idx <= 3 ? "good" : "bad";
+    return "good";
 }
 /* ランク付きバッジの土台（縦グラデーション）。実機の水色パイルを基準にした。 */
 var RANK_PILL_BG = {
@@ -539,8 +532,9 @@ var CAT_STYLE = {
     midori:  { bg: ["#E8FFE8", "#B8F0B8"], border: "#4FAE5C", text: "#1B6B2C" },
     aka:     { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82", text: "#7A2020" }
 };
-var AKA_LEFT = { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82" };
-var AKA_RIGHT = { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE" };
+/* 赤青特: 名前とは逆に左が青、右が赤 */
+var AKA_LEFT = { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE" };
+var AKA_RIGHT = { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82" };
 
 function renderCard() {
     var name = document.getElementById("p-name").value || "選手名";
@@ -555,15 +549,24 @@ function renderCard() {
     var rbi = document.getElementById("p-rbi").value;
     var sb = document.getElementById("p-sb").value;
 
-    /* 特殊能力バッジ（4列固定。元データと同じ列幅・行間で、選んだ数だけ並べる） */
+    /* 特殊能力バッジ（4列固定。元データと同じ列幅・行間で、選んだ数だけ並べる）。
+       実機同様、最後の行が余ったぶんは空欄の枠で埋める。 */
     var badges = buildAbilityBadges();
     var cols = 4;
+    var remainder = badges.length % cols;
+    if (remainder !== 0) {
+        for (var pad = 0; pad < cols - remainder; pad++) badges.push({ type: "pad" });
+    }
     var rows = Math.max(5, Math.ceil(badges.length / cols));
     var badgeHTML = badges.map(function (b, i) {
         var col = i % cols, row = Math.floor(i / cols);
         var x = L.gridColX[col];
         var y = L.gridRowY0 + row * L.gridRowH;
         var w = L.gridColW, h = L.gridRowH - 4;
+        if (b.type === "pad") {
+            /* 行の余ったマスは、実機と同じく枠だけの空セルで埋める */
+            return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="#FBFEFF" stroke="#D9EBF2" stroke-width="2"/>';
+        }
         if (b.type === "blank") {
             /* 対象外のランク付き特殊能力（例: 捕手以外のキャッチャー適性）は
                背景だけの空欄にする */
@@ -650,7 +653,7 @@ function renderCard() {
         '<rect x="2" y="2" width="' + (CARD_W - 4) + '" height="' + (H - 4) + '" rx="24" fill="#ffffff"/>' +
 
         /* 本体パネル */
-        '<rect x="' + L.bodyPanel.x + '" y="' + L.bodyPanel.y + '" width="' + L.bodyPanel.w + '" height="' + (H - L.bodyPanel.y - 10) + '" rx="18" fill="#D0DFE6"/>' +
+        '<rect x="' + L.bodyPanel.x + '" y="' + L.bodyPanel.y + '" width="' + L.bodyPanel.w + '" height="' + (H - L.bodyPanel.y - 10) + '" rx="18" fill="#EAFAFF"/>' +
 
         /* 選手名プレート */
         '<rect x="' + L.namePlate.x + '" y="' + L.namePlate.y + '" width="' + L.namePlate.w + '" height="' + L.namePlate.h + '" rx="12" fill="#FFFF00"/>' +
