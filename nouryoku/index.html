@@ -639,13 +639,17 @@ function nameplateStripes(x, y, w, h, colors) {
 
 function trajArrow(cx, cy, value) {
     var spec = TRAJ_ARROW[value] || TRAJ_ARROW[1];
-    var w = 30, h = 32;
-    /* 右向きの矢印を基準に、値に応じて回転させる。
-       軸と矢じりを分けず、後端がへこんだ旗（ダーツ）型の一体形状にする */
+    var w = 22, h = 26, shaftLen = 14;
+    /* 右向きの矢を基準に、値に応じて回転させる。矢じり（ダーツ型）に
+       軸（棒）を刺して、矢らしい形にする */
     var pts = [
         [w / 2, 0], [-w / 2, -h / 2], [-w * 0.15, 0], [-w / 2, h / 2]
     ].map(function (p) { return (cx + p[0]) + "," + (cy + p[1]); }).join(" ");
-    return '<polygon points="' + pts + '" fill="' + spec.color + '" stroke="#ffffff" stroke-width="1.5" transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')"/>';
+    var shaftX0 = cx - w * 0.15, shaftX1 = cx - w * 0.15 - shaftLen;
+    return '<g transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')">' +
+           '<line x1="' + shaftX0 + '" y1="' + cy + '" x2="' + shaftX1 + '" y2="' + cy + '" stroke="' + spec.color + '" stroke-width="6" stroke-linecap="round"/>' +
+           '<polygon points="' + pts + '" fill="' + spec.color + '" stroke="#ffffff" stroke-width="1.5"/>' +
+           '</g>';
 }
 
 function renderCard() {
