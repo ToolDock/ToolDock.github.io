@@ -445,8 +445,36 @@ function fitTexts(svgRoot) {
     });
 }
 
+/* ---- 特殊能力バッジの名前を中央揃え・均等配置にする ----
+   自然な文字幅が枠より狭ければ文字間隔だけを広げて均等に埋め
+   （lengthAdjust="spacing"、字形は歪めない）、枠より広ければ
+   文字間隔ではなくフォントサイズを縮めて収める（字形が潰れるのを防ぐ）。 */
+function justifyTexts(svgRoot) {
+    svgRoot.querySelectorAll("text[data-justify]").forEach(function (t) {
+        var maxW = parseFloat(t.getAttribute("data-justify"));
+        try {
+            var natural = t.getComputedTextLength();
+            if (natural <= 0) return;
+            if (natural <= maxW) {
+                t.setAttribute("textLength", maxW);
+                t.setAttribute("lengthAdjust", "spacing");
+            } else {
+                var size = parseFloat(t.getAttribute("font-size"));
+                t.setAttribute("font-size", Math.max(9, size * (maxW / natural)));
+            }
+        } catch (e) { /* 非表示要素などでは無視 */ }
+    });
+}
+
 function esc(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/* 特殊能力バッジの名前。中央揃えにし、描画後にjustifyTexts()で
+   短い名前は文字間隔を広げて均等配置、長い名前は縮小して収める
+   （data-justifyで対象幅を持たせておく）。 */
+function badgeLabel(cx, cy, maxW, text, color) {
+    return '<text data-justify="' + maxW + '" x="' + cx + '" y="' + cy + '" text-anchor="middle" font-size="18" font-weight="700" fill="' + color + '" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(text) + '</text>';
 }
 
 /* =====================================================================
@@ -497,7 +525,7 @@ var POS_LABEL_MAP = { "捕": "捕", "一": "一", "二": "二", "三": "三", "�
 /* ---- 特殊能力バッジの中身を組み立てる ----
    実機同様、S昇格で専用名が付くものは金特と同じ色（タグ無し）で表示する。
    キャッチャーは守備位置が捕手以外のとき、背景だけの空欄にする。 */
-function buildAbilityBadges() {
+function buildSubBadges() {
     var badges = [];
     var pos = document.getElementById("p-pos").value;
     SUB_ABILITIES.forEach(function (a) {
@@ -514,6 +542,11 @@ function buildAbilityBadges() {
             badges.push({ type: "ranked", name: a.label, rank: rank });
         }
     });
+    return badges;
+}
+
+function buildCatBadges() {
+    var badges = [];
     AB_CATS.forEach(function (cat) {
         document.querySelectorAll('#abilityArea .ab-cat[data-cat="' + cat.key + '"] input:checked').forEach(function (box) {
             var name = box.closest(".ab-item").dataset.name;
@@ -575,18 +608,19 @@ function renderCard() {
     var rbi = document.getElementById("p-rbi").value;
     var sb = document.getElementById("p-sb").value;
 
-    /* 特殊能力バッジ（4列固定。元データと同じ列幅・行間で、選んだ数だけ並べる）。
-       4列×6行になるまでは、余ったマスをすべて空欄の枠で埋める。
-       6行を超える数を選んだ場合は、最後の行だけ余りを埋めて行を追加する。 */
-    var badges = buildAbilityBadges();
-    var cols = 4, minRows = 6;
-    var minCells = cols * minRows;
-    /* 埋める数を先に固定してからpushする（ループ中にbadges.lengthが増えて
-       条件が動いてしまい、途中で止まっていたバグを修正） */
-    var padCount = badges.length < minCells
-        ? minCells - badges.length
-        : (cols - (badges.length % cols)) % cols;
-    for (var pad = 0; pad < padCount; pad++) badges.push({ type: "pad" });
+    /* 特殊能力バッジ（4列固定）。
+       上段2行は特殊能力上段（固定8マス、パディングしない）。
+       下段は選んだ金特・青特・赤特・緑特を並べ、4列×6行になるまで
+       余ったマスをすべて空欄の枠で埋める（6行を超えたら最後の行だけ埋める）。 */
+    var cols = 4, catMinRows = 6;
+    var catMinCells = cols * catMinRows;
+    var badges = buildSubBadges();
+    var catBadges = buildCatBadges();
+    var padCount = catBadges.length < catMinCells
+        ? catMinCells - catBadges.length
+        : (cols - (catBadges.length % cols)) % cols;
+    for (var pad = 0; pad < padCount; pad++) catBadges.push({ type: "pad" });
+    badges = badges.concat(catBadges);
     var rows = Math.ceil(badges.length / cols);
     var badgeHTML = badges.map(function (b, i) {
         var col = i % cols, row = Math.floor(i / cols);
@@ -614,17 +648,18 @@ function renderCard() {
             return '<defs><linearGradient id="' + gidP + '" x1="0" y1="0" x2="0" y2="1">' +
                    '<stop offset="0" stop-color="' + stP.bg[0] + '"/><stop offset="1" stop-color="' + stP.bg[1] + '"/></linearGradient></defs>' +
                    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gidP + ')" stroke="' + stP.border + '" stroke-width="3"/>' +
-                   '<text data-fit="' + (w - 20) + '" x="' + (x + w / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="18" font-weight="700" fill="' + stP.text + '" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>';
+                   badgeLabel(x + w / 2, y + h / 2 + 7, w - 24, b.name, stP.text);
         }
         if (b.type === "ranked") {
             var tier = pillTier(b.rank);
             var bg = RANK_PILL_BG[tier];
             var textColor = tier === "bad" ? "#7A2020" : "#154868";
             var gid = "gRank" + i;
+            var labelW = w - 56;
             return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
                    '<stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient></defs>' +
                    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid + ')"/>' +
-                   '<text data-fit="' + (w - 56) + '" x="' + (x + 12) + '" y="' + (y + h / 2 + 7) + '" font-size="18" font-weight="700" fill="' + textColor + '" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>' +
+                   badgeLabel(x + 10 + labelW / 2, y + h / 2 + 7, labelW - 4, b.name, textColor) +
                    '<rect x="' + (x + w - 42) + '" y="' + (y + 5) + '" width="34" height="' + (h - 10) + '" rx="7" fill="' + BADGE_RANK_TAG[b.rank] + '"/>' +
                    '<text x="' + (x + w - 25) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
         }
@@ -642,14 +677,14 @@ function renderCard() {
                    '<rect x="' + (x + half) + '" y="' + y + '" width="' + (w - half) + '" height="' + h + '" fill="url(#' + gidR + ')"/>' +
                    '</g>' +
                    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="none" stroke="' + AKA_LEFT.border + '" stroke-width="3"/>' +
-                   '<text data-fit="' + (w - 20) + '" x="' + (x + w / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="18" font-weight="700" fill="#7A2020" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>';
+                   badgeLabel(x + w / 2, y + h / 2 + 7, w - 24, b.name, "#7A2020");
         }
         var st = CAT_STYLE[b.type];
         var gid2 = "gCat" + i;
         return '<defs><linearGradient id="' + gid2 + '" x1="0" y1="0" x2="0" y2="1">' +
                '<stop offset="0" stop-color="' + st.bg[0] + '"/><stop offset="1" stop-color="' + st.bg[1] + '"/></linearGradient></defs>' +
                '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid2 + ')" stroke="' + st.border + '" stroke-width="3"/>' +
-               '<text data-fit="' + (w - 20) + '" x="' + (x + w / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="18" font-weight="700" fill="' + st.text + '" font-family="&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>';
+               badgeLabel(x + w / 2, y + h / 2 + 7, w - 24, b.name, st.text);
     }).join("");
 
     /* 能力値テーブル。水色パネルの上に行ごとの白いカードを敷き、
@@ -728,7 +763,9 @@ function renderCard() {
 
     var wrap = document.getElementById("cardPreview");
     wrap.innerHTML = svg;
-    fitTexts(wrap.querySelector("svg"));
+    var svgEl = wrap.querySelector("svg");
+    fitTexts(svgEl);
+    justifyTexts(svgEl);
 }
 
 /* ---- 入力変更で再描画 ---- */
