@@ -619,8 +619,8 @@ var AKA_RIGHT = { bg: ["#FDEBE9", "#F7B8BC"], border: "#E27C82" };
 var TRAJ_ARROW = {
     1: { angle: 0, color: "#FFD400" },
     2: { angle: -28, color: "#F5941C" },
-    3: { angle: -58, color: "#E5352E" },
-    4: { angle: -85, color: "#C2399C" }
+    3: { angle: -45, color: "#E5352E" },
+    4: { angle: -58, color: "#C2399C" }
 };
 /* 選手名プレートの背景。色を1つなら単色、複数なら左から順に均等分割したツートン/スリートーンにする */
 function nameplateStripes(x, y, w, h, colors) {
@@ -713,8 +713,7 @@ function renderCard() {
             /* A・Bは枠をつけて強調し、C・D・Eは文字を薄くして、B/Aとの違いが
                はっきり分かるようにする */
             var isHigh = b.rank === "A" || b.rank === "B";
-            var isPaleText = b.rank === "C" || b.rank === "E";
-            var textColor = tier === "bad" ? "#7A2020" : (isPaleText ? "#9FB3C2" : "#154868");
+            var textColor = tier === "bad" ? "#7A2020" : "#154868";
             var gid = "gRank" + i;
             var labelW = w - 56;
             var border = isHigh ? ' stroke="#5FC1DE" stroke-width="2.5"' : "";
@@ -818,10 +817,10 @@ function renderCard() {
         '<rect x="' + L.bioRow2.x + '" y="' + L.bioRow2.y + '" width="' + L.bioRow2.w + '" height="' + L.bioRow2.h + '" rx="14" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>' +
         '<rect x="' + L.bio2Label1.x + '" y="' + L.bio2Label1.y + '" width="' + L.bio2Label1.w + '" height="' + L.bio2Label1.h + '" rx="8" fill="#F2F2F2"/>' +
         '<text data-fit="' + (L.bio2Label1.w - 12) + '" x="' + (L.bio2Label1.x + L.bio2Label1.w / 2) + '" y="' + (L.bio2Label1.y + L.bio2Label1.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">フォーム</text>' +
-        '<text data-fit="' + (L.bio2Val1.w - 10) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 7) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(form) + '</text>' +
+        '<text data-fit="' + (L.bio2Val1.w - 10) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 7) + '" font-size="23" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(form) + '</text>' +
         '<rect x="' + L.bio2Label2.x + '" y="' + L.bio2Label2.y + '" width="' + L.bio2Label2.w + '" height="' + L.bio2Label2.h + '" rx="8" fill="#F2F2F2"/>' +
         '<text data-fit="' + (L.bio2Label2.w - 12) + '" x="' + (L.bio2Label2.x + L.bio2Label2.w / 2) + '" y="' + (L.bio2Label2.y + L.bio2Label2.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">投打</text>' +
-        '<text data-fit="' + (L.bio2Val2.w - 10) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 7) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
+        '<text data-fit="' + (L.bio2Val2.w - 10) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 7) + '" font-size="23" font-weight="700" fill="#0f172a" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
 
         /* 能力値テーブル */
         statHTML +
