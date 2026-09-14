@@ -338,9 +338,9 @@ var STAT_RANK_COLOR = {
 /* 特殊能力バッジのランクタグ色（能力値とは別の配色に戻した）。
    良ランク(S〜C)=ティール、D=薄いティール、悪ランク(E〜G)=赤。 */
 var BADGE_RANK_TAG = {
-    S: "#0F8FB5", A: "#0F8FB5", B: "#0F8FB5", C: "#0F8FB5",
-    D: "#7FB8CC",
-    E: "#D9534F", F: "#C0392B", G: "#962D22"
+    S: "#0F8FB5", A: "#0F8FB5", B: "#0F8FB5",
+    C: "#7FB8CC", D: "#7FB8CC", E: "#7FB8CC",
+    F: "#C0392B", G: "#962D22"
 };
 function pillTier(rank) {
     return (rank === "F" || rank === "G") ? "bad" : "good";
@@ -639,13 +639,17 @@ function nameplateStripes(x, y, w, h, colors) {
 
 function trajArrow(cx, cy, value) {
     var spec = TRAJ_ARROW[value] || TRAJ_ARROW[1];
-    var w = 28, h = 24;
-    /* 右向きの矢印を基準に、値に応じて回転させる */
+    var w = 22, h = 26, shaftLen = 14;
+    /* 右向きの矢を基準に、値に応じて回転させる。矢じり（ダーツ型）に
+       軸（棒）を刺して、矢らしい形にする */
     var pts = [
-        [w / 2, 0], [w * 0.32, -h / 2], [w * 0.32, -h * 0.24],
-        [-w / 2, -h * 0.24], [-w / 2, h * 0.24], [w * 0.32, h * 0.24], [w * 0.32, h / 2]
+        [w / 2, 0], [-w / 2, -h / 2], [-w * 0.15, 0], [-w / 2, h / 2]
     ].map(function (p) { return (cx + p[0]) + "," + (cy + p[1]); }).join(" ");
-    return '<polygon points="' + pts + '" fill="' + spec.color + '" stroke="#ffffff" stroke-width="1.5" transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')"/>';
+    var shaftX0 = cx - w * 0.15, shaftX1 = cx - w * 0.15 - shaftLen;
+    return '<g transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')">' +
+           '<line x1="' + shaftX0 + '" y1="' + cy + '" x2="' + shaftX1 + '" y2="' + cy + '" stroke="' + spec.color + '" stroke-width="6" stroke-linecap="round"/>' +
+           '<polygon points="' + pts + '" fill="' + spec.color + '" stroke="#ffffff" stroke-width="1.5"/>' +
+           '</g>';
 }
 
 function renderCard() {
@@ -706,15 +710,20 @@ function renderCard() {
         if (b.type === "ranked") {
             var tier = pillTier(b.rank);
             var bg = RANK_PILL_BG[tier];
-            var textColor = tier === "bad" ? "#7A2020" : "#154868";
+            /* A・Bは枠をつけて強調し、C・D・Eは文字を薄くして、B/Aとの違いが
+               はっきり分かるようにする */
+            var isHigh = b.rank === "A" || b.rank === "B";
+            var isPaleText = b.rank === "C" || b.rank === "E";
+            var textColor = tier === "bad" ? "#7A2020" : (isPaleText ? "#9FB3C2" : "#154868");
             var gid = "gRank" + i;
             var labelW = w - 56;
+            var border = isHigh ? ' stroke="#5FC1DE" stroke-width="2.5"' : "";
             return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
                    '<stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient></defs>' +
-                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid + ')"/>' +
+                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid + ')"' + border + '/>' +
                    badgeLabel(x + 10 + labelW / 2, y + h / 2 + 7, labelW - 4, b.name, textColor) +
                    '<rect x="' + (x + w - 42) + '" y="' + (y + 5) + '" width="34" height="' + (h - 10) + '" rx="7" fill="' + BADGE_RANK_TAG[b.rank] + '"/>' +
-                   '<text x="' + (x + w - 25) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
+                   '<text x="' + (x + w - 25) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" stroke="#154868" stroke-width="1.2" paint-order="stroke fill" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
         }
         if (b.type === "aka2tone") {
             /* 赤青特（☆がプラスの赤特）: 左半分を赤、右半分を青のツートンにする */
@@ -765,7 +774,7 @@ function renderCard() {
 
     var bio1 = L.bio1Vals.map(function (b) {
         var val = document.getElementById("p-" + b.key).value;
-        return '<text data-fit="' + b.w + '" x="' + b.x + '" y="' + (b.y + 27) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.pre) + esc(val) + '</text>';
+        return '<text data-fit="' + b.w + '" x="' + b.x + '" y="' + (b.y + 29) + '" font-size="24" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.pre) + esc(val) + '</text>';
     }).join("");
 
     var svg = '' +
