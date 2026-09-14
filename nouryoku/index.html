@@ -719,7 +719,7 @@ function renderCard() {
                    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="url(#' + gid + ')"' + border + '/>' +
                    badgeLabel(x + 10 + labelW / 2, y + h / 2 + 7, labelW - 4, b.name, textColor) +
                    '<rect x="' + (x + w - 42) + '" y="' + (y + 5) + '" width="34" height="' + (h - 10) + '" rx="7" fill="' + BADGE_RANK_TAG[b.rank] + '"/>' +
-                   '<text x="' + (x + w - 25) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
+                   '<text x="' + (x + w - 25) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="800" fill="#fff" stroke="#154868" stroke-width="1.2" paint-order="stroke fill" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
         }
         if (b.type === "aka2tone") {
             /* 赤青特（☆がプラスの赤特）: 左半分を赤、右半分を青のツートンにする */
