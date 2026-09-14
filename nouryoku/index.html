@@ -149,8 +149,16 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
             <input type="text" id="p-name" value="ドック太郎" maxlength="10">
         </div>
         <div class="field">
-            <label for="p-teamcolor">球団旗の色</label>
+            <label for="p-teamcolor">球団旗の色（画像未指定時）</label>
             <input type="color" id="p-teamcolor" value="#156082">
+        </div>
+        <div class="field">
+            <label for="p-flagimg">球団旗の画像（任意）</label>
+            <input type="file" id="p-flagimg" accept="image/*">
+        </div>
+        <div class="field">
+            <label for="p-photoimg">顔写真の画像（任意）</label>
+            <input type="file" id="p-photoimg" accept="image/*">
         </div>
         <div class="field">
             <label for="p-pos">守備位置</label>
@@ -474,7 +482,7 @@ function esc(s) {
    短い名前は文字間隔を広げて均等配置、長い名前は縮小して収める
    （data-justifyで対象幅を持たせておく）。 */
 function badgeLabel(cx, cy, maxW, text, color) {
-    return '<text data-justify="' + maxW + '" x="' + cx + '" y="' + cy + '" text-anchor="middle" font-size="18" font-weight="700" fill="' + color + '" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(text) + '</text>';
+    return '<text data-justify="' + maxW + '" x="' + cx + '" y="' + cy + '" text-anchor="middle" font-size="18" font-weight="700" fill="' + color + '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(text) + '</text>';
 }
 
 /* =====================================================================
@@ -517,7 +525,7 @@ var L = {
     gridColX: [372, 536, 703, 870],
     gridColW: 165,
     gridRowY0: 180,
-    gridRowH: 54
+    gridRowH: 48.75 /* 能力値テーブルの下端(y=570)と特能8行の下端を揃える */
 };
 
 var POS_LABEL_MAP = { "捕": "捕", "一": "一", "二": "二", "三": "三", "遊": "遊", "外": "外" };
@@ -586,11 +594,11 @@ var TRAJ_ARROW = {
 };
 function trajArrow(cx, cy, value) {
     var spec = TRAJ_ARROW[value] || TRAJ_ARROW[1];
-    var w = 26, h = 20;
-    /* 右向きの矢印を基準に、値に応じて回転させる */
+    var w = 30, h = 28;
+    /* 右向きの矢印を基準に、値に応じて回転させる（実機同様、ごん太の矢印にする） */
     var pts = [
-        [w / 2, 0], [w * 0.15, -h / 2], [w * 0.15, -h * 0.2],
-        [-w / 2, -h * 0.2], [-w / 2, h * 0.2], [w * 0.15, h * 0.2], [w * 0.15, h / 2]
+        [w / 2, 0], [w * 0.28, -h / 2], [w * 0.28, -h * 0.32],
+        [-w / 2, -h * 0.32], [-w / 2, h * 0.32], [w * 0.28, h * 0.32], [w * 0.28, h / 2]
     ].map(function (p) { return (cx + p[0]) + "," + (cy + p[1]); }).join(" ");
     return '<polygon points="' + pts + '" fill="' + spec.color + '" stroke="#ffffff" stroke-width="1.5" transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')"/>';
 }
@@ -700,7 +708,7 @@ function renderCard() {
             : (s.id === "traj" ? trajArrow(L.statRankX + L.statRankW / 2, y + h / 2, parseInt(v, 10)) : "");
         return '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                '<rect x="' + (L.statColX + 4) + '" y="' + (y + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (h - 8) + '" rx="8" fill="#F2F2F2"/>' +
-               '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(s.label) + '</text>' +
+               '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>' +
                rankText +
                '<text data-fit="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 22) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
     }).join("");
@@ -712,7 +720,7 @@ function renderCard() {
 
     var bio1 = L.bio1Vals.map(function (b) {
         var val = document.getElementById("p-" + b.key).value;
-        return '<text data-fit="' + b.w + '" x="' + b.x + '" y="' + (b.y + 27) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(b.pre) + esc(val) + '</text>';
+        return '<text data-fit="' + b.w + '" x="' + b.x + '" y="' + (b.y + 27) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.pre) + esc(val) + '</text>';
     }).join("");
 
     var svg = '' +
@@ -726,32 +734,40 @@ function renderCard() {
 
         /* 選手名プレート */
         '<rect x="' + L.namePlate.x + '" y="' + L.namePlate.y + '" width="' + L.namePlate.w + '" height="' + L.namePlate.h + '" rx="12" fill="#FFFF00"/>' +
-        '<text data-fit="' + (L.namePlate.w - 20) + '" x="' + (L.namePlate.x + L.namePlate.w / 2) + '" y="' + (L.namePlate.y + L.namePlate.h / 2 + 11) + '" text-anchor="middle" font-size="32" font-weight="800" fill="#111" font-family="\'Source Sans 3\',&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(name) + '</text>' +
+        '<text data-fit="' + (L.namePlate.w - 20) + '" x="' + (L.namePlate.x + L.namePlate.w / 2) + '" y="' + (L.namePlate.y + L.namePlate.h / 2 + 11) + '" text-anchor="middle" font-size="32" font-weight="800" fill="#111" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(name) + '</text>' +
 
-        /* 球団旗枠（色のみ。実際の旗・エンブレムは含まない） */
-        '<rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" rx="10" fill="' + teamColor + '"/>' +
+        /* 球団旗枠（アップロードした画像があればそれを表示、無ければ色のみ） */
+        (teamFlagImg
+            ? '<defs><clipPath id="clipFlag"><rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" rx="10"/></clipPath></defs>' +
+              '<image href="' + teamFlagImg + '" x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" preserveAspectRatio="xMidYMid slice" clip-path="url(#clipFlag)"/>'
+            : '<rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" rx="10" fill="' + teamColor + '"/>') +
+        '<rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" rx="10" fill="none" stroke="#CFE8F2" stroke-width="2"/>' +
 
-        /* 顔写真枠（プレースホルダー。実際の写真は含まない） */
-        '<rect x="' + L.photoBox.x + '" y="' + L.photoBox.y + '" width="' + L.photoBox.w + '" height="' + L.photoBox.h + '" rx="14" fill="#F2F2F2"/>' +
+        /* 顔写真枠（アップロードした画像があればそれを表示、無ければプレースホルダー） */
+        (playerPhotoImg
+            ? '<defs><clipPath id="clipPhoto"><rect x="' + L.photoBox.x + '" y="' + L.photoBox.y + '" width="' + L.photoBox.w + '" height="' + L.photoBox.h + '" rx="14"/></clipPath></defs>' +
+              '<image href="' + playerPhotoImg + '" x="' + L.photoBox.x + '" y="' + L.photoBox.y + '" width="' + L.photoBox.w + '" height="' + L.photoBox.h + '" preserveAspectRatio="xMidYMid slice" clip-path="url(#clipPhoto)"/>'
+            : '<rect x="' + L.photoBox.x + '" y="' + L.photoBox.y + '" width="' + L.photoBox.w + '" height="' + L.photoBox.h + '" rx="14" fill="#F2F2F2"/>') +
+        '<rect x="' + L.photoBox.x + '" y="' + L.photoBox.y + '" width="' + L.photoBox.w + '" height="' + L.photoBox.h + '" rx="14" fill="none" stroke="#CFE8F2" stroke-width="2"/>' +
 
         /* 守備位置 */
         '<rect x="' + L.posLabel.x + '" y="' + L.posLabel.y + '" width="' + L.posLabel.w + '" height="' + L.posLabel.h + '" rx="8" fill="#F2F2F2"/>' +
-        '<text data-fit="' + (L.posLabel.w - 12) + '" x="' + (L.posLabel.x + L.posLabel.w / 2) + '" y="' + (L.posLabel.y + L.posLabel.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">守備位置</text>' +
-        '<text data-fit="' + (L.posValue.w - 10) + '" x="' + L.posValue.x + '" y="' + (L.posValue.y + L.posValue.h / 2 + 8) + '" font-size="20" font-weight="800" fill="#0f172a" font-family="\'Source Sans 3\',&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(posText) + '</text>' +
+        '<text data-fit="' + (L.posLabel.w - 12) + '" x="' + (L.posLabel.x + L.posLabel.w / 2) + '" y="' + (L.posLabel.y + L.posLabel.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">守備位置</text>' +
+        '<text data-fit="' + (L.posValue.w - 10) + '" x="' + L.posValue.x + '" y="' + (L.posValue.y + L.posValue.h / 2 + 8) + '" font-size="20" font-weight="800" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(posText) + '</text>' +
 
         /* 成績・フォーム・投打（2段のパネル） */
-        '<rect x="' + L.bioRow1.x + '" y="' + L.bioRow1.y + '" width="' + L.bioRow1.w + '" height="' + L.bioRow1.h + '" rx="14" fill="#ffffff"/>' +
+        '<rect x="' + L.bioRow1.x + '" y="' + L.bioRow1.y + '" width="' + L.bioRow1.w + '" height="' + L.bioRow1.h + '" rx="14" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>' +
         '<rect x="' + L.bio1Label.x + '" y="' + L.bio1Label.y + '" width="' + L.bio1Label.w + '" height="' + L.bio1Label.h + '" rx="8" fill="#F2F2F2"/>' +
-        '<text data-fit="' + (L.bio1Label.w - 12) + '" x="' + (L.bio1Label.x + L.bio1Label.w / 2) + '" y="' + (L.bio1Label.y + L.bio1Label.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">成績</text>' +
+        '<text data-fit="' + (L.bio1Label.w - 12) + '" x="' + (L.bio1Label.x + L.bio1Label.w / 2) + '" y="' + (L.bio1Label.y + L.bio1Label.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">成績</text>' +
         bio1 +
 
-        '<rect x="' + L.bioRow2.x + '" y="' + L.bioRow2.y + '" width="' + L.bioRow2.w + '" height="' + L.bioRow2.h + '" rx="14" fill="#ffffff"/>' +
+        '<rect x="' + L.bioRow2.x + '" y="' + L.bioRow2.y + '" width="' + L.bioRow2.w + '" height="' + L.bioRow2.h + '" rx="14" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>' +
         '<rect x="' + L.bio2Label1.x + '" y="' + L.bio2Label1.y + '" width="' + L.bio2Label1.w + '" height="' + L.bio2Label1.h + '" rx="8" fill="#F2F2F2"/>' +
-        '<text data-fit="' + (L.bio2Label1.w - 12) + '" x="' + (L.bio2Label1.x + L.bio2Label1.w / 2) + '" y="' + (L.bio2Label1.y + L.bio2Label1.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">フォーム</text>' +
-        '<text data-fit="' + (L.bio2Val1.w - 10) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 7) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(form) + '</text>' +
+        '<text data-fit="' + (L.bio2Label1.w - 12) + '" x="' + (L.bio2Label1.x + L.bio2Label1.w / 2) + '" y="' + (L.bio2Label1.y + L.bio2Label1.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">フォーム</text>' +
+        '<text data-fit="' + (L.bio2Val1.w - 10) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 7) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(form) + '</text>' +
         '<rect x="' + L.bio2Label2.x + '" y="' + L.bio2Label2.y + '" width="' + L.bio2Label2.w + '" height="' + L.bio2Label2.h + '" rx="8" fill="#F2F2F2"/>' +
-        '<text data-fit="' + (L.bio2Label2.w - 12) + '" x="' + (L.bio2Label2.x + L.bio2Label2.w / 2) + '" y="' + (L.bio2Label2.y + L.bio2Label2.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">投打</text>' +
-        '<text data-fit="' + (L.bio2Val2.w - 10) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 7) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="&quot;Hiragino Kaku Gothic ProN&quot;quot;M PLUS Rounded 1c&quot;Hiragino Kaku Gothic ProN&quot;quot;,&quot;Hiragino Kaku Gothic ProN&quot;quot;Hiragino Kaku Gothic ProN&quot;Hiragino Kaku Gothic ProN&quot;quot;,sans-serif">' + esc(throwbat) + '</text>' +
+        '<text data-fit="' + (L.bio2Label2.w - 12) + '" x="' + (L.bio2Label2.x + L.bio2Label2.w / 2) + '" y="' + (L.bio2Label2.y + L.bio2Label2.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">投打</text>' +
+        '<text data-fit="' + (L.bio2Val2.w - 10) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 7) + '" font-size="20" font-weight="700" fill="#0f172a" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
 
         /* 能力値テーブル */
         statHTML +
@@ -781,10 +797,32 @@ document.getElementById("btnReset").addEventListener("click", function () {
         if (el) el.checked = true;
     });
     document.getElementById("sub-chance").value = "S";
+    playerPhotoImg = null;
+    teamFlagImg = null;
+    document.getElementById("p-photoimg").value = "";
+    document.getElementById("p-flagimg").value = "";
     updateCheckedCounts();
     filterAbilities();
     renderCard();
 });
+
+/* ---- 顔写真・球団旗の画像アップロード ---- */
+var playerPhotoImg = null;
+var teamFlagImg = null;
+function bindImageUpload(inputId, setter) {
+    document.getElementById(inputId).addEventListener("change", function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+            setter(reader.result);
+            renderCard();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+bindImageUpload("p-photoimg", function (v) { playerPhotoImg = v; });
+bindImageUpload("p-flagimg", function (v) { teamFlagImg = v; });
 
 /* ---- PNG書き出し ---- */
 document.getElementById("btnDownload").addEventListener("click", function () {
