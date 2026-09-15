@@ -762,7 +762,7 @@ function nameplateStripes(x, y, w, h, colors) {
    - 第二球種・第二ストレートを持たない場合は、そのバー自体を表示しない
    - 持っていない変化球（値0）はラベル自体を表示しない
    ===================================================================== */
-var PD_LINE_BLUE = "#2E86D6";
+var PD_LINE_BLUE = "#1B6FB0";
 var PD_EMPTY_FILL = "#CFE6F7";
 var PD_SEG_GRAD_IDS = ["pdGradRed", "pdGradOrange", "pdGradYellow"];
 var PD_GRAD_DEFS = [
@@ -828,7 +828,7 @@ function pdLabelAnchor(dx, shiftX) {
 }
 
 function pdDrawBar(cx, cy, deg, value, label, offsetPerp) {
-    var innerR = 28, segLen = 18, segGap = 3, segW = 24;
+    var innerR = 38, segLen = 18, segGap = 3, segW = 24;
     var rad = deg * Math.PI / 180;
     var dx = Math.cos(rad), dy = Math.sin(rad);
     var px = -dy, py = dx;
@@ -864,12 +864,28 @@ function pdDrawBar(cx, cy, deg, value, label, offsetPerp) {
     html += '</g>';
 
     if (label) {
-        /* ラベルはバー自身の延長線上（＝バーが第二球種でずれていれば
-           そのずれた軸のまま）、先端のすぐ外側に寄せる。実機同様、
-           バーに被らない最小限の余白だけを空けることで、バー自体を
-           大きく見せる。 */
-        var lp = pdPolar(ocx, ocy, tipR0 + tipLen + 10, deg);
-        var anchor = pdLabelAnchor(dx, px * (offsetPerp || 0));
+        var lp, anchor;
+        if (Math.abs(dy) < 0.35) {
+            /* シュート・スライダー（真横向き）は、実機同様バーの真上に
+               バーに被らないよう寄せて中央揃えで表示する（バーの延長線上
+               に置くと、その分バーを短くする必要があるため）。第二球種で
+               2本並ぶときは、下側にずれたバーの方は下に置き、上のバーと
+               ぶつからないようにする。 */
+            var midR = (innerR + tipR0 + tipLen) / 2;
+            var midPt = pdPolar(ocx, ocy, midR, deg);
+            var gap = segW / 2 + 9;
+            lp = (offsetPerp || 0) > 0
+                ? [midPt[0], midPt[1] + gap + 12]
+                : [midPt[0], midPt[1] - gap];
+            anchor = "middle";
+        } else {
+            /* それ以外（上下・斜め方向）は、バー自身の延長線上（＝バーが
+               第二球種でずれていればそのずれた軸のまま）、先端のすぐ外側
+               に寄せる。実機同様、バーに被らない最小限の余白だけを空ける
+               ことで、バー自体を大きく見せる。 */
+            lp = pdPolar(ocx, ocy, tipR0 + tipLen + 10, deg);
+            anchor = pdLabelAnchor(dx, px * (offsetPerp || 0));
+        }
         html += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 4).toFixed(1) + '" text-anchor="' + anchor +
                 '" font-size="13" font-weight="700" fill="' + PD_LINE_BLUE +
                 '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(label) + '</text>';
@@ -878,7 +894,7 @@ function pdDrawBar(cx, cy, deg, value, label, offsetPerp) {
 }
 
 function pdDrawStraightMark(cx, cy, deg, label, offsetPerp) {
-    var baseR = 28, tipR = 28 + 40;
+    var baseR = 38, tipR = 38 + 40;
     var rad = deg * Math.PI / 180;
     var dx = Math.cos(rad), dy = Math.sin(rad);
     var px = -dy, py = dx;
