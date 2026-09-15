@@ -281,7 +281,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
         </div>
         <div class="field">
             <label for="p-orig-name">オリジナル変化球名</label>
-            <input type="text" id="p-orig-name" value="天上天下唯我独尊" maxlength="14">
+            <input type="text" id="p-orig-name" value="マリンボール" maxlength="14">
         </div>
     </div>
 
@@ -646,11 +646,31 @@ var NAME_PLATE_COLORS = { yellow: "#FFEB00", water: "#3FC1E0", green: "#4CAF50" 
 var NAME_COLOR_PRIORITY = { water: 0, yellow: 1, green: 2 };
 var ROLE_PLATE_COLOR = { "role-start": "#E53935", "role-relief": "#F6B8D6" };
 var FALLBACK_PLATE_COLOR = "#CFE1F2";
+/* 先発=赤・中継ぎ=薄いピンクの並び順。通常は赤が先だが、中継ぎか
+   抑えのどちらかが先発より高いランク（◎>〇>×）なら、ピンクを先に
+   する（例: 先発〇・中継ぎ〇・抑え◎ → ピンク赤の順）。抑え自体は
+   色を持たないが、この判定にだけ使う。 */
+var APT_RANK_VAL = { "×": 0, "○": 1, "◎": 2 };
 function buildNamePlateColors() {
     var colors = [];
-    ["role-start", "role-relief"].forEach(function (id) {
-        if (document.getElementById("p-" + id).value !== "×") colors.push(ROLE_PLATE_COLOR[id]);
-    });
+    var starterRank = APT_RANK_VAL[document.getElementById("p-role-start").value];
+    var reliefRank = APT_RANK_VAL[document.getElementById("p-role-relief").value];
+    var closerRank = APT_RANK_VAL[document.getElementById("p-role-closer").value];
+    var hasStarter = starterRank > 0;
+    var hasRelief = reliefRank > 0;
+    var reliefFamilyRank = Math.max(reliefRank, closerRank);
+
+    if (hasStarter && hasRelief) {
+        if (reliefFamilyRank > starterRank) {
+            colors.push(ROLE_PLATE_COLOR["role-relief"], ROLE_PLATE_COLOR["role-start"]);
+        } else {
+            colors.push(ROLE_PLATE_COLOR["role-start"], ROLE_PLATE_COLOR["role-relief"]);
+        }
+    } else if (hasStarter) {
+        colors.push(ROLE_PLATE_COLOR["role-start"]);
+    } else if (hasRelief) {
+        colors.push(ROLE_PLATE_COLOR["role-relief"]);
+    }
 
     var subKeys = [];
     if (document.getElementById("p-color-water").checked) subKeys.push("water");
