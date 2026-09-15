@@ -808,8 +808,27 @@ function pdPolar(cx, cy, r, deg) {
     return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
 }
 
+/* ラベルのtext-anchor。通常はバーの向き(dx)で決める（横向きの成分が
+   あれば、その外側へ伸ばす）。ストレート系・フォーク系のように
+   ほぼ真上/真下(dx≈0)で第二球種が並ぶ場合だけは、offsetPerpの符号
+   （＝どちら側にずれたバーか）で外側へ伸ばす方向を決める。こうする
+   ことで、左右2本のラベルが真ん中でぶつからず、それぞれ外向きに
+   伸びる（実機の「ストレートが左、第二ストレート名が右」と同じ形）。 */
+/* shiftX: ラベル自身の実際の水平方向のずれ（px成分×offsetPerp）。
+   offsetPerpの符号だけで判定すると、方向によってpxの符号が反転する
+   （例: ストレートは右にずれるのが正、フォークは左にずれるのが正）
+   ため、実際の画面上の水平位置で外向きかどうかを判定する。 */
+function pdLabelAnchor(dx, shiftX) {
+    if (Math.abs(dx) < 0.35) {
+        if (shiftX > 0) return "start";
+        if (shiftX < 0) return "end";
+        return "middle";
+    }
+    return dx > 0 ? "start" : "end";
+}
+
 function pdDrawBar(cx, cy, deg, value, label, offsetPerp) {
-    var innerR = 30, segLen = 15, segGap = 3, segW = 20;
+    var innerR = 28, segLen = 18, segGap = 3, segW = 24;
     var rad = deg * Math.PI / 180;
     var dx = Math.cos(rad), dy = Math.sin(rad);
     var px = -dy, py = dx;
@@ -835,21 +854,22 @@ function pdDrawBar(cx, cy, deg, value, label, offsetPerp) {
     var tip7Filled = value >= 7;
     var tipColor = tip7Filled ? "url(#" + PD_SEG_GRAD_IDS[6 % PD_SEG_GRAD_IDS.length] + ")" : PD_EMPTY_FILL;
     var tipBaseP = pdPolar(ocx, ocy, tipR0, deg);
-    var tipLen = 20;
+    var tipLen = 24;
     var tipXf = 'transform="translate(' + tipBaseP[0].toFixed(1) + ',' + tipBaseP[1].toFixed(1) + ') rotate(' + deg + ')"';
     html += '<g ' + tipXf + '>' +
-            '<polygon points="0,-11 0,11 ' + tipLen + ',0" fill="' + tipColor + '" stroke="' + PD_LINE_BLUE + '" stroke-width="2" stroke-linejoin="round"/>';
+            '<polygon points="0,-13 0,13 ' + tipLen + ',0" fill="' + tipColor + '" stroke="' + PD_LINE_BLUE + '" stroke-width="2" stroke-linejoin="round"/>';
     if (tip7Filled) {
         html += '<ellipse cx="' + (tipLen * 0.3) + '" cy="-3.5" rx="' + (tipLen * 0.3) + '" ry="2.4" fill="#fff" opacity="0.4"/>';
     }
     html += '</g>';
 
     if (label) {
-        var labelSign = offsetPerp ? (offsetPerp > 0 ? 1 : -1) : 0;
-        var lcx = cx + px * labelSign * 60, lcy = cy + py * labelSign * 60;
-        var radiusBonus = labelSign < 0 ? -14 : 0;
-        var lp = pdPolar(lcx, lcy, tipR0 + 34 + radiusBonus, deg);
-        var anchor = Math.abs(dx) < 0.35 ? "middle" : (dx > 0 ? "start" : "end");
+        /* ラベルはバー自身の延長線上（＝バーが第二球種でずれていれば
+           そのずれた軸のまま）、先端のすぐ外側に寄せる。実機同様、
+           バーに被らない最小限の余白だけを空けることで、バー自体を
+           大きく見せる。 */
+        var lp = pdPolar(ocx, ocy, tipR0 + tipLen + 10, deg);
+        var anchor = pdLabelAnchor(dx, px * (offsetPerp || 0));
         html += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 4).toFixed(1) + '" text-anchor="' + anchor +
                 '" font-size="13" font-weight="700" fill="' + PD_LINE_BLUE +
                 '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(label) + '</text>';
@@ -858,7 +878,7 @@ function pdDrawBar(cx, cy, deg, value, label, offsetPerp) {
 }
 
 function pdDrawStraightMark(cx, cy, deg, label, offsetPerp) {
-    var baseR = 30, tipR = 30 + 34;
+    var baseR = 28, tipR = 28 + 40;
     var rad = deg * Math.PI / 180;
     var dx = Math.cos(rad), dy = Math.sin(rad);
     var px = -dy, py = dx;
@@ -868,16 +888,17 @@ function pdDrawStraightMark(cx, cy, deg, label, offsetPerp) {
     var tBaseP = pdPolar(ocx, ocy, baseR, deg);
     var xf = 'transform="translate(' + tBaseP[0].toFixed(1) + ',' + tBaseP[1].toFixed(1) + ') rotate(' + deg + ')"';
     var html = '<g ' + xf + '>' +
-            '<polygon points="0,-11 0,11 ' + tipLen + ',0" fill="url(#' + PD_SEG_GRAD_IDS[0] + ')" stroke="' + PD_LINE_BLUE + '" stroke-width="2" stroke-linejoin="round"/>' +
-            '<ellipse cx="' + (tipLen * 0.3) + '" cy="-3.5" rx="' + (tipLen * 0.3) + '" ry="2.6" fill="#fff" opacity="0.4"/>' +
+            '<polygon points="0,-13 0,13 ' + tipLen + ',0" fill="url(#' + PD_SEG_GRAD_IDS[0] + ')" stroke="' + PD_LINE_BLUE + '" stroke-width="2" stroke-linejoin="round"/>' +
+            '<ellipse cx="' + (tipLen * 0.3) + '" cy="-4" rx="' + (tipLen * 0.3) + '" ry="3" fill="#fff" opacity="0.4"/>' +
             '</g>';
 
     if (label) {
-        var labelSign = offsetPerp ? (offsetPerp > 0 ? 1 : -1) : 0;
-        var lcx = cx + px * labelSign * 60, lcy = cy + py * labelSign * 60;
-        var radiusBonus = labelSign < 0 ? -14 : 0;
-        var lp = pdPolar(lcx, lcy, tipR + 34 + radiusBonus, deg);
-        var anchor = Math.abs(dx) < 0.35 ? "middle" : (dx > 0 ? "start" : "end");
+        /* ストレート系・第二ストレートは、実機同様バーが無く三角のみ。
+           第二ストレートがある場合はストレートが左・第二ストレートが右に
+           なるよう、offsetPerpで既にずれたその軸のまま、先端のすぐ外側に
+           ラベルを置く。 */
+        var lp = pdPolar(ocx, ocy, tipR + 10, deg);
+        var anchor = pdLabelAnchor(dx, px * (offsetPerp || 0));
         html += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 4).toFixed(1) + '" text-anchor="' + anchor +
                 '" font-size="13" font-weight="700" fill="' + PD_LINE_BLUE +
                 '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(label) + '</text>';
@@ -922,8 +943,8 @@ function collectPitchData() {
    常にy=115〜398に収まることをピクセル計測で確認済み）まで詰めて
    PD_H・中心(PD_CX,PD_CY)を再定義した。これにより、同じ表示枠でも
    拡大して見せられる。 */
-var PD_W = 600, PD_H = 326;
-var PD_CX = 300, PD_CY = 126;
+var PD_W = 600, PD_H = 320;
+var PD_CX = 300, PD_CY = 105;
 
 function buildPitchDiagram(x, y, w, h) {
     var data = collectPitchData();
@@ -944,8 +965,8 @@ function buildPitchDiagram(x, y, w, h) {
             var straightLabel = (raw && raw.name) ? raw.name : "ストレート";
             if (data.secondaryStraight) {
                 var sSign = pdSecondaryOffsetSign(svgDeg);
-                svg += pdDrawStraightMark(cx, cy, svgDeg, straightLabel, -13 * sSign);
-                svg += pdDrawStraightMark(cx, cy, svgDeg, data.secondaryStraight.name, 13 * sSign);
+                svg += pdDrawStraightMark(cx, cy, svgDeg, straightLabel, -15 * sSign);
+                svg += pdDrawStraightMark(cx, cy, svgDeg, data.secondaryStraight.name, 15 * sSign);
             } else {
                 svg += pdDrawStraightMark(cx, cy, svgDeg, straightLabel, 0);
             }
@@ -958,8 +979,8 @@ function buildPitchDiagram(x, y, w, h) {
         var sameDirSecondary = data.secondary && data.secondary.slot === slot.key;
         if (sameDirSecondary) {
             var sign = pdSecondaryOffsetSign(svgDeg);
-            svg += pdDrawBar(cx, cy, svgDeg, value, label, -13 * sign);
-            svg += pdDrawBar(cx, cy, svgDeg, data.secondary.value, data.secondary.name, 13 * sign);
+            svg += pdDrawBar(cx, cy, svgDeg, value, label, -15 * sign);
+            svg += pdDrawBar(cx, cy, svgDeg, data.secondary.value, data.secondary.name, 15 * sign);
         } else {
             svg += pdDrawBar(cx, cy, svgDeg, value, label, 0);
         }
