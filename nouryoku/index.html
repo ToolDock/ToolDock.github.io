@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>パワプロ風 能力画像ジェネレーター（野手）</title>
-<meta name="description" content="野手の能力値と特殊能力を入力すると、パワプロ風の選手能力カード画像をその場で作れる無料ツールです。ランクや数値、特殊能力は自由に編集でき、PNG画像として保存できます。">
+<meta name="description" content="野手の能力値と特殊能力を入力すると、パワプロ風の選手能力カード画像を作れる無料ツールです。ランクや数値、特殊能力は自由に編集でき、PNG画像として保存できます。">
 <link rel="canonical" href="https://tooldock.github.io/nouryoku/">
 
 <script> const CURRENT_TOOL = "nouryoku"; </script>
@@ -131,7 +131,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 
 <header>
     <h1>パワプロ風 能力画像ジェネレーター（野手）</h1>
-    <p>能力値と特殊能力を入力すると、選手能力カードの画像をその場で作れます</p>
+    <p>能力値と特殊能力を入力すると、選手能力カードの画像を作れます</p>
     <p><a href="/nouryoku-pitcher/">投手版はこちら →</a></p>
 </header>
 
@@ -141,10 +141,10 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
     <div id="cardPreview" class="card-preview"></div>
     <div class="card-actions">
         <button type="button" id="btnDownload">PNG画像をダウンロード（PC向け）</button>
-        <button type="button" id="btnShare">共有して保存（スマホ・iPad向け）</button>
+        <button type="button" id="btnShare">共有して保存（スマホ・タブレット向け）</button>
         <button type="button" class="secondary" id="btnReset">初期値に戻す</button>
     </div>
-    <p class="note">PCでは「PNG画像をダウンロード」を、スマートフォン・iPadでは「共有して保存」をお使いください。共有からも保存できない場合は、スクリーンショットをご利用ください。</p>
+    <p class="note">PCでは「PNG画像をダウンロード」を、スマートフォン・タブレットでは「共有して保存」をお使いください。共有からも保存できない場合は、スクリーンショットをご利用ください。</p>
 </div>
 
 <div class="editor">
@@ -252,14 +252,13 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <h2>パワプロ風 能力画像ジェネレーターについて</h2>
 
 <p>
-野手の能力値・ランク・特殊能力を入力すると、選手能力カード風の画像をその場で作れる無料ツールです。
-文字やランクはすべてボタンとフォームで編集でき、実在の選手データを扱う必要はありません。
+野手の能力値・ランク・特殊能力を入力すると、選手能力カード風の画像を作れる無料ツールです。
+全てブラウザ上で作ることができ、アプリなどをダウンロードをする必要はありません。
 できあがった画像はPNG形式で保存できます。
 </p>
 
 <p class="note" style="margin-top:0">
 このツールは実況パワフルプロ野球シリーズの公式ツールではなく、当サイトが独自にデザインしたものです。
-顔写真・球団旗の枠は色や図形のみで、実在の画像は含まれません。
 </p>
 
 <h2>使い方</h2>
@@ -268,7 +267,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <li>能力値（ミート・パワーなど）の数値とランクを入力します</li>
 <li>特殊能力上段のランクを選びます</li>
 <li>下の一覧から、所持させたい金特・青特・赤特・緑特にチェックを入れます</li>
-<li>PCの場合は「PNG画像をダウンロード」、スマートフォン・iPadの場合は「共有して保存」でカード画像を保存できます</li>
+<li>PCの場合は「PNG画像をダウンロード」、スマートフォン・タブレットの場合は「共有して保存」でカード画像を保存できます</li>
 </ol>
 
 <h2>使用例</h2>
@@ -284,7 +283,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <h2>よくある質問</h2>
 
 <p><strong>Q. 実在の特殊能力名を使えますか？</strong><br>
-A. 使えます。金特・青特・赤特・緑特は、査定☆計算ツールと同じ実データの一覧から選べます。</p>
+A. 使えます。金特・青特・赤特・緑特は、<a href="/satei/">☆計算ツール</a>と同じ実データの一覧から選べます。</p>
 
 <p><strong>Q. 入力した内容は保存されますか？</strong><br>
 A. ブラウザ内（localStorage）に保存され、次回このページを開いたときにそのまま復元されます。サーバーには送信されません。ブラウザやシークレットモードを変えると引き継がれません。</p>
