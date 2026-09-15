@@ -274,6 +274,17 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
         </div>
     </div>
 
+    <div class="field-grid">
+        <div class="field checkfield">
+            <input type="checkbox" id="p-orig-on">
+            <label for="p-orig-on">オリジナル変化球を持っている</label>
+        </div>
+        <div class="field">
+            <label for="p-orig-name">オリジナル変化球名</label>
+            <input type="text" id="p-orig-name" value="天上天下唯我独尊" maxlength="14">
+        </div>
+    </div>
+
     <h3>特殊能力</h3>
     <input type="text" class="ab-search" id="abSearch" placeholder="特殊能力名で検索（例：奪三振、鉄腕）">
     <div class="ab-toolbar">
@@ -600,11 +611,11 @@ var L = {
     bioRow1:     { x: 426, y: 25,  w: 621, h: 62 },
     bio1Label:   { x: 439, y: 41,  w: 109, h: 36 },
     bio1Vals:    [
-        { x: 553, y: 36, w: 130, key: "era", pre: "防 " },
-        { x: 693, y: 36, w: 75, key: "win", pre: "" },
-        { x: 778, y: 36, w: 55, key: "lose", pre: "" },
-        { x: 843, y: 36, w: 65, key: "hp", pre: "" },
-        { x: 918, y: 36, w: 50, key: "sv", pre: "" }
+        { x: 553, y: 36, w: 140, key: "era", pre: "防 " },
+        { x: 698, y: 36, w: 80, key: "win", pre: "" },
+        { x: 783, y: 36, w: 60, key: "lose", pre: "" },
+        { x: 848, y: 36, w: 70, key: "hp", pre: "" },
+        { x: 923, y: 36, w: 55, key: "sv", pre: "" }
     ],
     bioRow2:     { x: 426, y: 93,  w: 621, h: 62 },
     bio2Label1:  { x: 439, y: 108, w: 109, h: 36 },
@@ -677,7 +688,7 @@ function buildAptitudeMarks() {
         var val = document.getElementById("p-" + a.id).value;
         var isMax = val === "◎", isMid = val === "○";
         var color = (isMax || isMid) ? APT_DARK : APT_PALE;
-        var size = isMax ? 34 : 22;
+        var size = isMax ? 30 : 20;
         return { mark: a.mark, color: color, size: size, w: size };
     });
     var markCy = by + bh / 2 + 12;
@@ -956,7 +967,16 @@ function buildPitchDiagram(x, y, w, h) {
     svg += '<path d="M ' + (cx - 9) + ' ' + (cy - 15) + ' Q ' + cx + ' ' + cy + ' ' + (cx - 9) + ' ' + (cy + 15) + '" stroke="#E5352E" stroke-width="1.5" fill="none"/>';
     svg += '<path d="M ' + (cx + 9) + ' ' + (cy - 15) + ' Q ' + cx + ' ' + cy + ' ' + (cx + 9) + ' ' + (cy + 15) + '" stroke="#E5352E" stroke-width="1.5" fill="none"/>';
 
-    return '<svg x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" viewBox="0 0 ' + PD_W + ' ' + PD_H + '">' + svg + '</svg>';
+    /* 幅基準で縮小されることが多いため、内容は上端に揃える(xMidYMin)。
+       これで下側に余白ができ、そこにオリジナル変化球名を書ける。 */
+    return '<svg x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" viewBox="0 0 ' + PD_W + ' ' + PD_H + '" preserveAspectRatio="xMidYMin meet">' + svg + '</svg>';
+}
+
+/* 枠の下に空く余白の開始y座標（カード座標系）。オリジナル変化球名は
+   ここに書く。 */
+function pitchDiagramContentBottom(y, w, h) {
+    var scale = Math.min(w / PD_W, h / PD_H);
+    return y + PD_H * scale;
 }
 
 function renderCard() {
@@ -1049,13 +1069,16 @@ function renderCard() {
                '<rect x="' + (L.statColX + 4) + '" y="' + (y + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (h - 8) + '" rx="8" fill="#F2F2F2"/>' +
                '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>';
         if (!s.hasRank) {
-            /* 球速のようにランクを持たない行は、ランク欄と数値欄をまとめた
-               領域の中央に、大きめの文字で表示する。単位(km/h)だけ小さく。 */
-            var wideX = (L.statRankX + L.statNumX + L.statNumW) / 2;
-            var wideMax = (L.statNumX + L.statNumW) - L.statRankX - 10;
-            var unitTspan = s.unit ? '<tspan font-size="19" font-weight="700">' + esc(s.unit) + '</tspan>' : "";
-            return base +
-                   '<text data-fit="' + wideMax + '" x="' + wideX + '" y="' + (y + h / 2 + 13) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + unitTspan + '</text>';
+            /* 球速のようにランクを持たない行は、数字の十の位がコントロール行の
+               ランク文字とだいたい同じx位置に来るよう、数字だけをランク欄の
+               中央に置く。単位(km/h)は数字の後ろに半角スペースを挟んで
+               小さく添える。 */
+            var numX = L.statRankX + L.statRankW / 2;
+            var numText = '<text data-fit="' + (L.statRankW + 40) + '" x="' + numX + '" y="' + (y + h / 2 + 13) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
+            var unitText = s.unit
+                ? '<text x="' + (numX + 34) + '" y="' + (y + h / 2 + 13) + '" text-anchor="start" font-size="19" font-weight="700" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(s.unit) + '</text>'
+                : "";
+            return base + numText + unitText;
         }
         var rankText = '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 13) + '" text-anchor="middle" font-size="31" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>';
         return base + rankText +
@@ -1069,14 +1092,25 @@ function renderCard() {
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
     var lastStatRow = L.statRows[L.statRows.length - 1];
     var diagramX = L.statColX, diagramW = L.gridColX[0] - L.statColX - 8;
-    var diagramY = lastStatRow.y + lastStatRow.h + 6;
+    var diagramY = lastStatRow.y + lastStatRow.h;
     var diagramH = gridBottom - diagramY;
     var bodyBottom = gridBottom + 20;
     var H = bodyBottom + 10;
 
+    /* 変化球の枠のうち、実際にコンパスが描かれる範囲より下の余白に
+       オリジナル変化球名を書く（チェックが無ければ空欄のまま）。 */
+    var origHTML = "";
+    if (document.getElementById("p-orig-on").checked) {
+        var origName = document.getElementById("p-orig-name").value;
+        var contentBottom = pitchDiagramContentBottom(diagramY, diagramW, diagramH);
+        var origAreaTop = contentBottom, origAreaBottom = diagramY + diagramH - 10;
+        var origY = (origAreaTop + origAreaBottom) / 2 + 7;
+        origHTML = '<text data-fit="' + (diagramW - 24) + '" x="' + (diagramX + diagramW / 2) + '" y="' + origY + '" text-anchor="middle" font-size="17" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">オリジナル変化球名　' + esc(origName) + '</text>';
+    }
+
     var bio1 = L.bio1Vals.map(function (b) {
         var val = document.getElementById("p-" + b.key).value;
-        return '<text data-fit="' + b.w + '" x="' + b.x + '" y="' + (b.y + 29) + '" font-size="26" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.pre) + esc(val) + '</text>';
+        return '<text data-fit="' + b.w + '" x="' + b.x + '" y="' + (b.y + 29) + '" font-size="29" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.pre) + esc(val) + '</text>';
     }).join("");
 
     var svg = '' +
@@ -1119,6 +1153,7 @@ function renderCard() {
         statHTML +
         badgeHTML +
         buildPitchDiagram(diagramX, diagramY, diagramW, diagramH) +
+        origHTML +
 
         '</svg>';
 
