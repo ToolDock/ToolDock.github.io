@@ -72,6 +72,8 @@ p{ margin:0 0 12px; }
 .field input[type="color"]{ width:100%; height:36px; padding:2px; border:1px solid var(--line); border-radius:8px; }
 .field.checkfield{ flex-direction:row; align-items:center; gap:6px; }
 .field.checkfield label{ font-weight:400; }
+.name-color-picks{ display:flex; flex-wrap:wrap; gap:4px 12px; padding-top:6px; }
+.name-color-picks label{ display:flex; align-items:center; gap:4px; font-size:0.85rem; font-weight:400; color:var(--ink); }
 
 .stat-rows{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
 .stat-row{ display:grid; grid-template-columns:100px 90px 1fr; gap:8px; align-items:center; }
@@ -170,8 +172,12 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
             <input type="file" id="p-photoimg" accept="image/*">
         </div>
         <div class="field">
-            <label for="p-subpos">サブポジション（二刀流など・任意）</label>
-            <input type="text" id="p-subpos" value="" maxlength="4" placeholder="例：一">
+            <label>サブポジション（二刀流で守れる野手ポジション・任意）</label>
+            <div class="name-color-picks">
+                <label><input type="checkbox" id="p-color-yellow"> 黄色（内野手）</label>
+                <label><input type="checkbox" id="p-color-water"> 水色（捕手）</label>
+                <label><input type="checkbox" id="p-color-green"> 緑色（外野手）</label>
+            </div>
         </div>
         <div class="field">
             <label for="p-throwbat">投打</label>
@@ -613,17 +619,62 @@ var L = {
     statRows: [
         { y: 181, h: 56 }, { y: 243, h: 51 }, { y: 300, h: 46 }
     ],
-    roleRow: { y: 352, h: 51 },
     gridColX: [372, 541, 710, 879],
     gridColW: 160,
     gridRowY0: 180,
     gridRowH: 48.75
 };
 
-/* 投手の選手名プレート色。野手版のような守備位置ごとの色分けは無く、
-   参考にできる実機画像も無かったため、仮の配色にしている
-   （実機と異なる場合は要修正）。 */
-var PITCHER_PLATE_COLOR = "#CFE1F2";
+/* ---- 選手名プレートの色 ----
+   投手は先発適性=赤、中継ぎ適性=薄いピンク（適性が×以外なら加える。
+   抑え適性は色を持たない）。二刀流で守れる野手ポジション（チェック
+   ボックス）の色は、青（捕手）＞黄（内野手）＞緑（外野手）の優先順で
+   その後ろに続く。色は合計3つまでで、超えた分は優先順の低いものから
+   落とす。野手版と同じ優先順位・配色を流用している。 */
+var NAME_PLATE_COLORS = { yellow: "#FFEB00", water: "#3FC1E0", green: "#4CAF50" };
+var NAME_COLOR_PRIORITY = { water: 0, yellow: 1, green: 2 };
+var ROLE_PLATE_COLOR = { "role-start": "#E53935", "role-relief": "#F6B8D6" };
+var FALLBACK_PLATE_COLOR = "#CFE1F2";
+function buildNamePlateColors() {
+    var colors = [];
+    ["role-start", "role-relief"].forEach(function (id) {
+        if (document.getElementById("p-" + id).value !== "×") colors.push(ROLE_PLATE_COLOR[id]);
+    });
+
+    var subKeys = [];
+    if (document.getElementById("p-color-water").checked) subKeys.push("water");
+    if (document.getElementById("p-color-yellow").checked) subKeys.push("yellow");
+    if (document.getElementById("p-color-green").checked) subKeys.push("green");
+    subKeys.sort(function (a, b) { return NAME_COLOR_PRIORITY[a] - NAME_COLOR_PRIORITY[b]; });
+    subKeys.forEach(function (k) { colors.push(NAME_PLATE_COLORS[k]); });
+
+    if (colors.length === 0) colors.push(FALLBACK_PLATE_COLOR);
+    return colors.slice(0, 3);
+}
+
+/* ---- 適性の表示（先／継／抑）----
+   守備位置の欄があった場所に移動。×なら薄い青文字・通常サイズ、
+   〇なら濃い青文字・通常サイズ、◎なら濃い青文字・大きいサイズになる。 */
+var APT_MARKS = [
+    { id: "role-start", mark: "先" },
+    { id: "role-relief", mark: "継" },
+    { id: "role-closer", mark: "抑" }
+];
+var APT_PALE = "#9FB3C2";
+var APT_DARK = "#154868";
+function buildAptitudeMarks() {
+    var x = L.posLabel.x, y = 99, w = 246, h = 42;
+    var n = APT_MARKS.length;
+    var cy = y + h / 2 + 12;
+    return APT_MARKS.map(function (a, i) {
+        var val = document.getElementById("p-" + a.id).value;
+        var isMax = val === "◎", isMid = val === "○";
+        var color = (isMax || isMid) ? APT_DARK : APT_PALE;
+        var size = isMax ? 34 : 22;
+        var cx = x + (w / n) * (i + 0.5);
+        return '<text x="' + cx + '" y="' + cy + '" text-anchor="middle" font-size="' + size + '" font-weight="800" fill="' + color + '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + a.mark + '</text>';
+    }).join("");
+}
 
 /* ---- 特殊能力バッジの中身を組み立てる ----
    Sランクで専用名が付くものは金特と同じ配色（タグ無し）。対ピンチ・
@@ -842,7 +893,10 @@ function collectPitchData() {
 
 var PD_W = 600, PD_H = 460;
 
-function buildPitchDiagram(x, y) {
+/* 実機の縮尺そのままの600x460で組み立て、呼び出し側の枠(w,h)に合わせて
+   ネストしたsvg(viewBox)で縮小表示する。カード内では能力値3行の下、
+   特殊能力バッジと同じ幅の枠に収まる大きさになる。 */
+function buildPitchDiagram(x, y, w, h) {
     var data = collectPitchData();
     var cx = PD_W / 2, cy = PD_H / 2 - 10;
 
@@ -886,14 +940,12 @@ function buildPitchDiagram(x, y) {
     svg += '<path d="M ' + (cx - 9) + ' ' + (cy - 15) + ' Q ' + cx + ' ' + cy + ' ' + (cx - 9) + ' ' + (cy + 15) + '" stroke="#E5352E" stroke-width="1.5" fill="none"/>';
     svg += '<path d="M ' + (cx + 9) + ' ' + (cy - 15) + ' Q ' + cx + ' ' + cy + ' ' + (cx + 9) + ' ' + (cy + 15) + '" stroke="#E5352E" stroke-width="1.5" fill="none"/>';
 
-    return '<g transform="translate(' + x + ',' + y + ')">' + svg + '</g>';
+    return '<svg x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" viewBox="0 0 ' + PD_W + ' ' + PD_H + '">' + svg + '</svg>';
 }
 
 function renderCard() {
     var name = document.getElementById("p-name").value || "選手名";
     var teamColor = document.getElementById("p-teamcolor").value;
-    var subpos = document.getElementById("p-subpos").value;
-    var posText = "投" + (subpos ? (" " + subpos) : "");
     var throwbat = document.getElementById("p-throwbat").value;
     var form = document.getElementById("p-form").value;
 
@@ -988,23 +1040,16 @@ function renderCard() {
                '<text data-fit="' + (L.statNumW - 24 + (s.unit ? 40 : 0)) + '" x="' + (L.statNumX + L.statNumW - 22) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="' + (s.unit ? 22 : 28) + '" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(valText) + '</text>';
     }).join("");
 
-    /* 先発・中継ぎ・抑え適性の行 */
-    var roleText = ROLES.map(function (r) {
-        return r.label.charAt(0) + document.getElementById("p-" + r.id).value;
-    }).join("　");
-    var ry = L.roleRow.y, rh = L.roleRow.h;
-    var roleHTML =
-        '<rect x="' + L.statColX + '" y="' + ry + '" width="' + statCardW + '" height="' + rh + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
-        '<rect x="' + (L.statColX + 4) + '" y="' + (ry + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (rh - 8) + '" rx="8" fill="#F2F2F2"/>' +
-        '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (ry + rh / 2 + 7) + '" text-anchor="middle" font-size="17" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">適性</text>' +
-        '<text data-fit="' + (statCardW - L.statLabelW - 18) + '" x="' + (L.statColX + L.statLabelW + 10) + '" y="' + (ry + rh / 2 + 8) + '" font-size="20" font-weight="800" fill="#0f172a" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(roleText) + '</text>';
-
+    /* 変化球の枠は、能力値3行のすぐ下から、特殊能力バッジ8行目の下端と
+       揃うところまで（元は「適性」の行があった場所）。実機の縮尺のまま
+       600x460で組み立てたダイアグラムを、この枠の大きさに合わせて
+       ネストしたsvg(viewBox)で縮小表示する。 */
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
-    var leftBottom = L.roleRow.y + L.roleRow.h;
-    var diagramY = Math.max(gridBottom, leftBottom) + 20;
-    var diagramX = (CARD_W - PD_W) / 2;
-    var diagramBottom = diagramY + PD_H;
-    var bodyBottom = Math.max(gridBottom, diagramBottom) + 20;
+    var lastStatRow = L.statRows[L.statRows.length - 1];
+    var diagramX = L.statColX, diagramW = statCardW;
+    var diagramY = lastStatRow.y + lastStatRow.h + 10;
+    var diagramH = gridBottom - diagramY;
+    var bodyBottom = gridBottom + 20;
     var H = bodyBottom + 10;
 
     var bio1 = L.bio1Vals.map(function (b) {
@@ -1019,7 +1064,7 @@ function renderCard() {
 
         '<rect x="' + L.bodyPanel.x + '" y="' + L.bodyPanel.y + '" width="' + L.bodyPanel.w + '" height="' + (H - L.bodyPanel.y - 10) + '" rx="18" fill="#EAFAFF"/>' +
 
-        nameplateStripes(L.namePlate.x, L.namePlate.y, L.namePlate.w, L.namePlate.h, [PITCHER_PLATE_COLOR]) +
+        nameplateStripes(L.namePlate.x, L.namePlate.y, L.namePlate.w, L.namePlate.h, buildNamePlateColors()) +
         '<text data-fit="' + (L.namePlate.w - 20) + '" x="' + (L.namePlate.x + L.namePlate.w / 2) + '" y="' + (L.namePlate.y + L.namePlate.h / 2 + 11) + '" text-anchor="middle" font-size="32" font-weight="800" fill="#111" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(name) + '</text>' +
 
         (teamFlagImg
@@ -1034,9 +1079,7 @@ function renderCard() {
             : '<rect x="' + L.photoBox.x + '" y="' + L.photoBox.y + '" width="' + L.photoBox.w + '" height="' + L.photoBox.h + '" rx="14" fill="#F2F2F2"/>') +
         '<rect x="' + L.photoBox.x + '" y="' + L.photoBox.y + '" width="' + L.photoBox.w + '" height="' + L.photoBox.h + '" rx="14" fill="none" stroke="#CFE8F2" stroke-width="2"/>' +
 
-        '<rect x="' + L.posLabel.x + '" y="' + L.posLabel.y + '" width="' + L.posLabel.w + '" height="' + L.posLabel.h + '" rx="8" fill="#F2F2F2"/>' +
-        '<text data-fit="' + (L.posLabel.w - 12) + '" x="' + (L.posLabel.x + L.posLabel.w / 2) + '" y="' + (L.posLabel.y + L.posLabel.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">守備位置</text>' +
-        '<text data-fit="' + (L.posValue.w - 10) + '" x="' + L.posValue.x + '" y="' + (L.posValue.y + L.posValue.h / 2 + 8) + '" font-size="20" font-weight="800" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(posText) + '</text>' +
+        buildAptitudeMarks() +
 
         '<rect x="' + L.bioRow1.x + '" y="' + L.bioRow1.y + '" width="' + L.bioRow1.w + '" height="' + L.bioRow1.h + '" rx="14" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>' +
         '<rect x="' + L.bio1Label.x + '" y="' + L.bio1Label.y + '" width="' + L.bio1Label.w + '" height="' + L.bio1Label.h + '" rx="8" fill="#F2F2F2"/>' +
@@ -1052,9 +1095,8 @@ function renderCard() {
         '<text data-fit="' + (L.bio2Val2.w - 10) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 7) + '" font-size="23" font-weight="700" fill="#0f172a" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
 
         statHTML +
-        roleHTML +
         badgeHTML +
-        buildPitchDiagram(diagramX, diagramY) +
+        buildPitchDiagram(diagramX, diagramY, diagramW, diagramH) +
 
         '</svg>';
 
