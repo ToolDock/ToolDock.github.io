@@ -888,7 +888,7 @@ function pdDrawBar(cx, cy, deg, value, label, offsetPerp, thin) {
             anchor = pdLabelAnchor(dx, px * (offsetPerp || 0));
         }
         html += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 4).toFixed(1) + '" text-anchor="' + anchor +
-                '" font-size="13" font-weight="700" fill="' + PD_LINE_BLUE +
+                '" font-size="17" font-weight="700" fill="' + PD_LINE_BLUE +
                 '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(label) + '</text>';
     }
     return html;
@@ -918,7 +918,7 @@ function pdDrawStraightMark(cx, cy, deg, label, offsetPerp, thin) {
         var lp = pdPolar(ocx, ocy, tipR + 10, deg);
         var anchor = pdLabelAnchor(dx, px * (offsetPerp || 0));
         html += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 4).toFixed(1) + '" text-anchor="' + anchor +
-                '" font-size="13" font-weight="700" fill="' + PD_LINE_BLUE +
+                '" font-size="17" font-weight="700" fill="' + PD_LINE_BLUE +
                 '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(label) + '</text>';
     }
     return html;
