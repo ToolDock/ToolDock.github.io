@@ -847,10 +847,58 @@ function renderCard() {
     justifyTexts(svgEl);
 }
 
+/* ---- 入力内容の保存（ブラウザのlocalStorageのみ。サーバには送信しない） ----
+   ページを離れても前回の入力が残るよう、フォームの値をlocalStorageに
+   保存し、次回開いたときに復元する。画像（顔写真・球団旗）は容量が
+   大きくなりがちなので、他の入力とは別のキーに分けて保存し、片方が
+   保存容量の上限で失敗しても、もう片方には影響しないようにしている。 */
+var FORM_STORAGE_KEY = "tooldock:" + CURRENT_TOOL + ":form";
+var IMG_STORAGE_KEY = "tooldock:" + CURRENT_TOOL + ":images";
+
+function saveFormState() {
+    try {
+        var data = {};
+        document.querySelectorAll(".editor input, .editor select").forEach(function (el) {
+            if (!el.id || el.type === "file") return;
+            data[el.id] = el.type === "checkbox" ? el.checked : el.value;
+        });
+        localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(data));
+    } catch (e) { /* 保存容量の上限などは無視し、そのまま動作を続ける */ }
+}
+
+function saveImageState() {
+    try {
+        localStorage.setItem(IMG_STORAGE_KEY, JSON.stringify({ photo: playerPhotoImg, flag: teamFlagImg }));
+    } catch (e) { /* 画像が大きすぎて保存できない場合は諦める（他の入力保存には影響しない） */ }
+}
+
+function loadFormState() {
+    try {
+        var raw = localStorage.getItem(FORM_STORAGE_KEY);
+        if (!raw) return;
+        var data = JSON.parse(raw);
+        document.querySelectorAll(".editor input, .editor select").forEach(function (el) {
+            if (!el.id || el.type === "file" || !(el.id in data)) return;
+            if (el.type === "checkbox") el.checked = !!data[el.id];
+            else el.value = data[el.id];
+        });
+    } catch (e) { /* 壊れたデータなどは無視して初期値のまま使う */ }
+}
+
+function loadImageState() {
+    try {
+        var raw = localStorage.getItem(IMG_STORAGE_KEY);
+        if (!raw) return;
+        var data = JSON.parse(raw);
+        if (data.photo) playerPhotoImg = data.photo;
+        if (data.flag) teamFlagImg = data.flag;
+    } catch (e) { /* 壊れたデータなどは無視 */ }
+}
+
 /* ---- 入力変更で再描画 ---- */
 document.querySelectorAll(".editor input, .editor select").forEach(function (el) {
-    el.addEventListener("input", function () { updateCheckedCounts(); renderCard(); });
-    el.addEventListener("change", function () { updateCheckedCounts(); renderCard(); });
+    el.addEventListener("input", function () { updateCheckedCounts(); renderCard(); saveFormState(); });
+    el.addEventListener("change", function () { updateCheckedCounts(); renderCard(); saveFormState(); });
 });
 
 document.getElementById("btnReset").addEventListener("click", function () {
@@ -867,6 +915,8 @@ document.getElementById("btnReset").addEventListener("click", function () {
     updateCheckedCounts();
     filterAbilities();
     renderCard();
+    saveFormState();
+    saveImageState();
 });
 
 /* ---- 顔写真・球団旗の画像アップロード ---- */
@@ -880,6 +930,7 @@ function bindImageUpload(inputId, setter) {
         reader.onload = function () {
             setter(reader.result);
             renderCard();
+            saveImageState();
         };
         reader.readAsDataURL(file);
     });
@@ -939,6 +990,9 @@ document.getElementById("btnShare").addEventListener("click", function () {
     });
 });
 
+loadFormState();
+loadImageState();
+filterAbilities();
 updateCheckedCounts();
 renderCard();
 </script>
