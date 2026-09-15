@@ -44,6 +44,8 @@ header{ background:var(--ink); color:#fff; padding:20px 16px; margin-bottom:22px
 header .page-wrapper{ padding:0; }
 h1{ margin:0; font-size:1.35rem; line-height:1.5; }
 header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
+header a{ color:#93c5fd; }
+header a:hover{ color:#fff; }
 
 h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
     border-bottom:2px solid var(--line); }
@@ -138,6 +140,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <header>
     <h1>パワプロ風 能力画像ジェネレーター（投手）</h1>
     <p>能力値・変化球・特殊能力を入力すると、投手選手カードの画像をその場で作れます</p>
+    <p><a href="/nouryoku/">野手版はこちら →</a></p>
 </header>
 
 <div class="container">
@@ -324,7 +327,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <li>特殊能力上段のランクを選びます</li>
 <li>変化球は、名前を入れて変化量（0〜7）を指定した方向だけがカードに表示されます</li>
 <li>下の一覧から、所持させたい金特・青特・赤特・緑特にチェックを入れます</li>
-<li>「PNG画像を保存」でカード画像をダウンロードできます</li>
+<li>PCの場合は「PNG画像をダウンロード」、スマートフォン・iPadの場合は「共有して保存」でカード画像を保存できます</li>
 </ol>
 
 <h2>よくある質問</h2>
@@ -333,11 +336,14 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 A. 使えます。金特・青特・赤特・緑特は、査定☆計算ツールと同じ実データの一覧から選べます。</p>
 
 <p><strong>Q. 変化球の方向はどう決まりますか？</strong><br>
-A. 投打で選んだ投げる腕に合わせて自動的に左右反転します。第二球種・第二ストレートは、
+A. 投打で選んだ投げる腕に合わせて、方向が左右反転します。第二球種・第二ストレートは、
 名前を入れて追加を選んだときだけバーが増えます。</p>
 
 <p><strong>Q. 入力した内容は保存されますか？</strong><br>
-A. 保存されません。ページを閉じると入力内容は消えます。サーバーに送信されることもありません。</p>
+A. ブラウザ内（localStorage）に保存され、次回このページを開いたときにそのまま復元されます。サーバーには送信されません。ブラウザやシークレットモードを変えると引き継がれません。</p>
+
+<p><strong>Q. 野手カードも作れますか？</strong><br>
+A. 作れます。<a href="/nouryoku/">野手版</a>を別ページで公開しています。</p>
 
 </article>
 
