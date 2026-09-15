@@ -955,30 +955,69 @@ bindImageUpload("p-flagimg", function (v) { teamFlagImg = v; });
    PC向け「ダウンロード」とスマホ・iPad向け「共有して保存」を別ボタンに
    分けた。PCではWeb Share APIが使える場合でも共有シートから画像として
    保存できないことがあるため、ボタンごとに保存方法を固定する。 */
+/* PNGの書き出しは、SVGをいったん<img>として読み込んでcanvasに描画する。
+   このとき読み込まれる画像は、ページの<link>で読み込んだWebフォントとは
+   切り離された描画コンテキストとして扱われることがあり（特にiOS Safariの
+   共有シート経由）、カード内の文字が意図したフォントではなくシステムの
+   代替フォントで描かれてしまうことがある。これを避けるため、書き出す
+   直前にWebフォントをbase64で埋め込んだ<style>をSVGへ差し込む。
+   フォントデータは初回のみ取得してキャッシュする。 */
+var FONT_CSS_URL = "https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Source+Sans+3:wght@700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap";
+var embeddedFontCssPromise = null;
+function getEmbeddedFontCss() {
+    if (embeddedFontCssPromise) return embeddedFontCssPromise;
+    embeddedFontCssPromise = fetch(FONT_CSS_URL).then(function (r) { return r.text(); }).then(function (cssText) {
+        var urls = [], re = /url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/g, m;
+        while ((m = re.exec(cssText))) urls.push(m[1]);
+        return Promise.all(urls.map(function (u) {
+            return fetch(u).then(function (r) { return r.blob(); }).then(function (blob) {
+                return new Promise(function (resolve) {
+                    var reader = new FileReader();
+                    reader.onload = function () { resolve({ url: u, dataUrl: reader.result }); };
+                    reader.readAsDataURL(blob);
+                });
+            });
+        })).then(function (results) {
+            var css = cssText;
+            results.forEach(function (r) { css = css.split(r.url).join(r.dataUrl); });
+            return css;
+        });
+    }).catch(function () { return ""; });
+    return embeddedFontCssPromise;
+}
+
 function exportPngBlob(cb) {
     var svgEl = document.querySelector("#cardPreview svg");
     var vb = svgEl.getAttribute("viewBox").split(" ").map(Number);
     var scale = 2;
     var w = vb[2] * scale, h = vb[3] * scale;
 
-    var serializer = new XMLSerializer();
-    var svgStr = serializer.serializeToString(svgEl);
-    var svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
-    var url = URL.createObjectURL(svgBlob);
+    getEmbeddedFontCss().then(function (fontCss) {
+        var svgClone = svgEl.cloneNode(true);
+        if (fontCss) {
+            var styleEl = document.createElementNS("http://www.w3.org/2000/svg", "style");
+            styleEl.textContent = fontCss;
+            svgClone.insertBefore(styleEl, svgClone.firstChild);
+        }
+        var serializer = new XMLSerializer();
+        var svgStr = serializer.serializeToString(svgClone);
+        var svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+        var url = URL.createObjectURL(svgBlob);
 
-    var img = new Image();
-    img.onload = function () {
-        var canvas = document.createElement("canvas");
-        canvas.width = w; canvas.height = h;
-        var ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, w, h);
-        URL.revokeObjectURL(url);
-        canvas.toBlob(function (blob) {
-            var filename = (document.getElementById("p-name").value || "player") + "_card.png";
-            cb(blob, filename);
-        }, "image/png");
-    };
-    img.src = url;
+        var img = new Image();
+        img.onload = function () {
+            var canvas = document.createElement("canvas");
+            canvas.width = w; canvas.height = h;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(url);
+            canvas.toBlob(function (blob) {
+                var filename = (document.getElementById("p-name").value || "player") + "_card.png";
+                cb(blob, filename);
+            }, "image/png");
+        };
+        img.src = url;
+    });
 }
 
 document.getElementById("btnDownload").addEventListener("click", function () {
