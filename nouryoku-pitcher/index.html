@@ -929,8 +929,10 @@ function buildPitchDiagram(x, y, w, h) {
     var data = collectPitchData();
     var cx = PD_CX, cy = PD_CY;
 
-    var svg = '<defs>' + pdGradDefsSvg() + '</defs>' +
-        '<rect x="2" y="2" width="' + (PD_W - 4) + '" height="' + (PD_H - 4) + '" rx="16" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>';
+    /* 白背景は、このネストしたsvg(viewBox)の外側・実際の枠の大きさで
+       別途描く（ここで描くとmeetスケーリングにより余白部分が透明に
+       なり、オリジナル変化球名を置く場所が枠の外にはみ出してしまう）。 */
+    var svg = '<defs>' + pdGradDefsSvg() + '</defs>';
 
     PD_SLOTS.forEach(function (slot) {
         var raw = data.pitches[slot.key];
@@ -1152,6 +1154,7 @@ function renderCard() {
 
         statHTML +
         badgeHTML +
+        '<rect x="' + diagramX + '" y="' + diagramY + '" width="' + diagramW + '" height="' + diagramH + '" rx="16" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>' +
         buildPitchDiagram(diagramX, diagramY, diagramW, diagramH) +
         origHTML +
 
