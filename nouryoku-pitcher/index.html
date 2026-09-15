@@ -375,8 +375,8 @@ function gradesFor(scale) { return scale === "main9" ? GRADES_9 : GRADES_8; }
 
 var STATS = [
     { id: "velocity", label: "球速", min: 80, max: 175, value: 150, hasRank: false, unit: "km/h" },
-    { id: "control", label: "コントロール", min: 1, max: 100, value: 62, hasRank: true, rank: "B" },
-    { id: "stamina", label: "スタミナ", min: 1, max: 100, value: 58, hasRank: true, rank: "B" }
+    { id: "control", label: "コントロール", min: 1, max: 100, value: 62, hasRank: true, rank: "C" },
+    { id: "stamina", label: "スタミナ", min: 1, max: 100, value: 78, hasRank: true, rank: "B" }
 ];
 
 var ROLES = [
@@ -600,11 +600,11 @@ var L = {
     bioRow1:     { x: 426, y: 25,  w: 621, h: 62 },
     bio1Label:   { x: 439, y: 41,  w: 109, h: 36 },
     bio1Vals:    [
-        { x: 553, y: 36, w: 88, key: "era", pre: "防 " },
-        { x: 645, y: 37, w: 78, key: "win", pre: "" },
-        { x: 727, y: 37, w: 78, key: "lose", pre: "" },
-        { x: 809, y: 35, w: 88, key: "hp", pre: "" },
-        { x: 901, y: 35, w: 78, key: "sv", pre: "" }
+        { x: 553, y: 36, w: 130, key: "era", pre: "防 " },
+        { x: 693, y: 36, w: 75, key: "win", pre: "" },
+        { x: 778, y: 36, w: 55, key: "lose", pre: "" },
+        { x: 843, y: 36, w: 65, key: "hp", pre: "" },
+        { x: 918, y: 36, w: 50, key: "sv", pre: "" }
     ],
     bioRow2:     { x: 426, y: 93,  w: 621, h: 62 },
     bio2Label1:  { x: 439, y: 108, w: 109, h: 36 },
@@ -662,18 +662,27 @@ var APT_MARKS = [
 ];
 var APT_PALE = "#9FB3C2";
 var APT_DARK = "#154868";
+var APT_GAP = 24; /* 先・継・抑の間隔（大文字1文字ぶんくらいの空白） */
 function buildAptitudeMarks() {
-    var x = L.posLabel.x, y = 99, w = 246, h = 42;
-    var n = APT_MARKS.length;
-    var cy = y + h / 2 + 12;
-    return APT_MARKS.map(function (a, i) {
+    var bx = L.posLabel.x, by = 99, bw = 246, bh = 42;
+    var cy = by + bh / 2 + 12;
+    var marks = APT_MARKS.map(function (a) {
         var val = document.getElementById("p-" + a.id).value;
         var isMax = val === "◎", isMid = val === "○";
         var color = (isMax || isMid) ? APT_DARK : APT_PALE;
         var size = isMax ? 34 : 22;
-        var cx = x + (w / n) * (i + 0.5);
-        return '<text x="' + cx + '" y="' + cy + '" text-anchor="middle" font-size="' + size + '" font-weight="800" fill="' + color + '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + a.mark + '</text>';
-    }).join("");
+        return { mark: a.mark, color: color, size: size, w: size };
+    });
+    var totalW = marks.reduce(function (sum, m) { return sum + m.w; }, 0) + APT_GAP * (marks.length - 1);
+    var cursor = bx + bw / 2 - totalW / 2;
+    /* 球速・コントロールと同じ、白地に薄い水色枠の箱で囲う */
+    var html = '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>';
+    marks.forEach(function (m) {
+        var cx = cursor + m.w / 2;
+        html += '<text x="' + cx + '" y="' + cy + '" text-anchor="middle" font-size="' + m.size + '" font-weight="800" fill="' + m.color + '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + m.mark + '</text>';
+        cursor += m.w + APT_GAP;
+    });
+    return html;
 }
 
 /* ---- 特殊能力バッジの中身を組み立てる ----
@@ -891,19 +900,21 @@ function collectPitchData() {
     return data;
 }
 
-var PD_W = 600, PD_H = 460;
+/* 内部の作図ロジック（矢印の向き・ラベル位置など）は実測で検証済みの
+   ものをそのまま使うため、幅(PD_W)は変えず、縦方向だけ実際に使って
+   いる範囲（どの方向に第二球種が付いても、ラベルの上下の到達点は
+   常にy=115〜398に収まることをピクセル計測で確認済み）まで詰めて
+   PD_H・中心(PD_CX,PD_CY)を再定義した。これにより、同じ表示枠でも
+   拡大して見せられる。 */
+var PD_W = 600, PD_H = 326;
+var PD_CX = 300, PD_CY = 126;
 
-/* 実機の縮尺そのままの600x460で組み立て、呼び出し側の枠(w,h)に合わせて
-   ネストしたsvg(viewBox)で縮小表示する。カード内では能力値3行の下、
-   特殊能力バッジと同じ幅の枠に収まる大きさになる。 */
 function buildPitchDiagram(x, y, w, h) {
     var data = collectPitchData();
-    var cx = PD_W / 2, cy = PD_H / 2 - 10;
+    var cx = PD_CX, cy = PD_CY;
 
     var svg = '<defs>' + pdGradDefsSvg() + '</defs>' +
-        '<rect x="2" y="2" width="' + (PD_W - 4) + '" height="' + (PD_H - 4) + '" rx="16" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>' +
-        '<rect x="16" y="16" width="120" height="34" rx="8" fill="#F2F2F2"/>' +
-        '<text x="76" y="39" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">変化球</text>';
+        '<rect x="2" y="2" width="' + (PD_W - 4) + '" height="' + (PD_H - 4) + '" rx="16" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>';
 
     PD_SLOTS.forEach(function (slot) {
         var raw = data.pitches[slot.key];
@@ -1030,14 +1041,20 @@ function renderCard() {
         var rank = s.hasRank ? document.getElementById("stat-rank-" + s.id).value : null;
         var v = document.getElementById("stat-val-" + s.id).value;
         var valText = s.unit ? (v + s.unit) : v;
-        var rankText = rank
-            ? '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 12) + '" text-anchor="middle" font-size="28" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>'
-            : "";
-        return '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
+        var base = '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                '<rect x="' + (L.statColX + 4) + '" y="' + (y + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (h - 8) + '" rx="8" fill="#F2F2F2"/>' +
-               '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>' +
-               rankText +
-               '<text data-fit="' + (L.statNumW - 24 + (s.unit ? 40 : 0)) + '" x="' + (L.statNumX + L.statNumW - 22) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="' + (s.unit ? 22 : 28) + '" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(valText) + '</text>';
+               '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>';
+        if (!s.hasRank) {
+            /* 球速のようにランクを持たない行は、ランク欄と数値欄をまとめた
+               領域の中央に、大きめの文字で表示する */
+            var wideX = (L.statRankX + L.statNumX + L.statNumW) / 2;
+            var wideMax = (L.statNumX + L.statNumW) - L.statRankX - 10;
+            return base +
+                   '<text data-fit="' + wideMax + '" x="' + wideX + '" y="' + (y + h / 2 + 13) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(valText) + '</text>';
+        }
+        var rankText = '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 12) + '" text-anchor="middle" font-size="28" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>';
+        return base + rankText +
+               '<text data-fit="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 22) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(valText) + '</text>';
     }).join("");
 
     /* 変化球の枠は、能力値3行のすぐ下から、特殊能力バッジ8行目の下端と
@@ -1046,15 +1063,15 @@ function renderCard() {
        ネストしたsvg(viewBox)で縮小表示する。 */
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
     var lastStatRow = L.statRows[L.statRows.length - 1];
-    var diagramX = L.statColX, diagramW = statCardW;
-    var diagramY = lastStatRow.y + lastStatRow.h + 10;
+    var diagramX = L.statColX, diagramW = L.gridColX[0] - L.statColX - 8;
+    var diagramY = lastStatRow.y + lastStatRow.h + 6;
     var diagramH = gridBottom - diagramY;
     var bodyBottom = gridBottom + 20;
     var H = bodyBottom + 10;
 
     var bio1 = L.bio1Vals.map(function (b) {
         var val = document.getElementById("p-" + b.key).value;
-        return '<text data-fit="' + b.w + '" x="' + b.x + '" y="' + (b.y + 29) + '" font-size="21" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.pre) + esc(val) + '</text>';
+        return '<text data-fit="' + b.w + '" x="' + b.x + '" y="' + (b.y + 29) + '" font-size="26" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.pre) + esc(val) + '</text>';
     }).join("");
 
     var svg = '' +
