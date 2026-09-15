@@ -961,8 +961,8 @@ function collectPitchData() {
    常にy=115〜398に収まることをピクセル計測で確認済み）まで詰めて
    PD_H・中心(PD_CX,PD_CY)を再定義した。これにより、同じ表示枠でも
    拡大して見せられる。 */
-var PD_W = 600, PD_H = 320;
-var PD_CX = 300, PD_CY = 105;
+var PD_W = 579, PD_H = 335;
+var PD_CX = 291, PD_CY = 113;
 
 function buildPitchDiagram(x, y, w, h) {
     var data = collectPitchData();
@@ -1132,7 +1132,12 @@ function renderCard() {
        ネストしたsvg(viewBox)で縮小表示する。 */
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
     var lastStatRow = L.statRows[L.statRows.length - 1];
-    var diagramX = L.statColX, diagramW = statCardW;
+    /* 変化球の枠は、球速/コントロール/スタミナの列幅に厳密に合わせるより、
+       シュート・スライダーの矢尻がスタミナの文字・数字の下あたりに、
+       フォークの矢尻が特殊能力7行目の下端あたりに来る大きさを優先する。
+       特殊能力バッジ(x=372〜)と被らない範囲で、bodyPanelの左端まで
+       少し広げている。 */
+    var diagramX = L.bodyPanel.x, diagramW = L.gridColX[0] - L.bodyPanel.x - 6;
     var diagramY = lastStatRow.y + lastStatRow.h;
     var diagramH = gridBottom - diagramY;
     var bodyBottom = gridBottom + 20;
