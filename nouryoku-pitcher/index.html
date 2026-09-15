@@ -895,8 +895,8 @@ function pdDrawBar(cx, cy, deg, value, label, offsetPerp, thin) {
 }
 
 function pdDrawStraightMark(cx, cy, deg, label, offsetPerp, thin) {
-    var baseR = 38, tipR = 38 + 40;
-    var tipHalfW = thin ? 7 : 13;
+    var baseR = 38, tipR = 38 + 30;
+    var tipHalfW = thin ? 6 : 9;
     var rad = deg * Math.PI / 180;
     var dx = Math.cos(rad), dy = Math.sin(rad);
     var px = -dy, py = dx;
