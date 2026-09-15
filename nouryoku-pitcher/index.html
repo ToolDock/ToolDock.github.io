@@ -827,8 +827,9 @@ function pdLabelAnchor(dx, shiftX) {
     return dx > 0 ? "start" : "end";
 }
 
-function pdDrawBar(cx, cy, deg, value, label, offsetPerp) {
-    var innerR = 38, segLen = 18, segGap = 3, segW = 24;
+function pdDrawBar(cx, cy, deg, value, label, offsetPerp, thin) {
+    var innerR = 38, segLen = 18, segGap = 3, segW = thin ? 13 : 24;
+    var tipHalfW = thin ? 7 : 13;
     var rad = deg * Math.PI / 180;
     var dx = Math.cos(rad), dy = Math.sin(rad);
     var px = -dy, py = dx;
@@ -857,7 +858,7 @@ function pdDrawBar(cx, cy, deg, value, label, offsetPerp) {
     var tipLen = 24;
     var tipXf = 'transform="translate(' + tipBaseP[0].toFixed(1) + ',' + tipBaseP[1].toFixed(1) + ') rotate(' + deg + ')"';
     html += '<g ' + tipXf + '>' +
-            '<polygon points="0,-13 0,13 ' + tipLen + ',0" fill="' + tipColor + '" stroke="' + PD_LINE_BLUE + '" stroke-width="2" stroke-linejoin="round"/>';
+            '<polygon points="0,-' + tipHalfW + ' 0,' + tipHalfW + ' ' + tipLen + ',0" fill="' + tipColor + '" stroke="' + PD_LINE_BLUE + '" stroke-width="2" stroke-linejoin="round"/>';
     if (tip7Filled) {
         html += '<ellipse cx="' + (tipLen * 0.3) + '" cy="-3.5" rx="' + (tipLen * 0.3) + '" ry="2.4" fill="#fff" opacity="0.4"/>';
     }
@@ -893,8 +894,9 @@ function pdDrawBar(cx, cy, deg, value, label, offsetPerp) {
     return html;
 }
 
-function pdDrawStraightMark(cx, cy, deg, label, offsetPerp) {
+function pdDrawStraightMark(cx, cy, deg, label, offsetPerp, thin) {
     var baseR = 38, tipR = 38 + 40;
+    var tipHalfW = thin ? 7 : 13;
     var rad = deg * Math.PI / 180;
     var dx = Math.cos(rad), dy = Math.sin(rad);
     var px = -dy, py = dx;
@@ -904,7 +906,7 @@ function pdDrawStraightMark(cx, cy, deg, label, offsetPerp) {
     var tBaseP = pdPolar(ocx, ocy, baseR, deg);
     var xf = 'transform="translate(' + tBaseP[0].toFixed(1) + ',' + tBaseP[1].toFixed(1) + ') rotate(' + deg + ')"';
     var html = '<g ' + xf + '>' +
-            '<polygon points="0,-13 0,13 ' + tipLen + ',0" fill="url(#' + PD_SEG_GRAD_IDS[0] + ')" stroke="' + PD_LINE_BLUE + '" stroke-width="2" stroke-linejoin="round"/>' +
+            '<polygon points="0,-' + tipHalfW + ' 0,' + tipHalfW + ' ' + tipLen + ',0" fill="url(#' + PD_SEG_GRAD_IDS[0] + ')" stroke="' + PD_LINE_BLUE + '" stroke-width="2" stroke-linejoin="round"/>' +
             '<ellipse cx="' + (tipLen * 0.3) + '" cy="-4" rx="' + (tipLen * 0.3) + '" ry="3" fill="#fff" opacity="0.4"/>' +
             '</g>';
 
@@ -981,8 +983,8 @@ function buildPitchDiagram(x, y, w, h) {
             var straightLabel = (raw && raw.name) ? raw.name : "ストレート";
             if (data.secondaryStraight) {
                 var sSign = pdSecondaryOffsetSign(svgDeg);
-                svg += pdDrawStraightMark(cx, cy, svgDeg, straightLabel, -15 * sSign);
-                svg += pdDrawStraightMark(cx, cy, svgDeg, data.secondaryStraight.name, 15 * sSign);
+                svg += pdDrawStraightMark(cx, cy, svgDeg, straightLabel, -11 * sSign, true);
+                svg += pdDrawStraightMark(cx, cy, svgDeg, data.secondaryStraight.name, 11 * sSign, true);
             } else {
                 svg += pdDrawStraightMark(cx, cy, svgDeg, straightLabel, 0);
             }
@@ -995,8 +997,8 @@ function buildPitchDiagram(x, y, w, h) {
         var sameDirSecondary = data.secondary && data.secondary.slot === slot.key;
         if (sameDirSecondary) {
             var sign = pdSecondaryOffsetSign(svgDeg);
-            svg += pdDrawBar(cx, cy, svgDeg, value, label, -15 * sign);
-            svg += pdDrawBar(cx, cy, svgDeg, data.secondary.value, data.secondary.name, 15 * sign);
+            svg += pdDrawBar(cx, cy, svgDeg, value, label, -11 * sign, true);
+            svg += pdDrawBar(cx, cy, svgDeg, data.secondary.value, data.secondary.name, 11 * sign, true);
         } else {
             svg += pdDrawBar(cx, cy, svgDeg, value, label, 0);
         }
