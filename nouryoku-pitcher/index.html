@@ -611,11 +611,11 @@ var L = {
     bioRow1:     { x: 426, y: 25,  w: 621, h: 62 },
     bio1Label:   { x: 439, y: 41,  w: 109, h: 36 },
     bio1Vals:    [
-        { x: 553, y: 36, w: 140, key: "era", pre: "防 " },
-        { x: 698, y: 36, w: 80, key: "win", pre: "" },
-        { x: 783, y: 36, w: 60, key: "lose", pre: "" },
-        { x: 848, y: 36, w: 70, key: "hp", pre: "" },
-        { x: 923, y: 36, w: 55, key: "sv", pre: "" }
+        { x: 553, y: 36, w: 110, key: "era", pre: "防 " },
+        { x: 669, y: 36, w: 68, key: "win", pre: "" },
+        { x: 743, y: 36, w: 52, key: "lose", pre: "" },
+        { x: 801, y: 36, w: 60, key: "hp", pre: "" },
+        { x: 867, y: 36, w: 42, key: "sv", pre: "" }
     ],
     bioRow2:     { x: 426, y: 93,  w: 621, h: 62 },
     bio2Label1:  { x: 439, y: 108, w: 109, h: 36 },
@@ -673,7 +673,7 @@ var APT_MARKS = [
 ];
 var APT_PALE = "#9FB3C2";
 var APT_DARK = "#154868";
-var APT_GAP = 24; /* 先・継・抑の間隔（大文字1文字ぶんくらいの空白） */
+var APT_GAP = 10; /* 先・継・抑の間隔 */
 /* 実機の「適性」欄（白いチップに"適性"、続けて先/中/抑を並べる）を参考に
    したデザイン。チップだけ球速・コントロールの見出しと同じ薄灰の角丸、
    先・継・抑本体は枠で囲わずプレーンテキストで並べる。 */
@@ -688,7 +688,7 @@ function buildAptitudeMarks() {
         var val = document.getElementById("p-" + a.id).value;
         var isMax = val === "◎", isMid = val === "○";
         var color = (isMax || isMid) ? APT_DARK : APT_PALE;
-        var size = isMax ? 30 : 20;
+        var size = isMax ? 22 : 16;
         return { mark: a.mark, color: color, size: size, w: size };
     });
     var markCy = by + bh / 2 + 12;
@@ -1091,7 +1091,7 @@ function renderCard() {
        ネストしたsvg(viewBox)で縮小表示する。 */
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
     var lastStatRow = L.statRows[L.statRows.length - 1];
-    var diagramX = L.statColX, diagramW = L.gridColX[0] - L.statColX - 8;
+    var diagramX = L.statColX, diagramW = statCardW;
     var diagramY = lastStatRow.y + lastStatRow.h;
     var diagramH = gridBottom - diagramY;
     var bodyBottom = gridBottom + 20;
