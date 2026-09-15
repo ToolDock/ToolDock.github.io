@@ -663,9 +663,16 @@ var APT_MARKS = [
 var APT_PALE = "#9FB3C2";
 var APT_DARK = "#154868";
 var APT_GAP = 24; /* 先・継・抑の間隔（大文字1文字ぶんくらいの空白） */
+/* 実機の「適性」欄（白いチップに"適性"、続けて先/中/抑を並べる）を参考に
+   したデザイン。チップだけ球速・コントロールの見出しと同じ薄灰の角丸、
+   先・継・抑本体は枠で囲わずプレーンテキストで並べる。 */
 function buildAptitudeMarks() {
-    var bx = L.posLabel.x, by = 99, bw = 246, bh = 42;
-    var cy = by + bh / 2 + 12;
+    var bx = L.posLabel.x, by = 99, bh = 42;
+    var chipW = 96;
+    var cy = by + bh / 2 + 7;
+    var html = '<rect x="' + bx + '" y="' + (by + 3) + '" width="' + chipW + '" height="' + (bh - 6) + '" rx="10" fill="#F2F2F2"/>' +
+        '<text x="' + (bx + chipW / 2) + '" y="' + cy + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">適性</text>';
+
     var marks = APT_MARKS.map(function (a) {
         var val = document.getElementById("p-" + a.id).value;
         var isMax = val === "◎", isMid = val === "○";
@@ -673,13 +680,11 @@ function buildAptitudeMarks() {
         var size = isMax ? 34 : 22;
         return { mark: a.mark, color: color, size: size, w: size };
     });
-    var totalW = marks.reduce(function (sum, m) { return sum + m.w; }, 0) + APT_GAP * (marks.length - 1);
-    var cursor = bx + bw / 2 - totalW / 2;
-    /* 球速・コントロールと同じ、白地に薄い水色枠の箱で囲う */
-    var html = '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>';
+    var markCy = by + bh / 2 + 12;
+    var cursor = bx + chipW + 18;
     marks.forEach(function (m) {
         var cx = cursor + m.w / 2;
-        html += '<text x="' + cx + '" y="' + cy + '" text-anchor="middle" font-size="' + m.size + '" font-weight="800" fill="' + m.color + '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + m.mark + '</text>';
+        html += '<text x="' + cx + '" y="' + markCy + '" text-anchor="middle" font-size="' + m.size + '" font-weight="800" fill="' + m.color + '" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + m.mark + '</text>';
         cursor += m.w + APT_GAP;
     });
     return html;
@@ -1040,21 +1045,21 @@ function renderCard() {
         var y = band.y, h = band.h;
         var rank = s.hasRank ? document.getElementById("stat-rank-" + s.id).value : null;
         var v = document.getElementById("stat-val-" + s.id).value;
-        var valText = s.unit ? (v + s.unit) : v;
         var base = '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                '<rect x="' + (L.statColX + 4) + '" y="' + (y + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (h - 8) + '" rx="8" fill="#F2F2F2"/>' +
                '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>';
         if (!s.hasRank) {
             /* 球速のようにランクを持たない行は、ランク欄と数値欄をまとめた
-               領域の中央に、大きめの文字で表示する */
+               領域の中央に、大きめの文字で表示する。単位(km/h)だけ小さく。 */
             var wideX = (L.statRankX + L.statNumX + L.statNumW) / 2;
             var wideMax = (L.statNumX + L.statNumW) - L.statRankX - 10;
+            var unitTspan = s.unit ? '<tspan font-size="19" font-weight="700">' + esc(s.unit) + '</tspan>' : "";
             return base +
-                   '<text data-fit="' + wideMax + '" x="' + wideX + '" y="' + (y + h / 2 + 13) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(valText) + '</text>';
+                   '<text data-fit="' + wideMax + '" x="' + wideX + '" y="' + (y + h / 2 + 13) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + unitTspan + '</text>';
         }
-        var rankText = '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 12) + '" text-anchor="middle" font-size="28" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>';
+        var rankText = '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 13) + '" text-anchor="middle" font-size="31" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>';
         return base + rankText +
-               '<text data-fit="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 22) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(valText) + '</text>';
+               '<text data-fit="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 28) + '" y="' + (y + h / 2 + 13) + '" text-anchor="end" font-size="31" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
     }).join("");
 
     /* 変化球の枠は、能力値3行のすぐ下から、特殊能力バッジ8行目の下端と

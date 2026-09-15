@@ -759,13 +759,13 @@ function renderCard() {
         var rank = s.hasRank ? document.getElementById("stat-rank-" + s.id).value : null;
         var v = document.getElementById("stat-val-" + s.id).value;
         var rankText = rank
-            ? '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 12) + '" text-anchor="middle" font-size="28" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>'
+            ? '<text data-fit="' + L.statRankW + '" x="' + (L.statRankX + L.statRankW / 2) + '" y="' + (y + h / 2 + 13) + '" text-anchor="middle" font-size="31" font-weight="800" fill="' + STAT_RANK_COLOR[rank] + '" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>'
             : (s.id === "traj" ? trajArrow(L.statRankX + L.statRankW / 2, y + h / 2, parseInt(v, 10)) : "");
         return '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                '<rect x="' + (L.statColX + 4) + '" y="' + (y + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (h - 8) + '" rx="8" fill="#F2F2F2"/>' +
                '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>' +
                rankText +
-               '<text data-fit="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 22) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="28" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
+               '<text data-fit="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 28) + '" y="' + (y + h / 2 + 13) + '" text-anchor="end" font-size="31" font-weight="800" fill="#1B5FA3" font-family="\'Source Sans 3\',sans-serif">' + esc(v) + '</text>';
     }).join("");
 
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
