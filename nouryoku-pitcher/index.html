@@ -585,6 +585,13 @@ function justifyTexts(svgRoot) {
     });
 }
 
+/* 実機同様、登録名は4文字以下ならプレート内でバランスよく空白を
+   入れて均等配置し、5文字以上になったら詰めて表示する。 */
+function nameFitAttr(name, maxW) {
+    var len = Array.from(name).length;
+    return (len >= 1 && len <= 4) ? 'data-justify="' + maxW + '"' : 'data-fit="' + maxW + '"';
+}
+
 function esc(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -1187,7 +1194,7 @@ function renderCard() {
         '<rect x="' + L.bodyPanel.x + '" y="' + L.bodyPanel.y + '" width="' + L.bodyPanel.w + '" height="' + (H - L.bodyPanel.y - 10) + '" rx="18" fill="#EAFAFF"/>' +
 
         nameplateStripes(L.namePlate.x, L.namePlate.y, L.namePlate.w, L.namePlate.h, buildNamePlateColors()) +
-        '<text data-fit="' + (L.namePlate.w - 20) + '" x="' + (L.namePlate.x + L.namePlate.w / 2) + '" y="' + (L.namePlate.y + L.namePlate.h / 2 + 11) + '" text-anchor="middle" font-size="32" font-weight="800" fill="#111" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(name) + '</text>' +
+        '<text ' + nameFitAttr(name, L.namePlate.w - 20) + ' x="' + (L.namePlate.x + L.namePlate.w / 2) + '" y="' + (L.namePlate.y + L.namePlate.h / 2 + 11) + '" text-anchor="middle" font-size="32" font-weight="800" fill="#111" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(name) + '</text>' +
 
         (teamFlagImg
             ? '<defs><clipPath id="clipFlag"><rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" rx="10"/></clipPath></defs>' +
