@@ -137,10 +137,11 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <div class="card-wrap">
     <div id="cardPreview" class="card-preview"></div>
     <div class="card-actions">
-        <button type="button" id="btnDownload">PNG画像を保存</button>
+        <button type="button" id="btnDownload">PNG画像をダウンロード（PC向け）</button>
+        <button type="button" id="btnShare">共有して保存（スマホ・iPad向け）</button>
         <button type="button" class="secondary" id="btnReset">初期値に戻す</button>
     </div>
-    <p class="note">スマートフォンで保存できない場合は、共有シートが表示されていないか確認してください。それでも保存できない場合は、スクリーンショットをご利用ください。</p>
+    <p class="note">PCでは「PNG画像をダウンロード」を、スマートフォン・iPadでは「共有して保存」をお使いください。共有からも保存できない場合は、スクリーンショットをご利用ください。</p>
 </div>
 
 <div class="editor">
@@ -886,8 +887,11 @@ function bindImageUpload(inputId, setter) {
 bindImageUpload("p-photoimg", function (v) { playerPhotoImg = v; });
 bindImageUpload("p-flagimg", function (v) { teamFlagImg = v; });
 
-/* ---- PNG書き出し ---- */
-document.getElementById("btnDownload").addEventListener("click", function () {
+/* ---- PNG書き出し ----
+   PC向け「ダウンロード」とスマホ・iPad向け「共有して保存」を別ボタンに
+   分けた。PCではWeb Share APIが使える場合でも共有シートから画像として
+   保存できないことがあるため、ボタンごとに保存方法を固定する。 */
+function exportPngBlob(cb) {
     var svgEl = document.querySelector("#cardPreview svg");
     var vb = svgEl.getAttribute("viewBox").split(" ").map(Number);
     var scale = 2;
@@ -907,22 +911,32 @@ document.getElementById("btnDownload").addEventListener("click", function () {
         URL.revokeObjectURL(url);
         canvas.toBlob(function (blob) {
             var filename = (document.getElementById("p-name").value || "player") + "_card.png";
-            var file = new File([blob], filename, { type: "image/png" });
-            /* スマホ（特にiOS Safari）はa[download]が効かないことがあるため、
-               共有シート経由で「画像を保存」できるWeb Share APIを優先する */
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                navigator.share({ files: [file], title: filename }).catch(function () { /* キャンセル時は無視 */ });
-                return;
-            }
-            var a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            cb(blob, filename);
         }, "image/png");
     };
     img.src = url;
+}
+
+document.getElementById("btnDownload").addEventListener("click", function () {
+    exportPngBlob(function (blob, filename) {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
+});
+
+document.getElementById("btnShare").addEventListener("click", function () {
+    exportPngBlob(function (blob, filename) {
+        var file = new File([blob], filename, { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: filename }).catch(function () { /* キャンセル時は無視 */ });
+        } else {
+            alert("この端末・ブラウザでは共有機能が使えません。「PNG画像をダウンロード」をお使いください。");
+        }
+    });
 });
 
 updateCheckedCounts();
