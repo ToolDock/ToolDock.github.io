@@ -115,10 +115,24 @@ p{ margin:0 0 12px; }
 
 .sub-grid{ display:grid; gap:8px 14px; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); margin-bottom:6px; }
 .sub-field{ display:flex; flex-direction:column; gap:4px; }
-.sub-field label{ font-size:0.85rem; font-weight:600; color:var(--ink-sub); }
 .sub-field .row{ display:flex; gap:6px; }
 .sub-field select{ font:inherit; font-size:0.92rem; padding:6px; border:1px solid var(--line); border-radius:8px; }
 .sub-field .note{ font-size:0.72rem; color:var(--ink-mute); margin:0; }
+.sub-label-input, .stat-label-input{
+    font:inherit; font-size:0.85rem; font-weight:600; color:var(--ink-sub);
+    border:1px solid var(--line); border-radius:8px; padding:5px 7px; width:100%;
+}
+
+.custom-ab-form{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.custom-ab-form input[type="text"]{ font:inherit; font-size:0.92rem; padding:7px 10px;
+    border:1px solid var(--line); border-radius:8px; flex:1 1 180px; min-width:0; }
+.custom-ab-form select{ font:inherit; font-size:0.92rem; padding:7px 10px; border:1px solid var(--line); border-radius:8px; }
+.custom-ab-form button{ font:inherit; font-size:0.88rem; font-weight:700; padding:7px 16px;
+    border:1px solid var(--accent); border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
+.ab-item--custom{ background:var(--tint); }
+.ab-item__del{ flex:0 0 auto; border:none; background:none; color:var(--ink-mute); font-size:0.9rem;
+    cursor:pointer; line-height:1; padding:2px 4px; }
+.ab-item__del:hover{ color:#dc2626; }
 
 .pitch-rows{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
 .pitch-row{ display:grid; grid-template-columns:90px 1fr 70px; gap:8px; align-items:center; }
@@ -223,13 +237,36 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
         </div>
     </div>
 
+    <h3>表示ラベルの変更（任意）</h3>
+    <p class="note" style="margin-top:0">カード内の項目名を自由に変更できます（例：「成績」→「評定」、「コントロール」→「制球力」）。空欄にすると元の名前のままになります。</p>
+    <div class="field-grid">
+        <div class="field">
+            <label for="label-bio1">「成績」ラベル</label>
+            <input type="text" id="label-bio1" value="成績" maxlength="6">
+        </div>
+        <div class="field">
+            <label for="label-form">「フォーム」ラベル</label>
+            <input type="text" id="label-form" value="フォーム" maxlength="6">
+        </div>
+        <div class="field">
+            <label for="label-throwbat">「投打」ラベル</label>
+            <input type="text" id="label-throwbat" value="投打" maxlength="6">
+        </div>
+        <div class="field">
+            <label for="label-aptitude">「適性」ラベル</label>
+            <input type="text" id="label-aptitude" value="適性" maxlength="6">
+        </div>
+    </div>
+
     <h3>能力値</h3>
+    <p class="note" style="margin-top:0">項目名（球速・コントロールなど）も自由に書き換えられます。</p>
     <div class="stat-rows" id="statRows"></div>
 
     <h3>先発適性・中継ぎ適性・抑え適性</h3>
     <div class="field-grid" id="roleGrid"></div>
 
     <h3>特殊能力上段</h3>
+    <p class="note" style="margin-top:0">項目名（対ピンチ・対左打者など）も自由に書き換えられます。</p>
     <div class="sub-grid" id="subGrid"></div>
 
     <h3>変化球</h3>
@@ -289,6 +326,19 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
         </div>
     </div>
 
+    <h3>オリジナルの特殊能力を設定する</h3>
+    <p class="note" style="margin-top:0">名前とカテゴリ（金特・青特・赤特・緑特）を指定して追加すると、下の特殊能力一覧に加わります。そこからチェックを入れるとカードに表示されます。</p>
+    <div class="custom-ab-form">
+        <input type="text" id="customAbName" maxlength="10" placeholder="例：イチロー">
+        <select id="customAbCat">
+            <option value="kintoku">金特</option>
+            <option value="aoto">青特</option>
+            <option value="aka">赤特</option>
+            <option value="midori">緑特</option>
+        </select>
+        <button type="button" id="customAbAdd">追加</button>
+    </div>
+
     <h3>特殊能力</h3>
     <input type="text" class="ab-search" id="abSearch" placeholder="特殊能力名で検索（例：奪三振、鉄腕）">
     <div class="ab-toolbar">
@@ -325,6 +375,8 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <li>先発・中継ぎ・抑えの適性を選びます</li>
 <li>特殊能力上段のランクを選びます</li>
 <li>変化球は、名前を入れて変化量（0〜7）を指定した方向だけがカードに表示されます</li>
+<li>「成績」「コントロール」などの項目名は、表示ラベルの変更欄や能力値・特殊能力上段の入力欄で自由に書き換えられます</li>
+<li>「イチロー」「計算無双」のような、今作に存在しないオリジナルの特殊能力も、名前とカテゴリ（金特・青特・赤特・緑特）を指定して追加できます</li>
 <li>下の一覧から、所持させたい金特・青特・赤特・緑特にチェックを入れます</li>
 <li>PCの場合は「PNG画像をダウンロード」、スマートフォン・タブレットの場合は「共有して保存」でカード画像を保存できます</li>
 </ol>
@@ -380,6 +432,12 @@ var AB_CATS = [
     { key: "aka", label: "赤特", dot: "dot--aka" },
     { key: "midori", label: "緑特", dot: "dot--midori" }
 ];
+
+/* オリジナルの特殊能力。renderAbilityArea()が最初に呼ばれる時点で
+   既に存在している必要があるため、AB_CATSのすぐ近くで宣言する。 */
+var customAbilities = [];
+var customAbNextId = 1;
+var CUSTOM_AB_STORAGE_KEY = "tooldock:" + CURRENT_TOOL + ":customAbilities";
 
 /* 実機のスクリーンショット通りの並び（上段: 対ピンチ/対左打者/打たれ強さ/ケガしにくさ、
    下段: ノビ/クイック/(常に空欄)/回復）。投手の特殊能力上段は7つしか無く、
@@ -453,7 +511,7 @@ function renderStatRows() {
     el.innerHTML = STATS.map(function (s) {
         var rankCtrl = s.hasRank ? buildGradeSelect("stat-rank-" + s.id, "main8", s.rank) : '<span></span>';
         return '<div class="stat-row">' +
-               '<label>' + s.label + '</label>' +
+               '<input type="text" class="stat-label-input" id="statlabel-' + s.id + '" value="' + esc(s.label) + '" maxlength="6">' +
                rankCtrl +
                '<input type="number" id="stat-val-' + s.id + '" min="' + s.min + '" max="' + s.max + '" value="' + s.value + '">' +
                '</div>';
@@ -479,7 +537,7 @@ function renderSubGrid() {
     el.innerHTML = SUB_ABILITIES.filter(function (a) { return !a.blank; }).map(function (a) {
         var note = Object.keys(a.promote).map(function (g) { return g + ":" + a.promote[g]; }).join(" / ");
         return '<div class="sub-field">' +
-               '<label for="' + a.id + '">' + a.label + '</label>' +
+               '<input type="text" class="sub-label-input" id="sublabel-' + a.id + '" value="' + esc(a.label) + '" maxlength="6">' +
                '<div class="row">' + buildGradeSelect(a.id, a.scale, "D") + '</div>' +
                '<p class="note">' + note + '</p>' +
                '</div>';
@@ -508,28 +566,105 @@ function renderPitchRows() {
 }
 renderPitchRows();
 
-/* ---- 特殊能力チェックリストの描画 ---- */
+/* ---- 特殊能力チェックリストの描画 ----
+   既存の特殊能力（AB）に、オリジナルの特殊能力（customAbilities）を
+   カテゴリごとに追加して表示する。再描画のたびに、チェック状態と
+   開いていたカテゴリを引き継ぐ（そうしないとオリジナル特能を1つ
+   追加するたびに、それまでのチェックが全部消えてしまう）。 */
 function renderAbilityArea() {
+    var openCats = {};
+    document.querySelectorAll('#abilityArea .ab-cat[open]').forEach(function (c) { openCats[c.dataset.cat] = true; });
+    var checkedKeys = {};
+    document.querySelectorAll('#abilityArea .ab-item input:checked').forEach(function (cb) {
+        var item = cb.closest(".ab-item");
+        checkedKeys[item.closest(".ab-cat").dataset.cat + "::" + item.dataset.name] = true;
+    });
+
     var area = document.getElementById("abilityArea");
     var html = "";
     AB_CATS.forEach(function (cat) {
-        var items = AB[cat.key];
-        html += '<details class="ab-cat" data-cat="' + cat.key + '">' +
+        var items = AB[cat.key].map(function (pair) {
+            return { name: pair[0], star: pair[1], custom: false };
+        }).concat(customAbilities.filter(function (c) { return c.cat === cat.key; }).map(function (c) {
+            return { name: c.name, star: 0, custom: true, id: c.id };
+        }));
+        html += '<details class="ab-cat" data-cat="' + cat.key + '"' + (openCats[cat.key] ? " open" : "") + '>' +
                 '<summary class="ab-cat__title"><span class="dot ' + cat.dot + '"></span>' + cat.label +
                 '（' + items.length + '）<span class="checked-count"></span></summary>' +
                 '<div class="ab-grid">' +
-                items.map(function (pair) {
-                    var name = pair[0], star = pair[1];
-                    var id = "ab-" + cat.key + "-" + name;
-                    return '<label class="ab-item" data-name="' + name + '">' +
-                           '<input type="checkbox" data-cat="' + cat.key + '" data-star="' + star + '" id="' + id + '">' +
-                           '<span>' + name + '</span></label>';
+                items.map(function (it) {
+                    var id = it.custom ? ("ab-" + cat.key + "-custom-" + it.id) : ("ab-" + cat.key + "-" + it.name);
+                    return '<label class="ab-item' + (it.custom ? " ab-item--custom" : "") + '" data-name="' + esc(it.name) + '">' +
+                           '<input type="checkbox" data-cat="' + cat.key + '" data-star="' + it.star + '" id="' + id + '">' +
+                           '<span>' + esc(it.name) + '</span>' +
+                           (it.custom ? '<button type="button" class="ab-item__del" data-custom-id="' + it.id + '" title="削除">×</button>' : '') +
+                           '</label>';
                 }).join("") +
                 '</div></details>';
     });
     area.innerHTML = html;
+
+    document.querySelectorAll('#abilityArea .ab-item').forEach(function (item) {
+        var key = item.closest(".ab-cat").dataset.cat + "::" + item.dataset.name;
+        if (checkedKeys[key]) item.querySelector("input").checked = true;
+    });
+    updateCheckedCounts();
 }
 renderAbilityArea();
+
+/* ---- オリジナルの特殊能力 ---- */
+function saveCustomAbilities() {
+    try { localStorage.setItem(CUSTOM_AB_STORAGE_KEY, JSON.stringify(customAbilities)); } catch (e) { /* 無視 */ }
+}
+function loadCustomAbilities() {
+    try {
+        var raw = localStorage.getItem(CUSTOM_AB_STORAGE_KEY);
+        if (!raw) return;
+        var data = JSON.parse(raw);
+        if (Array.isArray(data)) customAbilities = data;
+        customAbilities.forEach(function (c) { if (c.id >= customAbNextId) customAbNextId = c.id + 1; });
+    } catch (e) { /* 壊れたデータなどは無視 */ }
+}
+
+document.getElementById("customAbAdd").addEventListener("click", function () {
+    var nameEl = document.getElementById("customAbName");
+    var name = nameEl.value.trim();
+    if (!name) { nameEl.focus(); return; }
+    var cat = document.getElementById("customAbCat").value;
+    customAbilities.push({ id: customAbNextId++, name: name, cat: cat });
+    saveCustomAbilities();
+    nameEl.value = "";
+    renderAbilityArea();
+    filterAbilities();
+    renderCard();
+});
+document.getElementById("customAbName").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); document.getElementById("customAbAdd").click(); }
+});
+
+/* オリジナル特能の削除ボタン、および特殊能力欄（新規追加分を含む）の
+   チェック変更は、常にDOMへ存在するabilityArea自体にイベント委譲する。
+   個別の要素へリスナーを張る方式だと、renderAbilityArea()で
+   作り直された要素にはリスナーが付かずカードが更新されなくなる。 */
+document.getElementById("abilityArea").addEventListener("click", function (e) {
+    var delBtn = e.target.closest(".ab-item__del");
+    if (!delBtn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var id = parseInt(delBtn.dataset.customId, 10);
+    customAbilities = customAbilities.filter(function (c) { return c.id !== id; });
+    saveCustomAbilities();
+    renderAbilityArea();
+    filterAbilities();
+    renderCard();
+});
+document.getElementById("abilityArea").addEventListener("change", function (e) {
+    if (e.target.matches('input[type="checkbox"]')) {
+        updateCheckedCounts();
+        renderCard();
+        saveFormState();
+    }
+});
 
 function updateCheckedCounts() {
     document.querySelectorAll('#abilityArea .ab-cat').forEach(function (cat) {
@@ -609,7 +744,14 @@ function nameFitAttr(name, maxW) {
 }
 
 function esc(s) {
-    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/* 表示ラベルの入力欄から現在値を読む。空欄ならデフォルトの名前のまま。 */
+function labelVal(id, fallback) {
+    var el = document.getElementById(id);
+    var v = el && el.value.trim();
+    return v ? v : fallback;
 }
 
 function badgeLabel(cx, cy, maxW, text, color) {
@@ -725,7 +867,7 @@ function buildAptitudeMarks() {
     var chipW = 96;
     var cy = by + bh / 2 + 7;
     var html = '<rect x="' + bx + '" y="' + (by + 3) + '" width="' + chipW + '" height="' + (bh - 6) + '" rx="10" fill="#F2F2F2"/>' +
-        '<text x="' + (bx + chipW / 2) + '" y="' + cy + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">適性</text>';
+        '<text x="' + (bx + chipW / 2) + '" y="' + cy + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(labelVal("label-aptitude", "適性")) + '</text>';
 
     var marks = APT_MARKS.map(function (a) {
         var val = document.getElementById("p-" + a.id).value;
@@ -757,7 +899,7 @@ function buildSubBadges() {
         if (promoted) {
             return { type: rank === "S" ? "promoted" : "promotedBad", name: promoted };
         }
-        return { type: "ranked", name: a.label, rank: rank };
+        return { type: "ranked", name: labelVal("sublabel-" + a.id, a.label), rank: rank };
     });
 }
 
@@ -1151,7 +1293,7 @@ function renderCard() {
         var v = document.getElementById("stat-val-" + s.id).value;
         var base = '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="10" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                '<rect x="' + (L.statColX + 4) + '" y="' + (y + 4) + '" width="' + (L.statLabelW - 4) + '" height="' + (h - 8) + '" rx="8" fill="#F2F2F2"/>' +
-               '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.label) + '</text>';
+               '<text data-fit="' + (L.statLabelW - 14) + '" x="' + (L.statColX + L.statLabelW / 2) + '" y="' + (y + h / 2 + 7) + '" text-anchor="middle" font-size="19" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(labelVal("statlabel-" + s.id, s.label)) + '</text>';
         if (!s.hasRank) {
             /* 球速のようにランクを持たない行は、数字の十の位がコントロール行の
                ランク文字とだいたい同じx位置に来るよう、数字だけをランク欄の
@@ -1226,15 +1368,15 @@ function renderCard() {
 
         '<rect x="' + L.bioRow1.x + '" y="' + L.bioRow1.y + '" width="' + L.bioRow1.w + '" height="' + L.bioRow1.h + '" rx="14" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>' +
         '<rect x="' + L.bio1Label.x + '" y="' + L.bio1Label.y + '" width="' + L.bio1Label.w + '" height="' + L.bio1Label.h + '" rx="8" fill="#F2F2F2"/>' +
-        '<text data-fit="' + (L.bio1Label.w - 12) + '" x="' + (L.bio1Label.x + L.bio1Label.w / 2) + '" y="' + (L.bio1Label.y + L.bio1Label.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">成績</text>' +
+        '<text data-fit="' + (L.bio1Label.w - 12) + '" x="' + (L.bio1Label.x + L.bio1Label.w / 2) + '" y="' + (L.bio1Label.y + L.bio1Label.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(labelVal("label-bio1", "成績")) + '</text>' +
         bio1 +
 
         '<rect x="' + L.bioRow2.x + '" y="' + L.bioRow2.y + '" width="' + L.bioRow2.w + '" height="' + L.bioRow2.h + '" rx="14" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>' +
         '<rect x="' + L.bio2Label1.x + '" y="' + L.bio2Label1.y + '" width="' + L.bio2Label1.w + '" height="' + L.bio2Label1.h + '" rx="8" fill="#F2F2F2"/>' +
-        '<text data-fit="' + (L.bio2Label1.w - 12) + '" x="' + (L.bio2Label1.x + L.bio2Label1.w / 2) + '" y="' + (L.bio2Label1.y + L.bio2Label1.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">フォーム</text>' +
+        '<text data-fit="' + (L.bio2Label1.w - 12) + '" x="' + (L.bio2Label1.x + L.bio2Label1.w / 2) + '" y="' + (L.bio2Label1.y + L.bio2Label1.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(labelVal("label-form", "フォーム")) + '</text>' +
         '<text data-fit="' + (L.bio2Val1.w - 10) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 7) + '" font-size="23" font-weight="700" fill="#0f172a" font-family="\'Source Sans 3\',&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(form) + '</text>' +
         '<rect x="' + L.bio2Label2.x + '" y="' + L.bio2Label2.y + '" width="' + L.bio2Label2.w + '" height="' + L.bio2Label2.h + '" rx="8" fill="#F2F2F2"/>' +
-        '<text data-fit="' + (L.bio2Label2.w - 12) + '" x="' + (L.bio2Label2.x + L.bio2Label2.w / 2) + '" y="' + (L.bio2Label2.y + L.bio2Label2.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">投打</text>' +
+        '<text data-fit="' + (L.bio2Label2.w - 12) + '" x="' + (L.bio2Label2.x + L.bio2Label2.w / 2) + '" y="' + (L.bio2Label2.y + L.bio2Label2.h / 2 + 7) + '" text-anchor="middle" font-size="16" font-weight="700" fill="#163E64" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(labelVal("label-throwbat", "投打")) + '</text>' +
         '<text data-fit="' + (L.bio2Val2.w - 10) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 7) + '" font-size="23" font-weight="700" fill="#0f172a" font-family="&quot;M PLUS Rounded 1c&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
 
         statHTML +
@@ -1434,6 +1576,8 @@ document.getElementById("btnShare").addEventListener("click", function () {
     });
 });
 
+loadCustomAbilities();
+renderAbilityArea();
 loadFormState();
 loadImageState();
 filterAbilities();
