@@ -1402,6 +1402,20 @@ function renderCard() {
 var FORM_STORAGE_KEY = "tooldock:" + CURRENT_TOOL + ":form";
 var IMG_STORAGE_KEY = "tooldock:" + CURRENT_TOOL + ":images";
 
+/* 「初期値に戻す」用に、ページ読み込み直後（localStorageの復元より前）の
+   フォームの状態をまるごと控えておく。能力値・成績・表示ラベルなど、
+   .editor内のinput/selectを1つずつ個別に初期化コードへ書き出さずに
+   済むようにするため。 */
+var DEFAULT_FORM_STATE = null;
+function captureDefaultFormState() {
+    var data = {};
+    document.querySelectorAll(".editor input, .editor select").forEach(function (el) {
+        if (!el.id || el.type === "file") return;
+        data[el.id] = el.type === "checkbox" ? el.checked : el.value;
+    });
+    DEFAULT_FORM_STATE = data;
+}
+
 function saveFormState() {
     try {
         var data = {};
@@ -1449,7 +1463,14 @@ document.querySelectorAll(".editor input, .editor select").forEach(function (el)
 });
 
 document.getElementById("btnReset").addEventListener("click", function () {
-    document.querySelectorAll('#abilityArea input[type="checkbox"]').forEach(function (b) { b.checked = false; });
+    /* 選手情報・能力値・成績・表示ラベル・変化球など、.editor内の入力を
+       まるごと初期状態（ページ読み込み直後の値）へ戻す。 */
+    document.querySelectorAll(".editor input, .editor select").forEach(function (el) {
+        if (!el.id || el.type === "file" || !(el.id in DEFAULT_FORM_STATE)) return;
+        if (el.type === "checkbox") el.checked = DEFAULT_FORM_STATE[el.id];
+        else el.value = DEFAULT_FORM_STATE[el.id];
+    });
+    /* 特殊能力だけは、空欄より見栄えのするデモ用の組み合わせを既定にする */
     ["ab-kintoku-怪物球威", "ab-aoto-奪三振", "ab-midori-調子安定"].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.checked = true;
@@ -1578,6 +1599,7 @@ document.getElementById("btnShare").addEventListener("click", function () {
 
 loadCustomAbilities();
 renderAbilityArea();
+captureDefaultFormState();
 loadFormState();
 loadImageState();
 filterAbilities();
