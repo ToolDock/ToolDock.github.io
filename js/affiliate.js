@@ -37,6 +37,8 @@
     "/crystal-banno/": [PAWAPURO_2026],
     "/shippo/":        [PAWAPURO_2026],
     "/eikan-kintoku/": [PAWAPURO_2026],
+    "/mylife-start/":  [PAWAPURO_2026],
+    "/satei/":         [PAWAPURO_2026],
 
     "/hakidasi/": [
       {
