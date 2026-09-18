@@ -51,9 +51,9 @@ window.TOOLS = [
 
   {
     id: "us-market",
-    title: "米国株ダッシュボード",
+    title: "米国市場ダッシュボード",
     desc: "主要銘柄のヒートマップ、円建てS&P500、VIX、Fear & Greed Indexなど、昨夜引けた米国市場を一面にまとめたダッシュボード。",
-    seoTitle: "米国株ダッシュボード｜ヒートマップ・円建てS&P500・VIX・Fear & Greed Index",
+    seoTitle: "米国市場ダッシュボード｜ヒートマップ・円建てS&P500・VIX・Fear & Greed Index",
     seoDesc: "S&P500・NASDAQ100・ドル円など米国市場の主要指標を一面にまとめた無料ダッシュボード。主要銘柄のヒートマップ、円建てS&P500の年初来とドローダウン、VIX、Fear & Greed Indexも一緒に確認できます。1日・1ヶ月・年初来・1年・5年でチャートを切り替え可能。平日の朝に自動更新されます。",
     category: "finance",
     url: "/us-market/"
