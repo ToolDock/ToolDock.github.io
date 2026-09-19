@@ -21,24 +21,62 @@ const CURRENT_TOOL = "h_roulette";
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
 
 <style>
+:root {
+  --ink: #1f2937;
+  --ink-soft: #64748b;
+  --line: #dde2e8;
+  --accent: #45b4ac;
+  --accent-dark: #2f8f88;
+  --bg: #f4f5f7;
+}
+
+* { box-sizing: border-box; }
+
 body{
   text-align:center;
-  font-family:sans-serif;
-  background:#f2f2f2;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
   margin:0;
-  padding:20px;
+  padding:28px 20px;
 }
 
 h1{
   margin-bottom:10px;
+  letter-spacing: 0.02em;
 }
 
-#result{
-  font-size:28px;
-  font-weight:bold;
-  height:40px;
-  margin-bottom:15px;
-  color:#e74c3c;
+/* ---- 結果バッジ ----
+   当たった項目の色（colors[result]）をJSから --accent に渡し、
+   枠と影の色がルーレットの盤面と連動するようにしている。 */
+.result-badge {
+  --accent: #45b4ac;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 24px;
+  margin: 0 auto 18px;
+  padding: 11px 24px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--accent);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  opacity: 0;
+  transform: translateY(4px) scale(0.9);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1), box-shadow 0.4s ease;
+}
+
+.result-badge.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.result-badge__icon {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .wrapper{
@@ -48,41 +86,120 @@ h1{
   margin:0 auto;
 }
 
+/* ホイール外周の縁取り。canvas自体のレイアウトは変えず、
+   一回り大きい円をinsetの負値で背後に敷くだけにしている */
+.wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: linear-gradient(150deg, #ffffff, #e4e8ec);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16), inset 0 0 0 1px rgba(15, 23, 42, 0.05);
+  z-index: 0;
+}
+
 /* 幅の狭い画面では盤面を縮めて、横スクロールが出ないようにする */
 canvas{
+  position: relative;
+  z-index: 1;
   display:block;
   width:100%;
   height:auto;
 
   background:white;
   border-radius:50%;
-  box-shadow:0 5px 15px rgba(0,0,0,0.2);
 }
 
 .pointer{
   position:absolute;
-  top:-5px;
+  top: -22px;
   left:50%;
   transform:translateX(-50%);
-  width:0;
-  height:0;
-
-  border-left:14px solid transparent;
-  border-right:14px solid transparent;
-  border-top:34px solid #e74c3c;
-
+  width: 28px;
+  height: 34px;
   z-index:10;
 }
 
-button,input{
-  padding:8px 12px;
-  margin:5px;
-  font-size:16px;
+.pointer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, #e3b45f, #b8863a);
+  clip-path: polygon(50% 100%, 100% 38%, 100% 0%, 0% 0%, 0% 38%);
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+}
+
+.pointer::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.55);
+}
+
+input {
+  font: inherit;
+  font-size: 15px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(69, 180, 172, 0.15);
+}
+
+#itemInput {
+  width: 280px;
+  max-width: 80vw;
+}
+
+button {
+  padding: 10px 22px;
+  margin: 5px;
+  border: none;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+button:active { transform: translateY(1px); }
+
+button[onclick^="updateItems"] {
+  background: #fff;
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+}
+
+button[onclick^="updateItems"]:hover {
+  border-color: #b9c1cb;
+  background: #fafbfc;
+}
+
+button[onclick^="spin"] {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(69, 180, 172, 0.35);
+}
+
+button[onclick^="spin"]:hover {
+  box-shadow: 0 6px 18px rgba(69, 180, 172, 0.42);
 }
 
 .desc{
   margin-top:25px;
-  color:#555;
+  color: var(--ink-soft);
   line-height:1.8;
 }
 </style>
@@ -93,7 +210,10 @@ button,input{
 
 <h1>🔥 ギリギリまで結果が分からない！ヒリつくルーレット 🔥</h1>
 
-<div id="result"></div>
+<div id="result" class="result-badge">
+  <span class="result-badge__icon">🎉</span>
+  <span class="result-badge__text"></span>
+</div>
 
 <div class="wrapper">
   <div class="pointer"></div>
@@ -279,13 +399,36 @@ function playWin(){
 // 色
 // ======================
 
+// シンプルだが洗練された印象になるよう、彩度を抑えた5色の
+// パレットを順番に割り当てる（虹色のグラデーションにはしない）。
+// 項目数がパレット数で割り切れないと、円環の継ぎ目（最後と最初）
+// で同じ色が隣り合うことがあるため、その場合だけ最後の色をずらす。
+const PALETTE = ["#45b4ac","#f0955f","#f2c14e","#a688c9","#5d9bd1"];
+
 function genColors(n){
 
-  return Array.from(
-    {length:n},
-    (_,i)=>
-      `hsl(${i*360/n},80%,60%)`
-  );
+  if (!n) return [];
+
+  const result =
+    Array.from(
+      {length:n},
+      (_,i)=>PALETTE[i % PALETTE.length]
+    );
+
+  if (n > 1 && result[n-1] === result[0]) {
+
+    for (let k=1;k<PALETTE.length;k++) {
+
+      const alt = PALETTE[(n-1+k) % PALETTE.length];
+
+      if (alt !== result[n-2] && alt !== result[0]) {
+        result[n-1] = alt;
+        break;
+      }
+    }
+  }
+
+  return result;
 }
 
 // ======================
@@ -325,6 +468,9 @@ function draw(){
 
     ctx.fill();
 
+    // 扇の境目は白い線で区切る（黒の細線より盤面がすっきりする）
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 3;
     ctx.stroke();
 
     ctx.save();
@@ -333,24 +479,36 @@ function draw(){
 
     ctx.rotate(start + arc/2);
 
-    ctx.fillStyle="#000";
-
     ctx.textAlign="right";
 
-    ctx.font="18px sans-serif";
+    ctx.font="600 18px -apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif";
 
-    ctx.fillText(items[i],165,6);
+    // 明るい色の区画でも文字が沈まないよう、白い塗りに加えて
+    // 濃い色の縁取りを入れて、どの背景色でも読めるようにする
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = "rgba(31,41,55,0.45)";
+    ctx.strokeText(items[i],166,6);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(items[i],166,6);
 
     ctx.restore();
   }
 
+  // 中心のハブ。単色の点ではなく、輪っか＋グラデーションで
+  // 少し高級感を出す
+  const hub = ctx.createRadialGradient(207,207,0,210,210,13);
+  hub.addColorStop(0,"#ffffff");
+  hub.addColorStop(1,"#c7ccd3");
+
   ctx.beginPath();
-
-  ctx.arc(210,210,7,0,Math.PI*2);
-
-  ctx.fillStyle="#333";
-
+  ctx.arc(210,210,11,0,Math.PI*2);
+  ctx.fillStyle = hub;
   ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#ffffff";
+  ctx.stroke();
 }
 
 // ======================
@@ -375,6 +533,40 @@ function getResultIndex(){
   return Math.floor(
     normalized / arc
   ) % n;
+}
+
+// ======================
+// 結果表示
+// ======================
+
+function hexToRgba(hex, alpha) {
+
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// 当たった項目の色を結果バッジに映し、盤面と結果が連動している
+// ように見せる。表示のたびにアニメーションをやり直すため、
+// 一度クラスを外してから強制リフローを挟んで付け直す。
+function showResult(index) {
+
+  const accent = colors[index];
+
+  resultEl.style.setProperty("--accent", accent);
+  resultEl.style.boxShadow =
+    `0 10px 26px ${hexToRgba(accent,0.35)}, 0 2px 8px rgba(15,23,42,0.08)`;
+
+  resultEl.querySelector(".result-badge__text").textContent =
+    items[index];
+
+  resultEl.classList.remove("show");
+
+  void resultEl.offsetWidth;
+
+  resultEl.classList.add("show");
 }
 
 // ======================
@@ -411,7 +603,7 @@ function spin(){
 
   spinning = true;
 
-  resultEl.textContent = "";
+  resultEl.classList.remove("show");
 
   let speed =
     0.48 + Math.random()*0.08;
@@ -424,6 +616,17 @@ function spin(){
 
   const startTime =
     performance.now();
+
+  // 動き出しをゆっくりにする。speedそのものは変えず（急加速・急減速・
+  // 跳ね返りなどの演出はspeedの大きさで判定しているため）、盤面に
+  // 反映する回転量だけを最初の45フレームだけ2乗カーブでならす
+  const RAMP_FRAMES = 45;
+
+  function rampFactor(f){
+    if (f >= RAMP_FRAMES) return 1;
+    const p = f / RAMP_FRAMES;
+    return p * p;
+  }
 
   const draggingMode =
     Math.random() < 0.8;
@@ -538,7 +741,7 @@ function spin(){
     // 回転
     // ======================
 
-    angle += speed;
+    angle += speed * rampFactor(frame);
 
     // ======================
     // カチカチ音
@@ -569,8 +772,7 @@ function spin(){
       const result =
         getResultIndex();
 
-      resultEl.textContent =
-        "🎉 結果: " + items[result];
+      showResult(result);
 
       playWin();
 
