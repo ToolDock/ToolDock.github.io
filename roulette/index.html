@@ -75,10 +75,23 @@ canvas {
   z-index: 10;
 }
 
-input {
-  width: 280px;
-  padding: 6px;
-  margin-top: 10px;
+.input-area {
+  max-width: 320px;
+  margin: 10px auto 0;
+}
+
+textarea#itemInput {
+  width: 100%;
+  min-height: 120px;
+  padding: 8px;
+  font: inherit;
+  box-sizing: border-box;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.input-actions {
+  margin-top: 8px;
 }
 
 button {
@@ -112,22 +125,32 @@ button {
   <canvas id="wheel" width="400" height="400"></canvas>
 </div>
 
-<input id="itemInput" placeholder="A,B,C,D,E">
-<button onclick="updateItems()">更新</button>
-<button onclick="spin()">回す</button>
+<div class="input-area">
+  <textarea id="itemInput" placeholder="A&#10;B&#10;C&#10;D&#10;E" rows="6"></textarea>
+  <div class="input-actions">
+    <button onclick="updateItems()">更新</button>
+    <button onclick="spin()">回す</button>
+  </div>
+</div>
 
 <article class="tool-article">
 
 <h2>使い方</h2>
 
 <p>
-入力欄に選択肢を「,」（カンマ）で区切って入力し、「更新」を押すとルーレットの盤面に反映されます。
+入力欄に選択肢を1行に1つずつ入力し、「更新」を押すとルーレットの盤面に反映されます。
 あとは「回す」を押すだけです。選択肢は何個でも設定できます。
 </p>
 
 <p>
-たとえば <code>カレー,ラーメン,パスタ,寿司</code> のように入力します。
-全角のカンマ「、」ではなく半角の「,」で区切ってください。
+たとえば
+</p>
+<pre><code>カレー
+ラーメン
+パスタ
+寿司</code></pre>
+<p>
+のように、改行で区切って入力します。
 </p>
 
 <h2>こんなときに使えます</h2>
@@ -195,7 +218,7 @@ A. 上限はありませんが、数が多くなると盤面の文字が小さ�
 10個程度までが見やすい目安です。</p>
 
 <p><strong>Q. 同じ選択肢を複数入れると当たりやすくなりますか？</strong><br>
-A. なります。<code>A,A,B</code> と入力すればAが2枠を占めるため、Aが選ばれる確率は約3分の2になります。
+A. なります。「A」を2行、「B」を1行入力すればAが2枠を占めるため、Aが選ばれる確率は約3分の2になります。
 重みをつけたいときに使えます。</p>
 
 <p><strong>Q. 一度選ばれた項目を除外できますか？</strong><br>
@@ -411,15 +434,61 @@ function spin() {
 
   resultEl.textContent = "";
 
-  let speed = 0.35;
+  // 最初はゆっくり動き出し、加速して巡航し、最後は自然に減速して止まる
+  // ような速度プロファイルにする。フレームレートに依存しないよう、
+  // フレーム数ではなく経過時間（秒）で速度を決める。
+  // 加速0.9秒 → 巡航2.6秒 → 減速7.5秒で、合計およそ11秒。
+  const T1 = 0.9;
+  const T2 = 3.5;
+  const T3 = 11;
 
-  const decel = 0.0025;
+  // 回転数を8〜12回転の範囲でランダムに決める。これがそのまま
+  // 止まる位置（当たり）のランダム性になる。
+  const rotations = 8 + Math.random() * 4;
+  const totalAngle = rotations * 2 * Math.PI;
+
+  // 速度プロファイル（加速=直線、巡航=一定、減速=残り時間の2乗）を
+  // 時間で積分すると回転角になる。その面積が totalAngle に一致する
+  // ように、巡航速度 vMax を逆算する。
+  const areaCoeff = T1 / 2 + (T2 - T1) + (T3 - T2) / 3;
+  const vMax = totalAngle / areaCoeff;
+
+  function velocityAt(t) {
+
+    if (t < T1) {
+      return vMax * (t / T1);
+    }
+
+    if (t < T2) {
+      return vMax;
+    }
+
+    if (t < T3) {
+      const remain = (T3 - t) / (T3 - T2);
+      return vMax * remain * remain;
+    }
+
+    return 0;
+  }
 
   let lastTickIndex = -1;
 
-  function step() {
+  let startTime = null;
+  let lastTime = null;
 
-    if (speed <= 0) {
+  function step(now) {
+
+    if (startTime === null) {
+      startTime = now;
+      lastTime = now;
+    }
+
+    const t = (now - startTime) / 1000;
+    const dt = (now - lastTime) / 1000;
+
+    lastTime = now;
+
+    if (t >= T3) {
 
       spinning = false;
 
@@ -433,9 +502,7 @@ function spin() {
       return;
     }
 
-    angle += speed;
-
-    speed -= decel;
+    angle += velocityAt(t) * dt;
 
     // ======================
     // カチカチ音
@@ -456,7 +523,7 @@ function spin() {
     requestAnimationFrame(step);
   }
 
-  step();
+  requestAnimationFrame(step);
 }
 
 // ======================
@@ -472,7 +539,7 @@ function updateItems() {
 
     items =
       input
-        .split(",")
+        .split("\n")
         .map(v=>v.trim())
         .filter(Boolean);
   }
@@ -495,7 +562,7 @@ function init() {
   colors = genColors(items.length);
 
   document.getElementById("itemInput").value =
-    items.join(",");
+    items.join("\n");
 
   draw();
 }
