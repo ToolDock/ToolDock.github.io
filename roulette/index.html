@@ -25,8 +25,8 @@ const CURRENT_TOOL = "roulette";
   --ink: #1f2937;
   --ink-soft: #64748b;
   --line: #dde2e8;
-  --accent: #3b6e71;
-  --accent-dark: #2c5457;
+  --accent: #45b4ac;
+  --accent-dark: #2f8f88;
   --bg: #f4f5f7;
 }
 
@@ -50,7 +50,7 @@ h1 {
    当たった項目の色（colors[result]）をJSから --accent に渡し、
    枠と影の色がルーレットの盤面と連動するようにしている。 */
 .result-badge {
-  --accent: #3b6e71;
+  --accent: #45b4ac;
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -442,7 +442,7 @@ function load() {
 // パレットを順番に割り当てる（虹色のグラデーションにはしない）。
 // 項目数がパレット数で割り切れないと、円環の継ぎ目（最後と最初）
 // で同じ色が隣り合うことがあるため、その場合だけ最後の色をずらす。
-const PALETTE = ["#3b6e71","#c77b58","#d4a24c","#7b6c8d","#52708a"];
+const PALETTE = ["#45b4ac","#f0955f","#f2c14e","#a688c9","#5d9bd1"];
 
 function genColors(n) {
 
@@ -515,14 +515,18 @@ function draw() {
 
     ctx.rotate(start + arc/2);
 
-    ctx.fillStyle = "#ffffff";
-    ctx.shadowColor = "rgba(0,0,0,0.35)";
-    ctx.shadowBlur = 3;
-
     ctx.textAlign="right";
 
     ctx.font="600 16px -apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif";
 
+    // 明るい色の区画でも文字が沈まないよう、白い塗りに加えて
+    // 濃い色の縁取りを入れて、どの背景色でも読めるようにする
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = "rgba(31,41,55,0.45)";
+    ctx.strokeText(items[i],158,5);
+
+    ctx.fillStyle = "#ffffff";
     ctx.fillText(items[i],158,5);
 
     ctx.restore();
