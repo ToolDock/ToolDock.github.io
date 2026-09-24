@@ -272,6 +272,12 @@ def refresh_heatmap(pause=1.0, verbose=False, limit=None):
     Yahoo は非公式APIで、まとめて叩くと429を返すことがある。
     ここが失敗してもダッシュボード本体は成り立つので、
     build 側では欠けていても中止しない扱いにしてある。
+
+    interval=1d（日足）だと、引けた直後はその日の日足がまだ確定して
+    おらず、最後の1本が前日のままになることがあった（ヒートマップだけ
+    1日遅れる不具合の原因）。refresh_symbol と同じく5分足で取り、
+    最後の1本のタイムスタンプからセッションを求めることで、他のタイル
+    と同じタイミングで最新セッションに切り替わるようにする。
     """
     members = load_members()
     if limit:
@@ -283,7 +289,7 @@ def refresh_heatmap(pause=1.0, verbose=False, limit=None):
     for member in members:
         symbol = member["symbol"]
         try:
-            result = fetch_chart(symbol, "5d", "1d")
+            result = fetch_chart(symbol, "5d", "5m")
             meta = result["meta"]
             series = _series(result)
             price = meta.get("regularMarketPrice") or (series[-1][1] if series else None)
