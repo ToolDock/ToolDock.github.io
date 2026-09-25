@@ -273,13 +273,12 @@ def refresh_heatmap(pause=1.0, verbose=False, limit=None):
     ここが失敗してもダッシュボード本体は成り立つので、
     build 側では欠けていても中止しない扱いにしてある。
 
-    セッション日付を、日足（series）の最後の1本のタイムスタンプから
-    決めていたが、引けた直後はその日の日足がまだ確定しておらず、
-    最後の1本が前日のままになることがあった（ヒートマップだけ1日
-    遅れる不具合の原因）。meta.regularMarketTime はその時点の最新
-    クオートの時刻で、price・prevCloseと同じソースから来ているため
-    引け直後から正しく更新される。こちらを優先して使う（無ければ
-    従来どおりseries末尾で代用）。intervalは1dのまま軽く保つ。
+    interval=1d（日足）で取ると、meta.previousCloseがその日足の
+    集計に引きずられてか、前々日の終値になっていることがあり、
+    session（日付ラベル）は最新でも騰落率の値自体が誤るケースが
+    あった。他のタイル（refresh_symbol）と同じくinterval=5mの
+    分足で取ると、meta.previousClose・regularMarketPriceとも
+    正しい値が返ってくるため、5mに統一する。
     """
     members = load_members()
     if limit:
@@ -291,7 +290,7 @@ def refresh_heatmap(pause=1.0, verbose=False, limit=None):
     for member in members:
         symbol = member["symbol"]
         try:
-            result = fetch_chart(symbol, "5d", "1d")
+            result = fetch_chart(symbol, "5d", "5m")
             meta = result["meta"]
             series = _series(result)
             price = meta.get("regularMarketPrice") or (series[-1][1] if series else None)
