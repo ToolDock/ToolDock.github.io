@@ -71,6 +71,274 @@
     "pitcher_pa": 126
    },
    "final": true
+  },
+  "2024": {
+   "as_of": null,
+   "central": {
+    "woba": 0.2972,
+    "woba_scale": 1.24,
+    "obp": 0.3128,
+    "avg": 0.2521,
+    "slg": 0.3522,
+    "r_pa": 0.08973,
+    "era": 2.883,
+    "ra9": 3.229,
+    "fip_const": 2.745,
+    "run_cs": -0.3142,
+    "wsb_rate": 0.00155,
+    "rpw": 8.475,
+    "label": "セ・リーグ",
+    "pitcher_pa": 1623
+   },
+   "pacific": {
+    "woba": 0.2917,
+    "woba_scale": 1.24,
+    "obp": 0.3036,
+    "avg": 0.2416,
+    "slg": 0.348,
+    "r_pa": 0.09049,
+    "era": 3.035,
+    "ra9": 3.372,
+    "fip_const": 2.749,
+    "run_cs": -0.3248,
+    "wsb_rate": 0.00448,
+    "rpw": 8.652,
+    "label": "パ・リーグ",
+    "pitcher_pa": 133
+   },
+   "final": true
+  },
+  "2023": {
+   "as_of": null,
+   "central": {
+    "woba": 0.3049,
+    "woba_scale": 1.24,
+    "obp": 0.3135,
+    "avg": 0.2511,
+    "slg": 0.3735,
+    "r_pa": 0.09755,
+    "era": 3.191,
+    "ra9": 3.514,
+    "fip_const": 2.731,
+    "run_cs": -0.3353,
+    "wsb_rate": 0.00096,
+    "rpw": 8.848,
+    "label": "セ・リーグ",
+    "pitcher_pa": 1659
+   },
+   "pacific": {
+    "woba": 0.2986,
+    "woba_scale": 1.24,
+    "obp": 0.3102,
+    "avg": 0.2414,
+    "slg": 0.3554,
+    "r_pa": 0.09251,
+    "era": 3.155,
+    "ra9": 3.497,
+    "fip_const": 2.676,
+    "run_cs": -0.334,
+    "wsb_rate": 0.00282,
+    "rpw": 8.804,
+    "label": "パ・リーグ",
+    "pitcher_pa": 217
+   },
+   "final": true
+  },
+  "2022": {
+   "as_of": null,
+   "central": {
+    "woba": 0.309,
+    "woba_scale": 1.24,
+    "obp": 0.3155,
+    "avg": 0.2551,
+    "slg": 0.382,
+    "r_pa": 0.10107,
+    "era": 3.363,
+    "ra9": 3.7,
+    "fip_const": 2.824,
+    "run_cs": -0.3491,
+    "wsb_rate": 0.00138,
+    "rpw": 9.041,
+    "label": "セ・リーグ",
+    "pitcher_pa": 1649
+   },
+   "pacific": {
+    "woba": 0.2996,
+    "woba_scale": 1.24,
+    "obp": 0.3102,
+    "avg": 0.2406,
+    "slg": 0.3594,
+    "r_pa": 0.0945,
+    "era": 3.162,
+    "ra9": 3.492,
+    "fip_const": 2.714,
+    "run_cs": -0.3336,
+    "wsb_rate": 0.00214,
+    "rpw": 8.836,
+    "label": "パ・リーグ",
+    "pitcher_pa": 111
+   },
+   "final": true
+  },
+  "2021": {
+   "as_of": null,
+   "central": {
+    "woba": 0.3186,
+    "woba_scale": 1.24,
+    "obp": 0.3237,
+    "avg": 0.2578,
+    "slg": 0.3963,
+    "r_pa": 0.10595,
+    "era": 3.599,
+    "ra9": 3.917,
+    "fip_const": 2.92,
+    "run_cs": -0.3652,
+    "wsb_rate": 0.00111,
+    "rpw": 9.307,
+    "label": "セ・リーグ",
+    "pitcher_pa": 1552
+   },
+   "pacific": {
+    "woba": 0.3058,
+    "woba_scale": 1.24,
+    "obp": 0.3159,
+    "avg": 0.2418,
+    "slg": 0.3685,
+    "r_pa": 0.1012,
+    "era": 3.482,
+    "ra9": 3.789,
+    "fip_const": 2.76,
+    "run_cs": -0.3556,
+    "wsb_rate": 0.00225,
+    "rpw": 9.199,
+    "label": "パ・リーグ",
+    "pitcher_pa": 108
+   },
+   "final": true
+  },
+  "2020": {
+   "as_of": null,
+   "central": {
+    "woba": 0.3259,
+    "woba_scale": 1.24,
+    "obp": 0.3329,
+    "avg": 0.2617,
+    "slg": 0.4046,
+    "r_pa": 0.11261,
+    "era": 3.83,
+    "ra9": 4.2,
+    "fip_const": 3.03,
+    "run_cs": -0.3861,
+    "wsb_rate": 0.00033,
+    "rpw": 9.661,
+    "label": "セ・リーグ",
+    "pitcher_pa": 1509
+   },
+   "pacific": {
+    "woba": 0.3142,
+    "woba_scale": 1.24,
+    "obp": 0.3256,
+    "avg": 0.2461,
+    "slg": 0.3773,
+    "r_pa": 0.10942,
+    "era": 3.863,
+    "ra9": 4.209,
+    "fip_const": 2.98,
+    "run_cs": -0.3868,
+    "wsb_rate": 0.00392,
+    "rpw": 9.672,
+    "label": "パ・リーグ",
+    "pitcher_pa": 0
+   },
+   "final": true
+  }
+ },
+ "eras": {
+  "2001-2005": {
+   "label": "2001〜2005年平均（飛ぶボール期）",
+   "years": [
+    2001,
+    2002,
+    2003,
+    2004,
+    2005
+   ],
+   "final": true,
+   "estimated_years": [
+    2001,
+    2002,
+    2003,
+    2004
+   ],
+   "central": {
+    "label": "セ・リーグ",
+    "woba": 0.337,
+    "woba_scale": 1.24,
+    "obp": 0.33844,
+    "avg": 0.2755,
+    "slg": 0.42698,
+    "r_pa": 0.1182,
+    "era": 3.9994,
+    "ra9": 4.3882,
+    "fip_const": 2.9716,
+    "run_cs": -0.40006,
+    "wsb_rate": 0.00085,
+    "rpw": 9.8678
+   },
+   "pacific": {
+    "label": "パ・リーグ",
+    "woba": 0.33346,
+    "woba_scale": 1.24,
+    "obp": 0.33056,
+    "avg": 0.26964,
+    "slg": 0.4287,
+    "r_pa": 0.12284,
+    "era": 4.2884,
+    "ra9": 4.691,
+    "fip_const": 3.105,
+    "run_cs": -0.4225,
+    "wsb_rate": -0.00144,
+    "rpw": 10.2024
+   }
+  },
+  "2011-2012": {
+   "label": "2011〜2012年平均（統一球期）",
+   "years": [
+    2011,
+    2012
+   ],
+   "final": true,
+   "estimated_years": [],
+   "central": {
+    "label": "セ・リーグ",
+    "woba": 0.2993,
+    "woba_scale": 1.24,
+    "obp": 0.3157,
+    "avg": 0.2513,
+    "slg": 0.3516,
+    "r_pa": 0.08916,
+    "era": 2.96,
+    "ra9": 3.297,
+    "fip_const": 2.6445,
+    "run_cs": -0.31915,
+    "wsb_rate": 0.00239,
+    "rpw": 8.498
+   },
+   "pacific": {
+    "label": "パ・リーグ",
+    "woba": 0.2959,
+    "woba_scale": 1.24,
+    "obp": 0.31035,
+    "avg": 0.25205,
+    "slg": 0.3488,
+    "r_pa": 0.092,
+    "era": 2.989,
+    "ra9": 3.346,
+    "fip_const": 2.74,
+    "run_cs": -0.3229,
+    "wsb_rate": 0.00528,
+    "rpw": 8.683
+   }
   }
  }
 }
