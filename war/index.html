@@ -220,6 +220,15 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
                         <option value="DH">指名打者</option>
                     </select><span class="hint">複数の位置を守った場合</span></div>
                 <div class="field"><label for="b_posg2">その位置での試合数</label><input id="b_posg2" type="number" min="0" max="143" inputmode="numeric"></div>
+                <div class="field"><label for="b_fldlv">守備の印象</label>
+                    <select id="b_fldlv">
+                        <option value="">選ばない</option>
+                        <option value="15">名手（ゴールデングラブ級）</option>
+                        <option value="8">上手い</option>
+                        <option value="0">平均的</option>
+                        <option value="-8">苦手</option>
+                        <option value="-15">かなり苦手</option>
+                    </select><span class="hint">UZRが分からないときの目安。右の欄に入ります</span></div>
                 <div class="field"><label for="b_fld">守備の得点（UZRなど）</label><input id="b_fld" type="number" step="0.1" inputmode="decimal" placeholder="0"><span class="hint">公開値があれば。無ければ0（平均）</span></div>
                 <div class="field"><label for="b_ubr">盗塁以外の走塁（UBR）</label><input id="b_ubr" type="number" step="0.1" inputmode="decimal" placeholder="0"><span class="hint">公開値があれば。無ければ0</span></div>
             </div>
@@ -414,7 +423,7 @@ WAR ＝（先発の分 ＋ 救援の分）÷ RPW
 <h2>よくある質問</h2>
 
 <p><strong>Q. 公開されているWARと数字が違います。</strong><br>
-A. 守備（UZR）やパークファクターの扱いが違うためです。特に守備の評価は、公開値を入力しないと0（平均）として計算するので、守備の上手い・下手が大きい選手ほど差が出ます。公開されているUZRを「守備の得点」に入れると近づきます。</p>
+A. いちばん大きいのは守備の評価（UZR）です。守備は公開値を入力しないと0（平均）として計算するので、守備の上手い・下手がはっきりしている選手ほど差が出ます。たとえば2025年の阪神の選手で比べると、一塁手の大山選手（このツール2.5・公開値2.7）や捕手の坂本選手（3.6・3.7）はほぼ一致する一方、守備の評価が高い中野選手・森下選手・佐藤選手は、公開値より約2勝（守備で15点前後）低く出ます。公開されているUZRを「守備の得点」に入れるか、「守備の印象」を選ぶと近づきます。このほか、球場の補正（パークファクター）をしていないことも差の原因になります。</p>
 
 <p><strong>Q. WARがマイナスになりました。</strong><br>
 A. 控えレベルの選手を出したほうが、チームの得失点が良かったという計算です。出場が少ない選手は、たまたまマイナスになることもよくあります。</p>
@@ -440,7 +449,7 @@ A. 保存も送信もされません。計算はすべてブラウザの中で�
     {
       "@type": "Question",
       "name": "公開されているWARと数字が違います。",
-      "acceptedAnswer": { "@type": "Answer", "text": "守備（UZR）やパークファクターの扱いが違うためです。守備の評価は、公開値を入力しないと0（平均）として計算するので、守備の上手い・下手が大きい選手ほど差が出ます。公開されているUZRを「守備の得点」に入れると近づきます。" }
+      "acceptedAnswer": { "@type": "Answer", "text": "いちばん大きいのは守備の評価（UZR）です。守備は公開値を入力しないと0（平均）として計算するので、守備の上手い・下手がはっきりしている選手ほど差が出ます。2025年の阪神の選手で比べると、一塁手や捕手はほぼ一致し、守備の評価が高い選手は約2勝低く出ます。公開されているUZRを「守備の得点」に入れるか、「守備の印象」を選ぶと近づきます。" }
     },
     {
       "@type": "Question",
@@ -727,10 +736,10 @@ function render(){
 /* サンプルは2025年の実際の成績（NPB公式の個人成績より） */
 var SAMPLE = {
     batter: {
-        label: "2025年 佐藤輝明（阪神）：打率.277・40本塁打・102打点で本塁打王・打点王、セ・リーグMVP。守備は三塁111試合・外野27試合（外野は右翼として計算）。",
+        label: "2025年 佐藤輝明（阪神）：打率.277・40本塁打・102打点で本塁打王・打点王、セ・リーグMVP。守備は三塁111試合・外野27試合（外野は右翼として計算）。守備の評価（UZR）を入れていないので、公開されているWAR（8.6）より低く出ます。「守備の印象」を「名手」にすると近づきます。",
         league: "2025:central",
         values: { b_pa:597, b_ab:537, b_h:149, b_d2:34, b_d3:4, b_hr:40, b_bb:57, b_ibb:9, b_hbp:0, b_sf:3, b_so:163, b_sb:10, b_cs:2,
-                  b_pos:"3B", b_posg:111, b_pos2:"RF", b_posg2:27, b_fld:"", b_ubr:"" }
+                  b_pos:"3B", b_posg:111, b_pos2:"RF", b_posg2:27, b_fldlv:"", b_fld:"", b_ubr:"" }
     },
     pitcher: {
         label: "2025年 村上頌樹（阪神）：26試合・14勝4敗・防御率2.10。",
@@ -771,10 +780,30 @@ $("clear").addEventListener("click", function(){
     var sel = calc.dataset.kind === "pitcher" ? ".pitcher-only input" : ".batter-only input";
     document.querySelectorAll(sel).forEach(function(i){ i.value = ""; });
     $("b_pos2").value = "";
+    $("b_fldlv").value = "";
     $("sampleNote").hidden = true;
     render();
 });
 $("league").addEventListener("change", function(){ fillLeague(); render(); });
+
+/* 守備の印象は「1年間フルに守った場合の得点」。守った試合数で按分して入れる */
+function applyFieldLevel(){
+    var lv = $("b_fldlv").value;
+    if (lv === "") return;
+    var g = Math.min(num("b_posg") + ($("b_pos2").value ? num("b_posg2") : 0), SEASON_GAMES);
+    $("b_fld").value = (parseFloat(lv) * g / SEASON_GAMES).toFixed(1);
+}
+$("b_fldlv").addEventListener("change", function(){
+    if ($("b_fldlv").value === "") $("b_fld").value = "";
+    applyFieldLevel();
+    render();
+});
+["b_posg", "b_posg2", "b_pos2"].forEach(function(id){
+    $(id).addEventListener("input", applyFieldLevel);
+    $(id).addEventListener("change", function(){ applyFieldLevel(); render(); });
+});
+/* 守備の得点を手で書き換えたら、印象の選択は外す */
+$("b_fld").addEventListener("input", function(){ $("b_fldlv").value = ""; });
 $("p_role").addEventListener("change", function(){ syncRole(); render(); });
 calc.addEventListener("input", render);
 
