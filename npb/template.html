@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- このファイルは npb/template.html から npb/build_magic.py が生成する。
+     magic/index.html を直接書き換えても、次の自動更新で消える -->
+<title>プロ野球 マジックナンバー・クリンチナンバー｜{{YEAR}}年 セ・パ順位表と自力優勝【毎日更新】</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<link rel="canonical" href="https://tooldock.github.io/magic/">
+
+<script> const CURRENT_TOOL = "magic"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="マジックナンバー,マジック,プロ野球,クリンチナンバー,自力優勝,順位表,セ・リーグ,パ・リーグ,CS進出">
+
+<style>
+*{ box-sizing:border-box; }
+
+:root{
+    --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280;
+    --line:#d1d5db; --line-soft:#e5e7eb; --head-bg:#f3f4f6; --tint:#f9fafb;
+    --accent:#2563eb;
+    --ce:#0f766e; --pa:#1d4ed8;
+    --win:#b45309; --win-bg:#fef3c7;
+    --magic:#b91c1c; --magic-bg:#fee2e2;
+    --own:#166534; --own-bg:#dcfce7;
+    --other:#475569; --other-bg:#f1f5f9;
+    --out:#9ca3af;
+}
+
+body{
+    margin:0; padding:0 0 48px;
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
+    color:var(--ink); line-height:1.75; background:#f5f5f5;
+}
+
+.page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
+
+header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:22px; }
+header .page-wrapper{ padding:0; }
+h1{ margin:0; font-size:1.35rem; line-height:1.5; }
+header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
+
+h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
+    border-bottom:2px solid var(--line); }
+h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
+    border-left:4px solid var(--accent); }
+p{ margin:0 0 12px; }
+
+.stamp{ display:flex; flex-wrap:wrap; gap:4px 16px; font-size:0.88rem; color:var(--ink-sub); margin:0 0 6px; }
+.stamp strong{ color:var(--ink-strong); }
+.lead{ font-size:0.95rem; }
+
+/* ── リーグ ───────────────────────────── */
+.league{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 16px 18px; margin:0 0 22px; }
+.league h2{ margin-top:14px; border-bottom:none; padding-bottom:0; display:flex; align-items:center; gap:8px; }
+.league h2::before{ content:""; width:10px; height:22px; border-radius:3px; background:var(--lg); }
+.league-central{ --lg:var(--ce); }
+.league-pacific{ --lg:var(--pa); }
+
+.hl{ border-radius:12px; padding:14px 16px; margin:4px 0 16px;
+     background:linear-gradient(135deg, color-mix(in srgb, var(--lg) 10%, #fff), #fff 70%);
+     border:1px solid color-mix(in srgb, var(--lg) 30%, #fff); }
+.hl-main{ display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 12px; }
+.hl-team{ font-size:1.5rem; font-weight:800; color:var(--ink-strong); }
+.hl-label{ font-size:0.95rem; font-weight:700; color:var(--magic); }
+.hl-num{ font-size:2.4rem; font-weight:800; color:var(--magic); line-height:1.1;
+         font-variant-numeric:tabular-nums; }
+.hl-none{ font-size:1.25rem; font-weight:800; color:var(--ink-sub); }
+.hl-sub, .hl-cs{ margin:6px 0 0; font-size:0.9rem; color:var(--ink-sub); }
+.hl-cs{ font-weight:700; color:var(--own); }
+
+.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table{ border-collapse:collapse; width:100%; font-size:0.92rem; font-variant-numeric:tabular-nums; }
+th, td{ border-bottom:1px solid var(--line-soft); padding:8px 6px; text-align:center; white-space:nowrap; }
+thead th{ background:var(--head-bg); font-size:0.82rem; color:var(--ink-sub); font-weight:700; border-bottom:1px solid var(--line); }
+tbody tr:hover{ background:var(--tint); }
+th.tm{ text-align:left; font-weight:700; color:var(--ink-strong); }
+td.rk{ font-weight:700; color:var(--ink-sub); width:2.6em; }
+td.pct{ font-weight:700; }
+
+td.st{ font-weight:700; font-size:0.86rem; }
+td.st-win   { color:var(--win); }
+td.st-magic { color:var(--magic); }
+td.st-own   { color:var(--own); }
+td.st-other { color:var(--other); }
+td.st-out   { color:var(--out); font-weight:400; }
+td.st-win span, td.st-magic span{ display:inline-block; }
+td.st-win, td.st-magic{ background:var(--win-bg); }
+td.st-magic{ background:var(--magic-bg); }
+
+table.rem td{ color:var(--ink); }
+table.rem td.zero{ color:var(--out); }
+table.rem td.self{ color:var(--line); }
+table.rem td.sum{ font-weight:700; }
+
+/* ── 解説 ───────────────────────────── */
+article{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px 18px; margin-top:26px; }
+article h2:first-child{ margin-top:18px; }
+dl.legend{ display:grid; grid-template-columns:max-content 1fr; gap:6px 14px; margin:0 0 12px; font-size:0.92rem; }
+dl.legend dt{ font-weight:800; }
+dl.legend dd{ margin:0; }
+.formula{ background:var(--tint); border:1px solid var(--line-soft); border-radius:10px; padding:10px 14px; margin:0 0 12px; font-size:0.93rem; }
+.note{ font-size:0.86rem; color:var(--ink-mute); }
+
+footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
+
+@media (max-width:600px){
+    .league{ padding:2px 10px 14px; }
+    th, td{ padding:7px 3px; font-size:0.82rem; }
+    table.std .opt{ display:none; }
+    .hl-num{ font-size:2rem; }
+    article{ padding:2px 14px 14px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>プロ野球 マジックナンバー・クリンチナンバー</h1>
+    <p>セ・パ両リーグの順位表と、優勝マジック・CS進出の条件を毎日自動で計算します</p>
+</header>
+
+<div class="container">
+
+<p class="stamp"><span>成績：<strong>{{AS_OF}}</strong></span><span>最終更新：{{UPDATED}}</span></p>
+<p class="lead">{{SUMMARY}}</p>
+
+{{LEAGUES}}
+
+<article>
+
+<h2>表の見方</h2>
+<dl class="legend">
+  <dt style="color:var(--magic)">M5</dt><dd>優勝マジック。あと5勝すれば、他チームの結果に関係なく優勝が決まります。</dd>
+  <dt style="color:var(--own)">自力（8勝）</dt><dd>自力優勝の可能性あり。残り試合で8勝すれば優勝が決まります。ただし同じ状態のチームが他にもあるため、マジックはまだ点灯していません。</dd>
+  <dt style="color:var(--other)">他力</dt><dd>自力優勝は消滅。全勝しても、上位チームが負けてくれないと届きません。</dd>
+  <dt style="color:var(--out)">消滅</dt><dd>どんな結果になっても届かない状態です。</dd>
+  <dt style="color:var(--own)">CS：あと3勝</dt><dd>クリンチナンバー。あと3勝すれば3位以内（クライマックスシリーズ進出）が決まります。</dd>
+</dl>
+<p>「残り試合の対戦カード」は、各チームがどの相手と何試合残しているかの一覧です。リーグ内は同じ相手と25試合、交流戦は18試合（計143試合）として計算しています。</p>
+
+<h2>マジックナンバーとは</h2>
+<p>マジックナンバーは、<strong>あと何勝すれば、他のチームの結果に関係なく優勝が決まるか</strong>を表す数字です。「M5」なら、残り試合で5勝すれば2位以下のチームがその後全勝しても追いつけません。</p>
+<p>マジックは、自チームが勝ったときだけでなく、<strong>ライバルのチームが負けたとき</strong>にも減ります。ライバルが負けると、そのチームが到達できる最高勝率が下がり、必要な勝ち数が少なくなるためです。直接対決に勝つと、自分の勝ちと相手の負けが同時に起きるので、一度に2つ減ることもあります。</p>
+
+<h3>マジックが点灯する条件</h3>
+<p>マジックが「点灯」するのは、<strong>自力で優勝を決められるチームが1チームだけになったとき</strong>です。シーズン序盤はどのチームも「全勝すれば優勝」なので自力優勝の可能性がありますが、2位以下のチームが負けを重ねて自力優勝の可能性を失うと、首位チームにマジックが点灯します。ニュースで「〇〇の自力優勝が消滅し、首位の△△にマジック点灯」と言われるのはこのためです。</p>
+
+<h3>マジック対象チーム</h3>
+<p>マジック対象チームは、首位チームが勝ちきれなかったときに<strong>追い抜く可能性がいちばん現実的な相手</strong>です。多くの場合は2位のチームですが、残り試合の組み合わせによっては3位のチームが対象になることもあります。</p>
+
+<h2>クリンチナンバーとは</h2>
+<p>クリンチナンバーは、<strong>あと何勝すれば3位以内（クライマックスシリーズ進出）が確定するか</strong>を表す数字です。優勝マジックの「CS版」と考えるとわかりやすいです。3位以内という枠を争うチームが複数あるため、優勝マジックとは違い、複数のチームに同時に数字が出ます。</p>
+
+<h2>自力優勝・他力優勝とは</h2>
+<p><strong>自力優勝</strong>は、残り試合をすべて勝てば、他チームの結果に関係なく優勝できる状態です。<strong>他力</strong>は、全勝しても上位チームが負けてくれないと届かない状態です。首位と直接対決が多く残っているチームは、ゲーム差が大きくても自力優勝の可能性が残りやすくなります。</p>
+
+<h2>このページの計算方法</h2>
+<p>NPB公式サイトのチーム勝敗表（各チームの対戦成績）から、残りの対戦カードを割り出し、考えられるすべての勝敗の組み合わせの中で「最悪の場合でも確定する勝ち数」を求めています。複数チームの結果が絡む判定（3チームが同時に上回れるか、など）も、組み合わせを1つずつ確かめて厳密に計算しています。</p>
+<div class="formula">
+順位は勝率（勝利 ÷（勝利＋敗北））で決まり、引き分けは勝率の計算に含めません。
+</div>
+<p class="note">・残り試合で引き分けが起きることは考慮していません。<br>
+・勝率で並んだ場合は、念のため「上回られる可能性がある」として扱っています。実際の順位決定方法（セ・リーグは勝利数→当該球団間の対戦勝率…、パ・リーグは当該球団間の対戦勝率…）は使っていないため、同率が絡むごく一部の局面では、報道されるマジックより1大きく表示されることがあります。<br>
+・成績は毎日0時ごろと7時ごろ（日本時間）に自動で取得しています。試合直後は反映されていないことがあります。</p>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 今日の試合結果はいつ反映されますか？</strong><br>
+A. 毎日0時ごろと7時ごろ（日本時間）に、NPB公式の勝敗表を取得して計算し直しています。ナイターの結果は、遅くとも翌朝には反映されます。</p>
+
+<p><strong>Q. ニュースで見たマジックと数字が違います。</strong><br>
+A. 反映のタイミングの違いがほとんどです。ページ上部の「成績：〇月〇日終了時点」を確認してください。それでも違う場合は、勝率が並ぶ可能性がある局面で、このページが安全側（1大きい数字）で計算していることが考えられます。</p>
+
+<p><strong>Q. マジックが点灯していないのに、首位チームに「自力（〇勝）」と出ています。</strong><br>
+A. 首位以外にも自力優勝の可能性を残しているチームがあるため、マジックとしてはまだ点灯していない状態です。表示している勝ち数は、そのチームが自力で優勝を決めるのに必要な勝ち数です。</p>
+
+<p><strong>Q. 引き分けはマジックに影響しますか？</strong><br>
+A. 影響します。引き分けは勝率の計算から外れるため、残りの試合数が減り、ライバルが到達できる最高勝率も変わります。このページでは、実際に起きた引き分けは反映したうえで、これから先の試合は勝ちか負けのどちらかになるものとして計算しています。</p>
+
+</article>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "今日の試合結果はいつ反映されますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "毎日0時ごろと7時ごろ（日本時間）に、NPB公式の勝敗表を取得して計算し直しています。ナイターの結果は、遅くとも翌朝には反映されます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "ニュースで見たマジックと数字が違います。",
+      "acceptedAnswer": { "@type": "Answer", "text": "反映のタイミングの違いがほとんどです。ページ上部の「成績：〇月〇日終了時点」を確認してください。それでも違う場合は、勝率が並ぶ可能性がある局面で、このページが安全側（1大きい数字）で計算していることが考えられます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "マジックが点灯していないのに、首位チームに「自力（〇勝）」と出ています。",
+      "acceptedAnswer": { "@type": "Answer", "text": "首位以外にも自力優勝の可能性を残しているチームがあるため、マジックとしてはまだ点灯していない状態です。表示している勝ち数は、そのチームが自力で優勝を決めるのに必要な勝ち数です。" }
+    },
+    {
+      "@type": "Question",
+      "name": "引き分けはマジックに影響しますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "影響します。引き分けは勝率の計算から外れるため、残りの試合数が減り、ライバルが到達できる最高勝率も変わります。このページでは、実際に起きた引き分けは反映したうえで、これから先の試合は勝ちか負けのどちらかになるものとして計算しています。" }
+    }
+  ]
+}
+</script>
+
+<footer class="disclaimer">
+勝敗はNPB（日本野球機構）公式サイトのチーム勝敗表をもとに、当サイトが独自に計算したものです。公式の発表とは表示のタイミングや扱いが異なる場合があります。
+</footer>
+
+</div>
+
+</div>
+
+</body>
+</html>

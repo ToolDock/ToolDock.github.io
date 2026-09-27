@@ -15,7 +15,8 @@ window.CATEGORY_NAMES = {
   finance: "金融",
   work: "業務",
   math: "数学",
-  game: "ゲーム"
+  game: "ゲーム",
+  baseball: "野球"
 };
 
 window.TOOLS = [
@@ -420,13 +421,35 @@ window.TOOLS = [
     url: "/nouryoku-pitcher/"
   },
 
+  {
+    id: "magic",
+    title: "プロ野球 マジックナンバー・クリンチナンバー",
+    desc: "セ・パの順位表と、優勝マジック・CS進出のクリンチナンバー・自力優勝の有無を毎日自動で計算します。",
+    seoTitle: "プロ野球 マジックナンバー・クリンチナンバー｜セ・パ順位表と自力優勝【毎日更新】",
+    seoDesc: "セ・パ両リーグの順位表と、優勝マジック・CS進出のクリンチナンバー・自力優勝の有無を毎日自動で計算して掲載しています。残り試合の対戦カード一覧や、マジックナンバーの仕組みの解説もあります。",
+    themeColor: "#111827",
+    category: "baseball",
+    url: "/magic/"
+  },
+
+  {
+    id: "war",
+    title: "WAR計算ツール（セイバーメトリクス計算機）",
+    desc: "成績を入れるだけでWARを途中式つきで計算。wOBA・wRC+・FIP・OPSも同時に出し、WARの仕組みも解説します。",
+    seoTitle: "WAR計算ツール｜WARとは？計算方法をわかりやすく解説（wOBA・wRC+・FIPも）",
+    seoDesc: "打席・安打・本塁打などの成績を入れるだけで、WAR（Wins Above Replacement）を途中式つきで計算できる無料ツールです。野手・投手の両方に対応し、wOBA・wRAA・wRC+・FIP・OPS・BABIPも同時に出します。リーグ平均はNPBの最新成績から毎日自動で更新。WARとは何か、どうやって計算するのかもわかりやすく解説します。",
+    themeColor: "#111827",
+    category: "baseball",
+    url: "/war/"
+  },
+
   /* 一覧・関連ツールには出さない内部ページ */
   {
     id: "category",
     title: "カテゴリ",
     desc: "カテゴリ別のツール一覧です。",
-    seoTitle: "カテゴリ別ツール一覧｜生活・業務・数学・ゲーム",
-    seoDesc: "ToolDockの無料Webツールをカテゴリ別に一覧できます。生活・業務・数学・ゲームの4分野に分かれており、登録不要・インストール不要でその場で使えるツールを探せます。",
+    seoTitle: "カテゴリ別ツール一覧｜生活・業務・数学・ゲーム・野球",
+    seoDesc: "ToolDockの無料Webツールをカテゴリ別に一覧できます。生活・業務・数学・ゲーム・野球の分野に分かれており、登録不要・インストール不要でその場で使えるツールを探せます。",
     category: "",
     url: "/category/",
     hidden: true
