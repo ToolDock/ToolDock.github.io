@@ -228,8 +228,8 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
                         <option value="0">平均的</option>
                         <option value="-8">苦手</option>
                         <option value="-15">かなり苦手</option>
-                    </select><span class="hint">UZRが分からないときの目安。右の欄に入ります</span></div>
-                <div class="field"><label for="b_fld">守備の得点（UZRなど）</label><input id="b_fld" type="number" step="0.1" inputmode="decimal" placeholder="0"><span class="hint">公開値があれば。無ければ0（平均）</span></div>
+                    </select><span class="hint">選ぶと守備の得点に入ります</span></div>
+                <div class="field"><label for="b_fld">守備の得点（UZRなど）</label><input id="b_fld" type="number" step="0.1" inputmode="decimal" placeholder="0"><span class="hint">UZRが分からない場合は、選択肢から主観でお選びください</span></div>
                 <div class="field"><label for="b_ubr">盗塁以外の走塁（UBR）</label><input id="b_ubr" type="number" step="0.1" inputmode="decimal" placeholder="0"><span class="hint">公開値があれば。無ければ0</span></div>
             </div>
         </fieldset>
@@ -736,7 +736,7 @@ function render(){
 /* サンプルは2025年の実際の成績（NPB公式の個人成績より） */
 var SAMPLE = {
     batter: {
-        label: "2025年 佐藤輝明（阪神）：打率.277・40本塁打・102打点で本塁打王・打点王、セ・リーグMVP。守備は三塁111試合・外野27試合（外野は右翼として計算）。守備の評価（UZR）を入れていないので、公開されているWAR（8.6）より低く出ます。「守備の印象」を「名手」にすると近づきます。",
+        label: "2025年 佐藤輝明（阪神）：打率.277・40本塁打・102打点で本塁打王・打点王、セ・リーグMVP。守備は三塁111試合・外野27試合（外野は右翼として計算）。",
         league: "2025:central",
         values: { b_pa:597, b_ab:537, b_h:149, b_d2:34, b_d3:4, b_hr:40, b_bb:57, b_ibb:9, b_hbp:0, b_sf:3, b_so:163, b_sb:10, b_cs:2,
                   b_pos:"3B", b_posg:111, b_pos2:"RF", b_posg2:27, b_fldlv:"", b_fld:"", b_ubr:"" }
