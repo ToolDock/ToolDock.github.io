@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>WAR計算ツール｜WARとは？計算方法をわかりやすく解説（wOBA・wRC+・FIPも）</title>
+<meta name="description" content="打席・安打・本塁打などの成績を入れるだけで、WAR（Wins Above Replacement）を途中式つきで計算できる無料ツールです。野手・投手の両方に対応し、wOBA・wRAA・wRC+・FIP・OPS・BABIPも同時に出します。リーグ平均はNPBの最新成績から毎日自動で更新。WARとは何か、どうやって計算するのかもわかりやすく解説します。">
+<link rel="canonical" href="https://tooldock.github.io/war/">
+
+<script> const CURRENT_TOOL = "war"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="WAR,計算,WARとは,セイバーメトリクス,wOBA,wRC+,FIP,OPS,BABIP,wRAA,プロ野球">
+
+<style>
+*{ box-sizing:border-box; }
+
+:root{
+    --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280;
+    --line:#d1d5db; --line-soft:#e5e7eb; --head-bg:#f3f4f6; --tint:#f9fafb;
+    --accent:#2563eb; --dash:#9ca3af;
+    --plus:#15803d; --minus:#b91c1c;
+}
+
+body{
+    margin:0; padding:0 0 48px;
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic Medium","Yu Gothic",Meiryo,sans-serif;
+    color:var(--ink); line-height:1.75; background:#f5f5f5;
+}
+
+.page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
+
+header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:22px; }
+header .page-wrapper{ padding:0; }
+h1{ margin:0; font-size:1.35rem; line-height:1.5; }
+header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
+
+h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
+    border-bottom:2px solid var(--line); }
+h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
+    border-left:4px solid var(--accent); }
+p{ margin:0 0 12px; }
+
+/* ── 計算機 ───────────────────────────── */
+.calc{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:20px; }
+
+.seg{ display:flex; gap:6px; margin-bottom:14px; }
+.seg button{ flex:1; font:inherit; font-size:1rem; font-weight:700; padding:10px;
+             border:1px solid var(--line); border-radius:8px; background:#fff;
+             color:var(--ink-sub); cursor:pointer; }
+.seg button[aria-pressed="true"]{ background:var(--ink-strong); border-color:var(--ink-strong); color:#fff; }
+
+.bar{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-bottom:14px; font-size:0.88rem; color:var(--ink-sub); }
+.bar select{ font:inherit; font-size:0.92rem; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+.bar button{ font:inherit; font-size:0.84rem; padding:6px 12px; border:1px solid var(--line);
+             border-radius:20px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+.bar button:hover{ background:var(--tint); }
+.bar .asof{ font-size:0.8rem; color:var(--ink-mute); }
+
+fieldset{ border:none; padding:0; margin:0 0 12px; }
+legend{ font-size:0.85rem; font-weight:800; color:var(--ink-strong); margin-bottom:6px; padding:0; }
+.field-grid{ display:grid; gap:10px 12px; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); }
+.field{ display:flex; flex-direction:column; gap:3px; }
+.field[hidden]{ display:none; }
+.field label{ font-size:0.8rem; font-weight:600; color:var(--ink-sub); }
+.field input, .field select{
+    font:inherit; font-size:0.95rem; padding:7px 8px; border:1px solid var(--line);
+    border-radius:8px; background:#fff; color:var(--ink); width:100%; font-variant-numeric:tabular-nums;
+}
+.field .hint{ font-size:0.72rem; color:var(--ink-mute); line-height:1.4; }
+
+.batter-only, .pitcher-only{ display:none; }
+[data-kind="batter"] .batter-only{ display:block; }
+[data-kind="pitcher"] .pitcher-only{ display:block; }
+
+details.adv{ border:1px solid var(--line-soft); border-radius:10px; padding:0 12px; margin:6px 0 4px; background:var(--tint); }
+details.adv[open]{ padding-bottom:12px; }
+details.adv summary{ cursor:pointer; font-size:0.86rem; font-weight:700; color:var(--ink-sub); padding:9px 0; }
+
+/* ── 結果 ─────────────────────────────── */
+.result{ margin-top:16px; border-top:1px dashed var(--dash); padding-top:16px; }
+.war-head{ display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 12px; margin-bottom:4px; }
+.war-head .k{ font-size:1rem; font-weight:800; color:var(--ink-sub); }
+.war-head .num{ font-size:2.8rem; font-weight:800; color:var(--ink-strong); line-height:1.1; font-variant-numeric:tabular-nums; }
+.war-head .grade{ font-size:0.95rem; font-weight:800; padding:3px 10px; border-radius:20px; background:var(--head-bg); color:var(--ink-strong); }
+.war-sub{ font-size:0.86rem; color:var(--ink-mute); margin-bottom:12px; }
+
+.parts{ display:grid; gap:6px; margin:0 0 14px; }
+.part{ display:grid; grid-template-columns:8.5em 5em 1fr; align-items:center; gap:10px; font-size:0.9rem; }
+.part .name{ font-weight:700; color:var(--ink-strong); }
+.part .val{ text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+.part .val.plus{ color:var(--plus); } .part .val.minus{ color:var(--minus); }
+.part .track{ position:relative; height:12px; background:var(--head-bg); border-radius:6px; overflow:hidden; }
+.part .track::before{ content:""; position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--dash); }
+.part .fill{ position:absolute; top:2px; bottom:2px; border-radius:4px; }
+.part .fill.plus{ background:var(--plus); } .part .fill.minus{ background:var(--minus); }
+.part.total{ border-top:1px solid var(--line-soft); padding-top:6px; }
+
+.steps{ background:var(--tint); border:1px solid var(--line-soft); border-radius:10px; padding:10px 14px; margin:0 0 14px;
+        font-size:0.86rem; line-height:1.9; overflow-x:auto; }
+.steps div{ white-space:nowrap; }
+.steps b{ color:var(--ink-strong); }
+
+.stats{ display:grid; gap:8px; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); }
+.stats .item{ border:1px solid var(--line-soft); border-radius:8px; padding:7px 10px; background:#fff; }
+.stats .k{ font-size:0.76rem; color:var(--ink-sub); }
+.stats .v{ font-size:1.12rem; font-weight:700; color:var(--ink-strong); font-variant-numeric:tabular-nums; }
+.stats .lg{ font-size:0.7rem; color:var(--ink-mute); }
+
+.warn{ font-size:0.86rem; color:var(--minus); margin:0 0 10px; }
+.note{ margin-top:10px; font-size:0.84rem; color:var(--ink-mute); }
+
+/* ── 解説 ───────────────────────────── */
+.tool-article{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px 18px; margin-top:26px; }
+.tool-article table{ margin:0 0 14px; border-collapse:collapse; width:100%; font-size:0.9rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line-soft); padding:6px 10px; text-align:left; }
+.tool-article thead th{ background:var(--head-bg); }
+.tool-article td.n{ text-align:right; font-variant-numeric:tabular-nums; }
+.answer{ border-left:4px solid var(--accent); background:#eff6ff; padding:12px 14px; border-radius:0 10px 10px 0; margin:0 0 14px; }
+.formula{ background:var(--tint); border:1px solid var(--line-soft); border-radius:10px; padding:10px 14px; margin:0 0 12px; font-size:0.93rem; overflow-x:auto; }
+.tbl-wrap{ overflow-x:auto; }
+
+footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
+
+@media (max-width:600px){
+    .calc{ padding:12px; }
+    .field-grid{ grid-template-columns:repeat(2,1fr); }
+    .part{ grid-template-columns:7em 4.2em 1fr; font-size:0.84rem; }
+    .war-head .num{ font-size:2.3rem; }
+    .tool-article{ padding:2px 14px 14px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>WAR計算ツール（セイバーメトリクス計算機）</h1>
+    <p>成績を入れるだけで、WARを途中式つきで計算します。wOBA・wRC+・FIP・OPSなども同時に出します</p>
+</header>
+
+<div class="container">
+
+<div class="calc" id="calc" data-kind="batter">
+
+    <div class="seg" role="group" aria-label="野手・投手の切り替え">
+        <button type="button" data-kind="batter" aria-pressed="true">野手</button>
+        <button type="button" data-kind="pitcher" aria-pressed="false">投手</button>
+    </div>
+
+    <div class="bar">
+        <label>リーグ
+            <select id="league">
+                <option value="central">セ・リーグ</option>
+                <option value="pacific">パ・リーグ</option>
+            </select>
+        </label>
+        <span class="asof" id="asof">リーグ平均：読み込み中…</span>
+        <button type="button" id="sample">サンプルを入れる</button>
+        <button type="button" id="clear">クリア</button>
+    </div>
+
+    <!-- 野手 -->
+    <div class="batter-only">
+        <fieldset>
+            <legend>打撃成績</legend>
+            <div class="field-grid">
+                <div class="field"><label for="b_pa">打席</label><input id="b_pa" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_ab">打数</label><input id="b_ab" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_h">安打</label><input id="b_h" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_d2">二塁打</label><input id="b_d2" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_d3">三塁打</label><input id="b_d3" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_hr">本塁打</label><input id="b_hr" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_bb">四球</label><input id="b_bb" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_ibb">故意四球</label><input id="b_ibb" type="number" min="0" inputmode="numeric"><span class="hint">不明なら0</span></div>
+                <div class="field"><label for="b_hbp">死球</label><input id="b_hbp" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_sf">犠飛</label><input id="b_sf" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_so">三振</label><input id="b_so" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_sb">盗塁</label><input id="b_sb" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="b_cs">盗塁死</label><input id="b_cs" type="number" min="0" inputmode="numeric"></div>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>守備・走塁</legend>
+            <div class="field-grid">
+                <div class="field"><label for="b_pos">主な守備位置</label>
+                    <select id="b_pos">
+                        <option value="C">捕手</option>
+                        <option value="1B">一塁手</option>
+                        <option value="2B">二塁手</option>
+                        <option value="3B">三塁手</option>
+                        <option value="SS" selected>遊撃手</option>
+                        <option value="LF">左翼手</option>
+                        <option value="CF">中堅手</option>
+                        <option value="RF">右翼手</option>
+                        <option value="DH">指名打者</option>
+                    </select></div>
+                <div class="field"><label for="b_posg">その位置での試合数</label><input id="b_posg" type="number" min="0" max="143" inputmode="numeric"><span class="hint">守備位置補正の量に使う</span></div>
+                <div class="field"><label for="b_fld">守備の得点（UZRなど）</label><input id="b_fld" type="number" step="0.1" inputmode="decimal" placeholder="0"><span class="hint">公開値があれば。無ければ0（平均）</span></div>
+                <div class="field"><label for="b_ubr">盗塁以外の走塁（UBR）</label><input id="b_ubr" type="number" step="0.1" inputmode="decimal" placeholder="0"><span class="hint">公開値があれば。無ければ0</span></div>
+            </div>
+        </fieldset>
+    </div>
+
+    <!-- 投手 -->
+    <div class="pitcher-only">
+        <fieldset>
+            <legend>投球成績</legend>
+            <div class="field-grid">
+                <div class="field"><label for="p_role">起用</label>
+                    <select id="p_role">
+                        <option value="sp">先発</option>
+                        <option value="rp">救援</option>
+                        <option value="mix">先発と救援の両方</option>
+                    </select></div>
+                <div class="field"><label for="p_ip">投球回</label><input id="p_ip" type="text" inputmode="decimal" placeholder="例 150.1"><span class="hint">150回1/3なら 150.1</span></div>
+                <div class="field" id="p_ipsp_wrap" hidden><label for="p_ipsp">うち先発での投球回</label><input id="p_ipsp" type="text" inputmode="decimal" placeholder="例 120.2"></div>
+                <div class="field"><label for="p_bf">打者（対戦打者数）</label><input id="p_bf" type="number" min="0" inputmode="numeric"><span class="hint">K%・BB%に使う</span></div>
+                <div class="field"><label for="p_h">被安打</label><input id="p_h" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="p_hr">被本塁打</label><input id="p_hr" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="p_bb">与四球</label><input id="p_bb" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="p_ibb">故意四球</label><input id="p_ibb" type="number" min="0" inputmode="numeric"><span class="hint">不明なら0</span></div>
+                <div class="field"><label for="p_hbp">与死球</label><input id="p_hbp" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="p_so">奪三振</label><input id="p_so" type="number" min="0" inputmode="numeric"></div>
+                <div class="field"><label for="p_er">自責点</label><input id="p_er" type="number" min="0" inputmode="numeric"></div>
+            </div>
+        </fieldset>
+    </div>
+
+    <details class="adv">
+        <summary>リーグ平均の値を確認・変更する（上級者向け）</summary>
+        <div class="field-grid">
+            <div class="field"><label for="lg_woba">リーグ平均wOBA</label><input id="lg_woba" type="number" step="0.001"></div>
+            <div class="field"><label for="lg_rpa">打席あたり得点</label><input id="lg_rpa" type="number" step="0.0001"></div>
+            <div class="field"><label for="lg_rpw">RPW（1勝あたり得点）</label><input id="lg_rpw" type="number" step="0.01"></div>
+            <div class="field"><label for="lg_wsb">盗塁の平均利得率</label><input id="lg_wsb" type="number" step="0.00001"></div>
+            <div class="field"><label for="lg_runcs">盗塁死の得点価値</label><input id="lg_runcs" type="number" step="0.001"></div>
+            <div class="field"><label for="lg_fipc">FIP定数</label><input id="lg_fipc" type="number" step="0.01"></div>
+            <div class="field"><label for="lg_era">リーグ防御率</label><input id="lg_era" type="number" step="0.01"></div>
+            <div class="field"><label for="lg_ra9">リーグ失点率（9回あたり）</label><input id="lg_ra9" type="number" step="0.01"></div>
+        </div>
+        <p class="note">リーグを切り替えると、最新の値に戻ります。</p>
+    </details>
+
+    <div class="result" id="result" aria-live="polite"></div>
+</div>
+
+<article class="tool-article">
+
+<h2>WARとは？</h2>
+<div class="answer">
+<strong>WAR（Wins Above Replacement）は、「その選手の代わりに控えレベルの選手が出ていたら、チームの勝ち星はいくつ減っていたか」を表す数字です。</strong>打撃・走塁・守備・投球をすべて「勝ち星」という同じ単位にそろえるので、ポジションの違う選手や、野手と投手を1つの物差しで比べられます。
+</div>
+<p>たとえば WAR 5.0 の選手は、控えの選手と入れ替えるとチームの勝利が5つ減る、という意味です。打率や本塁打のように1つの能力だけを見る数字とは違い、<strong>選手がチームにもたらした貢献の「合計」</strong>を表すのが最大の特徴です。</p>
+
+<h3>WARの目安</h3>
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>WAR（1シーズン）</th><th>選手のレベル</th></tr></thead>
+<tbody>
+<tr><td>6以上</td><td>MVP級</td></tr>
+<tr><td>5〜6</td><td>スーパースター</td></tr>
+<tr><td>4〜5</td><td>オールスター級</td></tr>
+<tr><td>3〜4</td><td>チームの主力</td></tr>
+<tr><td>2〜3</td><td>レギュラー（平均的な選手が1年出るとこのくらい）</td></tr>
+<tr><td>1〜2</td><td>準レギュラー・控えの上位</td></tr>
+<tr><td>0〜1</td><td>控え</td></tr>
+<tr><td>0未満</td><td>控えの選手と入れ替えたほうが勝てた計算</td></tr>
+</tbody>
+</table>
+</div>
+<p>WARは出場した量に比例して積み上がるので、同じ実力でも出場が少なければ小さくなります。1年を通して試合に出ることも、それ自体が価値として数えられています。</p>
+
+<h3>「WARが高いのに…」と言われるのはなぜ？</h3>
+<p>WARには<strong>守備の上手さ</strong>と<strong>守備位置の難しさ</strong>が入っています。そのため、次のようなことが起こります。</p>
+<ul>
+<li><strong>打率.250でも遊撃手・捕手で守備が上手い選手</strong>は、WARが高くなりやすい。守るのが難しいポジションを平均以上に守っていること自体が、失点を防いだ価値として数えられるためです。</li>
+<li><strong>打率.300でも指名打者や一塁手の選手</strong>は、思ったほどWARが伸びないことがある。守備の負担が軽いポジションには、マイナスの補正がかかるためです。</li>
+<li><strong>打率が低くても四球が多い選手</strong>は、打撃の評価（wOBA）が意外と高くなる。打率では四球が数えられないためです。</li>
+</ul>
+<p>「打率も本塁打も目立たないのにWARが高い」選手は、たいてい守備か四球で稼いでいます。逆に「打撃成績は良いのにWARが低い」選手は、守備位置の補正か守備の評価でマイナスになっていることが多いです。上の計算ツールで守備位置を切り替えてみると、その差がよくわかります。</p>
+
+<h2>WARの計算方法（野手）</h2>
+<p>WARの計算式は、それぞれの要素を<strong>「平均的な選手と比べて何点多く取ったか・防いだか」</strong>という得点の単位で計算して足し合わせ、最後に勝利数に換算する、という流れです。</p>
+<div class="formula">
+WAR ＝（打撃 ＋ 走塁 ＋ 守備 ＋ 守備位置補正 ＋ 代替水準との差）÷ RPW（1勝に必要な得点）
+</div>
+
+<h3>① 打撃：wOBA から wRAA を出す</h3>
+<p>打撃は<strong>wOBA</strong>という指標で評価します。wOBAは、四球・単打・二塁打・三塁打・本塁打のそれぞれに「得点につながる価値」の重みをつけて、1打席あたりの打撃の貢献を表したものです。本塁打は単打の2倍以上の価値がある、というように、実際の得点への影響に合わせた重みになっています。</p>
+<div class="formula">
+wOBA ＝（0.7×（四球−故意四球＋死球）＋ 0.9×単打 ＋ 1.3×二塁打 ＋ 1.6×三塁打 ＋ 2.0×本塁打）÷（打数＋四球−故意四球＋死球＋犠飛）
+</div>
+<p>このwOBAがリーグ平均よりどれだけ高いかを、得点に換算したものが<strong>wRAA</strong>（平均と比べて増やした得点）です。</p>
+<div class="formula">
+wRAA ＝（wOBA − リーグ平均wOBA）÷ 1.24 × 打席
+</div>
+
+<h3>② 走塁：盗塁（wSB）と、それ以外の走塁（UBR）</h3>
+<p>盗塁は、成功すると約0.2点のプラス、失敗すると約0.3〜0.4点のマイナスとして計算します（盗塁死はアウトが増えるうえ走者も消えるので、成功よりずっと損が大きい）。これをリーグ平均の走者と比べたものが<strong>wSB</strong>です。盗塁以外の走塁（安打で一気に三塁まで進む、タッチアップなど）は<strong>UBR</strong>という指標で評価します。</p>
+
+<h3>③ 守備：UZR など</h3>
+<p>守備は<strong>UZR</strong>などの守備指標で、「同じ守備位置の平均的な選手と比べて何点防いだか」を評価します。UZRは打球の方向・種類・強さを1球ごとに記録したデータから計算するため、公開されている打撃成績だけでは計算できません。このツールでは、公開されている値があれば入力し、無ければ0（平均的な守備）として計算します。</p>
+
+<h3>④ 守備位置補正</h3>
+<p>UZRは「同じ守備位置の中での」比較なので、遊撃手のUZR±0と一塁手のUZR±0は同じ価値ではありません。遊撃手のほうが守るのが難しいからです。そこで、守備位置ごとに1年間フル出場した場合の補正値を加えます。</p>
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>守備位置</th><th>補正値（1年間）</th><th>守備位置</th><th>補正値（1年間）</th></tr></thead>
+<tbody>
+<tr><td>捕手</td><td class="n">+18.1</td><td>左翼手</td><td class="n">−12.0</td></tr>
+<tr><td>遊撃手</td><td class="n">+10.3</td><td>右翼手</td><td class="n">−5.0</td></tr>
+<tr><td>中堅手</td><td class="n">+4.2</td><td>一塁手</td><td class="n">−14.1</td></tr>
+<tr><td>二塁手</td><td class="n">+3.4</td><td>指名打者</td><td class="n">−15.1</td></tr>
+<tr><td>三塁手</td><td class="n">−4.8</td><td></td><td></td></tr>
+</tbody>
+</table>
+</div>
+<p class="note">補正値はDELTA社（1.02 Essence of Baseball）のWARで使われている値です。このツールでは「その位置での試合数 ÷ 143」を掛けて、出場量に応じた補正にしています。</p>
+
+<h3>⑤ 代替水準との差（リプレイスメント）</h3>
+<p>ここまでの①〜④は、すべて<strong>「平均的な選手」との比較</strong>です。しかしWARが比べる相手は、平均的な選手ではなく<strong>「すぐに代わりが見つかる控えレベルの選手（代替可能選手）」</strong>です。そこで最後に、平均と控えレベルの差を足します。控えレベルの打者の打撃は平均の約88%とされ、その差を打席数に応じて加えます。600打席でおよそ20点になります。</p>
+<div class="formula">
+代替水準との差 ＝（リーグ平均wOBA − 0.88×リーグ平均wOBA）÷ 1.24 × 打席
+</div>
+
+<h3>⑥ 得点を勝利に換算する（RPW）</h3>
+<p>①〜⑤を足したものが<strong>RAR</strong>（控え選手と比べて増やした得点）です。これを「1勝するのに必要な得点（RPW）」で割ると、WARになります。点が入りにくいリーグほど1点の重みが大きいので、RPWはリーグの得点環境から計算します。NPBではおおむね9〜10点で1勝です。</p>
+<div class="formula">
+RPW ＝ 10 × √（リーグの1イニングあたりの得点＋失点）<br>
+WAR ＝ RAR ÷ RPW
+</div>
+
+<h2>投手のWARの計算方法</h2>
+<p>投手のWARは、<strong>守備の影響を除いた失点のしにくさ</strong>で評価します。防御率は後ろの守備が上手いか下手かで大きく変わるため、投手本人の力だけを見るには向いていません。そこで、投手だけで完結する<strong>三振・四死球・本塁打</strong>から計算する<strong>FIP</strong>を使います。</p>
+<div class="formula">
+FIP ＝（13×被本塁打 ＋ 3×（与四球−故意四球＋与死球）− 2×奪三振）÷ 投球回 ＋ FIP定数
+</div>
+<p>FIP定数は、リーグ全体のFIPがリーグの防御率と同じになるように合わせるための数字です。</p>
+<p>そのうえで、控えレベルの投手が同じイニングを投げた場合と比べて、何点防いだかを計算します。先発は長いイニングを投げなければならず、控えで代わりを務めるのが難しいため、先発と救援で基準（代替水準）を分けています。</p>
+<div class="formula">
+先発：（1.19×リーグ平均失点率 ＋ 0.30 − 失点率に換算したFIP）÷ 9 × 先発での投球回<br>
+救援：（1.19×リーグ平均失点率 − 0.55 − 失点率に換算したFIP）÷ 9 × 救援での投球回<br>
+WAR ＝（先発の分 ＋ 救援の分）÷ RPW
+</div>
+
+<h2>fWAR・rWAR・DELTAのWARの違い</h2>
+<p>WARには決まった1つの計算方法はなく、「控え選手と比べた総合的な貢献度」という考え方の総称です。有名なものは次の3つで、同じ選手でも出典によって数字が違うのはこのためです。</p>
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>名前</th><th>算出元</th><th>主な対象</th><th>投手の評価</th></tr></thead>
+<tbody>
+<tr><td>fWAR</td><td>FanGraphs</td><td>MLB</td><td>FIP（内野フライも加味）</td></tr>
+<tr><td>rWAR（bWAR）</td><td>Baseball-Reference</td><td>MLB</td><td>実際の失点（守備で補正）</td></tr>
+<tr><td>DELTAのWAR</td><td>DELTA（1.02）</td><td>NPB</td><td>tRA（打球の種類から計算）</td></tr>
+</tbody>
+</table>
+</div>
+<p>日本のプロ野球で「WARが高い」と話題になるときは、DELTA社のサイト「1.02 Essence of Baseball」の数字であることが多いです。枠組みはどれも共通で、違うのは主に守備と投手の評価方法です。</p>
+
+<h2>WAR以外に計算できる指標</h2>
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>指標</th><th>わかること</th></tr></thead>
+<tbody>
+<tr><td>OPS</td><td>出塁率＋長打率。計算が簡単で、得点との関係も強い。.800以上なら好打者、.900以上ならリーグ屈指。</td></tr>
+<tr><td>wOBA</td><td>1打席あたりの打撃の貢献。OPSより各打席結果の価値を正確に反映する。</td></tr>
+<tr><td>wRC+</td><td>リーグ平均を100としたときの打撃力。120なら平均より20%多く得点を生んでいる。リーグや年が違っても比べやすい。</td></tr>
+<tr><td>BABIP</td><td>本塁打以外でフェアゾーンに飛んだ打球がヒットになった割合。平均は.300前後で、極端に高い・低いときは運の影響が大きいことが多い。</td></tr>
+<tr><td>ISO</td><td>長打率−打率。純粋な長打力。</td></tr>
+<tr><td>FIP</td><td>守備の影響を除いた防御率のようなもの。防御率よりFIPが大幅に良い投手は、守備や運に足を引っ張られている可能性がある。</td></tr>
+<tr><td>K%・BB%・K−BB%</td><td>対戦打者のうち三振・四球の割合。K−BB%は投手の支配力を1つで表す指標として使われる。</td></tr>
+<tr><td>WHIP</td><td>1イニングあたりに出した走者（被安打＋与四球）。</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>このツールの計算について</h2>
+<p>計算の枠組みは、DELTA社が公開しているWARの考え方（<a href="https://1point02.jp/op/gnav/glossary/gls_explanation.aspx?eid=20031" target="_blank" rel="noopener">野手</a>・<a href="https://1point02.jp/op/gnav/glossary/gls_explanation.aspx?ecd=203&amp;eid=20032" target="_blank" rel="noopener">投手</a>）に合わせています。ただし、公開されている成績だけで計算できるようにするため、次の点を簡略化しています。</p>
+<ul>
+<li><strong>リーグ平均は、NPB公式のチーム打撃・投手成績から毎日自動で計算</strong>しています。セ・リーグは投手の打席も含んだ平均なので、野手だけの平均よりわずかに低く出ます。</li>
+<li>球場の広さなどの影響（パークファクター）は補正していません。本拠地が打者有利の球場の選手は、やや高めに出ます。</li>
+<li>守備（UZR）と盗塁以外の走塁（UBR）は入力値を使います。空欄なら平均（0）として計算します。</li>
+<li>投手はDELTAのtRAの代わりにFIPを使い、リーグの失点率と防御率の比で失点率の尺度にそろえています。</li>
+</ul>
+<p>そのため、公開されているWARとは完全には一致しません。「だいたいどのくらいか」「どの要素が効いているか」を知るための目安としてお使いください。</p>
+<p>シーズンの順位やマジックナンバーは<a href="/magic/">プロ野球 マジックナンバー・クリンチナンバー</a>で毎日更新しています。</p>
+
+<h2>よくある質問</h2>
+
+<p><strong>Q. 公開されているWARと数字が違います。</strong><br>
+A. 守備（UZR）やパークファクターの扱いが違うためです。特に守備の評価は、公開値を入力しないと0（平均）として計算するので、守備の上手い・下手が大きい選手ほど差が出ます。公開されているUZRを「守備の得点」に入れると近づきます。</p>
+
+<p><strong>Q. WARがマイナスになりました。</strong><br>
+A. 控えレベルの選手を出したほうが、チームの得失点が良かったという計算です。出場が少ない選手は、たまたまマイナスになることもよくあります。</p>
+
+<p><strong>Q. MLBの選手も計算できますか？</strong><br>
+A. 計算自体はできますが、リーグ平均がNPBの値になっているため、正確ではありません。「リーグ平均の値を確認・変更する」からMLBの値に書き換えれば、目安として使えます。</p>
+
+<p><strong>Q. 入力した成績は保存されますか？</strong><br>
+A. 保存も送信もされません。計算はすべてブラウザの中で行っています。</p>
+
+</article>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "WARとは何ですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "WAR（Wins Above Replacement）は、その選手の代わりに控えレベルの選手が出ていたら、チームの勝ち星がいくつ減っていたかを表す数字です。打撃・走塁・守備・投球をすべて勝ち星という同じ単位にそろえるので、ポジションの違う選手同士も比べられます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "公開されているWARと数字が違います。",
+      "acceptedAnswer": { "@type": "Answer", "text": "守備（UZR）やパークファクターの扱いが違うためです。守備の評価は、公開値を入力しないと0（平均）として計算するので、守備の上手い・下手が大きい選手ほど差が出ます。公開されているUZRを「守備の得点」に入れると近づきます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "WARがマイナスになりました。",
+      "acceptedAnswer": { "@type": "Answer", "text": "控えレベルの選手を出したほうが、チームの得失点が良かったという計算です。出場が少ない選手は、たまたまマイナスになることもよくあります。" }
+    },
+    {
+      "@type": "Question",
+      "name": "MLBの選手も計算できますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "計算自体はできますが、リーグ平均がNPBの値になっているため、正確ではありません。リーグ平均の値をMLBの値に書き換えれば、目安として使えます。" }
+    }
+  ]
+}
+</script>
+
+<footer class="disclaimer">
+このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。リーグ平均はNPB（日本野球機構）公式サイトのチーム成績をもとに当サイトが計算したものです。
+</footer>
+
+</div>
+
+</div>
+
+<script>
+"use strict";
+
+/* league.json が読めなかったときの控え（2026年9月下旬のNPBの値） */
+var FALLBACK = {
+    year: 2026, as_of: null,
+    central: { woba:0.291, r_pa:0.0919, rpw:8.81, wsb_rate:0.0038, run_cs:-0.336, fip_const:2.86, era:3.21, ra9:3.53 },
+    pacific: { woba:0.305, r_pa:0.1020, rpw:9.21, wsb_rate:0.0021, run_cs:-0.355, fip_const:2.80, era:3.43, ra9:3.78 }
+};
+var LEAGUES = FALLBACK;
+
+var WOBA_SCALE = 1.24;
+var POS = { C:18.1, "1B":-14.1, "2B":3.4, "3B":-4.8, SS:10.3, LF:-12.0, CF:4.2, RF:-5.0, DH:-15.1 };
+var POS_NAME = { C:"捕手", "1B":"一塁手", "2B":"二塁手", "3B":"三塁手", SS:"遊撃手", LF:"左翼手", CF:"中堅手", RF:"右翼手", DH:"指名打者" };
+var SEASON_GAMES = 143;
+
+var calc = document.getElementById("calc");
+var result = document.getElementById("result");
+
+function $(id){ return document.getElementById(id); }
+function num(id){ var v = parseFloat($(id).value); return isFinite(v) ? v : 0; }
+function has(id){ return $(id).value.trim() !== ""; }
+
+/* 150.1 → 150+1/3 */
+function ip(id){
+    var s = $(id).value.trim();
+    if (!s) return 0;
+    var m = s.match(/^(\d+)(?:\.(\d))?$/);
+    if (!m) return parseFloat(s) || 0;
+    return parseInt(m[1], 10) + (m[2] ? Math.min(parseInt(m[2], 10), 2) / 3 : 0);
+}
+
+function f3(x){ if (!isFinite(x)) return "―"; var s = x.toFixed(3); return s.replace(/^0\./, ".").replace(/^-0\./, "-."); }
+function f2(x){ return isFinite(x) ? x.toFixed(2) : "―"; }
+function f1(x){ return isFinite(x) ? x.toFixed(1) : "―"; }
+function sgn(x, d){ if (!isFinite(x)) return "―"; var s = x.toFixed(d == null ? 1 : d); return (x > 0 ? "+" : "") + s; }
+function pct(x){ return isFinite(x) ? (x * 100).toFixed(1) + "%" : "―"; }
+
+function lg(){
+    return {
+        woba: num("lg_woba"), r_pa: num("lg_rpa"), rpw: num("lg_rpw") || 9.5,
+        wsb_rate: num("lg_wsb"), run_cs: num("lg_runcs"),
+        fip_const: num("lg_fipc"), era: num("lg_era"), ra9: num("lg_ra9")
+    };
+}
+
+function fillLeague(){
+    var L = LEAGUES[$("league").value] || FALLBACK[$("league").value];
+    $("lg_woba").value = L.woba;
+    $("lg_rpa").value = L.r_pa;
+    $("lg_rpw").value = L.rpw;
+    $("lg_wsb").value = L.wsb_rate;
+    $("lg_runcs").value = L.run_cs;
+    $("lg_fipc").value = L.fip_const;
+    $("lg_era").value = L.era;
+    $("lg_ra9").value = L.ra9;
+}
+
+function grade(w, full){
+    // 出場が少ないときは目安を出さない
+    if (!full) return "";
+    if (w >= 6) return "MVP級";
+    if (w >= 5) return "スーパースター";
+    if (w >= 4) return "オールスター級";
+    if (w >= 3) return "主力";
+    if (w >= 2) return "レギュラー";
+    if (w >= 1) return "準レギュラー";
+    if (w >= 0) return "控え";
+    return "代替水準以下";
+}
+
+function partsHtml(parts, rpw){
+    var max = 1;
+    parts.forEach(function(p){ max = Math.max(max, Math.abs(p[1])); });
+    var html = "";
+    parts.forEach(function(p){
+        var v = p[1], w = Math.abs(v) / max * 50;
+        var cls = v > 0.05 ? "plus" : (v < -0.05 ? "minus" : "");
+        var style = v >= 0 ? "left:50%;width:" + w + "%" : "right:50%;width:" + w + "%";
+        html += '<div class="part"><span class="name">' + p[0] + '</span>'
+             +  '<span class="val ' + cls + '">' + sgn(v) + '</span>'
+             +  '<span class="track"><span class="fill ' + cls + '" style="' + style + '"></span></span></div>';
+    });
+    return html;
+}
+
+function statItem(k, v, lgv){
+    return '<div class="item"><div class="k">' + k + '</div><div class="v">' + v + '</div>'
+         + (lgv ? '<div class="lg">リーグ平均 ' + lgv + '</div>' : '') + '</div>';
+}
+
+function renderBatter(){
+    var L = lg();
+    var pa = num("b_pa"), ab = num("b_ab"), h = num("b_h"), d2 = num("b_d2"), d3 = num("b_d3"), hr = num("b_hr");
+    var bb = num("b_bb"), ibb = num("b_ibb"), hbp = num("b_hbp"), sf = num("b_sf"), so = num("b_so");
+    var sb = num("b_sb"), cs = num("b_cs");
+    var pos = $("b_pos").value, posg = has("b_posg") ? num("b_posg") : 0;
+    var fld = num("b_fld"), ubr = num("b_ubr");
+
+    if (!pa || !ab){
+        result.innerHTML = '<p class="note">打席と打数を入れると計算します。「サンプルを入れる」で例を試せます。</p>';
+        return;
+    }
+    var s1 = h - d2 - d3 - hr;
+    var warn = [];
+    if (s1 < 0) warn.push("安打より長打（二塁打＋三塁打＋本塁打）が多くなっています。");
+    if (ab + bb + hbp + sf > pa + 0.5) warn.push("打数＋四球＋死球＋犠飛が打席を超えています（犠打を除いた数字を確認してください）。");
+
+    var avg = h / ab;
+    var obp = (h + bb + hbp) / (ab + bb + hbp + sf);
+    var slg = (s1 + 2 * d2 + 3 * d3 + 4 * hr) / ab;
+    var babipDen = ab - so - hr + sf;
+    var babip = babipDen > 0 ? (h - hr) / babipDen : NaN;
+    var wobaDen = ab + bb - ibb + hbp + sf;
+    var woba = (0.7 * (bb - ibb + hbp) + 0.9 * s1 + 1.3 * d2 + 1.6 * d3 + 2.0 * hr) / wobaDen;
+    var wraa = (woba - L.woba) / WOBA_SCALE * pa;
+    var wrcp = L.r_pa > 0 ? ((wraa / pa + L.r_pa) / L.r_pa) * 100 : NaN;
+    var wsb = sb * 0.2 + cs * L.run_cs - L.wsb_rate * (s1 + bb + hbp - ibb);
+    var run = wsb + ubr;
+    var posAdj = POS[pos] * Math.min(posg, SEASON_GAMES) / SEASON_GAMES;
+    var repl = (L.woba - 0.88 * L.woba) / WOBA_SCALE * pa;
+    var rar = wraa + run + fld + posAdj + repl;
+    var war = rar / L.rpw;
+
+    var g = grade(war, pa >= 400);
+    var html = "";
+    warn.forEach(function(w){ html += '<p class="warn">' + w + '</p>'; });
+    html += '<div class="war-head"><span class="k">WAR</span><span class="num">' + f1(war) + '</span>'
+         +  (g ? '<span class="grade">' + g + '</span>' : '') + '</div>'
+         +  '<p class="war-sub">控えレベルの選手と比べて、チームの勝ちを約' + f1(war) + '個増やした計算です（RAR ' + sgn(rar) + '点 ÷ RPW ' + f2(L.rpw) + '）。</p>';
+
+    html += '<div class="parts">' + partsHtml([
+        ["打撃（wRAA）", wraa], ["走塁", run], ["守備", fld],
+        ["守備位置補正", posAdj], ["代替水準との差", repl]
+    ]) + '</div>';
+
+    html += '<div class="steps">'
+         + '<div><b>wOBA</b> ＝（0.7×' + (bb - ibb + hbp) + ' ＋ 0.9×' + s1 + ' ＋ 1.3×' + d2 + ' ＋ 1.6×' + d3 + ' ＋ 2.0×' + hr + '）÷ ' + wobaDen + ' ＝ <b>' + f3(woba) + '</b></div>'
+         + '<div><b>打撃</b> ＝（' + f3(woba) + ' − ' + f3(L.woba) + '）÷ 1.24 × ' + pa + ' ＝ <b>' + sgn(wraa) + '</b></div>'
+         + '<div><b>走塁</b> ＝ wSB ' + sgn(wsb) + '（盗塁' + sb + '・盗塁死' + cs + '）＋ UBR ' + sgn(ubr) + ' ＝ <b>' + sgn(run) + '</b></div>'
+         + '<div><b>守備</b> ＝ <b>' + sgn(fld) + '</b>' + (has("b_fld") ? '' : '（未入力のため平均）') + '</div>'
+         + '<div><b>守備位置補正</b> ＝ ' + POS_NAME[pos] + ' ' + sgn(POS[pos]) + ' × ' + posg + ' ÷ 143 ＝ <b>' + sgn(posAdj) + '</b></div>'
+         + '<div><b>代替水準との差</b> ＝（' + f3(L.woba) + ' − 0.88×' + f3(L.woba) + '）÷ 1.24 × ' + pa + ' ＝ <b>' + sgn(repl) + '</b></div>'
+         + '<div><b>WAR</b> ＝ ' + sgn(rar) + ' ÷ ' + f2(L.rpw) + ' ＝ <b>' + f1(war) + '</b></div>'
+         + '</div>';
+
+    html += '<div class="stats">'
+         + statItem("打率", f3(avg))
+         + statItem("出塁率", f3(obp))
+         + statItem("長打率", f3(slg))
+         + statItem("OPS", f3(obp + slg))
+         + statItem("wOBA", f3(woba), f3(L.woba))
+         + statItem("wRC+", isFinite(wrcp) ? Math.round(wrcp) : "―", "100")
+         + statItem("wRAA", sgn(wraa))
+         + statItem("ISO", f3(slg - avg))
+         + statItem("BABIP", f3(babip))
+         + statItem("K%", pct(so / pa))
+         + statItem("BB%", pct(bb / pa))
+         + statItem("BB/K", so ? f2(bb / so) : "―")
+         + '</div>';
+    if (!posg) html += '<p class="note">「その位置での試合数」が空欄のため、守備位置補正は0で計算しています。</p>';
+    result.innerHTML = html;
+}
+
+function renderPitcher(){
+    var L = lg();
+    var role = $("p_role").value;
+    var total = ip("p_ip");
+    var ipsp = role === "sp" ? total : role === "rp" ? 0 : Math.min(ip("p_ipsp"), total);
+    var iprp = total - ipsp;
+    var bf = num("p_bf"), h = num("p_h"), hr = num("p_hr"), bb = num("p_bb"), ibb = num("p_ibb"), hbp = num("p_hbp");
+    var so = num("p_so"), er = num("p_er");
+
+    if (!total){
+        result.innerHTML = '<p class="note">投球回を入れると計算します。「サンプルを入れる」で例を試せます。</p>';
+        return;
+    }
+    var fipCore = (13 * hr + 3 * (bb - ibb + hbp) - 2 * so) / total;
+    var fip = fipCore + L.fip_const;
+    var ratio = L.era > 0 ? L.ra9 / L.era : 1.1;
+    var fipRA = fip * ratio;
+    var sprar = (1.19 * L.ra9 + 0.30 - fipRA) / 9 * ipsp;
+    var rprar = (1.19 * L.ra9 - 0.55 - fipRA) / 9 * iprp;
+    var rar = sprar + rprar;
+    var war = rar / L.rpw;
+    var era = 9 * er / total;
+
+    var g = grade(war, total >= (ipsp > iprp ? 120 : 50));
+    var html = '<div class="war-head"><span class="k">WAR</span><span class="num">' + f1(war) + '</span>'
+             + (g ? '<span class="grade">' + g + '</span>' : '') + '</div>'
+             + '<p class="war-sub">控えレベルの投手と比べて、チームの勝ちを約' + f1(war) + '個増やした計算です（RAR ' + sgn(rar) + '点 ÷ RPW ' + f2(L.rpw) + '）。</p>';
+
+    var parts = [];
+    if (ipsp > 0) parts.push(["先発での貢献", sprar]);
+    if (iprp > 0) parts.push(["救援での貢献", rprar]);
+    html += '<div class="parts">' + partsHtml(parts) + '</div>';
+
+    html += '<div class="steps">'
+         + '<div><b>FIP</b> ＝（13×' + hr + ' ＋ 3×' + (bb - ibb + hbp) + ' − 2×' + so + '）÷ ' + f2(total) + ' ＋ ' + f2(L.fip_const) + ' ＝ <b>' + f2(fip) + '</b></div>'
+         + '<div><b>失点率に換算</b> ＝ ' + f2(fip) + ' × ' + f2(L.ra9) + ' ÷ ' + f2(L.era) + ' ＝ <b>' + f2(fipRA) + '</b></div>'
+         + (ipsp > 0 ? '<div><b>先発</b> ＝（1.19×' + f2(L.ra9) + ' ＋ 0.30 − ' + f2(fipRA) + '）÷ 9 × ' + f2(ipsp) + ' ＝ <b>' + sgn(sprar) + '</b></div>' : '')
+         + (iprp > 0 ? '<div><b>救援</b> ＝（1.19×' + f2(L.ra9) + ' − 0.55 − ' + f2(fipRA) + '）÷ 9 × ' + f2(iprp) + ' ＝ <b>' + sgn(rprar) + '</b></div>' : '')
+         + '<div><b>WAR</b> ＝ ' + sgn(rar) + ' ÷ ' + f2(L.rpw) + ' ＝ <b>' + f1(war) + '</b></div>'
+         + '</div>';
+
+    html += '<div class="stats">'
+         + statItem("FIP", f2(fip), f2(L.era))
+         + statItem("防御率", has("p_er") ? f2(era) : "―", f2(L.era))
+         + statItem("WHIP", has("p_h") ? f2((h + bb) / total) : "―")
+         + statItem("K/9", f2(9 * so / total))
+         + statItem("BB/9", f2(9 * bb / total))
+         + statItem("HR/9", f2(9 * hr / total))
+         + statItem("K/BB", bb ? f2(so / bb) : "―")
+         + statItem("K%", bf ? pct(so / bf) : "―")
+         + statItem("BB%", bf ? pct(bb / bf) : "―")
+         + statItem("K−BB%", bf ? pct((so - bb) / bf) : "―")
+         + '</div>';
+    if (!bf) html += '<p class="note">「打者」を入れると K%・BB%・K−BB% も計算します。</p>';
+    result.innerHTML = html;
+}
+
+function render(){
+    if (calc.dataset.kind === "pitcher") renderPitcher();
+    else renderBatter();
+}
+
+/* サンプルは架空の選手 */
+var SAMPLE = {
+    batter: { b_pa:600, b_ab:528, b_h:150, b_d2:28, b_d3:3, b_hr:20, b_bb:56, b_ibb:3, b_hbp:6, b_sf:5, b_so:110, b_sb:15, b_cs:5, b_pos:"SS", b_posg:138, b_fld:"", b_ubr:"" },
+    pitcher: { p_role:"sp", p_ip:"170.1", p_ipsp:"", p_bf:690, p_h:140, p_hr:12, p_bb:40, p_ibb:1, p_hbp:5, p_so:160, p_er:50 }
+};
+
+function fill(obj){
+    Object.keys(obj).forEach(function(k){ $(k).value = obj[k]; });
+    syncRole();
+    render();
+}
+
+function syncRole(){
+    $("p_ipsp_wrap").hidden = $("p_role").value !== "mix";
+}
+
+document.querySelectorAll(".seg button").forEach(function(b){
+    b.addEventListener("click", function(){
+        calc.dataset.kind = b.dataset.kind;
+        document.querySelectorAll(".seg button").forEach(function(x){
+            x.setAttribute("aria-pressed", String(x === b));
+        });
+        render();
+    });
+});
+
+$("sample").addEventListener("click", function(){ fill(SAMPLE[calc.dataset.kind]); });
+$("clear").addEventListener("click", function(){
+    var sel = calc.dataset.kind === "pitcher" ? ".pitcher-only input" : ".batter-only input";
+    document.querySelectorAll(sel).forEach(function(i){ i.value = ""; });
+    render();
+});
+$("league").addEventListener("change", function(){ fillLeague(); render(); });
+$("p_role").addEventListener("change", function(){ syncRole(); render(); });
+calc.addEventListener("input", render);
+
+fillLeague();
+render();
+
+fetch("/war/league.json", { cache: "no-cache" })
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(data){
+        LEAGUES = data;
+        var d = data.as_of ? data.as_of.split("-") : null;
+        $("asof").textContent = "リーグ平均：" + (d ? d[0] + "年" + (+d[1]) + "月" + (+d[2]) + "日時点のNPB成績" : data.year + "年のNPB成績") + "から自動計算";
+        fillLeague();
+        render();
+    })
+    .catch(function(){
+        $("asof").textContent = "リーグ平均：" + FALLBACK.year + "年のNPB成績（控えの値）";
+    });
+</script>
+
+</body>
+</html>

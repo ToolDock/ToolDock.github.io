@@ -21,7 +21,7 @@
      ここに直書きすると、実際のアクセスとすぐズレる */
   const POPULAR_COUNT = 6;
 
-  const CATEGORY_ORDER = ["math", "work", "life", "finance", "game"];
+  const CATEGORY_ORDER = ["math", "work", "life", "finance", "game", "baseball"];
 
   /* ---- 背景の明るさから配色を決める ---- */
 
