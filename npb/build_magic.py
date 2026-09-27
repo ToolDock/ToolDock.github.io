@@ -34,7 +34,9 @@ PER_OPPONENT = 25
 INTERLEAGUE = 18
 CS_SLOTS = 3
 
+# 勝率が並んだとき、勝利数の多いほうを上位にするリーグ（セ・リーグのみ）
 LEAGUES = [("c", "セ・リーグ", "central"), ("p", "パ・リーグ", "pacific")]
+WINS_TIEBREAK = {"c": True, "p": False}
 
 # 正式名 → 表示名・勝敗表の見出しの1文字
 TEAMS = {
@@ -325,7 +327,7 @@ def main(argv=None):
         d, teams = parsed[lg]
         as_of = as_of or d
         by = {t.short: t for t in teams}
-        res = analyze(by, CS_SLOTS)
+        res = analyze(by, CS_SLOTS, WINS_TIEBREAK[lg])
         block, sentence, done = league_block(key, label, teams, res)
         all_done &= done
         blocks.append(block)
