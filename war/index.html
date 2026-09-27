@@ -412,7 +412,7 @@ WAR ＝（先発の分 ＋ 救援の分）÷ RPW
 <h2>このツールの計算について</h2>
 <p>計算の枠組みは、DELTA社が公開しているWARの考え方（<a href="https://1point02.jp/op/gnav/glossary/gls_explanation.aspx?eid=20031" target="_blank" rel="noopener">野手</a>・<a href="https://1point02.jp/op/gnav/glossary/gls_explanation.aspx?ecd=203&amp;eid=20032" target="_blank" rel="noopener">投手</a>）に合わせています。ただし、公開されている成績だけで計算できるようにするため、次の点を簡略化しています。</p>
 <ul>
-<li><strong>リーグ平均は、NPB公式の成績から毎日自動で計算</strong>しています。打撃の平均は、DELTAと同じく<strong>投手の打席を除いた野手の平均</strong>です（セ・リーグは投手も打席に立つため、各球団の個人成績から投手の分を除いて集計しています）。前年までのシーズンも選べます。</li>
+<li><strong>リーグ平均は、NPB公式の成績から毎日自動で計算</strong>しています。打撃の平均は、DELTAと同じく<strong>投手の打席を除いた野手の平均</strong>です（セ・リーグは投手も打席に立つため、各球団の個人成績から投手の分を除いて集計しています）。2020年以降のシーズンと、「飛ぶボール」が使われていた2001〜2005年、「統一球（違反球）」で極端な投高打低になった2011〜2012年の平均も選べます。2004年以前はNPB公式に四球・死球などの内訳が残っていないため、2005年の割合で補った推定値です。</li>
 <li>球場の広さなどの影響（パークファクター）は補正していません。本拠地が打者有利の球場の選手は、やや高めに出ます。</li>
 <li>守備（UZR）と盗塁以外の走塁（UBR）は入力値を使います。空欄なら平均（0）として計算します。</li>
 <li>投手はDELTAのtRAの代わりにFIPを使い、リーグの失点率と防御率の比で失点率の尺度にそろえています。</li>
@@ -526,10 +526,19 @@ function lg(){
 }
 
 /* "2025:central" → その年・リーグの平均値 */
-function leagueOf(value){
+/* "2025:central" → その年の平均、"era:2011-2012:central" → その時代の平均 */
+function seasonOf(value){
     var parts = value.split(":");
-    var season = LEAGUE_DATA.seasons[parts[0]] || FALLBACK.seasons[parts[0]] || {};
-    return season[parts[1]] || FALLBACK.seasons[String(FALLBACK.latest)][parts[1]];
+    if (parts[0] === "era"){
+        var eras = LEAGUE_DATA.eras || {};
+        return { season: eras[parts[1]] || {}, league: parts[2], era: true };
+    }
+    return { season: LEAGUE_DATA.seasons[parts[0]] || FALLBACK.seasons[parts[0]] || {}, league: parts[1], era: false };
+}
+
+function leagueOf(value){
+    var s = seasonOf(value);
+    return s.season[s.league] || FALLBACK.seasons[String(FALLBACK.latest)][s.league];
 }
 
 /* league.json にある年でプルダウンを作り直す */
@@ -544,6 +553,19 @@ function buildLeagueOptions(){
                  + (s.final ? "" : "（シーズン中）") + '</option>';
         });
     });
+    var eras = LEAGUE_DATA.eras || {};
+    var eraKeys = Object.keys(eras).sort().reverse();
+    if (eraKeys.length){
+        html += '<optgroup label="時代の平均">';
+        eraKeys.forEach(function(e){
+            ["central", "pacific"].forEach(function(k){
+                if (!eras[e][k]) return;
+                html += '<option value="era:' + e + ':' + k + '">' + eras[e].label + ' '
+                     + (k === "central" ? "セ・リーグ" : "パ・リーグ") + '</option>';
+            });
+        });
+        html += '</optgroup>';
+    }
     sel.innerHTML = html;
     if (cur && sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
 }
@@ -811,8 +833,16 @@ fillLeague();
 render();
 
 function showAsOf(){
+    var sel = seasonOf($("league").value);
+    if (sel.era){
+        var yrs = sel.season.years || [];
+        var est = sel.season.estimated_years || [];
+        $("asof").textContent = "リーグ平均：" + yrs[0] + "〜" + yrs[yrs.length - 1] + "年の各シーズンの平均"
+            + (est.length ? "（" + est[0] + "〜" + est[est.length - 1] + "年は推定値を含む）" : "");
+        return;
+    }
     var y = $("league").value.split(":")[0];
-    var s = LEAGUE_DATA.seasons[y] || {};
+    var s = sel.season;
     var d = s.as_of ? s.as_of.split("-") : null;
     $("asof").textContent = "リーグ平均：" + (s.final || !d ? y + "年の最終成績" : (+d[1]) + "月" + (+d[2]) + "日時点の成績") + "から計算";
 }
