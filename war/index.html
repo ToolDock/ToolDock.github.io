@@ -159,8 +159,10 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
     <div class="bar">
         <label>リーグ
             <select id="league">
-                <option value="central">セ・リーグ</option>
-                <option value="pacific">パ・リーグ</option>
+                <option value="2026:central">2026年 セ・リーグ</option>
+                <option value="2026:pacific">2026年 パ・リーグ</option>
+                <option value="2025:central">2025年 セ・リーグ</option>
+                <option value="2025:pacific">2025年 パ・リーグ</option>
             </select>
         </label>
         <span class="asof" id="asof">リーグ平均：読み込み中…</span>
@@ -204,6 +206,20 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
                         <option value="DH">指名打者</option>
                     </select></div>
                 <div class="field"><label for="b_posg">その位置での試合数</label><input id="b_posg" type="number" min="0" max="143" inputmode="numeric"><span class="hint">守備位置補正の量に使う</span></div>
+                <div class="field"><label for="b_pos2">2つ目の守備位置</label>
+                    <select id="b_pos2">
+                        <option value="">なし</option>
+                        <option value="C">捕手</option>
+                        <option value="1B">一塁手</option>
+                        <option value="2B">二塁手</option>
+                        <option value="3B">三塁手</option>
+                        <option value="SS">遊撃手</option>
+                        <option value="LF">左翼手</option>
+                        <option value="CF">中堅手</option>
+                        <option value="RF">右翼手</option>
+                        <option value="DH">指名打者</option>
+                    </select><span class="hint">複数の位置を守った場合</span></div>
+                <div class="field"><label for="b_posg2">その位置での試合数</label><input id="b_posg2" type="number" min="0" max="143" inputmode="numeric"></div>
                 <div class="field"><label for="b_fld">守備の得点（UZRなど）</label><input id="b_fld" type="number" step="0.1" inputmode="decimal" placeholder="0"><span class="hint">公開値があれば。無ければ0（平均）</span></div>
                 <div class="field"><label for="b_ubr">盗塁以外の走塁（UBR）</label><input id="b_ubr" type="number" step="0.1" inputmode="decimal" placeholder="0"><span class="hint">公開値があれば。無ければ0</span></div>
             </div>
@@ -250,6 +266,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
         <p class="note">リーグを切り替えると、最新の値に戻ります。</p>
     </details>
 
+    <p class="note" id="sampleNote" hidden></p>
     <div class="result" id="result" aria-live="polite"></div>
 </div>
 
@@ -386,7 +403,7 @@ WAR ＝（先発の分 ＋ 救援の分）÷ RPW
 <h2>このツールの計算について</h2>
 <p>計算の枠組みは、DELTA社が公開しているWARの考え方（<a href="https://1point02.jp/op/gnav/glossary/gls_explanation.aspx?eid=20031" target="_blank" rel="noopener">野手</a>・<a href="https://1point02.jp/op/gnav/glossary/gls_explanation.aspx?ecd=203&amp;eid=20032" target="_blank" rel="noopener">投手</a>）に合わせています。ただし、公開されている成績だけで計算できるようにするため、次の点を簡略化しています。</p>
 <ul>
-<li><strong>リーグ平均は、NPB公式のチーム打撃・投手成績から毎日自動で計算</strong>しています。セ・リーグは投手の打席も含んだ平均なので、野手だけの平均よりわずかに低く出ます。</li>
+<li><strong>リーグ平均は、NPB公式の成績から毎日自動で計算</strong>しています。打撃の平均は、DELTAと同じく<strong>投手の打席を除いた野手の平均</strong>です（セ・リーグは投手も打席に立つため、各球団の個人成績から投手の分を除いて集計しています）。前年までのシーズンも選べます。</li>
 <li>球場の広さなどの影響（パークファクター）は補正していません。本拠地が打者有利の球場の選手は、やや高めに出ます。</li>
 <li>守備（UZR）と盗塁以外の走塁（UBR）は入力値を使います。空欄なら平均（0）として計算します。</li>
 <li>投手はDELTAのtRAの代わりにFIPを使い、リーグの失点率と防御率の比で失点率の尺度にそろえています。</li>
@@ -450,13 +467,19 @@ A. 保存も送信もされません。計算はすべてブラウザの中で�
 <script>
 "use strict";
 
-/* league.json が読めなかったときの控え（2026年9月下旬のNPBの値） */
+/* league.json が読めなかったときの控え。打撃の平均は投手を除いた野手の値 */
 var FALLBACK = {
-    year: 2026, as_of: null,
-    central: { woba:0.291, r_pa:0.0919, rpw:8.81, wsb_rate:0.0038, run_cs:-0.336, fip_const:2.86, era:3.21, ra9:3.53 },
-    pacific: { woba:0.305, r_pa:0.1020, rpw:9.21, wsb_rate:0.0021, run_cs:-0.355, fip_const:2.80, era:3.43, ra9:3.78 }
+    latest: 2026,
+    seasons: {
+        "2026": { as_of: null,
+            central: { woba:0.3001, r_pa:0.09565, rpw:8.806, wsb_rate:0.00404, run_cs:-0.3361, fip_const:2.86, era:3.212, ra9:3.525 },
+            pacific: { woba:0.3057, r_pa:0.10215, rpw:9.211, wsb_rate:0.00225, run_cs:-0.3552, fip_const:2.797, era:3.43, ra9:3.782 } },
+        "2025": { as_of: null, final: true,
+            central: { woba:0.2986, r_pa:0.08931, rpw:8.492, wsb_rate:0.00239, run_cs:-0.317, fip_const:2.77, era:2.972, ra9:3.267 },
+            pacific: { woba:0.2958, r_pa:0.09016, rpw:8.649, wsb_rate:0.00583, run_cs:-0.3228, fip_const:2.736, era:3.04, ra9:3.345 } }
+    }
 };
-var LEAGUES = FALLBACK;
+var LEAGUE_DATA = FALLBACK;
 
 var WOBA_SCALE = 1.24;
 var POS = { C:18.1, "1B":-14.1, "2B":3.4, "3B":-4.8, SS:10.3, LF:-12.0, CF:4.2, RF:-5.0, DH:-15.1 };
@@ -493,8 +516,31 @@ function lg(){
     };
 }
 
+/* "2025:central" → その年・リーグの平均値 */
+function leagueOf(value){
+    var parts = value.split(":");
+    var season = LEAGUE_DATA.seasons[parts[0]] || FALLBACK.seasons[parts[0]] || {};
+    return season[parts[1]] || FALLBACK.seasons[String(FALLBACK.latest)][parts[1]];
+}
+
+/* league.json にある年でプルダウンを作り直す */
+function buildLeagueOptions(){
+    var sel = $("league"), cur = sel.value, html = "";
+    Object.keys(LEAGUE_DATA.seasons).sort().reverse().forEach(function(y){
+        var s = LEAGUE_DATA.seasons[y];
+        ["central", "pacific"].forEach(function(k){
+            if (!s[k]) return;
+            var v = y + ":" + k;
+            html += '<option value="' + v + '">' + y + '年 ' + (k === "central" ? "セ・リーグ" : "パ・リーグ")
+                 + (s.final ? "" : "（シーズン中）") + '</option>';
+        });
+    });
+    sel.innerHTML = html;
+    if (cur && sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
+}
+
 function fillLeague(){
-    var L = LEAGUES[$("league").value] || FALLBACK[$("league").value];
+    var L = leagueOf($("league").value);
     $("lg_woba").value = L.woba;
     $("lg_rpa").value = L.r_pa;
     $("lg_rpw").value = L.rpw;
@@ -544,6 +590,7 @@ function renderBatter(){
     var bb = num("b_bb"), ibb = num("b_ibb"), hbp = num("b_hbp"), sf = num("b_sf"), so = num("b_so");
     var sb = num("b_sb"), cs = num("b_cs");
     var pos = $("b_pos").value, posg = has("b_posg") ? num("b_posg") : 0;
+    var pos2 = $("b_pos2").value, posg2 = pos2 && has("b_posg2") ? num("b_posg2") : 0;
     var fld = num("b_fld"), ubr = num("b_ubr");
 
     if (!pa || !ab){
@@ -566,7 +613,9 @@ function renderBatter(){
     var wrcp = L.r_pa > 0 ? ((wraa / pa + L.r_pa) / L.r_pa) * 100 : NaN;
     var wsb = sb * 0.2 + cs * L.run_cs - L.wsb_rate * (s1 + bb + hbp - ibb);
     var run = wsb + ubr;
-    var posAdj = POS[pos] * Math.min(posg, SEASON_GAMES) / SEASON_GAMES;
+    var posAdj1 = POS[pos] * Math.min(posg, SEASON_GAMES) / SEASON_GAMES;
+    var posAdj2 = pos2 ? POS[pos2] * Math.min(posg2, SEASON_GAMES) / SEASON_GAMES : 0;
+    var posAdj = posAdj1 + posAdj2;
     var repl = (L.woba - 0.88 * L.woba) / WOBA_SCALE * pa;
     var rar = wraa + run + fld + posAdj + repl;
     var war = rar / L.rpw;
@@ -588,7 +637,9 @@ function renderBatter(){
          + '<div><b>打撃</b> ＝（' + f3(woba) + ' − ' + f3(L.woba) + '）÷ 1.24 × ' + pa + ' ＝ <b>' + sgn(wraa) + '</b></div>'
          + '<div><b>走塁</b> ＝ wSB ' + sgn(wsb) + '（盗塁' + sb + '・盗塁死' + cs + '）＋ UBR ' + sgn(ubr) + ' ＝ <b>' + sgn(run) + '</b></div>'
          + '<div><b>守備</b> ＝ <b>' + sgn(fld) + '</b>' + (has("b_fld") ? '' : '（未入力のため平均）') + '</div>'
-         + '<div><b>守備位置補正</b> ＝ ' + POS_NAME[pos] + ' ' + sgn(POS[pos]) + ' × ' + posg + ' ÷ 143 ＝ <b>' + sgn(posAdj) + '</b></div>'
+         + '<div><b>守備位置補正</b> ＝ ' + POS_NAME[pos] + ' ' + sgn(POS[pos]) + ' × ' + posg + ' ÷ 143'
+         + (pos2 ? ' ＋ ' + POS_NAME[pos2] + ' ' + sgn(POS[pos2]) + ' × ' + posg2 + ' ÷ 143' : '')
+         + ' ＝ <b>' + sgn(posAdj) + '</b></div>'
          + '<div><b>代替水準との差</b> ＝（' + f3(L.woba) + ' − 0.88×' + f3(L.woba) + '）÷ 1.24 × ' + pa + ' ＝ <b>' + sgn(repl) + '</b></div>'
          + '<div><b>WAR</b> ＝ ' + sgn(rar) + ' ÷ ' + f2(L.rpw) + ' ＝ <b>' + f1(war) + '</b></div>'
          + '</div>';
@@ -673,14 +724,30 @@ function render(){
     else renderBatter();
 }
 
-/* サンプルは架空の選手 */
+/* サンプルは2025年の実際の成績（NPB公式の個人成績より） */
 var SAMPLE = {
-    batter: { b_pa:600, b_ab:528, b_h:150, b_d2:28, b_d3:3, b_hr:20, b_bb:56, b_ibb:3, b_hbp:6, b_sf:5, b_so:110, b_sb:15, b_cs:5, b_pos:"SS", b_posg:138, b_fld:"", b_ubr:"" },
-    pitcher: { p_role:"sp", p_ip:"170.1", p_ipsp:"", p_bf:690, p_h:140, p_hr:12, p_bb:40, p_ibb:1, p_hbp:5, p_so:160, p_er:50 }
+    batter: {
+        label: "2025年 佐藤輝明（阪神）：打率.277・40本塁打・102打点で本塁打王・打点王、セ・リーグMVP。守備は三塁111試合・外野27試合（外野は右翼として計算）。",
+        league: "2025:central",
+        values: { b_pa:597, b_ab:537, b_h:149, b_d2:34, b_d3:4, b_hr:40, b_bb:57, b_ibb:9, b_hbp:0, b_sf:3, b_so:163, b_sb:10, b_cs:2,
+                  b_pos:"3B", b_posg:111, b_pos2:"RF", b_posg2:27, b_fld:"", b_ubr:"" }
+    },
+    pitcher: {
+        label: "2025年 村上頌樹（阪神）：26試合・14勝4敗・防御率2.10。",
+        league: "2025:central",
+        values: { p_role:"sp", p_ip:"175.1", p_ipsp:"", p_bf:679, p_h:131, p_hr:9, p_bb:25, p_ibb:4, p_hbp:7, p_so:144, p_er:41 }
+    }
 };
 
-function fill(obj){
-    Object.keys(obj).forEach(function(k){ $(k).value = obj[k]; });
+function fill(sample){
+    if ($("league").querySelector('option[value="' + sample.league + '"]')){
+        $("league").value = sample.league;
+        fillLeague();
+        showAsOf();
+    }
+    Object.keys(sample.values).forEach(function(k){ $(k).value = sample.values[k]; });
+    $("sampleNote").textContent = "サンプル：" + sample.label;
+    $("sampleNote").hidden = false;
     syncRole();
     render();
 }
@@ -703,6 +770,8 @@ $("sample").addEventListener("click", function(){ fill(SAMPLE[calc.dataset.kind]
 $("clear").addEventListener("click", function(){
     var sel = calc.dataset.kind === "pitcher" ? ".pitcher-only input" : ".batter-only input";
     document.querySelectorAll(sel).forEach(function(i){ i.value = ""; });
+    $("b_pos2").value = "";
+    $("sampleNote").hidden = true;
     render();
 });
 $("league").addEventListener("change", function(){ fillLeague(); render(); });
@@ -712,18 +781,31 @@ calc.addEventListener("input", render);
 fillLeague();
 render();
 
+function showAsOf(){
+    var y = $("league").value.split(":")[0];
+    var s = LEAGUE_DATA.seasons[y] || {};
+    var d = s.as_of ? s.as_of.split("-") : null;
+    $("asof").textContent = "リーグ平均：" + (s.final || !d ? y + "年の最終成績" : (+d[1]) + "月" + (+d[2]) + "日時点の成績") + "から計算";
+}
+$("league").addEventListener("change", showAsOf);
+
+buildLeagueOptions();
+showAsOf();
+
 fetch("/war/league.json", { cache: "no-cache" })
     .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function(data){
-        LEAGUES = data;
-        var d = data.as_of ? data.as_of.split("-") : null;
-        $("asof").textContent = "リーグ平均：" + (d ? d[0] + "年" + (+d[1]) + "月" + (+d[2]) + "日時点のNPB成績" : data.year + "年のNPB成績") + "から自動計算";
+        if (!data.seasons) throw new Error("形式が違う");
+        LEAGUE_DATA = data;
+        var keep = $("league").value;
+        buildLeagueOptions();
+        if (!$("sampleNote").hidden) $("league").value = keep;
+        else $("league").value = data.latest + ":" + (keep.split(":")[1] || "central");
+        showAsOf();
         fillLeague();
         render();
     })
-    .catch(function(){
-        $("asof").textContent = "リーグ平均：" + FALLBACK.year + "年のNPB成績（控えの値）";
-    });
+    .catch(function(){ showAsOf(); });
 </script>
 
 </body>
