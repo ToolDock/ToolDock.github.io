@@ -59,6 +59,17 @@ if (tool) {
     <link rel="icon"
           href="/favicon.ico">
 
+    <!-- サイト共通のフォント（Noto Sans JP）。フォント名は style.css と各ページのCSSで指定 -->
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap">
+
     <link rel="stylesheet"
           href="/style.css">
 
