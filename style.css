@@ -1,5 +1,7 @@
+/* サイト共通のフォントは Noto Sans JP（head.js で Google Fonts から読み込む）。
+   各ページのCSSも同じ並びで指定している */
 body {
-  font-family: sans-serif;
+  font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
   max-width: 900px;
   margin: auto;
   padding: 20px;
@@ -8,6 +10,12 @@ body {
 
 h1 {
   margin-top: 40px;
+}
+
+/* ボタンや入力欄はブラウザ既定のフォントになるので、本文に合わせる。
+   textarea は等幅のままのほうが読みやすいページがあるので含めない */
+button, input, select {
+  font-family: inherit;
 }
 
 a {

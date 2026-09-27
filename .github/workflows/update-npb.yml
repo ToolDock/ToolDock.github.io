@@ -38,8 +38,9 @@ jobs:
 
       - name: 変更があればコミット
         run: |
-          # 「最終更新」の時刻だけが変わった場合はコミットしない
-          if git diff --quiet -- magic/data.json magic/history.json war/league.json; then
+          # 「最終更新」の時刻だけが変わった場合はコミットしない。
+          # テンプレートを直したときは本文が変わるので、それはコミットする
+          if git diff --quiet -I '最終更新' -- magic war/league.json; then
             echo "成績に変化なし。コミットしません。"
             exit 0
           fi

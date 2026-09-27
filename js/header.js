@@ -48,8 +48,7 @@
         text-align: left;
         text-decoration: none;
         letter-spacing: normal;
-        font-family: -apple-system, "Segoe UI", "Hiragino Sans",
-                     "Noto Sans JP", Meiryo, sans-serif;
+        font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
         font-style: normal;
       }
 

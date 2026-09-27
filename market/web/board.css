@@ -26,8 +26,7 @@
   --section-gap: 34px;
   --max-width: 1240px;
 
-  --font: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "BIZ UDPGothic",
-          "Yu Gothic Medium", "Yu Gothic", Meiryo, sans-serif;
+  --font: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
 }
 
 * { box-sizing: border-box; }

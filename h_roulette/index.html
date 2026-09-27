@@ -34,7 +34,7 @@ const CURRENT_TOOL = "h_roulette";
 
 body{
   text-align:center;
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
   background: var(--bg);
   color: var(--ink);
   margin:0;
@@ -435,11 +435,27 @@ function genColors(n){
 // 描画
 // ======================
 
+/* 盤面の文字は Noto Sans JP。Webフォントはキャンバスで使うだけでは
+   読み込まれないことがあるので、まだなら読み込んでから描き直す */
+const WHEEL_FONT = "600 18px 'Noto Sans JP','Hiragino Sans',sans-serif";
+const wheelFontTried = new Set();
+
+function ensureWheelFont() {
+  if (!document.fonts) return;
+  const text = items.join("");
+  // 同じ文字列では一度しか試さない（読み込めなかったときに描き直しが続かないように）
+  if (wheelFontTried.has(text) || document.fonts.check(WHEEL_FONT, text)) return;
+  wheelFontTried.add(text);
+  document.fonts.load(WHEEL_FONT, text).then(() => draw()).catch(() => {});
+}
+
 function draw(){
 
   const n = items.length;
 
   if(!n) return;
+
+  ensureWheelFont();
 
   const arc =
     (2*Math.PI)/n;
@@ -481,7 +497,7 @@ function draw(){
 
     ctx.textAlign="right";
 
-    ctx.font="600 18px -apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif";
+    ctx.font=WHEEL_FONT;
 
     // 明るい色の区画でも文字が沈まないよう、白い塗りに加えて
     // 濃い色の縁取りを入れて、どの背景色でも読めるようにする

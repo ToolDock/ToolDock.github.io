@@ -13,9 +13,13 @@ A の勝率以上になれる組み合わせが存在するか」を、最大流
 前提
 ----
 - 残り試合に引き分けは起きないものとして計算する。
-- 勝率が並んだ場合は、上回られる可能性がある（安全側）として扱う。
-  実際のリーグの順位決定方法（セ：勝利数→直接対決…、パ：直接対決…）は使わない。
-  そのため、同率が絡むごく一部の局面で、報道のマジックより1大きく出ることがある。
+- 勝率が並んだ場合の順位決定方法
+    セ：勝利数 → 当該球団間の対戦勝率 → リーグ内の勝率 → 前年順位
+    パ：当該球団間の対戦勝率 → リーグ内の勝率 → 前年順位
+  のうち、セの「勝利数」だけを反映する（wins_tiebreak=True）。
+  勝率も勝利数も並ぶ場合と、パの同率は、上回られる可能性がある（安全側）として扱う。
+  直接対決の勝率は残り試合の結果で変わり、3チーム以上が並ぶと当該球団間の
+  合算になるため、確定を誤って早く出さないよう判定には使わない。
 """
 
 from __future__ import annotations
@@ -90,7 +94,7 @@ def _ceil_div(a, b):
     return -(-a // b)
 
 
-def _can_all_reach(teams, a, group, m):
+def _can_all_reach(teams, a, group, m, wins_tiebreak=False):
     """A が残り m 勝・残りは全敗のとき、group の全チームが同時に
     A の最終勝率「以上」になれる結果が存在するか。"""
     A = teams[a]
@@ -109,6 +113,9 @@ def _can_all_reach(teams, a, group, m):
         dX = X.w + X.l + X.rem_total
         # w / dX >= wA / dA を満たす最小の w
         req = _ceil_div(wA * dX, dA) if dA else 0
+        # 勝率が並んでも、勝利数が少なければ下位（セ）。並ぶのが dX < dA のときだけ
+        if wins_tiebreak and dA and (wA * dX) % dA == 0 and dX < dA:
+            req += 1
         base = X.w + X.rem_out + sum(
             c for y, c in X.rem.items() if y != a and y not in group)
         need[x] = max(0, req - base)
@@ -131,21 +138,22 @@ def _can_all_reach(teams, a, group, m):
     return fl.max_flow("S", "T") == sum(need.values())
 
 
-def clinched_with(teams, a, k, m):
+def clinched_with(teams, a, k, m, wins_tiebreak=False):
     """A が残り m 勝で k 位以内が確定するか。"""
     others = [x for x in teams if x != a]
-    return not any(_can_all_reach(teams, a, g, m) for g in combinations(others, k))
+    return not any(_can_all_reach(teams, a, g, m, wins_tiebreak)
+                   for g in combinations(others, k))
 
 
-def clinch_number(teams, a, k):
+def clinch_number(teams, a, k, wins_tiebreak=False):
     """k 位以内を自力で確定させるのに必要な勝利数。無理なら None。"""
     for m in range(teams[a].rem_total + 1):
-        if clinched_with(teams, a, k, m):
+        if clinched_with(teams, a, k, m, wins_tiebreak):
             return m
     return None
 
 
-def _can_finish_within(teams, b, k):
+def _can_finish_within(teams, b, k, wins_tiebreak=False):
     """B が k 位以内に入る結果がひとつでもあるか（同率は入れる扱い）。"""
     B = teams[b]
     dB = B.w + B.l + B.rem_total
@@ -161,6 +169,9 @@ def _can_finish_within(teams, b, k):
             dX = X.w + X.l + X.rem_total
             # w / dX <= wB / dB を満たす最大の w
             limit = (wB * dX) // dB if dB else X.w
+            # 勝率が並ぶと勝利数が B より多くなる（セでは B が下位）ときは、並ぶのも不可
+            if wins_tiebreak and dB and (wB * dX) % dB == 0 and dX > dB:
+                limit -= 1
             # B 戦・交流戦は落とし、free との試合も落とす。自分たち同士の試合だけ流す
             cap[x] = limit - X.w
             if cap[x] < 0:
@@ -185,15 +196,17 @@ def _can_finish_within(teams, b, k):
     return False
 
 
-def analyze(teams, cs_slots=3):
-    """teams: short → Team（順位順）。各チームの状態を返す。"""
+def analyze(teams, cs_slots=3, wins_tiebreak=False):
+    """teams: short → Team（順位順）。各チームの状態を返す。
+    wins_tiebreak: 勝率が並んだとき勝利数の多いほうを上位にする（セ・リーグ）"""
+    tb = wins_tiebreak
     res = {}
     for a in teams:
         res[a] = {
-            "v_num": clinch_number(teams, a, 1),
-            "cs_num": clinch_number(teams, a, cs_slots),
-            "v_possible": _can_finish_within(teams, a, 1),
-            "cs_possible": _can_finish_within(teams, a, cs_slots),
+            "v_num": clinch_number(teams, a, 1, tb),
+            "cs_num": clinch_number(teams, a, cs_slots, tb),
+            "v_possible": _can_finish_within(teams, a, 1, tb),
+            "cs_possible": _can_finish_within(teams, a, cs_slots, tb),
         }
 
     # マジックの点灯は「自力優勝の可能性を持つのが1チームだけ」になったとき
@@ -210,7 +223,7 @@ def analyze(teams, cs_slots=3):
         if r["magic_lit"] and r["v_num"]:
             m = r["v_num"] - 1
             for x in teams:
-                if x != a and _can_all_reach(teams, a, (x,), m):
+                if x != a and _can_all_reach(teams, a, (x,), m, tb):
                     r["target"] = x
                     break
     return res
