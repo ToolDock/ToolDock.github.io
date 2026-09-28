@@ -3,11 +3,11 @@
 
     python3 npb/build_draft.py --data npb/data --league war/league.json --out draft
 
-- 指名選手と成績は名前で結びつける（NPB公式のドラフトのページに選手へのリンクが無いため）。
-  登録名を変えた選手（例：岡田貴弘→T-岡田）は、変えた後の成績を拾えない。
-- 同じ名前で複数回指名された選手（入団拒否→翌年以降に再指名など）は、
-  成績をその年より前で最も新しい指名に割り当てる。
-- 指名より前に同じ名前の選手の成績がある場合は、別人の可能性があるので集計しない。
+- NPB公式のドラフトのページには選手へのリンクが無いので、指名選手はNPB在籍者名簿
+  （npb/data/register.json）の「人」に、名前・指名した球団・入団した年で結びつける。
+  成績も名簿の「人」ごとにまとめる（npb/people.py）ので、登録名を変えた選手
+  （岡田貴弘→T-岡田、中川颯→颯 など）も変更後の成績まで含まれ、同姓同名の別人とも区別できる。
+- 名簿が無いときは、名前だけで照合する古いやり方（assign）を使う。
 - 簡易WARは /saber/ と同じ計算（守備・走塁・球場補正なし）。
 """
 
@@ -24,19 +24,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_magic import JST  # noqa: E402
-from build_saber import compute_season  # noqa: E402
+from build_saber import compute_season, link_rows  # noqa: E402
+from people import People, franchise, key  # noqa: E402
 
-# 名前の照合用：異体字をそろえ、空白を除く
-ITAIJI = str.maketrans({"髙": "高", "﨑": "崎", "𠮷": "吉", "德": "徳", "瀨": "瀬", "邉": "辺", "邊": "辺",
-                        "齋": "斎", "齊": "斉", "濵": "浜", "濱": "浜", "澤": "沢", "廣": "広", "國": "国",
-                        "櫻": "桜", "眞": "真", "惠": "恵", "塚": "塚", "蓮": "蓮", "條": "条", "嶋": "島", "嶌": "島"})
 TEAM_ORDER = ["阪神", "巨人", "DeNA", "横浜", "ヤクルト", "広島", "中日",
               "ソフトバンク", "西武", "日本ハム", "オリックス", "ロッテ", "楽天"]
 TOO_EARLY = 3        # 直近この年数のドラフトは「評価はまだ早い」と添える
-
-
-def key(name):
-    return re.sub(r"[\s　]", "", name).translate(ITAIJI)
 
 
 def disp(name):
@@ -83,6 +76,8 @@ def load_drafts(data_dir):
         d = json.loads(f.read_text(encoding="utf-8"))
         # 「（辞退）」のような、選手名ではない行は除く
         picks = [p for p in d["picks"] if not p["name"].startswith(("（", "("))]
+        for p in picks:   # 名前の後ろの「※」などの印を外す
+            p["name"] = re.sub(r"[\s\u3000]*[※＊*]+$", "", p["name"])
         if picks:
             drafts[d["year"]] = picks
     return drafts
@@ -150,6 +145,116 @@ def assign(drafts, by_name):
             seasons_of[id(owner)].append((y, (b, pt)))
             target = max((p for p in owner if p["year"] < y), key=lambda p: p["year"])
             target["seasons"].append((y, b, pt))
+
+
+def load_seasons_people(data_dir, league, people):
+    """在籍者名簿の「人」ごとに成績をまとめる。
+    → ({pid: [(年, 打者, 投手)]}, {名前キー: [(年, 打者, 投手)]}（名簿と結びつかなかった行）, 最新の年)"""
+    by_pid = defaultdict(list)
+    by_name = defaultdict(list)
+    last_year = None
+    for f in sorted(data_dir.glob("season_*.json")):
+        st = json.loads(f.read_text(encoding="utf-8"))
+        y = st["year"]
+        if str(y) not in league:
+            continue
+        batters, pitchers = compute_season(st, league[str(y)])
+        links = link_rows(people, y, batters, pitchers)
+        rows = defaultdict(lambda: [None, None])
+        for b in batters:
+            rows[b["name"]][0] = b
+        for p in pitchers:
+            rows[p["name"]][1] = p
+        for name, (b, p) in rows.items():
+            pid = links.get(name)
+            if pid:
+                by_pid[pid].append((y, b, p))
+            else:
+                by_name[key(name)].append((y, b, p))
+        last_year = y
+    return by_pid, by_name, last_year
+
+
+def assign_people(drafts, people, by_pid, by_name):
+    """指名 → 在籍者名簿の「人」。指名の翌年（〜翌々年）に指名した球団に在籍した、同じ名前の人を探す。
+
+    - 見つかれば、その人の一軍成績を（登録名が変わった年の分も含めて）すべて付ける
+    - 見つからず、5年以内に同じ名前が再指名されていれば「入団せず」（入団拒否→再指名）
+    - 名簿で見つからないときだけ、名簿と結びつかなかった成績を名前で拾う
+    """
+    picks_by_key = defaultdict(list)
+    for y, picks in drafts.items():
+        for p in picks:
+            p.update(year=y, key=key(p["name"]), seasons=[], ambiguous=False,
+                     redrafted=None, pid=None, unsigned=False)
+            picks_by_key[p["key"]].append(p)
+
+    def first_after(person, y):
+        """指名の年より後で、最初に在籍した年と、その年の球団"""
+        after = sorted(s for s in person["spans"] if s[0] > y)
+        if not after:
+            return None, set()
+        first = after[0][0]
+        return first, {franchise(s[1]) for s in after if s[0] == first}
+
+    def played_before(person, y):
+        return any(s[0] <= y for s in person["spans"])
+
+    def pick_score(p, q):
+        """指名の名前と、名簿の新人の名前の近さ。下の名前が同じなら改姓とみなす（大滝愛斗→武田愛斗）"""
+        sc = people._score(p["key"], q)
+        given_p = re.split(r"[\s\u3000]+", p["name"].strip())
+        given_q = re.split(r"[\s\u3000]+", q["name"].strip())
+        if len(given_p) == 2 and len(given_q) == 2 and key(given_p[1]) == key(given_q[1]):
+            sc = max(sc, 1.2)
+        return sc
+
+    # 名簿で最初に在籍した年・球団ごとの「新人」（名前で見つからない指名の受け皿）
+    rookies = defaultdict(list)
+    for person in people.players:
+        if person["spans"]:
+            y0 = min(s[0] for s in person["spans"])
+            for s in person["spans"]:
+                if s[0] == y0:
+                    rookies[(y0, franchise(s[1]))].append(person)
+    taken = set()
+
+    for y, picks in sorted(drafts.items()):
+        for p in picks:
+            team = franchise(p["team"])
+            found = []
+            for person in people.by_key.get(p["key"], []):
+                first, teams = first_after(person, y)
+                if first and first <= y + 2 and team in teams:
+                    found.append((first, played_before(person, y), person))
+            # 同じ年に入った同名の人が複数いれば、指名より前に在籍していなかった人（新人）を選ぶ
+            found.sort(key=lambda x: (x[0], x[1]))
+            if len(found) > 1 and found[0][:2] == found[1][:2]:
+                p["ambiguous"] = True
+                continue
+            person = found[0][2] if found else None
+            if not person:
+                # 名前が違う（改姓・異体字・外国出身選手の表記）→ 翌年・翌々年にその球団へ入った新人から探す
+                pool = [q for q in rookies.get((y + 1, team), []) if q["pid"] not in taken]
+                scored = sorted(((pick_score(p, q), q) for q in pool), key=lambda x: -x[0])
+                if scored and scored[0][0] >= 0.6 and (len(scored) == 1 or scored[1][0] < scored[0][0]):
+                    person = scored[0][1]
+            if person:
+                taken.add(person["pid"])
+                p["pid"] = person["pid"]
+                seasons = list(by_pid.get(p["pid"], []))
+                # 名簿にまだ載っていない今シーズンの成績で、名簿と結びつかなかった行は名前で拾う
+                have = {yy for yy, _, _ in seasons}
+                for k in person["keys"]:
+                    seasons += [s for s in by_name.get(k, []) if s[0] > people.max_year and s[0] not in have]
+                p["seasons"] = sorted(seasons, key=lambda s: s[0])
+                continue
+            later = [q for q in picks_by_key[p["key"]] if y < q["year"] <= y + REDRAFT_GAP]
+            if later:
+                p["unsigned"] = True
+                p["redrafted"] = (later[0]["year"], later[0]["team"])
+                continue
+            p["seasons"] = sorted((s for s in by_name.get(p["key"], []) if s[0] > y), key=lambda s: s[0])
 
 
 def career(p):
@@ -314,7 +419,7 @@ def shell(title, desc, canonical, h1, sub, body, tool_id):
 {body}
 <footer class="disclaimer">
 指名選手と成績はNPB（日本野球機構）公式サイトのドラフト会議・個人成績をもとに、当サイトが独自に集計したものです。
-成績は一軍の公式戦のみです。名前で照合しているため、登録名を変更した選手などは正しく集計できていない場合があります。
+成績は一軍の公式戦のみです。指名選手と成績は、NPBの在籍者名簿（在籍した年・球団・改名の履歴）で照合しています。
 </footer>
 </div>
 </div>
@@ -362,6 +467,8 @@ def pick_rows(picks):
             tags += f'<span class="tag">{p["redrafted"][0]}年に{esc(p["redrafted"][1])}が再指名</span>'
         if p["ambiguous"]:
             stat, war_v, war_t = "同姓同名の選手がいるため集計していません", -999, "―"
+        elif p.get("unsigned"):
+            stat, war_v, war_t = "入団せず", -999, "―"
         else:
             stat = stat_text(c)
             war_v = c["war"] if c["years"] else -999
@@ -447,7 +554,8 @@ def year_page(year, picks, years, last_season):
 </tbody></table></div>
 <p class="note">・「一軍」は一軍の公式戦に出場したシーズン数です。<br>
 ・簡易WARは、打撃・盗塁・守備位置・代替水準（投手はFIP）から計算したもので、守備の上手さ（UZR）や球場の補正は入っていません（<a href="/war/">計算方法</a>）。<br>
-・名前で成績を照合しているため、指名後に登録名を変えた選手は、変更後の成績が入っていません。</p>
+・登録名を変えた選手は「岡田 貴弘（T-岡田）」のように表示し、変更後の成績も含めて集計しています。<br>
+・「入団せず」は、指名後に入団せず、のちに再指名された選手です。</p>
 {'<p class="note">・2005〜2007年は高校生と大学生・社会人でドラフトが分かれていたため、「高1巡目」「大社1巡目」のように表記しています。「希望枠」は希望入団枠での獲得です。</p>' if year <= 2007 else ''}
 """
     title = f"{year}年ドラフト 答え合わせ｜指名選手のその後・通算成績とWAR"
@@ -538,8 +646,8 @@ def index_page(drafts, last_season):
 
 <article>
 <h2>このページについて</h2>
-<p>NPB公式サイトのドラフト会議の指名選手一覧と、各年の個人成績（一軍）を名前で照合して集計しています。簡易WARの計算方法は<a href="/war/">WAR計算ツール</a>、毎年の選手ごとの指標は<a href="/saber/">セイバーメトリクス ランキング</a>で見られます。</p>
-<p class="note">・登録名を変更した選手、同姓同名の選手がいる場合は、正しく集計できていないことがあります。<br>
+<p>NPB公式サイトのドラフト会議の指名選手一覧と、各年の個人成績（一軍）を、NPBの在籍者名簿（在籍した年・球団・改名の履歴）で1人ずつ照合して集計しています。簡易WARの計算方法は<a href="/war/">WAR計算ツール</a>、毎年の選手ごとの指標は<a href="/saber/">セイバーメトリクス ランキング</a>で見られます。</p>
+<p class="note">・登録名を変えた選手（T-岡田、颯など）も、変更後の成績まで含めて1人の選手として集計しています。同姓同名の別人は、在籍した球団と年で区別しています。<br>
 ・簡易WARには守備の上手さ（UZR）や球場の補正が入っていないため、守備の名手は低めに出ます。<br>
 ・成績は毎日更新しています。その年のドラフト会議が終わると、翌日以降に新しい年のページが追加されます。</p>
 </article>
@@ -564,11 +672,23 @@ def main(argv=None):
 
     league = json.loads(Path(args.league).read_text(encoding="utf-8"))["seasons"]
     data = Path(args.data)
-    by_name, last_season = load_seasons(data, league)
     drafts = load_drafts(data)
-    assign(drafts, by_name)
+    reg = data / "register.json"
+    if reg.exists():
+        people = People(reg)
+        by_pid, by_name, last_season = load_seasons_people(data, league, people)
+        assign_people(drafts, people, by_pid, by_name)
+        # 登録名を変えた選手は「岡田 貴弘（T-岡田）」のように表示する
+        for y in drafts:
+            for p in drafts[y]:
+                if p["pid"]:
+                    p["name"] = people.display(p["pid"], p["name"])
+    else:
+        by_name, last_season = load_seasons(data, league)
+        assign(drafts, by_name)
     for y in drafts:
         for p in drafts[y]:
+            p.setdefault("unsigned", False)
             p["career"] = career(p)
 
     out = Path(args.out)

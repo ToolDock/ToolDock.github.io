@@ -24,6 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_magic import JST  # noqa: E402
+from people import People  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE / "template_saber.html"
@@ -236,6 +237,23 @@ def pack(year, st, batters, pitchers):
             "pcols": pcols, "pit": [[p[c] for c in pcols] for p in pitchers]}
 
 
+def link_rows(people, year, batters, pitchers):
+    """その年の選手（登録名）を名簿の「人」に結びつける → {登録名: pid}"""
+    rows = {}
+    for x in batters + pitchers:
+        rows.setdefault(x["name"], x["teams"])
+    return people.link_season(year, list(rows.items()))
+
+
+def apply_names(people, year, batters, pitchers):
+    """登録名が本名と違う選手は「岡田 貴弘（T-岡田）」のように表示する"""
+    links = link_rows(people, year, batters, pitchers)
+    for x in batters + pitchers:
+        pid = links.get(x["name"])
+        if pid:
+            x["name"] = people.registered_name(pid, x["name"])
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True)
@@ -246,6 +264,8 @@ def main(argv=None):
     league = json.loads(Path(args.league).read_text(encoding="utf-8"))["seasons"]
     out = Path(args.out)
     (out / "data").mkdir(parents=True, exist_ok=True)
+    reg = Path(args.data) / "register.json"
+    people = People(reg) if reg.exists() else None
 
     years, latest = [], None
     for f in sorted(Path(args.data).glob("season_*.json")):
@@ -254,6 +274,8 @@ def main(argv=None):
         if str(y) not in league:
             continue
         batters, pitchers = compute_season(st, league[str(y)])
+        if people:
+            apply_names(people, y, batters, pitchers)
         (out / "data" / f"{y}.json").write_text(
             json.dumps(pack(y, st, batters, pitchers), ensure_ascii=False, separators=(",", ":")) + "\n",
             encoding="utf-8")
