@@ -83,6 +83,8 @@ class Source:
 def table_heads(table):
     """表の見出し。年によって「打 率」「打<br>率」のように空白や改行が入るので除く。"""
     heads = [re.sub(r"\s", "", _cell(h)) for h in re.findall(r"<th[^>]*>(.*?)</th>", table, re.S)]
+    # 古い年は長音が縦書きの「｜」になっている（セ｜ブ、ホ｜ル）
+    heads = [{"セ｜ブ": "セーブ", "ホ｜ル": "ホールド", "ボ｜ク": "ボーク"}.get(h, h) for h in heads]
     # 古い年は投球回が「1060」「.2」の2列に分かれ、端数の列は見出しが空
     heads = ["投球回端数" if h == "" and i and heads[i - 1] == "投球回" else h
              for i, h in enumerate(heads)]
@@ -129,7 +131,9 @@ def player_key(name):
 
 
 def ip_to_float(s):
-    """'1234.1' → 1234.333…（小数部はアウト1つ・2つ）"""
+    """'1234.1' → 1234.333…（小数部はアウト1つ・2つ）。
+    アウトを取れずに降板した投手は「+」「0+」と書かれるので、数字以外は捨てる"""
+    s = re.sub(r"[^\d.]", "", s)
     whole, _, frac = s.partition(".")
     return int(whole or 0) + (int(frac) if frac else 0) / 3
 
@@ -233,6 +237,38 @@ def build_season(src, year):
     return season
 
 
+def season_from_store(st):
+    """stats_store.py が保存した season_<年>.json から、build_season と同じ形を作る"""
+    bc = {c: i for i, c in enumerate(st["bat_cols"])}
+    pc = {c: i for i, c in enumerate(st["pit_cols"])}
+    pitchers = {(r[pc["team"]], r[pc["name"]]) for r in st["pit"]}
+    season = {"as_of": st.get("as_of")}
+    for lg, key, label in LEAGUES:
+        codes = {c for c, t in st["teams"].items() if t["league"] == key}
+        bat = dict.fromkeys(BAT_KEYS, 0)
+        pitcher_pa = 0
+        for r in st["bat"]:
+            if r[bc["team"]] not in codes:
+                continue
+            if (r[bc["team"]], r[bc["name"]]) in pitchers:
+                pitcher_pa += r[bc["打席"]]
+                continue
+            for k in BAT_KEYS:
+                bat[k] += r[bc[k]]
+        tot = st["totals"][key]
+        runs = tot["bat"]["得点"]
+        pit = tot["pit"]
+        c = league_constants(bat, runs, pit)
+        c["label"] = label
+        c["pitcher_pa"] = pitcher_pa
+        season[key] = c
+        _DETAIL[(st["year"], lg)] = {"team": {k: tot["bat"][k] for k in BAT_KEYS}, "pos": bat, "pit": pit,
+                                     "runs": runs, "all": league_constants(tot["bat"], runs, pit), "const": c}
+    if st.get("final"):
+        season["final"] = True
+    return season
+
+
 def estimate_season(src, year, ref_year=FULL_STATS_FROM):
     """2004年以前：年度別成績のページ（打数・安打・本塁打・得点・盗塁、防御率・投球回・
     奪三振・失点）に、ref_year の同じリーグの割合を当てはめて推定する。"""
@@ -298,10 +334,13 @@ def main(argv=None):
     ap.add_argument("--out", required=True)
     ap.add_argument("--year", type=int)
     ap.add_argument("--html-dir")
+    ap.add_argument("--data", help="stats_store.py の保存先。指定するとそこから計算する")
     args = ap.parse_args(argv)
 
     src = Source(args.html_dir)
     out = Path(args.out)
+    if args.data:
+        return main_from_store(src, Path(args.data), out)
     path = out / "league.json"
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -336,6 +375,30 @@ def main(argv=None):
     out.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(payload, ensure_ascii=False)[:3000])
+    return 0
+
+
+def main_from_store(src, data_dir, out):
+    """保存済みの個人成績（npb/data/season_<年>.json）から、全シーズンのリーグ平均を作る"""
+    path = out / "league.json"
+    try:
+        eras = json.loads(path.read_text(encoding="utf-8")).get("eras", {})
+    except (FileNotFoundError, ValueError):
+        eras = {}
+    seasons = {}
+    for f in sorted(data_dir.glob("season_*.json")):
+        st = json.loads(f.read_text(encoding="utf-8"))
+        seasons[str(st["year"])] = season_from_store(st)
+    for era in ERAS:
+        if era not in eras:
+            eras[era] = build_era(src, era, seasons)
+    latest = max(seasons, key=int)
+    payload = {"latest": int(latest),
+               "seasons": dict(sorted(seasons.items(), reverse=True)),
+               "eras": eras}
+    out.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"league.json: {len(seasons)}シーズン・{len(eras)}時代")
     return 0
 
 
