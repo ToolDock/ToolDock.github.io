@@ -6,7 +6,7 @@
 レンダリング待ちのぶんだけ遅れる。新しく足したページほど影響を受ける。
 
 情報源は tool-data.js のままで、そこから生成してHTMLに焼く。
-ツールを足したら、これを走らせること。
+ツールを足したら、これを走らせること（サイトマップ sitemap.xml も作り直す）。
 
     python3 scripts/build_index.py
     python3 scripts/build_index.py --check   # ずれていたら終了コード1
@@ -84,7 +84,9 @@ def main(argv):
 
     INDEX.write_text(updated, encoding="utf-8")
     print(f"index.html にツール {len(tools)}件を書き込み")
-    return 0
+    # ツールを足したらサイトマップにも載せる
+    import build_sitemap
+    return build_sitemap.main([])
 
 
 if __name__ == "__main__":

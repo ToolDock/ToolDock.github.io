@@ -50,19 +50,22 @@ jobs:
       - name: ドラフト答え合わせを作成
         run: python npb/build_draft.py --data npb/data --league war/league.json --out draft
 
+      - name: サイトマップを作り直す（新しい年のドラフトのページを載せる）
+        run: python scripts/build_sitemap.py
+
       - name: 変更があればコミット
         run: |
           # 「最終更新」の時刻だけが変わった場合はコミットしない。
           # テンプレートを直したときは本文が変わるので、それはコミットする。
           # 新しく増えたファイル（新しい年のデータ・ページ）があればコミットする
-          if git diff --quiet -I '最終更新' -- magic war/league.json saber draft npb/data \
+          if git diff --quiet -I '最終更新' -- magic war/league.json saber draft npb/data sitemap.xml \
              && [ -z "$(git status --porcelain --untracked-files=all -- saber draft npb/data | grep '^??')" ]; then
             echo "成績に変化なし。コミットしません。"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add magic war/league.json saber draft npb/data
+          git add magic war/league.json saber draft npb/data sitemap.xml
           git commit -m "chore: プロ野球データを更新 ($(date -u '+%Y-%m-%d %H:%M UTC'))"
           for i in 1 2 3; do
             git push && break
