@@ -42,10 +42,12 @@ body{
 }
 
 .page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
-/* サイト共通の style.css が body を幅900pxに絞るので外し、本文を中央に置く。
-   下に付く「人気のページ」なども本文と同じ幅・左右の余白にそろえる */
+/* ほかのページ（金特ツールなど）と同じく左に寄せ、左右に20pxの余白を取る。
+   サイト共通の style.css は body を幅900pxに絞るので外し、表の広さに合わせた幅にする。
+   下に付く「人気のページ」なども本文と同じ幅・余白にそろえる */
 body{ max-width:none; }
-body .td-rail-inline{ max-width:1000px; padding:0 16px; }
+.page-wrapper{ margin:0; padding:0 20px; }
+body .td-rail-inline{ max-width:1000px; margin:40px 0 0; padding:0 20px; }
 
 header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:22px; }
 header .page-wrapper{ padding:0; }
