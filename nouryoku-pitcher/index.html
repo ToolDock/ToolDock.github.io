@@ -39,6 +39,8 @@ body{
 }
 
 .page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
+/* 下に付く「人気のページ」なども、本文と同じ左右の余白にそろえる（無いと画面の左端にくっつく） */
+body .td-rail-inline{ padding:0 16px; }
 
 header{ background:var(--ink); color:#fff; padding:20px 16px; margin-bottom:22px; }
 header .page-wrapper{ padding:0; }
@@ -135,10 +137,10 @@ p{ margin:0 0 12px; }
 .ab-item__del:hover{ color:#dc2626; }
 
 .pitch-rows{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
-.pitch-row{ display:grid; grid-template-columns:90px 1fr 70px; gap:8px; align-items:center; }
+.pitch-row{ display:grid; grid-template-columns:90px minmax(0,1fr) 70px; gap:8px; align-items:center; }
 .pitch-row label{ font-size:0.88rem; font-weight:600; color:var(--ink-sub); }
 .pitch-row input, .pitch-row select{ font:inherit; font-size:0.92rem; padding:6px 8px;
-    border:1px solid var(--line); border-radius:8px; }
+    border:1px solid var(--line); border-radius:8px; width:100%; min-width:0; box-sizing:border-box; }
 
 .note{ margin-top:10px; font-size:0.86rem; color:var(--ink-mute); }
 
