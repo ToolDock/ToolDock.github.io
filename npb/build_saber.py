@@ -237,17 +237,16 @@ def pack(year, st, batters, pitchers):
             "pcols": pcols, "pit": [[p[c] for c in pcols] for p in pitchers]}
 
 
-def link_rows(people, year, batters, pitchers):
-    """その年の選手（登録名）を名簿の「人」に結びつける → {登録名: pid}"""
+
+def season_rows(batters, pitchers):
     rows = {}
     for x in batters + pitchers:
         rows.setdefault(x["name"], x["teams"])
-    return people.link_season(year, list(rows.items()))
+    return list(rows.items())
 
 
-def apply_names(people, year, batters, pitchers):
+def apply_names(people, links, batters, pitchers):
     """登録名が本名と違う選手は「岡田 貴弘（T-岡田）」のように表示する"""
-    links = link_rows(people, year, batters, pitchers)
     for x in batters + pitchers:
         pid = links.get(x["name"])
         if pid:
@@ -267,15 +266,19 @@ def main(argv=None):
     reg = Path(args.data) / "register.json"
     people = People(reg) if reg.exists() else None
 
-    years, latest = [], None
+    seasons = []
     for f in sorted(Path(args.data).glob("season_*.json")):
         st = json.loads(f.read_text(encoding="utf-8"))
         y = st["year"]
         if str(y) not in league:
             continue
-        batters, pitchers = compute_season(st, league[str(y)])
+        seasons.append((y, st) + compute_season(st, league[str(y)]))
+    links = people.link_all({y: season_rows(b, p) for y, _, b, p in seasons}) if people else {}
+
+    years, latest = [], None
+    for y, st, batters, pitchers in seasons:
         if people:
-            apply_names(people, y, batters, pitchers)
+            apply_names(people, links[y], batters, pitchers)
         (out / "data" / f"{y}.json").write_text(
             json.dumps(pack(y, st, batters, pitchers), ensure_ascii=False, separators=(",", ":")) + "\n",
             encoding="utf-8")

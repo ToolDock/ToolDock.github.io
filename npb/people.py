@@ -38,6 +38,20 @@ def franchise(team):
     return FRANCHISE.get(team, team)
 
 
+# 苗字の1文字目を比べるときに同じとみなす字（名簿と成績で表記が揺れる）
+SAME_FIRST = [set("斉斎齊齋"), set("辺邊邉"), set("沢澤"), set("浜濱濵"), set("高髙"), set("崎﨑")]
+
+
+def same_first(a, b):
+    return a == b or any(a in g and b in g for g in SAME_FIRST)
+
+
+def given_name(name):
+    """「加藤　拓也」→「拓也」（姓と名の間に空白がある名前だけ）"""
+    parts = [x for x in re.split(r"[\s\u3000]+", name.strip()) if x]
+    return key(parts[1]) if len(parts) == 2 else None
+
+
 def key(name):
     """照合用：全角半角・異体字をそろえ、空白と中黒・ピリオドを除く"""
     s = unicodedata.normalize("NFKC", name)
@@ -85,6 +99,7 @@ class People:
             for y, team, kind in p["spans"]:
                 self.roster[(y, team)].append((p, kind))
         self.seen_names = defaultdict(list)     # pid → 成績に出てきた登録名
+        self.hint = defaultdict(set)            # (球団, 登録名) → 別の年に結びついた pid
 
     def _in(self, p, year, teams, ikusei=False):
         year = min(year, self.max_year)
@@ -101,12 +116,15 @@ class People:
         """外国人選手の頭文字を外す（'Aラミレス' → 'ラミレス'）"""
         return re.sub(r"^[A-Za-z]{1,2}(?=[^A-Za-z])", "", k)
 
-    def _score(self, name_key, p):
+    def _score(self, name_key, p, raw=None):
         # 登録名が名前（下の名前）か苗字だけ：颯（中川 颯）、康介（加藤 康介）
         parts = [key(x) for x in re.split(r"[\s\u3000]+", p["name"]) if x]
         if len(parts) == 2 and name_key in parts:
             return 1.9
         best = 0.0
+        # 下の名前が同じ：改姓（加藤 拓也 → 矢崎 拓也）
+        if raw and given_name(raw) and given_name(raw) == given_name(p["name"]):
+            best = 1.2
         for pk in p["keys"]:
             for other in (pk, self._base(pk)):
                 if name_key == other:
@@ -114,7 +132,7 @@ class People:
                 if name_key and other and (name_key in other or other in name_key):
                     ratio = difflib.SequenceMatcher(None, name_key, other).ratio()
                     best = max(best, 1.5 + ratio / 10)
-                elif name_key and other and name_key[0] == other[0]:
+                elif name_key and other and same_first(name_key[0], other[0]):
                     # 似ているだけのときは、苗字の1文字目が同じものに限る
                     # （重信慎之介 と 小笠原慎之介 のような、下の名前だけ同じ別人を避ける）
                     best = max(best, difflib.SequenceMatcher(None, name_key, other).ratio())
@@ -143,6 +161,7 @@ class People:
             pending = []
 
         # 同じ年・同じ球団で、まだ誰とも結びついていない人と照らし合わせる
+        teams_of = dict(rows)
         used = set(out.values())
         names_by_team = defaultdict(list)
         for name, teams in pending:
@@ -152,13 +171,23 @@ class People:
             left = {p["pid"]: p for p, kind in self.roster.get((min(year, self.max_year), team), [])
                     if is_player(kind) and p["pid"] not in used}
             pairs = []
+            ties = set()
             for n in names:
                 if n in out:
                     continue
-                for pid, p in left.items():
-                    sc = self._score(key(n), p)
-                    if sc >= 0.5:
-                        pairs.append((sc, n, pid))
+                scored = sorted(((self._score(key(n), p, n), pid) for pid, p in left.items()), reverse=True)
+                scored = [x for x in scored if x[0] >= 0.5]
+                if len(scored) > 1 and scored[0][0] == scored[1][0]:
+                    # 同じくらい似た人が2人いる（阪神の「俊介」＝藤川俊介・石川俊介）。
+                    # 別の年に同じ球団・同じ登録名で結びついた人がその中にいれば、その人
+                    tied = {pid for sc, pid in scored if sc == scored[0][0]}
+                    h = self.hint.get((team, key(n)), set()) & tied
+                    if len(h) == 1:
+                        pairs.append((scored[0][0], n, h.pop()))
+                    else:
+                        ties.add(n)
+                    continue
+                pairs += [(sc, n, pid) for sc, pid in scored]
             # 似ている組から順に確定させる
             for sc, n, pid in sorted(pairs, key=lambda x: -x[0]):
                 if n in out or pid in used:
@@ -171,10 +200,39 @@ class People:
                 out[rest_n[0]] = rest_p[0]
                 used.add(rest_p[0])
 
+        # それでも残った名前は、シーズン途中に移籍して球団ごとに登録名が違う選手かもしれない
+        # （2020年 広島「ＤＪ．ジョンソン」→ 楽天「ジョンソン」）。別の球団の行ですでに
+        # 結びついた人も候補に戻すが、同じ球団ではまだ使われていない人で、名前がはっきり一致するときだけ
+        used_by_team = defaultdict(set)
+        for name, pid in out.items():
+            for t in teams_of[name]:
+                used_by_team[t].add(pid)
+        for team, names in names_by_team.items():
+            for n in names:
+                if n in out:
+                    continue
+                cands = [p for p, kind in self.roster.get((min(year, self.max_year), team), [])
+                         if is_player(kind) and p["pid"] not in used_by_team[team]
+                         and self._score(key(n), p, n) >= 1.5]
+                cands = list({p["pid"]: p for p in cands}.values())
+                if len(cands) == 1:
+                    out[n] = cands[0]["pid"]
+                    used_by_team[team].add(cands[0]["pid"])
+
         for name, pid in out.items():
             if key(name) not in {key(n) for n in self.seen_names[pid]}:
                 self.seen_names[pid].append(name)
+            for t in teams_of[name]:
+                self.hint[(t, key(name))].add(pid)
         return out
+
+    def link_all(self, rows_by_year):
+        """全シーズンをまとめて結びつける → {年: {登録名: pid}}。
+        1回目で決まった結びつきを手がかりに、2回目で同点だった名前を決める"""
+        for y in sorted(rows_by_year):
+            self.link_season(y, rows_by_year[y])
+        self.seen_names = defaultdict(list)
+        return {y: self.link_season(y, rows_by_year[y]) for y in sorted(rows_by_year)}
 
     def display(self, pid, fallback=None):
         """「岡田 貴弘（T-岡田）」のように、名簿の名前に、成績で使われた別の登録名を添える"""
