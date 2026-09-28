@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- npb/build_draft.py が生成する。直接書き換えても、次の自動更新で消える -->
-<title>2023年ドラフト 答え合わせ｜指名選手のその後・通算成績とWAR</title>
-<meta name="description" content="2023年のプロ野球ドラフト会議で指名された122人の、その後の一軍通算成績と簡易WARの一覧。通算WARトップは泉口 友汰（巨人4位）・武内 夏暉（西武1位）・石田 裕太郎（DeNA5位）。球団別のドラフト採点や、育成指名からの出世組もまとめています。">
+<title>2023年ドラフト 答え合わせ｜12球団の指名結果と評価・その後の成績</title>
+<meta name="description" content="2023年のプロ野球ドラフト会議で指名された122人の指名結果と、その後の一軍通算成績・簡易WAR。通算WARトップは泉口 友汰（巨人4位）・武内 夏暉（西武1位）・石田 裕太郎（DeNA5位）。球団別のドラフト採点や、育成指名からの出世組もまとめています。">
 <link rel="canonical" href="https://tooldock.github.io/draft/2023/">
 
 <script> const CURRENT_TOOL = "draft"; </script>
+<script> const BREADCRUMB_EXTRA = { name: "2023年", url: "/draft/2023/" }; </script>
 <script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
@@ -41,6 +42,8 @@ h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-s
 h3{ margin:20px 0 8px; padding-left:10px; font-size:1rem; color:var(--ink-strong); border-left:4px solid var(--accent); }
 p{ margin:0 0 12px; }
 .lead{ font-size:0.95rem; }
+ul.points{ margin:0 0 8px; padding-left:1.3em; }
+ul.points li{ margin:4px 0; }
 .note{ font-size:0.84rem; color:var(--ink-mute); }
 .years{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px; padding:0; list-style:none; }
 .years a, .years span{ display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:16px; background:#fff;
@@ -89,10 +92,15 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 
 <div class="cards">
   <div class="card"><div class="k">指名された選手</div><div class="v">122人</div><div class="s">うち育成 50人</div></div>
-  <div class="card"><div class="k">一軍に出場した選手</div><div class="v">73人</div><div class="s">59%</div></div>
+  <div class="card"><div class="k">一軍に出場した選手</div><div class="v">74人</div><div class="s">60%</div></div>
   <div class="card"><div class="k">通算WARトップ</div><div class="v">泉口 友汰</div><div class="s">巨人 4位 ・WAR 9.6</div></div>
   <div class="card"><div class="k">育成から一軍へ</div><div class="v">11人</div><div class="s">平山 功太・宮國 凌空</div></div>
 </div>
+
+<h2>2023年ドラフトの見どころ</h2>
+<ul class="points">
+<li>1位指名12人のうち、一軍に出場したのは12人。通算WAR10以上の主力級はいません。</li><li>4位以下で最も活躍しているのは泉口 友汰（巨人4位・通算WAR 9.6）、次いで石田 裕太郎（DeNA5位・通算WAR 3.1）。</li><li>育成指名50人のうち11人が一軍に出場。最も活躍しているのは平山 功太（巨人育成7位・通算WAR 0.4）。</li><li>球団別では巨人が通算WAR合計9.9でトップ（泉口 友汰・佐々木 俊輔）。</li>
+</ul>
 
 <h2>2023年ドラフトの「当たり」トップ5</h2>
 <div class="tbl-wrap"><table>
@@ -106,7 +114,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>球団</th><th class="n">指名</th><th class="n">一軍出場</th><th class="n">通算WAR合計</th></tr></thead>
 <tbody>
-<tr><td>1</td><td class="nm">巨人</td><td class="n">12人</td><td class="n">7人</td><td class="war">9.9</td></tr><tr><td>2</td><td class="nm">DeNA</td><td class="n">11人</td><td class="n">8人</td><td class="war">5.9</td></tr><tr><td>3</td><td class="nm">楽天</td><td class="n">8人</td><td class="n">6人</td><td class="war">4.6</td></tr><tr><td>4</td><td class="nm">日本ハム</td><td class="n">8人</td><td class="n">3人</td><td class="war">3.3</td></tr><tr><td>5</td><td class="nm">西武</td><td class="n">13人</td><td class="n">7人</td><td class="war">2.9</td></tr><tr><td>6</td><td class="nm">ソフトバンク</td><td class="n">15人</td><td class="n">7人</td><td class="war">0.9</td></tr><tr><td>7</td><td class="nm">ロッテ</td><td class="n">10人</td><td class="n">5人</td><td class="war">0.6</td></tr><tr><td>8</td><td class="nm">ヤクルト</td><td class="n">7人</td><td class="n">5人</td><td class="war">0.4</td></tr><tr><td>9</td><td class="nm">広島</td><td class="n">8人</td><td class="n">6人</td><td class="war">-0.1</td></tr><tr><td>10</td><td class="nm">阪神</td><td class="n">8人</td><td class="n">6人</td><td class="war">-0.4</td></tr><tr><td>11</td><td class="nm">オリックス</td><td class="n">12人</td><td class="n">7人</td><td class="war">-1.0</td></tr><tr><td>12</td><td class="nm">中日</td><td class="n">10人</td><td class="n">6人</td><td class="war">-1.8</td></tr>
+<tr><td>1</td><td class="nm">巨人</td><td class="n">12人</td><td class="n">7人</td><td class="war">9.9</td></tr><tr><td>2</td><td class="nm">DeNA</td><td class="n">11人</td><td class="n">8人</td><td class="war">5.9</td></tr><tr><td>3</td><td class="nm">楽天</td><td class="n">8人</td><td class="n">7人</td><td class="war">4.6</td></tr><tr><td>4</td><td class="nm">日本ハム</td><td class="n">8人</td><td class="n">3人</td><td class="war">3.3</td></tr><tr><td>5</td><td class="nm">西武</td><td class="n">13人</td><td class="n">7人</td><td class="war">2.9</td></tr><tr><td>6</td><td class="nm">ソフトバンク</td><td class="n">15人</td><td class="n">7人</td><td class="war">0.9</td></tr><tr><td>7</td><td class="nm">ロッテ</td><td class="n">10人</td><td class="n">5人</td><td class="war">0.6</td></tr><tr><td>8</td><td class="nm">ヤクルト</td><td class="n">7人</td><td class="n">5人</td><td class="war">0.4</td></tr><tr><td>9</td><td class="nm">広島</td><td class="n">8人</td><td class="n">6人</td><td class="war">-0.1</td></tr><tr><td>10</td><td class="nm">阪神</td><td class="n">8人</td><td class="n">6人</td><td class="war">-0.4</td></tr><tr><td>11</td><td class="nm">オリックス</td><td class="n">12人</td><td class="n">7人</td><td class="war">-1.0</td></tr><tr><td>12</td><td class="nm">中日</td><td class="n">10人</td><td class="n">6人</td><td class="war">-1.8</td></tr>
 </tbody></table></div>
 
 <h2>2023年ドラフト 指名選手一覧とその後</h2>
@@ -233,7 +241,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 <tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="101">1位</td><td class="nm" data-v="古謝　樹">古謝 樹</td><td data-v="投手">投手</td><td class="sub" data-v="桐蔭横浜大学">桐蔭横浜大学</td><td class="n" data-v="3">3年</td><td data-v="2.1">53登板 14勝26敗 防御率3.77</td><td class="war" data-v="2.1">2.1</td></tr>
 <tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="102">2位</td><td class="nm" data-v="坂井　陽翔">坂井 陽翔</td><td data-v="投手">投手</td><td class="sub" data-v="滝川第二高">滝川第二高</td><td class="n" data-v="2">2年</td><td data-v="0.1">2登板 0勝0敗 防御率1.50</td><td class="war" data-v="0.1">0.1</td></tr>
 <tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="103">3位</td><td class="nm" data-v="日當　直喜">日當 直喜</td><td data-v="投手">投手</td><td class="sub" data-v="東海大学菅生高">東海大学菅生高</td><td class="n" data-v="3">3年</td><td data-v="0.0">7登板 1勝0敗 防御率2.25</td><td class="war" data-v="0.0">0.0</td></tr>
-<tr class="none" data-team="楽天"><td data-v="楽天">楽天</td><td data-v="104">4位</td><td class="nm" data-v="ワォーターズ　璃海ジュミル">ワォーターズ 璃海ジュミル</td><td data-v="内野手">内野手</td><td class="sub" data-v="日本ウェルネス沖縄高">日本ウェルネス沖縄高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="104">4位</td><td class="nm" data-v="ワォーターズ　璃海ジュミル（ワォーターズ）">ワォーターズ 璃海ジュミル（ワォーターズ）</td><td data-v="内野手">内野手</td><td class="sub" data-v="日本ウェルネス沖縄高">日本ウェルネス沖縄高</td><td class="n" data-v="1">1年</td><td data-v="0.0">11試合 打率.286 0本 0盗塁</td><td class="war" data-v="0.0">0.0</td></tr>
 <tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="105">5位</td><td class="nm" data-v="松田　啄磨">松田 啄磨</td><td data-v="投手">投手</td><td class="sub" data-v="大阪産業大学">大阪産業大学</td><td class="n" data-v="2">2年</td><td data-v="-0.4">8登板 0勝0敗 防御率3.38</td><td class="war" data-v="-0.4">-0.4</td></tr>
 <tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="106">6位</td><td class="nm" data-v="中島　大輔">中島 大輔</td><td data-v="外野手">外野手</td><td class="sub" data-v="青山学院大学">青山学院大学</td><td class="n" data-v="3">3年</td><td data-v="2.7">279試合 打率.264 12本 33盗塁</td><td class="war" data-v="2.7">2.7</td></tr>
 <tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="107">7位</td><td class="nm" data-v="大内　誠弥">大内 誠弥</td><td data-v="投手">投手</td><td class="sub" data-v="日本ウェルネス宮城高">日本ウェルネス宮城高</td><td class="n" data-v="1">1年</td><td data-v="0.1">2登板 0勝0敗 防御率2.00</td><td class="war" data-v="0.1">0.1</td></tr>

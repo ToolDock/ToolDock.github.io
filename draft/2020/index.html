@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- npb/build_draft.py が生成する。直接書き換えても、次の自動更新で消える -->
-<title>2020年ドラフト 答え合わせ｜指名選手のその後・通算成績とWAR</title>
-<meta name="description" content="2020年のプロ野球ドラフト会議で指名された123人の、その後の一軍通算成績と簡易WARの一覧。通算WARトップは牧 秀悟（DeNA2位）・佐藤 輝明（阪神1位）・伊藤 大海（日本ハム1位）。球団別のドラフト採点や、育成指名からの出世組もまとめています。">
+<title>2020年ドラフト 答え合わせ｜12球団の指名結果と評価・その後の成績</title>
+<meta name="description" content="2020年のプロ野球ドラフト会議で指名された123人の指名結果と、その後の一軍通算成績・簡易WAR。通算WARトップは牧 秀悟（DeNA2位）・佐藤 輝明（阪神1位）・伊藤 大海（日本ハム1位）。4位以下の当たりは中野 拓夢（阪神6位）。球団別のドラフト採点や、育成指名からの出世組もまとめています。">
 <link rel="canonical" href="https://tooldock.github.io/draft/2020/">
 
 <script> const CURRENT_TOOL = "draft"; </script>
+<script> const BREADCRUMB_EXTRA = { name: "2020年", url: "/draft/2020/" }; </script>
 <script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
@@ -41,6 +42,8 @@ h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-s
 h3{ margin:20px 0 8px; padding-left:10px; font-size:1rem; color:var(--ink-strong); border-left:4px solid var(--accent); }
 p{ margin:0 0 12px; }
 .lead{ font-size:0.95rem; }
+ul.points{ margin:0 0 8px; padding-left:1.3em; }
+ul.points li{ margin:4px 0; }
 .note{ font-size:0.84rem; color:var(--ink-mute); }
 .years{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px; padding:0; list-style:none; }
 .years a, .years span{ display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:16px; background:#fff;
@@ -94,6 +97,11 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
   <div class="card"><div class="k">育成から一軍へ</div><div class="v">21人</div><div class="s">豆田 泰志・長谷川 信哉</div></div>
 </div>
 
+<h2>2020年ドラフトの見どころ</h2>
+<ul class="points">
+<li>1位指名12人のうち、一軍に出場したのは12人。通算WAR10以上の主力級は3人（佐藤 輝明・伊藤 大海・髙橋 宏斗）。</li><li>4位以下で最も活躍しているのは中野 拓夢（阪神6位・通算WAR 13.0）、次いで村上 頌樹（阪神5位・通算WAR 10.1）。</li><li>育成指名49人のうち21人が一軍に出場。最も活躍しているのは豆田 泰志（西武育成4位・通算WAR 0.8）。</li><li>球団別では阪神が通算WAR合計56.7でトップ（佐藤 輝明・中野 拓夢）。</li>
+</ul>
+
 <h2>2020年ドラフトの「当たり」トップ5</h2>
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>選手</th><th>指名</th><th>一軍通算</th><th class="n">通算WAR</th></tr></thead>
@@ -106,7 +114,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>球団</th><th class="n">指名</th><th class="n">一軍出場</th><th class="n">通算WAR合計</th></tr></thead>
 <tbody>
-<tr><td>1</td><td class="nm">阪神</td><td class="n">9人</td><td class="n">9人</td><td class="war">56.7</td></tr><tr><td>2</td><td class="nm">DeNA</td><td class="n">8人</td><td class="n">5人</td><td class="war">30.1</td></tr><tr><td>3</td><td class="nm">日本ハム</td><td class="n">8人</td><td class="n">6人</td><td class="war">17.0</td></tr><tr><td>4</td><td class="nm">楽天</td><td class="n">7人</td><td class="n">6人</td><td class="war">11.2</td></tr><tr><td>5</td><td class="nm">広島</td><td class="n">7人</td><td class="n">6人</td><td class="war">10.6</td></tr><tr><td>6</td><td class="nm">中日</td><td class="n">9人</td><td class="n">8人</td><td class="war">10.4</td></tr><tr><td>7</td><td class="nm">巨人</td><td class="n">19人</td><td class="n">8人</td><td class="war">6.4</td></tr><tr><td>8</td><td class="nm">ヤクルト</td><td class="n">10人</td><td class="n">7人</td><td class="war">5.6</td></tr><tr><td>9</td><td class="nm">オリックス</td><td class="n">12人</td><td class="n">8人</td><td class="war">3.7</td></tr><tr><td>10</td><td class="nm">ロッテ</td><td class="n">9人</td><td class="n">7人</td><td class="war">2.9</td></tr><tr><td>11</td><td class="nm">西武</td><td class="n">12人</td><td class="n">10人</td><td class="war">-0.9</td></tr><tr><td>12</td><td class="nm">ソフトバンク</td><td class="n">13人</td><td class="n">6人</td><td class="war">-2.5</td></tr>
+<tr><td>1</td><td class="nm">阪神</td><td class="n">9人</td><td class="n">9人</td><td class="war">56.7</td></tr><tr><td>2</td><td class="nm">DeNA</td><td class="n">8人</td><td class="n">5人</td><td class="war">30.1</td></tr><tr><td>3</td><td class="nm">日本ハム</td><td class="n">8人</td><td class="n">6人</td><td class="war">17.0</td></tr><tr><td>4</td><td class="nm">楽天</td><td class="n">7人</td><td class="n">6人</td><td class="war">11.2</td></tr><tr><td>5</td><td class="nm">広島</td><td class="n">7人</td><td class="n">6人</td><td class="war">10.6</td></tr><tr><td>6</td><td class="nm">中日</td><td class="n">9人</td><td class="n">8人</td><td class="war">10.4</td></tr><tr><td>7</td><td class="nm">巨人</td><td class="n">19人</td><td class="n">8人</td><td class="war">6.4</td></tr><tr><td>8</td><td class="nm">ヤクルト</td><td class="n">10人</td><td class="n">7人</td><td class="war">5.6</td></tr><tr><td>9</td><td class="nm">オリックス</td><td class="n">12人</td><td class="n">8人</td><td class="war">3.7</td></tr><tr><td>10</td><td class="nm">ロッテ</td><td class="n">9人</td><td class="n">7人</td><td class="war">2.9</td></tr><tr><td>11</td><td class="nm">西武</td><td class="n">12人</td><td class="n">10人</td><td class="war">-1.1</td></tr><tr><td>12</td><td class="nm">ソフトバンク</td><td class="n">13人</td><td class="n">6人</td><td class="war">-2.5</td></tr>
 </tbody></table></div>
 
 <h2>2020年ドラフト 指名選手一覧とその後</h2>
@@ -197,7 +205,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 <tr data-team="西武"><td data-v="西武">西武</td><td data-v="104">4位</td><td class="nm" data-v="若林　楽人">若林 楽人</td><td data-v="外野手">外野手</td><td class="sub" data-v="駒澤大学">駒澤大学</td><td class="n" data-v="6">6年</td><td data-v="0.1">266試合 打率.228 10本 39盗塁</td><td class="war" data-v="0.1">0.1</td></tr>
 <tr data-team="西武"><td data-v="西武">西武</td><td data-v="105">5位</td><td class="nm" data-v="大曲　錬">大曲 錬</td><td data-v="投手">投手</td><td class="sub" data-v="福岡大学準硬式野球部">福岡大学準硬式野球部</td><td class="n" data-v="3">3年</td><td data-v="-0.2">20登板 0勝0敗 1H 防御率4.58</td><td class="war" data-v="-0.2">-0.2</td></tr>
 <tr data-team="西武"><td data-v="西武">西武</td><td data-v="106">6位</td><td class="nm" data-v="ブランドン">ブランドン</td><td data-v="内野手">内野手</td><td class="sub" data-v="東京農業大学北海道オホーツク">東京農業大学北海道オホーツク</td><td class="n" data-v="2">2年</td><td data-v="0.0">36試合 打率.237 3本 0盗塁</td><td class="war" data-v="0.0">0.0</td></tr>
-<tr data-team="西武"><td data-v="西武">西武</td><td data-v="107">7位</td><td class="nm" data-v="仲三河　優太">仲三河 優太</td><td data-v="外野手">外野手</td><td class="sub" data-v="大阪桐蔭高">大阪桐蔭高</td><td class="n" data-v="1">1年</td><td data-v="0.0">5試合 打率.222 0本 0盗塁</td><td class="war" data-v="0.0">0.0</td></tr>
+<tr data-team="西武"><td data-v="西武">西武</td><td data-v="107">7位</td><td class="nm" data-v="仲三河　優太（仲三　優太）">仲三河 優太（仲三 優太）</td><td data-v="外野手">外野手</td><td class="sub" data-v="大阪桐蔭高">大阪桐蔭高</td><td class="n" data-v="2">2年</td><td data-v="-0.2">16試合 打率.150 1本 0盗塁</td><td class="war" data-v="-0.2">-0.2</td></tr>
 <tr class="none" data-team="西武"><td data-v="西武">西武</td><td data-v="151">1位</td><td class="nm" data-v="赤上　優人">赤上 優人<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="東北公益文科大学">東北公益文科大学</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
 <tr data-team="西武"><td data-v="西武">西武</td><td data-v="152">2位</td><td class="nm" data-v="長谷川　信哉">長谷川 信哉<span class="tag ik">育成</span></td><td data-v="外野手">外野手</td><td class="sub" data-v="敦賀気比高">敦賀気比高</td><td class="n" data-v="5">5年</td><td data-v="0.5">382試合 打率.223 23本 30盗塁</td><td class="war" data-v="0.5">0.5</td></tr>
 <tr class="none" data-team="西武"><td data-v="西武">西武</td><td data-v="153">3位</td><td class="nm" data-v="宮本　ジョセフ　拳">宮本 ジョセフ 拳<span class="tag ik">育成</span></td><td data-v="外野手">外野手</td><td class="sub" data-v="名古屋学院大学">名古屋学院大学</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>

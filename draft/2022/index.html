@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- npb/build_draft.py が生成する。直接書き換えても、次の自動更新で消える -->
-<title>2022年ドラフト 答え合わせ｜指名選手のその後・通算成績とWAR</title>
-<meta name="description" content="2022年のプロ野球ドラフト会議で指名された126人の、その後の一軍通算成績と簡易WARの一覧。通算WARトップは森下 翔太（阪神1位）・曽谷 龍平（オリックス1位）・福永 裕基（中日7位）。球団別のドラフト採点や、育成指名からの出世組もまとめています。">
+<title>2022年ドラフト 答え合わせ｜12球団の指名結果と評価・その後の成績</title>
+<meta name="description" content="2022年のプロ野球ドラフト会議で指名された126人の指名結果と、その後の一軍通算成績・簡易WAR。通算WARトップは森下 翔太（阪神1位）・曽谷 龍平（オリックス1位）・福永 裕基（中日7位）。球団別のドラフト採点や、育成指名からの出世組もまとめています。">
 <link rel="canonical" href="https://tooldock.github.io/draft/2022/">
 
 <script> const CURRENT_TOOL = "draft"; </script>
+<script> const BREADCRUMB_EXTRA = { name: "2022年", url: "/draft/2022/" }; </script>
 <script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
@@ -41,6 +42,8 @@ h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-s
 h3{ margin:20px 0 8px; padding-left:10px; font-size:1rem; color:var(--ink-strong); border-left:4px solid var(--accent); }
 p{ margin:0 0 12px; }
 .lead{ font-size:0.95rem; }
+ul.points{ margin:0 0 8px; padding-left:1.3em; }
+ul.points li{ margin:4px 0; }
 .note{ font-size:0.84rem; color:var(--ink-mute); }
 .years{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px; padding:0; list-style:none; }
 .years a, .years span{ display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:16px; background:#fff;
@@ -94,6 +97,11 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
   <div class="card"><div class="k">育成から一軍へ</div><div class="v">20人</div><div class="s">松山 晋也・前田 純</div></div>
 </div>
 
+<h2>2022年ドラフトの見どころ</h2>
+<ul class="points">
+<li>1位指名12人のうち、一軍に出場したのは12人。通算WAR10以上の主力級は1人（森下 翔太）。</li><li>4位以下で最も活躍しているのは福永 裕基（中日7位・通算WAR 5.8）、次いで松本 晴（ソフトバンク5位・通算WAR 3.9）。</li><li>育成指名57人のうち20人が一軍に出場。最も活躍しているのは松山 晋也（中日育成1位・通算WAR 4.0）。</li><li>球団別では中日が通算WAR合計16.0でトップ（福永 裕基・村松 開人）。</li>
+</ul>
+
 <h2>2022年ドラフトの「当たり」トップ5</h2>
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>選手</th><th>指名</th><th>一軍通算</th><th class="n">通算WAR</th></tr></thead>
@@ -106,7 +114,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>球団</th><th class="n">指名</th><th class="n">一軍出場</th><th class="n">通算WAR合計</th></tr></thead>
 <tbody>
-<tr><td>1</td><td class="nm">中日</td><td class="n">10人</td><td class="n">8人</td><td class="war">16.0</td></tr><tr><td>2</td><td class="nm">阪神</td><td class="n">7人</td><td class="n">6人</td><td class="war">15.9</td></tr><tr><td>3</td><td class="nm">ソフトバンク</td><td class="n">20人</td><td class="n">9人</td><td class="war">8.1</td></tr><tr><td>4</td><td class="nm">オリックス</td><td class="n">10人</td><td class="n">7人</td><td class="war">6.0</td></tr><tr><td>5</td><td class="nm">楽天</td><td class="n">10人</td><td class="n">8人</td><td class="war">5.0</td></tr><tr><td>6</td><td class="nm">日本ハム</td><td class="n">10人</td><td class="n">5人</td><td class="war">3.5</td></tr><tr><td>7</td><td class="nm">ロッテ</td><td class="n">9人</td><td class="n">5人</td><td class="war">3.5</td></tr><tr><td>8</td><td class="nm">DeNA</td><td class="n">10人</td><td class="n">4人</td><td class="war">2.3</td></tr><tr><td>9</td><td class="nm">巨人</td><td class="n">14人</td><td class="n">7人</td><td class="war">-0.6</td></tr><tr><td>10</td><td class="nm">ヤクルト</td><td class="n">6人</td><td class="n">6人</td><td class="war">-1.3</td></tr><tr><td>11</td><td class="nm">西武</td><td class="n">10人</td><td class="n">7人</td><td class="war">-2.4</td></tr><tr><td>12</td><td class="nm">広島</td><td class="n">10人</td><td class="n">10人</td><td class="war">-2.6</td></tr>
+<tr><td>1</td><td class="nm">中日</td><td class="n">10人</td><td class="n">8人</td><td class="war">16.0</td></tr><tr><td>2</td><td class="nm">阪神</td><td class="n">7人</td><td class="n">6人</td><td class="war">15.9</td></tr><tr><td>3</td><td class="nm">ソフトバンク</td><td class="n">20人</td><td class="n">9人</td><td class="war">8.1</td></tr><tr><td>4</td><td class="nm">オリックス</td><td class="n">10人</td><td class="n">7人</td><td class="war">6.0</td></tr><tr><td>5</td><td class="nm">楽天</td><td class="n">10人</td><td class="n">8人</td><td class="war">5.0</td></tr><tr><td>6</td><td class="nm">日本ハム</td><td class="n">10人</td><td class="n">5人</td><td class="war">3.5</td></tr><tr><td>7</td><td class="nm">ロッテ</td><td class="n">9人</td><td class="n">5人</td><td class="war">3.5</td></tr><tr><td>8</td><td class="nm">DeNA</td><td class="n">10人</td><td class="n">4人</td><td class="war">2.3</td></tr><tr><td>9</td><td class="nm">巨人</td><td class="n">14人</td><td class="n">7人</td><td class="war">-0.6</td></tr><tr><td>10</td><td class="nm">ヤクルト</td><td class="n">6人</td><td class="n">6人</td><td class="war">-1.3</td></tr><tr><td>11</td><td class="nm">西武</td><td class="n">10人</td><td class="n">7人</td><td class="war">-1.9</td></tr><tr><td>12</td><td class="nm">広島</td><td class="n">10人</td><td class="n">10人</td><td class="war">-2.6</td></tr>
 </tbody></table></div>
 
 <h2>2022年ドラフト 指名選手一覧とその後</h2>
@@ -200,7 +208,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 <tr data-team="西武"><td data-v="西武">西武</td><td data-v="105">5位</td><td class="nm" data-v="山田　陽翔">山田 陽翔</td><td data-v="投手">投手</td><td class="sub" data-v="近江高">近江高</td><td class="n" data-v="2">2年</td><td data-v="-0.1">58登板 3勝3敗 1S 18H 防御率2.24</td><td class="war" data-v="-0.1">-0.1</td></tr>
 <tr data-team="西武"><td data-v="西武">西武</td><td data-v="106">6位</td><td class="nm" data-v="児玉　亮涼">児玉 亮涼</td><td data-v="内野手">内野手</td><td class="sub" data-v="大阪ガス">大阪ガス</td><td class="n" data-v="4">4年</td><td data-v="-0.4">159試合 打率.198 0本 8盗塁</td><td class="war" data-v="-0.4">-0.4</td></tr>
 <tr class="none" data-team="西武"><td data-v="西武">西武</td><td data-v="151">1位</td><td class="nm" data-v="野村　和輝">野村 和輝<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="石川ミリオンスターズ">石川ミリオンスターズ</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
-<tr data-team="西武"><td data-v="西武">西武</td><td data-v="152">2位</td><td class="nm" data-v="日隈　モンテル（モンテル）">日隈 モンテル（モンテル）<span class="tag ik">育成</span></td><td data-v="外野手">外野手</td><td class="sub" data-v="徳島インディゴソックス">徳島インディゴソックス</td><td class="n" data-v="1">1年</td><td data-v="-0.2">12試合 打率.091 0本 1盗塁</td><td class="war" data-v="-0.2">-0.2</td></tr>
+<tr data-team="西武"><td data-v="西武">西武</td><td data-v="152">2位</td><td class="nm" data-v="日隈　モンテル（モンテル）">日隈 モンテル（モンテル）<span class="tag ik">育成</span></td><td data-v="外野手">外野手</td><td class="sub" data-v="徳島インディゴソックス">徳島インディゴソックス</td><td class="n" data-v="2">2年</td><td data-v="0.3">65試合 打率.259 3本 8盗塁</td><td class="war" data-v="0.3">0.3</td></tr>
 <tr class="none" data-team="西武"><td data-v="西武">西武</td><td data-v="153">3位</td><td class="nm" data-v="三浦　大輝">三浦 大輝<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="中京大学">中京大学</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
 <tr data-team="西武"><td data-v="西武">西武</td><td data-v="154">4位</td><td class="nm" data-v="是澤　涼輔">是澤 涼輔<span class="tag ik">育成</span></td><td data-v="捕手">捕手</td><td class="sub" data-v="法政大学">法政大学</td><td class="n" data-v="1">1年</td><td data-v="0.0">1試合 打率― 0本 0盗塁</td><td class="war" data-v="0.0">0.0</td></tr>
 <tr data-team="日本ハム"><td data-v="日本ハム">日本ハム</td><td data-v="101">1位</td><td class="nm" data-v="矢澤　宏太">矢澤 宏太</td><td data-v="投手">投手</td><td class="sub" data-v="日本体育大学">日本体育大学</td><td class="n" data-v="4">4年</td><td data-v="-0.7">222試合 打率.214 5本 18盗塁</td><td class="war" data-v="-0.7">-0.7</td></tr>

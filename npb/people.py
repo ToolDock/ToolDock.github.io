@@ -71,6 +71,7 @@ def is_player(kind):
 ALIASES = Path(__file__).resolve().parent / "aliases.json"
 
 
+
 class People:
     def __init__(self, register_path, aliases_path=ALIASES):
         data = json.loads(Path(register_path).read_text(encoding="utf-8"))
@@ -80,11 +81,22 @@ class People:
             manual = json.loads(Path(aliases_path).read_text(encoding="utf-8"))
         except FileNotFoundError:
             manual = {}
-        self.manual = {key(k): key(v) for k, v in manual.items() if not k.startswith("_")}
+        # 「拓也|2026|ヤクルト」のように年と球団を付けると、その年・その球団の行だけに使う
+        # （「拓也」は2016年のソフトバンクでは甲斐拓也の登録名だった）
+        # 名簿の名前の代わりに「#選手ID」を書くと、同姓同名がいてもその人に決める
+        def target(v):
+            return v if v.startswith("#") else key(v)
+        self.manual = {key(k): target(v) for k, v in manual.items() if not k.startswith("_") and "|" not in k}
+        self.manual_at = {}
+        for k, v in manual.items():
+            if "|" in k:
+                n, y, t = k.split("|")
+                self.manual_at[(key(n), int(y), t)] = target(v)
         for i, p in enumerate(self.players):
             p["pid"] = p["id"] or f"r{i}"
             # 「（読み方）かく・しゅんりん」のような、読み方だけの変更は名前として扱わない
-            p["alias"] = [a for a in p["alias"] if not re.fullmatch(r"[ぁ-んー・（）()読み方]+", a)]
+            # 「（読み方）～17かく・しゅんりん」のように年が付いたものもある
+            p["alias"] = [a for a in p["alias"] if "読み方" not in a and not re.fullmatch(r"[ぁ-んー・（）()]+", a)]
             p["keys"] = {key(p["name"])} | {key(a) for a in p["alias"]}
         self.by_key = defaultdict(list)
         for p in self.players:
@@ -98,6 +110,10 @@ class People:
         for p in self.players:
             for y, team, kind in p["spans"]:
                 self.roster[(y, team)].append((p, kind))
+        # 名簿の最後の年の秋のドラフトで指名された新人の名前（今シーズンの結びつけで、同姓同名の昔の選手と取り違えないため）
+        draft = Path(register_path).with_name(f"draft_{self.max_year}.json")
+        self.rookie_keys = {key(x["name"]) for x in json.loads(draft.read_text(encoding="utf-8"))["picks"]} \
+            if draft.exists() else set()
         self.seen_names = defaultdict(list)     # pid → 成績に出てきた登録名
         self.hint = defaultdict(set)            # (球団, 登録名) → 別の年に結びついた pid
 
@@ -106,10 +122,10 @@ class People:
         return any(y == year and t in teams and (is_player(k) or (ikusei and k == "育"))
                    for y, t, k in p["spans"])
 
-    def _active(self, p, year):
+    def _active(self, p, year, ikusei=False):
         """その年（名簿にまだ無い年は名簿の最後の年）に、どこかの球団に選手として在籍していたか"""
         year = min(year, self.max_year)
-        return any(y == year and is_player(k) for y, _, k in p["spans"])
+        return any(y == year and (is_player(k) or (ikusei and k == "育")) for y, _, k in p["spans"])
 
     @staticmethod
     def _base(k):
@@ -139,42 +155,47 @@ class People:
         return best
 
     def link_season(self, year, rows):
-        """rows: [(登録名, [球団名...])] → {登録名: pid}"""
+        """rows: [(登録名, 球団名)] → {(登録名, 球団名): pid}
+
+        登録名は球団の中では重ならないが、別の球団には同じ登録名の別人がいる
+        （2020年「エスコバー」＝DeNAの投手と、ヤクルトの内野手）ので、球団ごとに結びつける"""
         out = {}
         pending = []
-        for name, teams in rows:
+        for name, team in rows:
             k = key(name)
-            ps = self.by_key.get(self.manual.get(k, k), [])
-            cands = [p for p in ps if self._in(p, year, teams)] or \
-                    [p for p in ps if self._in(p, year, teams, ikusei=True)]
+            to = self.manual_at.get((k, year, team)) or self.manual.get(k, k)
+            if to.startswith("#") and to[1:] in self.by_pid:
+                out[(name, team)] = to[1:]
+                continue
+            ps = self.by_key.get(to, [])
+            cands = [p for p in ps if self._in(p, year, {team})] or \
+                    [p for p in ps if self._in(p, year, {team}, ikusei=True)]
             if not cands and year > self.max_year:
-                # 今シーズン：オフに移籍した選手は、前年にどこかで在籍していれば同じ人
-                cands = [p for p in ps if self._active(p, year)]
+                # 今シーズン：オフに移籍した選手は、前年にどこかで在籍（育成を含む）していれば同じ人
+                cands = [p for p in ps if self._active(p, year)] or \
+                        [p for p in ps if self._active(p, year, ikusei=True)]
             if len(cands) == 1:
-                out[name] = cands[0]["pid"]
+                out[(name, team)] = cands[0]["pid"]
             else:
-                pending.append((name, teams))
+                pending.append((name, team))
 
         # 名簿にまだ載っていない今シーズンは、前年の在籍で代用しているだけで、
-        # 今年入った選手（新人・新外国人・メジャー帰り）と取り違えやすいので、照らし合わせはしない
+        # 今年入った選手（新人・新外国人）と取り違えやすいので、似た名前での照らし合わせはしない。
+        # 前のシーズンまでの結びつきを手がかりに、はっきり決まるものだけ結ぶ
         if year > self.max_year:
+            self._link_current(pending, out)
             pending = []
 
         # 同じ年・同じ球団で、まだ誰とも結びついていない人と照らし合わせる
-        teams_of = dict(rows)
         used = set(out.values())
         names_by_team = defaultdict(list)
-        for name, teams in pending:
-            for t in teams:
-                names_by_team[t].append(name)
+        for name, team in pending:
+            names_by_team[team].append(name)
         for team, names in names_by_team.items():
-            left = {p["pid"]: p for p, kind in self.roster.get((min(year, self.max_year), team), [])
+            left = {p["pid"]: p for p, kind in self.roster.get((year, team), [])
                     if is_player(kind) and p["pid"] not in used}
             pairs = []
-            ties = set()
             for n in names:
-                if n in out:
-                    continue
                 scored = sorted(((self._score(key(n), p, n), pid) for pid, p in left.items()), reverse=True)
                 scored = [x for x in scored if x[0] >= 0.5]
                 if len(scored) > 1 and scored[0][0] == scored[1][0]:
@@ -184,50 +205,105 @@ class People:
                     h = self.hint.get((team, key(n)), set()) & tied
                     if len(h) == 1:
                         pairs.append((scored[0][0], n, h.pop()))
-                    else:
-                        ties.add(n)
                     continue
                 pairs += [(sc, n, pid) for sc, pid in scored]
             # 似ている組から順に確定させる
             for sc, n, pid in sorted(pairs, key=lambda x: -x[0]):
-                if n in out or pid in used:
+                if (n, team) in out or pid in used:
                     continue
-                out[n] = pid
+                out[(n, team)] = pid
                 used.add(pid)
-            rest_n = [n for n in names if n not in out]
+            rest_n = [n for n in names if (n, team) not in out]
             rest_p = [pid for pid in left if pid not in used]
             if len(rest_n) == 1 and len(rest_p) == 1:
-                out[rest_n[0]] = rest_p[0]
+                out[(rest_n[0], team)] = rest_p[0]
                 used.add(rest_p[0])
 
         # それでも残った名前は、シーズン途中に移籍して球団ごとに登録名が違う選手かもしれない
         # （2020年 広島「ＤＪ．ジョンソン」→ 楽天「ジョンソン」）。別の球団の行ですでに
         # 結びついた人も候補に戻すが、同じ球団ではまだ使われていない人で、名前がはっきり一致するときだけ
         used_by_team = defaultdict(set)
-        for name, pid in out.items():
-            for t in teams_of[name]:
-                used_by_team[t].add(pid)
+        for (name, team), pid in out.items():
+            used_by_team[team].add(pid)
         for team, names in names_by_team.items():
             for n in names:
-                if n in out:
+                if (n, team) in out:
                     continue
-                cands = [p for p, kind in self.roster.get((min(year, self.max_year), team), [])
+                cands = {p["pid"] for p, kind in self.roster.get((year, team), [])
                          if is_player(kind) and p["pid"] not in used_by_team[team]
-                         and self._score(key(n), p, n) >= 1.5]
-                cands = list({p["pid"]: p for p in cands}.values())
+                         and self._score(key(n), p, n) >= 1.5}
                 if len(cands) == 1:
-                    out[n] = cands[0]["pid"]
-                    used_by_team[team].add(cands[0]["pid"])
+                    pid = cands.pop()
+                    out[(n, team)] = pid
+                    used_by_team[team].add(pid)
 
-        for name, pid in out.items():
+        for (name, team), pid in out.items():
             if key(name) not in {key(n) for n in self.seen_names[pid]}:
                 self.seen_names[pid].append(name)
-            for t in teams_of[name]:
-                self.hint[(t, key(name))].add(pid)
+            self.hint[(team, key(name))].add(pid)
         return out
 
+    def _link_current(self, pending, out):
+        """今シーズン（名簿にまだ無い年）の、名前が完全一致しなかった行を結ぶ。
+
+        1. 前のシーズンに同じ球団・同じ登録名で結びつき、名簿の最後の年もその球団にいた人
+           （大勢、愛斗、マルティネス）。または名簿の最後の年にその球団にいた、同じ名前の人
+           （育成から支配下に上がった巨人のティマ）
+        2. 名簿の最後の年に別の球団で同じ登録名だった人（オフに移籍：阪神→DeNAのデュプランティエ）。
+           ただし名簿にその名前（外国人選手は頭文字を除いた名前）の人が1人しかいないときだけ。
+           ガルシア・ロドリゲスのような多い名前は、新しく来た別人のことがある
+           （2026年 阪神のガルシアは、2025年 西武のＡ．ガルシアとは別人）
+        3. フルネームが名簿でただ1人の人（メジャー帰りの前田健太・小笠原慎之介）。
+           ただし直前のドラフトで同じ名前の新人が指名されていれば決めない
+        どれも候補がちょうど1人のときだけ。同じ人を2つの行に結ばない"""
+        used = set(out.values())
+        last = self.max_year
+        same_name = defaultdict(set)    # 名前（頭文字を除く）→ 名簿や成績でその名前を使った人
+        for p in self.players:
+            for x in p["keys"]:
+                same_name[self._base(x)].add(p["pid"])
+        for (team, k), pids in self.hint.items():  # 成績の登録名（日隈モンテル → 「モンテル」）
+            same_name[k] |= pids
+
+        def on_team(pid, team):
+            return any(y == last and t == team and (is_player(k) or k == "育")
+                       for y, t, k in self.by_pid[pid]["spans"])
+
+        def take(row, cands):
+            cands = {pid for pid in cands if pid not in used}
+            if len(cands) == 1:
+                out[row] = cands.pop()
+                used.add(out[row])
+                return True
+            return False
+
+        last_names = defaultdict(set)   # 名簿の最後の年にその登録名で結びついた人
+        for (team, k), pids in self.hint.items():
+            for pid in pids:
+                if on_team(pid, team):
+                    last_names[k].add(pid)
+        rest = []
+        for name, team in pending:
+            k = key(name)
+            if take((name, team), {pid for pid in self.hint.get((team, k), set()) if on_team(pid, team)}):
+                continue
+            # 名簿の最後の年に同じ球団にいた、同じ名前（頭文字を除く）の人。
+            # 育成から支配下に上がった選手は、それまで一軍の成績が無いので上の手がかりが無い（巨人のティマ）
+            if take((name, team), {p["pid"] for p, kind in self.roster.get((last, team), [])
+                                   if (is_player(kind) or kind == "育")
+                                   and k in {self._base(x) for x in p["keys"]} | p["keys"]}):
+                continue
+            rest.append((name, team))
+        for name, team in rest:
+            k = key(name)
+            if len(same_name.get(k, ())) == 1 and take((name, team), last_names.get(k, set())):
+                continue
+            ps = self.by_key.get(k, [])
+            if re.search(r"[\s\u3000]", name.strip()) and len(ps) == 1 and k not in self.rookie_keys:
+                take((name, team), {ps[0]["pid"]})
+
     def link_all(self, rows_by_year):
-        """全シーズンをまとめて結びつける → {年: {登録名: pid}}。
+        """全シーズンをまとめて結びつける → {年: {(登録名, 球団名): pid}}。
         1回目で決まった結びつきを手がかりに、2回目で同点だった名前を決める"""
         for y in sorted(rows_by_year):
             self.link_season(y, rows_by_year[y])
