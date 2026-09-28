@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- npb/build_draft.py が生成する。直接書き換えても、次の自動更新で消える -->
-<title>2021年ドラフト 答え合わせ｜指名選手のその後・通算成績とWAR</title>
-<meta name="description" content="2021年のプロ野球ドラフト会議で指名された128人の、その後の一軍通算成績と簡易WARの一覧。通算WARトップは隅田 知一郎（西武1位）・古賀 悠斗（西武3位）・水野 達稀（日本ハム3位）。球団別のドラフト採点や、育成指名からの出世組もまとめています。">
+<title>2021年ドラフト 答え合わせ｜12球団の指名結果と評価・その後の成績</title>
+<meta name="description" content="2021年のプロ野球ドラフト会議で指名された128人の指名結果と、その後の一軍通算成績・簡易WAR。通算WARトップは隅田 知一郎（西武1位）・古賀 悠斗（西武3位）・水野 達稀（日本ハム3位）。4位以下の当たりは北山 亘基（日本ハム8位）。球団別のドラフト採点や、育成指名からの出世組もまとめています。">
 <link rel="canonical" href="https://tooldock.github.io/draft/2021/">
 
 <script> const CURRENT_TOOL = "draft"; </script>
+<script> const BREADCRUMB_EXTRA = { name: "2021年", url: "/draft/2021/" }; </script>
 <script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
@@ -41,6 +42,8 @@ h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-s
 h3{ margin:20px 0 8px; padding-left:10px; font-size:1rem; color:var(--ink-strong); border-left:4px solid var(--accent); }
 p{ margin:0 0 12px; }
 .lead{ font-size:0.95rem; }
+ul.points{ margin:0 0 8px; padding-left:1.3em; }
+ul.points li{ margin:4px 0; }
 .note{ font-size:0.84rem; color:var(--ink-mute); }
 .years{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px; padding:0; list-style:none; }
 .years a, .years span{ display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:16px; background:#fff;
@@ -94,6 +97,11 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
   <div class="card"><div class="k">育成から一軍へ</div><div class="v">17人</div><div class="s">滝澤 夏央・柳川 大晟</div></div>
 </div>
 
+<h2>2021年ドラフトの見どころ</h2>
+<ul class="points">
+<li>1位指名12人のうち、一軍に出場したのは11人。通算WAR10以上の主力級は1人（隅田 知一郎）。</li><li>4位以下で最も活躍しているのは北山 亘基（日本ハム8位・通算WAR 6.9）、次いで野村 勇（ソフトバンク4位・通算WAR 4.7）。</li><li>育成指名51人のうち17人が一軍に出場。最も活躍しているのは滝澤 夏央（西武育成2位・通算WAR 2.1）。</li><li>球団別では西武が通算WAR合計26.6でトップ（隅田 知一郎・古賀 悠斗）。</li>
+</ul>
+
 <h2>2021年ドラフトの「当たり」トップ5</h2>
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>選手</th><th>指名</th><th>一軍通算</th><th class="n">通算WAR</th></tr></thead>
@@ -106,7 +114,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>球団</th><th class="n">指名</th><th class="n">一軍出場</th><th class="n">通算WAR合計</th></tr></thead>
 <tbody>
-<tr><td>1</td><td class="nm">西武</td><td class="n">10人</td><td class="n">9人</td><td class="war">26.6</td></tr><tr><td>2</td><td class="nm">日本ハム</td><td class="n">13人</td><td class="n">11人</td><td class="war">24.7</td></tr><tr><td>3</td><td class="nm">ソフトバンク</td><td class="n">19人</td><td class="n">7人</td><td class="war">9.8</td></tr><tr><td>4</td><td class="nm">阪神</td><td class="n">8人</td><td class="n">6人</td><td class="war">4.8</td></tr><tr><td>5</td><td class="nm">広島</td><td class="n">11人</td><td class="n">7人</td><td class="war">2.6</td></tr><tr><td>6</td><td class="nm">オリックス</td><td class="n">10人</td><td class="n">8人</td><td class="war">2.6</td></tr><tr><td>7</td><td class="nm">巨人</td><td class="n">17人</td><td class="n">9人</td><td class="war">2.3</td></tr><tr><td>8</td><td class="nm">DeNA</td><td class="n">9人</td><td class="n">5人</td><td class="war">0.9</td></tr><tr><td>9</td><td class="nm">楽天</td><td class="n">10人</td><td class="n">7人</td><td class="war">-0.4</td></tr><tr><td>10</td><td class="nm">ヤクルト</td><td class="n">6人</td><td class="n">6人</td><td class="war">-0.6</td></tr><tr><td>11</td><td class="nm">中日</td><td class="n">6人</td><td class="n">4人</td><td class="war">-0.8</td></tr><tr><td>12</td><td class="nm">ロッテ</td><td class="n">9人</td><td class="n">4人</td><td class="war">-2.7</td></tr>
+<tr><td>1</td><td class="nm">西武</td><td class="n">10人</td><td class="n">9人</td><td class="war">26.6</td></tr><tr><td>2</td><td class="nm">日本ハム</td><td class="n">13人</td><td class="n">11人</td><td class="war">24.7</td></tr><tr><td>3</td><td class="nm">ソフトバンク</td><td class="n">19人</td><td class="n">7人</td><td class="war">9.8</td></tr><tr><td>4</td><td class="nm">阪神</td><td class="n">8人</td><td class="n">6人</td><td class="war">4.8</td></tr><tr><td>5</td><td class="nm">巨人</td><td class="n">17人</td><td class="n">9人</td><td class="war">2.8</td></tr><tr><td>6</td><td class="nm">広島</td><td class="n">11人</td><td class="n">7人</td><td class="war">2.6</td></tr><tr><td>7</td><td class="nm">オリックス</td><td class="n">10人</td><td class="n">8人</td><td class="war">2.6</td></tr><tr><td>8</td><td class="nm">DeNA</td><td class="n">9人</td><td class="n">5人</td><td class="war">0.9</td></tr><tr><td>9</td><td class="nm">楽天</td><td class="n">10人</td><td class="n">7人</td><td class="war">0.9</td></tr><tr><td>10</td><td class="nm">ヤクルト</td><td class="n">6人</td><td class="n">6人</td><td class="war">-0.6</td></tr><tr><td>11</td><td class="nm">中日</td><td class="n">6人</td><td class="n">4人</td><td class="war">-0.8</td></tr><tr><td>12</td><td class="nm">ロッテ</td><td class="n">9人</td><td class="n">4人</td><td class="war">-2.7</td></tr>
 </tbody></table></div>
 
 <h2>2021年ドラフト 指名選手一覧とその後</h2>
@@ -124,7 +132,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 <tr data-team="阪神"><td data-v="阪神">阪神</td><td data-v="106">6位</td><td class="nm" data-v="豊田　寛">豊田 寛</td><td data-v="外野手">外野手</td><td class="sub" data-v="日立製作所">日立製作所</td><td class="n" data-v="4">4年</td><td data-v="-0.4">53試合 打率.200 0本 0盗塁</td><td class="war" data-v="-0.4">-0.4</td></tr>
 <tr data-team="阪神"><td data-v="阪神">阪神</td><td data-v="107">7位</td><td class="nm" data-v="中川　勇斗">中川 勇斗</td><td data-v="捕手">捕手</td><td class="sub" data-v="京都国際高">京都国際高</td><td class="n" data-v="2">2年</td><td data-v="0.0">35試合 打率.213 2本 0盗塁</td><td class="war" data-v="0.0">0.0</td></tr>
 <tr class="none" data-team="阪神"><td data-v="阪神">阪神</td><td data-v="151">1位</td><td class="nm" data-v="伊藤　稜">伊藤 稜<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="中京大学">中京大学</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
-<tr data-team="巨人"><td data-v="巨人">巨人</td><td data-v="101">1位</td><td class="nm" data-v="翁田　大勢（大勢）">翁田 大勢（大勢）</td><td data-v="投手">投手</td><td class="sub" data-v="関西国際大学">関西国際大学</td><td class="n" data-v="4">4年</td><td data-v="2.2">189登板 13勝9敗 81S 60H 防御率2.16</td><td class="war" data-v="2.2">2.2</td></tr>
+<tr data-team="巨人"><td data-v="巨人">巨人</td><td data-v="101">1位</td><td class="nm" data-v="翁田　大勢（大勢）">翁田 大勢（大勢）</td><td data-v="投手">投手</td><td class="sub" data-v="関西国際大学">関西国際大学</td><td class="n" data-v="5">5年</td><td data-v="2.7">221登板 14勝10敗 84S 82H 防御率2.15</td><td class="war" data-v="2.7">2.7</td></tr>
 <tr data-team="巨人"><td data-v="巨人">巨人</td><td data-v="102">2位</td><td class="nm" data-v="山田　龍聖">山田 龍聖</td><td data-v="投手">投手</td><td class="sub" data-v="JR東日本">JR東日本</td><td class="n" data-v="2">2年</td><td data-v="-0.3">4登板 0勝0敗 防御率2.57</td><td class="war" data-v="-0.3">-0.3</td></tr>
 <tr data-team="巨人"><td data-v="巨人">巨人</td><td data-v="103">3位</td><td class="nm" data-v="赤星　優志">赤星 優志</td><td data-v="投手">投手</td><td class="sub" data-v="日本大学">日本大学</td><td class="n" data-v="5">5年</td><td data-v="1.3">128登板 23勝30敗 12H 防御率3.18</td><td class="war" data-v="1.3">1.3</td></tr>
 <tr class="none" data-team="巨人"><td data-v="巨人">巨人</td><td data-v="104">4位</td><td class="nm" data-v="石田　隼都">石田 隼都</td><td data-v="投手">投手</td><td class="sub" data-v="東海大学付属相模高">東海大学付属相模高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
@@ -235,7 +243,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 <tr class="none" data-team="ロッテ"><td data-v="ロッテ">ロッテ</td><td data-v="153">3位</td><td class="nm" data-v="永島田　輝斗">永島田 輝斗<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="立花学園高">立花学園高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
 <tr class="none" data-team="ロッテ"><td data-v="ロッテ">ロッテ</td><td data-v="154">4位</td><td class="nm" data-v="村山　亮介">村山 亮介<span class="tag ik">育成</span></td><td data-v="捕手">捕手</td><td class="sub" data-v="幕張総合高">幕張総合高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
 <tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="101">1位</td><td class="nm" data-v="吉野　創士">吉野 創士</td><td data-v="外野手">外野手</td><td class="sub" data-v="昌平高">昌平高</td><td class="n" data-v="2">2年</td><td data-v="-0.6">25試合 打率.149 0本 0盗塁</td><td class="war" data-v="-0.6">-0.6</td></tr>
-<tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="102">2位</td><td class="nm" data-v="安田　悠馬">安田 悠馬</td><td data-v="捕手">捕手</td><td class="sub" data-v="愛知大学">愛知大学</td><td class="n" data-v="3">3年</td><td data-v="1.6">92試合 打率.240 6本 0盗塁</td><td class="war" data-v="1.6">1.6</td></tr>
+<tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="102">2位</td><td class="nm" data-v="安田　悠馬（YG安田）">安田 悠馬（YG安田）</td><td data-v="捕手">捕手</td><td class="sub" data-v="愛知大学">愛知大学</td><td class="n" data-v="4">4年</td><td data-v="2.9">157試合 打率.265 12本 0盗塁</td><td class="war" data-v="2.9">2.9</td></tr>
 <tr class="none" data-team="楽天"><td data-v="楽天">楽天</td><td data-v="103">3位</td><td class="nm" data-v="前田　銀治">前田 銀治</td><td data-v="外野手">外野手</td><td class="sub" data-v="三島南高">三島南高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
 <tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="104">4位</td><td class="nm" data-v="泰　勝利">泰 勝利</td><td data-v="投手">投手</td><td class="sub" data-v="神村学園高">神村学園高</td><td class="n" data-v="2">2年</td><td data-v="0.3">31登板 3勝3敗 10H 防御率2.70</td><td class="war" data-v="0.3">0.3</td></tr>
 <tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="105">5位</td><td class="nm" data-v="松井　友飛">松井 友飛</td><td data-v="投手">投手</td><td class="sub" data-v="金沢学院大学">金沢学院大学</td><td class="n" data-v="4">4年</td><td data-v="-0.4">27登板 3勝6敗 1H 防御率5.85</td><td class="war" data-v="-0.4">-0.4</td></tr>

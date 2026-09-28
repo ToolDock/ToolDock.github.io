@@ -46,25 +46,46 @@ def div(a, b):
     return a / b if b else None
 
 
-def compute_season(st, lg_consts):
+def season_rows(st):
+    """その年の成績に出てくる (登録名, 球団名) の一覧（名簿との結びつけ用）"""
+    bc = {c: i for i, c in enumerate(st["bat_cols"])}
+    pc = {c: i for i, c in enumerate(st["pit_cols"])}
+    rows = {(r[bc["name"]], st["teams"][r[bc["team"]]]["name"]) for r in st["bat"]}
+    rows |= {(r[pc["name"]], st["teams"][r[pc["team"]]]["name"]) for r in st["pit"]}
+    return sorted(rows)
+
+
+def compute_season(st, lg_consts, links=None):
     """season_<年>.json → (打者のリスト, 投手のリスト)。各要素は dict。
-    lg_consts: {"central": {...}, "pacific": {...}}（league.json のその年の値）"""
+    lg_consts: {"central": {...}, "pacific": {...}}（league.json のその年の値）
+    links: {(登録名, 球団名): pid}（People.link_all のその年の分）。
+      あれば、同じ人と確定した行だけを1人にまとめる（途中移籍・移籍で登録名が変わった選手）。
+      別の球団の同じ登録名は別人のことがあるので、結びつかなかった行は球団ごとに分ける。
+      なければ登録名でまとめる。"""
     bc = {c: i for i, c in enumerate(st["bat_cols"])}
     pc = {c: i for i, c in enumerate(st["pit_cols"])}
     teams = st["teams"]
 
-    # --- 守備：名前ごと・位置ごとの試合数
-    fld = {}
-    for team, name, pos, g in st["fld"]:
-        fld.setdefault(name, {}).setdefault(pos, 0)
-        fld[name][pos] += g
+    def ident(name, code):
+        if links is None:
+            return ("n", name)
+        pid = links.get((name, teams[code]["name"]))
+        return ("p", pid) if pid else ("t", name, code)
 
-    # --- 打者：名前でまとめる（途中移籍）
+    # --- 守備：人ごと・位置ごとの試合数
+    fld = {}
+    for code, name, pos, g in st["fld"]:
+        f = fld.setdefault(ident(name, code), {})
+        f[pos] = f.get(pos, 0) + g
+
+    # --- 打者：人ごとにまとめる（途中移籍）
     bat = {}
     for row in st["bat"]:
         name = row[bc["name"]]
-        b = bat.setdefault(name, {"teams": [], "hand": row[bc["hand"]], "pa_by_team": {}})
         code = row[bc["team"]]
+        b = bat.setdefault(ident(name, code), {"teams": [], "hand": row[bc["hand"]], "pa_by_team": {},
+                                               "name_by_team": {}})
+        b["name_by_team"][code] = name
         if code not in b["teams"]:
             b["teams"].append(code)
         b["pa_by_team"][code] = b["pa_by_team"].get(code, 0) + row[bc["打席"]]
@@ -72,11 +93,12 @@ def compute_season(st, lg_consts):
             b[k] = b.get(k, 0) + row[bc[k]]
 
     batters = []
-    for name, b in bat.items():
+    for idt, b in bat.items():
         pa = b["打席"]
         if pa <= 0:
             continue
         main_team = max(b["pa_by_team"], key=b["pa_by_team"].get)
+        name = b["name_by_team"][main_team]
         lg = teams[main_team]["league"]
         L = lg_consts[lg]
         games = teams[main_team].get("games") or 143
@@ -93,7 +115,7 @@ def compute_season(st, lg_consts):
         wrcp = ((wraa / pa + L["r_pa"]) / L["r_pa"]) * 100 if L["r_pa"] else None
         wsb = sb * 0.2 + cs * L["run_cs"] - L["wsb_rate"] * (s1 + bb + hbp - ibb)
 
-        fg = dict(fld.get(name, {}))
+        fg = dict(fld.get(idt, {}))
         fielded = sum(fg.values())
         dh = max(0, round(pa / PA_PER_GAME - fielded))
         dh = min(dh, max(0, b["試合"] - fielded))
@@ -105,7 +127,8 @@ def compute_season(st, lg_consts):
         war = (wraa + wsb + pos_runs + repl) / L["rpw"]
 
         batters.append({
-            "name": name, "teams": [teams[c]["name"] for c in b["teams"]], "lg": lg,
+            "name": name, "pid": idt[1] if idt[0] == "p" else None,
+            "teams": [teams[c]["name"] for c in b["teams"]], "lg": lg,
             "pos": POS_SHORT[main_pos], "hand": b["hand"],
             "g": b["試合"], "pa": pa, "ab": ab, "h": h, "hr": hr, "rbi": b["打点"], "sb": sb,
             "bb": bb, "so": so, "d2": d2, "d3": d3, "hbp": hbp, "sf": sf,
@@ -124,8 +147,10 @@ def compute_season(st, lg_consts):
     pit = {}
     for row in st["pit"]:
         name = row[pc["name"]]
-        p = pit.setdefault(name, {"teams": [], "hand": row[pc["hand"]], "outs_by_team": {}})
         code = row[pc["team"]]
+        p = pit.setdefault(ident(name, code), {"teams": [], "hand": row[pc["hand"]], "outs_by_team": {},
+                                               "name_by_team": {}})
+        p["name_by_team"][code] = name
         if code not in p["teams"]:
             p["teams"].append(code)
         p["outs_by_team"][code] = p["outs_by_team"].get(code, 0) + row[pc["outs"]]
@@ -133,11 +158,12 @@ def compute_season(st, lg_consts):
             p[k] = p.get(k, 0) + row[pc[k]]
 
     pitchers = []
-    for name, p in pit.items():
+    for idt, p in pit.items():
         outs = p["outs"]
         if outs <= 0:
             continue
         main_team = max(p["outs_by_team"], key=p["outs_by_team"].get)
+        name = p["name_by_team"][main_team]
         lg = teams[main_team]["league"]
         L = lg_consts[lg]
         games = teams[main_team].get("games") or 143
@@ -150,7 +176,8 @@ def compute_season(st, lg_consts):
         base = 0.30 if role == "先発" else -0.55
         rar = (1.19 * L["ra9"] + base - fip_ra) / 9 * ip
         pitchers.append({
-            "name": name, "teams": [teams[c]["name"] for c in p["teams"]], "lg": lg,
+            "name": name, "pid": idt[1] if idt[0] == "p" else None,
+            "teams": [teams[c]["name"] for c in p["teams"]], "lg": lg,
             "role": role, "hand": p["hand"],
             "g": g, "w": p["勝利"], "l": p["敗北"], "sv": p["セーブ"], "hld": p["ホールド"],
             "ip": r(ip, 1), "outs": outs, "so": so, "bb": bb, "hr": hr, "er": er,
@@ -238,19 +265,19 @@ def pack(year, st, batters, pitchers):
 
 
 
-def season_rows(batters, pitchers):
-    rows = {}
+def apply_names(people, batters, pitchers):
+    """登録名が本名と違う選手は「岡田 貴弘（T-岡田）」のように表示する。
+    同じ年に同じ登録名の別人がいれば（西武とソフトバンクの「カブレラ」）、名簿の表記で見分ける"""
+    who = {}
     for x in batters + pitchers:
-        rows.setdefault(x["name"], x["teams"])
-    return list(rows.items())
-
-
-def apply_names(people, links, batters, pitchers):
-    """登録名が本名と違う選手は「岡田 貴弘（T-岡田）」のように表示する"""
+        who.setdefault(x["name"], set()).add(x["pid"] or tuple(x["teams"]))
     for x in batters + pitchers:
-        pid = links.get(x["name"])
-        if pid:
-            x["name"] = people.registered_name(pid, x["name"])
+        if not x["pid"]:
+            continue
+        if len(who[x["name"]]) > 1:
+            x["name"] = people.by_pid[x["pid"]]["name"]
+        else:
+            x["name"] = people.registered_name(x["pid"], x["name"])
 
 
 def main(argv=None):
@@ -266,19 +293,18 @@ def main(argv=None):
     reg = Path(args.data) / "register.json"
     people = People(reg) if reg.exists() else None
 
-    seasons = []
+    stores = {}
     for f in sorted(Path(args.data).glob("season_*.json")):
         st = json.loads(f.read_text(encoding="utf-8"))
-        y = st["year"]
-        if str(y) not in league:
-            continue
-        seasons.append((y, st) + compute_season(st, league[str(y)]))
-    links = people.link_all({y: season_rows(b, p) for y, _, b, p in seasons}) if people else {}
+        if str(st["year"]) in league:
+            stores[st["year"]] = st
+    links = people.link_all({y: season_rows(st) for y, st in stores.items()}) if people else {}
+    seasons = [(y, st) + compute_season(st, league[str(y)], links.get(y)) for y, st in stores.items()]
 
     years, latest = [], None
     for y, st, batters, pitchers in seasons:
         if people:
-            apply_names(people, links[y], batters, pitchers)
+            apply_names(people, batters, pitchers)
         (out / "data" / f"{y}.json").write_text(
             json.dumps(pack(y, st, batters, pitchers), ensure_ascii=False, separators=(",", ":")) + "\n",
             encoding="utf-8")

@@ -47,6 +47,26 @@ if (tool) {
   const hasDesc = !!document.querySelector('meta[name="description"]');
   const hasCanonical = !!document.querySelector('link[rel="canonical"]');
 
+  /* 1つのツールが複数のページを持つとき（ドラフト答え合わせの /draft/2018/ など）は、
+     canonical がツールのURLと違う。そのページはSNS共有（OGP）でも
+     ページ自身のタイトル・説明・URLを使う。ツールの本体ページはこれまでどおり */
+
+  const canonicalHref = hasCanonical
+    ? document.querySelector('link[rel="canonical"]').href
+    : pageUrl;
+
+  const isSubPage = canonicalHref !== pageUrl;
+
+  const ogTitle = isSubPage && hasTitle
+    ? document.querySelector("title").textContent
+    : metaTitle;
+
+  const ogDesc = isSubPage && hasDesc
+    ? document.querySelector('meta[name="description"]').content
+    : metaDesc;
+
+  const ogUrl = isSubPage ? canonicalHref : pageUrl;
+
   /* OGP画像はツールごとに用意している（/ogp/<id>.png）。
      一覧などの内部ページはサイト共通の既定画像を使う */
 
@@ -90,13 +110,13 @@ if (tool) {
           content="${SITE_NAME}">
 
     <meta property="og:title"
-          content="${escapeAttr(metaTitle)}">
+          content="${escapeAttr(ogTitle)}">
 
     <meta property="og:description"
-          content="${escapeAttr(metaDesc)}">
+          content="${escapeAttr(ogDesc)}">
 
     <meta property="og:url"
-          content="${pageUrl}">
+          content="${ogUrl}">
 
     <meta property="og:image"
           content="${ogImage}">
@@ -181,6 +201,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!tool.hidden) {
 
+    /* ツールの下層ページ（/draft/2018/ など）は、ページ側で
+       const BREADCRUMB_EXTRA = { name: "2018年", url: "/draft/2018/" };
+       を head.js より前に書くと、パンくずの最後に1段足す */
+
+    const extra = typeof BREADCRUMB_EXTRA === "object" ? BREADCRUMB_EXTRA : null;
+
     const nav = document.createElement("nav");
 
     nav.className = "breadcrumb";
@@ -201,7 +227,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       <span class="bc-sep">›</span>
 
-      <span>${tool.title}</span>
+      ${extra
+        ? `<a href="${tool.url}">${tool.title}</a>
+           <span class="bc-sep">›</span>
+           <span>${escapeAttr(extra.name)}</span>`
+        : `<span>${tool.title}</span>`}
     `;
 
     document.body.prepend(nav);
@@ -237,7 +267,12 @@ document.addEventListener("DOMContentLoaded", () => {
           "name": tool.title,
           "item": SITE_ORIGIN + tool.url
         }
-      ]
+      ].concat(extra ? [{
+        "@type": "ListItem",
+        "position": 4,
+        "name": extra.name,
+        "item": SITE_ORIGIN + extra.url
+      }] : [])
     });
   }
 

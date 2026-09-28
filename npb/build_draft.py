@@ -29,6 +29,7 @@ from people import People, franchise, key  # noqa: E402
 
 TEAM_ORDER = ["阪神", "巨人", "DeNA", "横浜", "ヤクルト", "広島", "中日",
               "ソフトバンク", "西武", "日本ハム", "オリックス", "ロッテ", "楽天"]
+STAR_WAR = 10       # 通算WARがこれ以上なら「主力級」と書く
 TOO_EARLY = 3        # 直近この年数のドラフトは「評価はまだ早い」と添える
 
 
@@ -150,29 +151,28 @@ def assign(drafts, by_name):
 def load_seasons_people(data_dir, league, people):
     """在籍者名簿の「人」ごとに成績をまとめる。
     → ({pid: [(年, 打者, 投手)]}, {名前キー: [(年, 打者, 投手)]}（名簿と結びつかなかった行）, 最新の年)"""
-    seasons = []
+    stores = {}
     for f in sorted(data_dir.glob("season_*.json")):
         st = json.loads(f.read_text(encoding="utf-8"))
-        y = st["year"]
-        if str(y) in league:
-            seasons.append((y,) + compute_season(st, league[str(y)]))
-    links = people.link_all({y: season_rows(b, p) for y, b, p in seasons})
+        if str(st["year"]) in league:
+            stores[st["year"]] = st
+    links = people.link_all({y: season_rows(st) for y, st in stores.items()})
 
     by_pid = defaultdict(list)
     by_name = defaultdict(list)
     last_year = None
-    for y, batters, pitchers in seasons:
+    for y, st in sorted(stores.items()):
+        batters, pitchers = compute_season(st, league[str(y)], links[y])
         rows = defaultdict(lambda: [None, None])
         for b in batters:
-            rows[b["name"]][0] = b
+            rows[b["pid"] or (b["name"], tuple(b["teams"]))][0] = b
         for p in pitchers:
-            rows[p["name"]][1] = p
-        for name, (b, p) in rows.items():
-            pid = links[y].get(name)
-            if pid:
-                by_pid[pid].append((y, b, p))
+            rows[p["pid"] or (p["name"], tuple(p["teams"]))][1] = p
+        for k, (b, p) in rows.items():
+            if isinstance(k, str):
+                by_pid[k].append((y, b, p))
             else:
-                by_name[key(name)].append((y, b, p))
+                by_name[key(k[0])].append((y, b, p))
         last_year = y
     return by_pid, by_name, last_year
 
@@ -225,7 +225,8 @@ def assign_people(drafts, people, by_pid, by_name):
         for p in picks:
             team = franchise(p["team"])
             found = []
-            for person in people.by_key.get(p["key"], []):
+            # ドラフトのあとで改名した選手（李秉諺→李杜軒）は、手で補った対応表で探す
+            for person in people.by_key.get(people.manual.get(p["key"], p["key"]), []):
                 first, teams = first_after(person, y)
                 if first and first <= y + 2 and team in teams:
                     found.append((first, played_before(person, y), person))
@@ -235,6 +236,14 @@ def assign_people(drafts, people, by_pid, by_name):
                 p["ambiguous"] = True
                 continue
             person = found[0][2] if found else None
+            if person:
+                # 入団する前に、もう一度指名されている → この指名では入団していない
+                # （2015年 巨人育成3位の松澤裕介は入団せず、2016年の育成8位で入団）
+                again = [q for q in picks_by_key[p["key"]] if y < q["year"] < found[0][0]]
+                if again:
+                    p["unsigned"] = True
+                    p["redrafted"] = (again[0]["year"], again[0]["team"])
+                    continue
             if not person:
                 # 名前が違う（改姓・異体字・外国出身選手の表記）→ 翌年・翌々年にその球団へ入った新人から探す
                 pool = [q for q in rookies.get((y + 1, team), []) if q["pid"] not in taken]
@@ -326,6 +335,8 @@ h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-s
 h3{ margin:20px 0 8px; padding-left:10px; font-size:1rem; color:var(--ink-strong); border-left:4px solid var(--accent); }
 p{ margin:0 0 12px; }
 .lead{ font-size:0.95rem; }
+ul.points{ margin:0 0 8px; padding-left:1.3em; }
+ul.points li{ margin:4px 0; }
 .note{ font-size:0.84rem; color:var(--ink-mute); }
 .years{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px; padding:0; list-style:none; }
 .years a, .years span{ display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:16px; background:#fff;
@@ -394,7 +405,10 @@ SORT_JS = """
 """
 
 
-def shell(title, desc, canonical, h1, sub, body, tool_id):
+def shell(title, desc, canonical, h1, sub, body, tool_id, crumb=None):
+    """crumb: パンくずの最後に足す段の名前（年別ページの「2018年」）"""
+    extra = (f'<script> const BREADCRUMB_EXTRA = {{ name: "{esc(crumb)}", url: "{canonical}" }}; </script>\n'
+             if crumb else "")
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -407,7 +421,7 @@ def shell(title, desc, canonical, h1, sub, body, tool_id):
 <link rel="canonical" href="https://tooldock.github.io{canonical}">
 
 <script> const CURRENT_TOOL = "{tool_id}"; </script>
-<script src="/js/tool-data.js"></script>
+{extra}<script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
 
@@ -501,6 +515,58 @@ def team_sort_key(t):
     return TEAM_ORDER.index(t) if t in TEAM_ORDER else 99
 
 
+def year_points(year, picks, played, team_rank, early):
+    """その年の見どころを、データから短い文で書く → (4位以下の当たり, [文...])"""
+    def who(p):
+        return f'{disp(p["name"])}（{p["team"]}{"育成" if p["ikusei"] else ""}{pick_label(p)}・通算WAR {p["career"]["war"]:.1f}）'
+
+    def ok(p):
+        return not p["ambiguous"] and not p["unsigned"]
+
+    pts = []
+    # 1位（高校生・大学生社会人の1巡目、希望枠を含む）
+    top_picks = [p for p in picks if ok(p) and not p["ikusei"] and (p["round"] == 1 or p["label"] == "希望枠")]
+    if top_picks:
+        up = [p for p in top_picks if p["career"]["years"]]
+        stars = sorted((p for p in top_picks if p["career"]["war"] >= STAR_WAR), key=lambda p: -p["career"]["war"])
+        # 2005〜2007年は高校生と大学生・社会人に分かれていて、1巡目と希望枠がある
+        t = (f"1巡目・希望枠の{len(top_picks)}人" if year <= 2007 else f"1位指名{len(top_picks)}人") + \
+            f"のうち、一軍に出場したのは{len(up)}人。"
+        if stars:
+            t += f"通算WAR{STAR_WAR}以上の主力級は{len(stars)}人（{'・'.join(disp(p['name']) for p in stars[:4])}{'など' if len(stars) > 4 else ''}）。"
+        elif not early:
+            t += f"通算WAR{STAR_WAR}以上の主力級はいません。"
+        pts.append(t)
+    # 4位以下（育成を除く）の当たり
+    low = sorted((p for p in played if ok(p) and not p["ikusei"] and (p["round"] or 0) >= 4
+                  and p["career"]["war"] > 0), key=lambda p: -p["career"]["war"])[:2]
+    if low:
+        pts.append(("4巡目以下" if year <= 2007 else "4位以下") + "で最も活躍しているのは"
+                   + "、次いで".join(who(p) for p in low) + "。")
+    # 育成
+    n_ik = sum(1 for p in picks if p["ikusei"] and ok(p))
+    ik = sorted((p for p in played if ok(p) and p["ikusei"]), key=lambda p: -p["career"]["war"])
+    if n_ik:
+        if ik:
+            pts.append(f"育成指名{n_ik}人のうち{len(ik)}人が一軍に出場。最も活躍しているのは{who(ik[0])}。")
+        elif not early:
+            pts.append(f"育成指名{n_ik}人から一軍に出場した選手はいません。")
+    # 球団別
+    if team_rank and team_rank[0][1][0] > 0:
+        team, v = team_rank[0]
+        best = sorted((p for p in played if p["team"] == team and ok(p)), key=lambda p: -p["career"]["war"])[:2]
+        pts.append(f"球団別では{team}が通算WAR合計{v[0]:.1f}でトップ（{'・'.join(disp(p['name']) for p in best)}）。")
+    # 入団しなかった選手
+    uns = [p for p in picks if p["unsigned"]]
+    if uns:
+        pts.append("指名されたが入団しなかった選手：" + "、".join(
+            f'{disp(p["name"])}（{p["team"]}{pick_label(p)}→{p["redrafted"][0]}年に{p["redrafted"][1]}が再指名）'
+            for p in uns) + "。")
+    if early:
+        pts.append("指名から日が浅いため、評価はこれからです。")
+    return (low[0] if low else None), pts
+
+
 def year_page(year, picks, years, last_season):
     n_all = len(picks)
     n_ik = sum(p["ikusei"] for p in picks)
@@ -524,6 +590,7 @@ def year_page(year, picks, years, last_season):
         for y in sorted(years, reverse=True)) + "</ul>"
 
     top_txt = "・".join(f'{disp(p["name"])}（{p["team"]}{pick_label(p)}）' for p in tops[:3])
+    low, points = year_points(year, picks, played, team_rank, early)
     body = f"""
 {nav}
 <p class="lead">{year}年のドラフト会議で指名された{n_all}人（うち育成{n_ik}人）が、その後どうなったかを一軍の通算成績と簡易WARで振り返ります。成績は{last_season}年{"シーズン途中" if last_season == datetime.now(JST).year else ""}までの一軍公式戦の合計です。</p>
@@ -535,6 +602,11 @@ def year_page(year, picks, years, last_season):
   <div class="card"><div class="k">通算WARトップ</div><div class="v">{esc(disp(tops[0]["name"])) if tops else "―"}</div><div class="s">{(esc(tops[0]["team"]) + " " + esc(pick_label(tops[0])) + f' ・WAR {tops[0]["career"]["war"]:.1f}') if tops else ""}</div></div>
   <div class="card"><div class="k">育成から一軍へ</div><div class="v">{len(ik_up)}人</div><div class="s">{esc("・".join(disp(p["name"]) for p in sorted(ik_up, key=lambda p: -p["career"]["war"])[:2]))}</div></div>
 </div>
+
+<h2>{year}年ドラフトの見どころ</h2>
+<ul class="points">
+{"".join(f"<li>{esc(t)}</li>" for t in points)}
+</ul>
 
 <h2>{year}年ドラフトの「当たり」トップ5</h2>
 <div class="tbl-wrap"><table>
@@ -566,12 +638,16 @@ def year_page(year, picks, years, last_season):
 ・「入団せず」は、指名後に入団せず、のちに再指名された選手です。</p>
 {'<p class="note">・2005〜2007年は高校生と大学生・社会人でドラフトが分かれていたため、「高1巡目」「大社1巡目」のように表記しています。「希望枠」は希望入団枠での獲得です。</p>' if year <= 2007 else ''}
 """
-    title = f"{year}年ドラフト 答え合わせ｜指名選手のその後・通算成績とWAR"
-    desc = (f"{year}年のプロ野球ドラフト会議で指名された{n_all}人の、その後の一軍通算成績と簡易WARの一覧。"
-            f"通算WARトップは{top_txt}。球団別のドラフト採点や、育成指名からの出世組もまとめています。") if tops else \
-           f"{year}年のプロ野球ドラフト会議で指名された{n_all}人の一覧と、その後の一軍成績。"
+    title = f"{year}年ドラフト 答え合わせ｜12球団の指名結果と評価・その後の成績"
+    desc = (f"{year}年のプロ野球ドラフト会議で指名された{n_all}人の指名結果と、その後の一軍通算成績・簡易WAR。"
+            f"通算WARトップは{top_txt}。"
+            + (f"{'4巡目' if year <= 2007 else '4位'}以下の当たりは{disp(low['name'])}（{low['team']}{pick_label(low)}）。"
+               if low and low not in tops[:3] else "")
+            + "球団別のドラフト採点や、育成指名からの出世組もまとめています。") if tops else \
+           f"{year}年のプロ野球ドラフト会議で指名された{n_all}人の指名結果と、その後の一軍成績。"
     return shell(title, desc, f"/draft/{year}/", f"{year}年ドラフト 答え合わせ",
-                 "指名選手のその後を、一軍の通算成績と簡易WARで振り返ります", body, "draft")
+                 "指名選手のその後を、一軍の通算成績と簡易WARで振り返ります", body, "draft",
+                 crumb=f"{year}年")
 
 
 def index_page(drafts, last_season):
