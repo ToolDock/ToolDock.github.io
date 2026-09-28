@@ -166,6 +166,11 @@ footer {
   overflow-x: auto;
 }
 
+/* 記事中のコードブロックは、長い行があってもページを横にはみ出させず、ブロックの中で横スクロールする */
+.tool-article pre {
+  overflow-x: auto;
+}
+
 .tool-article .note {
   margin-top: 20px;
   padding: 14px;
