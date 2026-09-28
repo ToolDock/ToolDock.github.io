@@ -36,6 +36,10 @@ body{
 }
 
 .page-wrapper{ max-width:1200px; margin:0 auto; padding:0 16px; }
+/* サイト共通の style.css が body を幅900pxに絞るので外し、本文を中央に置く。
+   下に付く「人気のページ」なども本文と同じ幅・左右の余白にそろえる */
+body{ max-width:none; }
+body .td-rail-inline{ max-width:1200px; padding:0 16px; }
 
 header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:18px; }
 header .page-wrapper{ padding:0; }
@@ -67,7 +71,10 @@ p{ margin:0 0 12px; }
 [data-kind="bat"] .b-only{ display:flex !important; }
 [data-kind="pit"] .p-only{ display:flex !important; }
 
-.count{ font-size:0.86rem; color:var(--ink-sub); margin:10px 0 6px; }
+.count-row{ display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:4px 12px; margin:10px 0 6px; }
+.count{ font-size:0.86rem; color:var(--ink-sub); margin:0; }
+.scroll-hint{ font-size:0.8rem; color:var(--ink-sub); margin:0; }
+.scroll-hint[hidden]{ display:none; }
 
 /* ── 表 ───────────────────────────── */
 .tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; background:#fff; border:1px solid var(--line); border-radius:12px; }
@@ -144,7 +151,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
     </div>
 </div>
 
-<p class="count" id="count">読み込み中…</p>
+<div class="count-row"><p class="count" id="count">読み込み中…</p><p class="scroll-hint" id="scroll-hint">表は横にスクロールできます →</p></div>
 <div class="tbl-wrap"><table class="board" id="board"><thead></thead><tbody></tbody></table></div>
 <button type="button" class="more" id="more" hidden>もっと見る</button>
 
@@ -348,8 +355,16 @@ function render(){
     $("board").tBodies[0].innerHTML = html || '<tr><td colspan="30" class="c">条件に合う選手がいません</td></tr>';
     $("count").textContent = list.length + "人" + (list.length > state.shown ? "（上位" + state.shown + "人を表示）" : "");
     $("more").hidden = list.length <= state.shown;
+    updateScrollHint();
     saveUrl();
 }
+
+// 表が画面に収まらないときだけ「横にスクロールできます」を出す
+function updateScrollHint(){
+    var w = $("board").parentNode;
+    $("scroll-hint").hidden = w.scrollWidth <= w.clientWidth + 1;
+}
+window.addEventListener("resize", updateScrollHint);
 
 function fillTeams(){
     var sel = $("f-team"), cur = sel.value, lg = $("f-lg").value, seen = {};

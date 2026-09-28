@@ -35,6 +35,10 @@ body{
 }
 
 .page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
+/* サイト共通の style.css が body を幅900pxに絞るので外し、本文を中央に置く。
+   下に付く「人気のページ」なども本文と同じ幅・左右の余白にそろえる */
+body{ max-width:none; }
+body .td-rail-inline{ max-width:1000px; padding:0 16px; }
 
 header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:22px; }
 header .page-wrapper{ padding:0; }
@@ -57,7 +61,9 @@ p{ margin:0 0 12px; }
 .seg button[aria-pressed="true"]{ background:var(--ink-strong); border-color:var(--ink-strong); color:#fff; }
 
 .bar{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-bottom:14px; font-size:0.88rem; color:var(--ink-sub); }
-.bar select{ font:inherit; font-size:0.92rem; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+.bar select{ font:inherit; font-size:0.92rem; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:#fff;
+             min-width:0; max-width:100%; }
+.bar label{ display:flex; align-items:center; gap:6px; min-width:0; max-width:100%; }
 .bar button{ font:inherit; font-size:0.84rem; padding:6px 12px; border:1px solid var(--line);
              border-radius:20px; background:#fff; color:var(--ink-sub); cursor:pointer; }
 .bar button:hover{ background:var(--tint); }
