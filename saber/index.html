@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- このファイルは npb/template_saber.html から npb/build_saber.py が生成する。
+     saber/index.html を直接書き換えても、次の自動更新で消える -->
+<title>プロ野球 セイバーメトリクス ランキング｜wRC+・wOBA・FIP・WAR【毎日更新】</title>
+<meta name="description" content="【2026年9月27日終了時点】セ・リーグのwRC+トップは佐藤輝明（206）。パ・リーグのwRC+トップは近藤健介（194）。プロ野球の全選手のwOBA・wRC+・FIP・K−BB%・簡易WARを毎日自動で計算し、リーグ・球団・守備位置・規定到達で絞り込んで並べ替えられます。2005年以降の各シーズンに対応。">
+<link rel="canonical" href="https://tooldock.github.io/saber/">
+
+<script> const CURRENT_TOOL = "saber"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="セイバーメトリクス,ランキング,wRC+,wOBA,FIP,WAR,プロ野球,NPB,K-BB%,OPS">
+
+<style>
+*{ box-sizing:border-box; }
+
+:root{
+    --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280;
+    --line:#d1d5db; --line-soft:#e5e7eb; --head-bg:#f3f4f6; --tint:#f9fafb;
+    --accent:#2563eb; --good:#15803d; --bad:#b91c1c;
+}
+
+body{
+    margin:0; padding:0 0 48px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    color:var(--ink); line-height:1.75; background:#f5f5f5;
+}
+
+.page-wrapper{ max-width:1200px; margin:0 auto; padding:0 16px; }
+
+header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:18px; }
+header .page-wrapper{ padding:0; }
+h1{ margin:0; font-size:1.35rem; line-height:1.5; }
+header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
+
+h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong); border-bottom:2px solid var(--line); }
+h3{ margin:20px 0 8px; padding-left:10px; font-size:1rem; color:var(--ink-strong); border-left:4px solid var(--accent); }
+p{ margin:0 0 12px; }
+
+.stamp{ font-size:0.86rem; color:var(--ink-sub); margin:0 0 10px; display:flex; flex-wrap:wrap; gap:4px 16px; }
+.stamp strong{ color:var(--ink-strong); }
+
+/* ── 絞り込み ───────────────────────────── */
+.panel{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:14px; }
+.seg{ display:flex; gap:6px; margin-bottom:12px; }
+.seg button{ flex:1; font:inherit; font-size:0.98rem; font-weight:700; padding:9px; border:1px solid var(--line);
+             border-radius:8px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+.seg button[aria-pressed="true"]{ background:var(--ink-strong); border-color:var(--ink-strong); color:#fff; }
+
+.filters{ display:grid; gap:10px 12px; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); }
+.filters label{ display:flex; flex-direction:column; gap:3px; font-size:0.78rem; font-weight:700; color:var(--ink-sub); min-width:0; }
+.filters select, .filters input[type="number"], .filters input[type="search"]{
+    font:inherit; font-size:0.92rem; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);
+    width:100%; min-width:0;
+}
+.filters .check{ flex-direction:row; align-items:center; gap:6px; font-size:0.86rem; padding-top:18px; }
+.b-only, .p-only{ display:none !important; }
+[data-kind="bat"] .b-only{ display:flex !important; }
+[data-kind="pit"] .p-only{ display:flex !important; }
+
+.count{ font-size:0.86rem; color:var(--ink-sub); margin:10px 0 6px; }
+
+/* ── 表 ───────────────────────────── */
+.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; background:#fff; border:1px solid var(--line); border-radius:12px; }
+table{ border-collapse:collapse; width:100%; font-size:0.86rem; font-variant-numeric:tabular-nums; }
+th, td{ padding:7px 8px; border-bottom:1px solid var(--line-soft); text-align:right; white-space:nowrap; }
+thead th{ background:var(--head-bg); font-size:0.78rem; color:var(--ink-sub); position:sticky; top:0; z-index:1; }
+table.board thead th{ cursor:pointer; user-select:none; }
+table.board thead th.sorted{ color:var(--accent); }
+table.board thead th.sorted::after{ content:" ▼"; font-size:0.7em; }
+table.board thead th.sorted.asc::after{ content:" ▲"; }
+td.rk{ color:var(--ink-mute); text-align:center; width:2.8em; }
+td.pl, th.pl{ text-align:left; position:sticky; left:0; background:#fff; z-index:1; }
+thead th.pl{ background:var(--head-bg); z-index:2; }
+td.pl .nm, .lead .nm{ font-weight:700; color:var(--ink-strong); }
+td.pl .tm, .lead .tm{ display:block; font-size:0.72rem; color:var(--ink-mute); }
+td.c{ text-align:center; }
+td.key{ font-weight:800; color:var(--ink-strong); }
+tbody tr:hover td{ background:var(--tint); }
+.more{ display:block; margin:10px auto 0; font:inherit; font-size:0.9rem; padding:8px 18px; border:1px solid var(--line);
+       border-radius:20px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+
+table.lead{ font-size:0.88rem; }
+table.lead td:nth-child(2){ text-align:left; }
+.lg-grid{ display:grid; gap:0 20px; grid-template-columns:1fr; }
+@media (min-width:900px){ .lg-grid{ grid-template-columns:1fr 1fr; } }
+
+/* ── 解説 ───────────────────────────── */
+article{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px 18px; margin-top:26px; }
+article table{ border-collapse:collapse; width:100%; font-size:0.9rem; margin:0 0 14px; }
+article th, article td{ border:1px solid var(--line-soft); padding:6px 10px; text-align:left; white-space:normal; }
+article thead th{ background:var(--head-bg); position:static; }
+.note{ font-size:0.84rem; color:var(--ink-mute); }
+footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
+
+@media (max-width:600px){
+    .panel{ padding:12px; }
+    .filters{ grid-template-columns:repeat(2,1fr); }
+    th, td{ padding:6px 6px; font-size:0.8rem; }
+    article{ padding:2px 14px 14px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>プロ野球 セイバーメトリクス ランキング</h1>
+    <p>全選手のwOBA・wRC+・FIP・K−BB%・簡易WARを毎日自動で計算。条件で絞り込んで並べ替えられます</p>
+</header>
+
+<div class="container">
+
+<p class="stamp"><span>成績：<strong id="stamp">2026年9月27日終了時点</strong></span><span>最終更新：2026年9月28日 13:20</span></p>
+
+<div class="panel" id="app" data-kind="bat">
+    <div class="seg" role="group" aria-label="野手・投手の切り替え">
+        <button type="button" data-kind="bat" aria-pressed="true">野手</button>
+        <button type="button" data-kind="pit" aria-pressed="false">投手</button>
+    </div>
+    <div class="filters">
+        <label>シーズン<select id="f-year"><option value="2026">2026年（シーズン中）</option><option value="2025">2025年</option><option value="2024">2024年</option><option value="2023">2023年</option><option value="2022">2022年</option><option value="2021">2021年</option><option value="2020">2020年</option><option value="2019">2019年</option><option value="2018">2018年</option><option value="2017">2017年</option><option value="2016">2016年</option><option value="2015">2015年</option><option value="2014">2014年</option><option value="2013">2013年</option><option value="2012">2012年</option><option value="2011">2011年</option><option value="2010">2010年</option><option value="2009">2009年</option><option value="2008">2008年</option><option value="2007">2007年</option><option value="2006">2006年</option><option value="2005">2005年</option></select></label>
+        <label>リーグ<select id="f-lg"><option value="">両リーグ</option><option value="central">セ・リーグ</option><option value="pacific">パ・リーグ</option></select></label>
+        <label>球団<select id="f-team"><option value="">全球団</option></select></label>
+        <label class="b-only">守備位置<select id="f-pos"><option value="">すべて</option><option>捕</option><option>一</option><option>二</option><option>三</option><option>遊</option><option>外</option><option>指</option></select></label>
+        <label class="b-only">打席<select id="f-bhand"><option value="">すべて</option><option value="R">右打ち</option><option value="L">左打ち</option><option value="S">両打ち</option></select></label>
+        <label class="p-only">起用（推定）<select id="f-role"><option value="">すべて</option><option>先発</option><option>救援</option></select></label>
+        <label class="p-only">投げ<select id="f-phand"><option value="">すべて</option><option value="R">右投げ</option><option value="L">左投げ</option></select></label>
+        <label class="b-only">最低打席<input id="f-minpa" type="number" min="0" step="10" placeholder="0"></label>
+        <label class="p-only">最低投球回<input id="f-minip" type="number" min="0" step="5" placeholder="0"></label>
+        <label>選手名<input id="f-name" type="search" placeholder="例：佐藤"></label>
+        <label class="check"><input id="f-qual" type="checkbox" checked>規定到達のみ</label>
+    </div>
+</div>
+
+<p class="count" id="count">読み込み中…</p>
+<div class="tbl-wrap"><table class="board" id="board"><thead></thead><tbody></tbody></table></div>
+<button type="button" class="more" id="more" hidden>もっと見る</button>
+
+<h2>2026年のランキング（抜粋）</h2>
+<div class="lg-grid">
+
+<section class="lg-block">
+  <h3>セ・リーグ：簡易WAR トップ10（野手・投手）</h3>
+  <div class="tbl-wrap"><table class="lead"><thead><tr><th scope="col">順位</th><th scope="col">選手</th><th scope="col">区分</th><th scope="col">簡易WAR</th></tr></thead><tbody><tr><td class="rk">1</td><td><span class="nm">佐藤 輝明</span><span class="tm">阪神</span></td><td>野手</td><td><b>8.1</b></td></tr><tr><td class="rk">2</td><td><span class="nm">森下 翔太</span><span class="tm">阪神</span></td><td>野手</td><td><b>7.2</b></td></tr><tr><td class="rk">3</td><td><span class="nm">牧 秀悟</span><span class="tm">DeNA</span></td><td>野手</td><td><b>5.8</b></td></tr><tr><td class="rk">4</td><td><span class="nm">髙橋 遥人</span><span class="tm">阪神</span></td><td>投手</td><td><b>4.3</b></td></tr><tr><td class="rk">5</td><td><span class="nm">泉口 友汰</span><span class="tm">巨人</span></td><td>野手</td><td><b>4.2</b></td></tr><tr><td class="rk">6</td><td><span class="nm">才木 浩人</span><span class="tm">阪神</span></td><td>投手</td><td><b>3.9</b></td></tr><tr><td class="rk">7</td><td><span class="nm">大城 卓三</span><span class="tm">巨人</span></td><td>野手</td><td><b>3.8</b></td></tr><tr><td class="rk">8</td><td><span class="nm">村松 開人</span><span class="tm">中日</span></td><td>野手</td><td><b>3.7</b></td></tr><tr><td class="rk">9</td><td><span class="nm">細川 成也</span><span class="tm">中日</span></td><td>野手</td><td><b>3.6</b></td></tr><tr><td class="rk">10</td><td><span class="nm">井上 温大</span><span class="tm">巨人</span></td><td>投手</td><td><b>3.4</b></td></tr></tbody></table></div>
+  <h3>セ・リーグ：wRC+ トップ10（規定打席以上）</h3>
+  <div class="tbl-wrap"><table class="lead"><thead><tr><th scope="col">順位</th><th scope="col">選手</th><th scope="col">wRC+</th><th scope="col">wOBA</th><th scope="col">OPS</th></tr></thead><tbody><tr><td class="rk">1</td><td><span class="nm">佐藤 輝明</span><span class="tm">阪神</span></td><td><b>206</b></td><td>.426</td><td>1.012</td></tr><tr><td class="rk">2</td><td><span class="nm">森下 翔太</span><span class="tm">阪神</span></td><td><b>190</b></td><td>.407</td><td>.952</td></tr><tr><td class="rk">3</td><td><span class="nm">牧 秀悟</span><span class="tm">DeNA</span></td><td><b>182</b></td><td>.397</td><td>.933</td></tr><tr><td class="rk">4</td><td><span class="nm">サンタナ</span><span class="tm">ヤクルト</span></td><td><b>147</b></td><td>.356</td><td>.815</td></tr><tr><td class="rk">5</td><td><span class="nm">大山 悠輔</span><span class="tm">阪神</span></td><td><b>145</b></td><td>.354</td><td>.809</td></tr><tr><td class="rk">6</td><td><span class="nm">細川 成也</span><span class="tm">中日</span></td><td><b>134</b></td><td>.341</td><td>.773</td></tr><tr><td class="rk">7</td><td><span class="nm">ダルベック</span><span class="tm">巨人</span></td><td><b>131</b></td><td>.338</td><td>.780</td></tr><tr><td class="rk">8</td><td><span class="nm">増田 珠</span><span class="tm">ヤクルト</span></td><td><b>125</b></td><td>.330</td><td>.739</td></tr><tr><td class="rk">9</td><td><span class="nm">泉口 友汰</span><span class="tm">巨人</span></td><td><b>125</b></td><td>.330</td><td>.737</td></tr><tr><td class="rk">10</td><td><span class="nm">佐野 恵太</span><span class="tm">DeNA</span></td><td><b>122</b></td><td>.327</td><td>.724</td></tr></tbody></table></div>
+  <h3>セ・リーグ：FIP トップ10（規定投球回以上）</h3>
+  <div class="tbl-wrap"><table class="lead"><thead><tr><th scope="col">順位</th><th scope="col">選手</th><th scope="col">FIP</th><th scope="col">防御率</th><th scope="col">K−BB%</th></tr></thead><tbody><tr><td class="rk">1</td><td><span class="nm">髙橋 遥人</span><span class="tm">阪神</span></td><td><b>2.07</b></td><td>1.97</td><td>21.7%</td></tr><tr><td class="rk">2</td><td><span class="nm">才木 浩人</span><span class="tm">阪神</span></td><td><b>2.21</b></td><td>2.32</td><td>23.8%</td></tr><tr><td class="rk">3</td><td><span class="nm">井上 温大</span><span class="tm">巨人</span></td><td><b>2.35</b></td><td>2.11</td><td>20.0%</td></tr><tr><td class="rk">4</td><td><span class="nm">村上 頌樹</span><span class="tm">阪神</span></td><td><b>2.79</b></td><td>1.85</td><td>17.1%</td></tr><tr><td class="rk">5</td><td><span class="nm">山野 太一</span><span class="tm">ヤクルト</span></td><td><b>2.88</b></td><td>2.38</td><td>18.3%</td></tr><tr><td class="rk">6</td><td><span class="nm">東 克樹</span><span class="tm">DeNA</span></td><td><b>2.90</b></td><td>2.32</td><td>15.0%</td></tr><tr><td class="rk">7</td><td><span class="nm">柳 裕也</span><span class="tm">中日</span></td><td><b>2.97</b></td><td>2.34</td><td>13.7%</td></tr><tr><td class="rk">8</td><td><span class="nm">金丸 夢斗</span><span class="tm">中日</span></td><td><b>2.98</b></td><td>2.91</td><td>16.9%</td></tr><tr><td class="rk">9</td><td><span class="nm">奥川 恭伸</span><span class="tm">ヤクルト</span></td><td><b>3.22</b></td><td>2.88</td><td>14.4%</td></tr></tbody></table></div>
+</section>
+
+<section class="lg-block">
+  <h3>パ・リーグ：簡易WAR トップ10（野手・投手）</h3>
+  <div class="tbl-wrap"><table class="lead"><thead><tr><th scope="col">順位</th><th scope="col">選手</th><th scope="col">区分</th><th scope="col">簡易WAR</th></tr></thead><tbody><tr><td class="rk">1</td><td><span class="nm">近藤 健介</span><span class="tm">ソフトバンク</span></td><td>野手</td><td><b>7.3</b></td></tr><tr><td class="rk">2</td><td><span class="nm">栗原 陵矢</span><span class="tm">ソフトバンク</span></td><td>野手</td><td><b>5.8</b></td></tr><tr><td class="rk">3</td><td><span class="nm">隅田 知一郎</span><span class="tm">西武</span></td><td>投手</td><td><b>4.6</b></td></tr><tr><td class="rk">4</td><td><span class="nm">レイエス</span><span class="tm">日本ハム</span></td><td>野手</td><td><b>4.5</b></td></tr><tr><td class="rk">5</td><td><span class="nm">水野 達稀</span><span class="tm">日本ハム</span></td><td>野手</td><td><b>4.4</b></td></tr><tr><td class="rk">6</td><td><span class="nm">紅林 弘太郎</span><span class="tm">オリックス</span></td><td>野手</td><td><b>4.3</b></td></tr><tr><td class="rk">7</td><td><span class="nm">正木 智也</span><span class="tm">ソフトバンク</span></td><td>野手</td><td><b>4.1</b></td></tr><tr><td class="rk">8</td><td><span class="nm">平良 海馬</span><span class="tm">西武</span></td><td>投手</td><td><b>3.8</b></td></tr><tr><td class="rk">9</td><td><span class="nm">佐藤 都志也</span><span class="tm">ロッテ</span></td><td>野手</td><td><b>3.6</b></td></tr><tr><td class="rk">10</td><td><span class="nm">山口 航輝</span><span class="tm">ロッテ</span></td><td>野手</td><td><b>3.5</b></td></tr></tbody></table></div>
+  <h3>パ・リーグ：wRC+ トップ10（規定打席以上）</h3>
+  <div class="tbl-wrap"><table class="lead"><thead><tr><th scope="col">順位</th><th scope="col">選手</th><th scope="col">wRC+</th><th scope="col">wOBA</th><th scope="col">OPS</th></tr></thead><tbody><tr><td class="rk">1</td><td><span class="nm">近藤 健介</span><span class="tm">ソフトバンク</span></td><td><b>194</b></td><td>.425</td><td>.993</td></tr><tr><td class="rk">2</td><td><span class="nm">レイエス</span><span class="tm">日本ハム</span></td><td><b>173</b></td><td>.399</td><td>.946</td></tr><tr><td class="rk">3</td><td><span class="nm">栗原 陵矢</span><span class="tm">ソフトバンク</span></td><td><b>170</b></td><td>.395</td><td>.927</td></tr><tr><td class="rk">4</td><td><span class="nm">正木 智也</span><span class="tm">ソフトバンク</span></td><td><b>169</b></td><td>.393</td><td>.916</td></tr><tr><td class="rk">5</td><td><span class="nm">柳田 悠岐</span><span class="tm">ソフトバンク</span></td><td><b>142</b></td><td>.359</td><td>.824</td></tr><tr><td class="rk">6</td><td><span class="nm">紅林 弘太郎</span><span class="tm">オリックス</span></td><td><b>127</b></td><td>.340</td><td>.773</td></tr><tr><td class="rk">7</td><td><span class="nm">太田 椋</span><span class="tm">オリックス</span></td><td><b>126</b></td><td>.339</td><td>.758</td></tr><tr><td class="rk">8</td><td><span class="nm">西川 史礁</span><span class="tm">ロッテ</span></td><td><b>126</b></td><td>.339</td><td>.756</td></tr><tr><td class="rk">9</td><td><span class="nm">水野 達稀</span><span class="tm">日本ハム</span></td><td><b>125</b></td><td>.338</td><td>.770</td></tr><tr><td class="rk">10</td><td><span class="nm">清宮 幸太郎</span><span class="tm">日本ハム</span></td><td><b>122</b></td><td>.334</td><td>.763</td></tr></tbody></table></div>
+  <h3>パ・リーグ：FIP トップ10（規定投球回以上）</h3>
+  <div class="tbl-wrap"><table class="lead"><thead><tr><th scope="col">順位</th><th scope="col">選手</th><th scope="col">FIP</th><th scope="col">防御率</th><th scope="col">K−BB%</th></tr></thead><tbody><tr><td class="rk">1</td><td><span class="nm">隅田 知一郎</span><span class="tm">西武</span></td><td><b>2.26</b></td><td>2.22</td><td>20.0%</td></tr><tr><td class="rk">2</td><td><span class="nm">平良 海馬</span><span class="tm">西武</span></td><td><b>2.31</b></td><td>1.36</td><td>16.6%</td></tr><tr><td class="rk">3</td><td><span class="nm">エスピノーザ</span><span class="tm">オリックス</span></td><td><b>2.66</b></td><td>2.71</td><td>17.5%</td></tr><tr><td class="rk">4</td><td><span class="nm">伊藤 大海</span><span class="tm">日本ハム</span></td><td><b>2.83</b></td><td>3.18</td><td>17.1%</td></tr><tr><td class="rk">5</td><td><span class="nm">北山 亘基</span><span class="tm">日本ハム</span></td><td><b>3.00</b></td><td>2.65</td><td>17.6%</td></tr><tr><td class="rk">6</td><td><span class="nm">武内 夏暉</span><span class="tm">西武</span></td><td><b>3.04</b></td><td>3.37</td><td>14.2%</td></tr><tr><td class="rk">7</td><td><span class="nm">荘司 康誠</span><span class="tm">楽天</span></td><td><b>3.16</b></td><td>3.64</td><td>20.4%</td></tr><tr><td class="rk">8</td><td><span class="nm">早川 隆久</span><span class="tm">楽天</span></td><td><b>3.18</b></td><td>2.88</td><td>16.5%</td></tr><tr><td class="rk">9</td><td><span class="nm">九里 亜蓮</span><span class="tm">オリックス</span></td><td><b>3.41</b></td><td>3.20</td><td>12.2%</td></tr><tr><td class="rk">10</td><td><span class="nm">大津 亮介</span><span class="tm">ソフトバンク</span></td><td><b>3.53</b></td><td>2.68</td><td>14.9%</td></tr></tbody></table></div>
+</section>
+</div>
+
+<article>
+
+<h2>このランキングの見方</h2>
+<p>NPB公式の個人成績から、打撃・投球の中身をより正確に表すセイバーメトリクスの指標を、全選手について毎日計算しています。打率や防御率だけでは見えない「本当に得点を生んでいる打者」「本当に失点を防いでいる投手」を探すのに使えます。</p>
+
+<h3>野手の指標</h3>
+<table>
+<thead><tr><th>指標</th><th>意味</th></tr></thead>
+<tbody>
+<tr><td>wOBA</td><td>1打席あたりの打撃の貢献。四球・単打・長打それぞれの得点価値で重みをつけたもの。</td></tr>
+<tr><td>wRC+</td><td>リーグ平均を100とした打撃力。130ならリーグ平均より30%多く得点を生んでいる。年度やリーグが違っても比べやすい。</td></tr>
+<tr><td>ISO</td><td>長打率−打率。純粋な長打力。</td></tr>
+<tr><td>BABIP</td><td>本塁打以外の打球がヒットになった割合。平均は.300前後で、大きく外れるときは運の影響も大きい。</td></tr>
+<tr><td>K%・BB%</td><td>打席のうち三振・四球の割合。</td></tr>
+</tbody>
+</table>
+
+<h3>投手の指標</h3>
+<table>
+<thead><tr><th>指標</th><th>意味</th></tr></thead>
+<tbody>
+<tr><td>FIP</td><td>守備の影響を除いた防御率のような指標。三振・四死球・本塁打だけから計算する。</td></tr>
+<tr><td>K−BB%</td><td>対戦打者に占める「三振−四球」の割合。投手の支配力を1つで表す。</td></tr>
+<tr><td>WHIP</td><td>1イニングあたりに出した走者（被安打＋与四球）。</td></tr>
+<tr><td>HR/9</td><td>9イニングあたりの被本塁打。</td></tr>
+</tbody>
+</table>
+
+<h3>簡易WARについて</h3>
+<p>WARは「控えレベルの選手と比べて、チームの勝ちをいくつ増やしたか」を表す総合指標です。計算方法は<a href="/war/">WAR計算ツール</a>と同じで、打撃（wRAA）・盗塁・守備位置補正・代替水準から出しています。</p>
+<p class="note">・守備の上手さ（UZR）、盗塁以外の走塁（UBR）、球場の補正は公開データでは計算できないため入れていません。守備の名手ほど、公開されているWARより低く出ます。<br>
+・外野手は左翼・中堅・右翼の区別がないため、3つの平均の補正を使っています。<br>
+・指名打者の試合数は、打席数と守備に就いた試合数から推定しています。<br>
+・投手の先発・救援は、1登板あたりの投球回（3回以上なら先発）で推定しています。<br>
+・シーズン途中で移籍した選手は、名前でまとめて1人として集計しています。</p>
+
+<h3>規定到達について</h3>
+<p>規定打席は「所属球団の試合数×3.1」、規定投球回は「所属球団の試合数×1.0」です。シーズン中は、その時点での試合数で判定しています。</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. いつ更新されますか？</strong><br>
+A. 毎日0時ごろと7時ごろ（日本時間）に、NPB公式の個人成績を取得して計算し直しています。</p>
+<p><strong>Q. 過去の年も見られますか？</strong><br>
+A. 2005年以降の各シーズンを選べます。リーグ平均もその年の値で計算しているので、打高・投低の年の違いを補正した比較ができます。</p>
+<p><strong>Q. 公開されているWARと数字が違います。</strong><br>
+A. 守備（UZR）や球場の補正を入れていない簡易版のためです。守備の評価が大きい選手ほど差が出ます。<a href="/war/">WAR計算ツール</a>で守備の値を入れて計算し直せます。</p>
+
+</article>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "いつ更新されますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "毎日0時ごろと7時ごろ（日本時間）に、NPB公式の個人成績を取得して計算し直しています。" } },
+    { "@type": "Question", "name": "過去の年も見られますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "2005年以降の各シーズンを選べます。リーグ平均もその年の値で計算しているので、打高・投低の年の違いを補正した比較ができます。" } },
+    { "@type": "Question", "name": "公開されているWARと数字が違います。",
+      "acceptedAnswer": { "@type": "Answer", "text": "守備（UZR）や球場の補正を入れていない簡易版のためです。守備の評価が大きい選手ほど差が出ます。WAR計算ツールで守備の値を入れて計算し直せます。" } }
+  ]
+}
+</script>
+
+<footer class="disclaimer">
+成績はNPB（日本野球機構）公式サイトの個人成績をもとに、当サイトが独自に計算したものです。
+</footer>
+
+</div>
+</div>
+
+<script>
+"use strict";
+
+var PAGE = 100;
+var BAT_COLS = [
+    ["g", "試合", 0], ["pa", "打席", 0], ["avg", "打率", 3], ["hr", "本塁打", 0], ["rbi", "打点", 0], ["sb", "盗塁", 0],
+    ["obp", "出塁率", 3], ["slg", "長打率", 3], ["ops", "OPS", 3], ["woba", "wOBA", 3], ["wrcp", "wRC+", 0],
+    ["iso", "ISO", 3], ["babip", "BABIP", 3], ["kp", "K%", "p"], ["bbp", "BB%", "p"], ["war", "簡易WAR", 1]
+];
+var PIT_COLS = [
+    ["g", "登板", 0], ["w", "勝", 0], ["l", "敗", 0], ["sv", "S", 0], ["hld", "H", 0], ["ip", "投球回", "ip"],
+    ["era", "防御率", 2], ["fip", "FIP", 2], ["whip", "WHIP", 2], ["kp", "K%", "p"], ["bbp", "BB%", "p"],
+    ["kbb", "K−BB%", "p"], ["hr9", "HR/9", 2], ["war", "簡易WAR", 1]
+];
+/* 小さいほうが良い指標（最初の並べ替えを昇順にする） */
+var LOW_GOOD = { era: 1, fip: 1, whip: 1, bbp: 0, hr9: 1, kp: 0 };
+
+var app = document.getElementById("app");
+var cache = {};
+var state = { kind: "bat", sort: "war", asc: false, shown: PAGE };
+var data = null;
+
+function $(id){ return document.getElementById(id); }
+
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;" }[c]; }); }
+
+function fmt(v, d){
+    if (v === null || v === undefined) return "―";
+    if (d === "p") return (v * 100).toFixed(1) + "%";
+    if (d === "ip"){ var o = Math.round(v * 3); return Math.floor(o / 3) + (o % 3 ? "." + (o % 3) : ""); }
+    if (d === 3){ var s = v.toFixed(3); return s.replace(/^0\./, ".").replace(/^-0\./, "-."); }
+    return d ? v.toFixed(d) : String(v);
+}
+
+function rows(){
+    var cols = state.kind === "bat" ? data.bcols : data.pcols;
+    var list = state.kind === "bat" ? data.bat : data.pit;
+    return list.map(function(a){
+        var o = {};
+        cols.forEach(function(c, i){ o[c] = a[i]; });
+        return o;
+    });
+}
+
+function filtered(){
+    var lg = $("f-lg").value, team = $("f-team").value, name = $("f-name").value.trim().replace(/[\s　]/g, "");
+    var qual = $("f-qual").checked;
+    return rows().filter(function(o){
+        if (lg && o.lg !== lg) return false;
+        if (team && o.teams.indexOf(team) < 0) return false;
+        if (name && o.name.replace(/[\s　]/g, "").indexOf(name) < 0) return false;
+        if (qual && !o.qual) return false;
+        if (state.kind === "bat"){
+            if ($("f-pos").value && o.pos !== $("f-pos").value) return false;
+            if ($("f-bhand").value && o.hand !== $("f-bhand").value) return false;
+            if ((parseFloat($("f-minpa").value) || 0) > o.pa) return false;
+        } else {
+            if ($("f-role").value && o.role !== $("f-role").value) return false;
+            if ($("f-phand").value && o.hand !== $("f-phand").value) return false;
+            if ((parseFloat($("f-minip").value) || 0) > o.ip) return false;
+        }
+        return true;
+    });
+}
+
+function render(){
+    if (!data) return;
+    var cols = state.kind === "bat" ? BAT_COLS : PIT_COLS;
+    var list = filtered();
+    var key = state.sort, asc = state.asc;
+    list.sort(function(a, b){
+        var x = a[key], y = b[key];
+        if (x === null || x === undefined) return 1;
+        if (y === null || y === undefined) return -1;
+        return asc ? x - y : y - x;
+    });
+
+    var head = '<tr><th class="c">順位</th><th class="pl">選手</th>'
+             + (state.kind === "bat" ? '<th class="c">守</th><th class="c">打</th>' : '<th class="c">起用</th><th class="c">投</th>');
+    cols.forEach(function(c){
+        head += '<th data-key="' + c[0] + '" class="' + (c[0] === key ? "sorted" + (asc ? " asc" : "") : "") + '">' + c[1] + '</th>';
+    });
+    head += '</tr>';
+    $("board").tHead.innerHTML = head;
+
+    var html = "";
+    list.slice(0, state.shown).forEach(function(o, i){
+        html += '<tr><td class="rk">' + (i + 1) + '</td>'
+             + '<td class="pl"><span class="nm">' + esc(o.name.replace(/　/g, " ")) + '</span><span class="tm">' + esc(o.teams.join("→")) + '</span></td>';
+        if (state.kind === "bat"){
+            html += '<td class="c">' + o.pos + '</td><td class="c">' + ({ R:"右", L:"左", S:"両" })[o.hand] + '</td>';
+        } else {
+            html += '<td class="c">' + o.role + '</td><td class="c">' + ({ R:"右", L:"左", S:"両" })[o.hand] + '</td>';
+        }
+        cols.forEach(function(c){
+            html += '<td' + (c[0] === key ? ' class="key"' : '') + '>' + fmt(o[c[0]], c[2]) + '</td>';
+        });
+        html += '</tr>';
+    });
+    $("board").tBodies[0].innerHTML = html || '<tr><td colspan="30" class="c">条件に合う選手がいません</td></tr>';
+    $("count").textContent = list.length + "人" + (list.length > state.shown ? "（上位" + state.shown + "人を表示）" : "");
+    $("more").hidden = list.length <= state.shown;
+    saveUrl();
+}
+
+function fillTeams(){
+    var sel = $("f-team"), cur = sel.value, lg = $("f-lg").value, seen = {};
+    var html = '<option value="">全球団</option>';
+    var all = [];
+    [["bat", data.bcols], ["pit", data.pcols]].forEach(function(p){
+        var ti = p[1].indexOf("teams"), li = p[1].indexOf("lg");
+        data[p[0]].forEach(function(a){
+            a[ti].forEach(function(t){
+                if (!seen[t] && (!lg || a[li] === lg)){ seen[t] = 1; all.push(t); }
+            });
+        });
+    });
+    all.sort().forEach(function(t){ html += '<option>' + esc(t) + '</option>'; });
+    sel.innerHTML = html;
+    if (seen[cur]) sel.value = cur;
+}
+
+function load(year){
+    var go = function(d){
+        data = d;
+        var s = d.final ? d.year + "年 最終成績"
+            : (d.as_of ? d.as_of.split("-").map(Number).reduce(function(acc, v, i){ return acc + v + ["年", "月", "日"][i]; }, "") + "終了時点" : d.year + "年");
+        $("stamp").textContent = s;
+        fillTeams();
+        state.shown = PAGE;
+        render();
+    };
+    if (cache[year]) return go(cache[year]);
+    $("count").textContent = "読み込み中…";
+    fetch("/saber/data/" + year + ".json", { cache: "no-cache" })
+        .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function(d){ cache[year] = d; go(d); })
+        .catch(function(){ $("count").textContent = "データを読み込めませんでした。"; });
+}
+
+/* 絞り込みの状態をURLに残して、そのまま共有できるようにする */
+var FIELDS = ["f-year", "f-lg", "f-team", "f-pos", "f-bhand", "f-role", "f-phand", "f-minpa", "f-minip", "f-name"];
+function saveUrl(){
+    var q = new URLSearchParams();
+    q.set("k", state.kind);
+    FIELDS.forEach(function(id){ var v = $(id).value; if (v) q.set(id.slice(2), v); });
+    if (!$("f-qual").checked) q.set("all", "1");
+    q.set("s", state.sort + (state.asc ? ".a" : ""));
+    try { history.replaceState(null, "", "?" + q.toString()); } catch (e) {}
+}
+function readUrl(){
+    var q = new URLSearchParams(location.search);
+    if (q.get("k") === "pit") setKind("pit", true);
+    FIELDS.forEach(function(id){ var v = q.get(id.slice(2)); if (v !== null) $(id).value = v; });
+    if (q.get("all")) $("f-qual").checked = false;
+    var s = q.get("s");
+    if (s){ state.sort = s.replace(/\.a$/, ""); state.asc = /\.a$/.test(s); }
+}
+
+function setKind(kind, quiet){
+    state.kind = kind;
+    app.dataset.kind = kind;
+    document.querySelectorAll(".seg button").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.kind === kind)); });
+    if (!quiet){
+        state.sort = "war"; state.asc = false; state.shown = PAGE;
+        render();
+    }
+}
+
+document.querySelectorAll(".seg button").forEach(function(b){
+    b.addEventListener("click", function(){ setKind(b.dataset.kind); });
+});
+$("board").tHead.addEventListener("click", function(e){
+    var th = e.target.closest("th[data-key]");
+    if (!th) return;
+    var k = th.dataset.key;
+    if (state.sort === k) state.asc = !state.asc;
+    else { state.sort = k; state.asc = !!LOW_GOOD[k]; }
+    render();
+});
+$("more").addEventListener("click", function(){ state.shown += PAGE; render(); });
+$("f-year").addEventListener("change", function(){ load($("f-year").value); });
+$("f-lg").addEventListener("change", function(){ fillTeams(); state.shown = PAGE; render(); });
+["f-team", "f-pos", "f-bhand", "f-role", "f-phand", "f-qual"].forEach(function(id){
+    $(id).addEventListener("change", function(){ state.shown = PAGE; render(); });
+});
+["f-minpa", "f-minip", "f-name"].forEach(function(id){
+    $(id).addEventListener("input", function(){ state.shown = PAGE; render(); });
+});
+
+readUrl();
+load($("f-year").value);
+</script>
+
+</body>
+</html>
