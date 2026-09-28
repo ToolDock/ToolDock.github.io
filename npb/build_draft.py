@@ -24,7 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_magic import JST  # noqa: E402
-from build_saber import compute_season, link_rows  # noqa: E402
+from build_saber import compute_season, season_rows  # noqa: E402
 from people import People, franchise, key  # noqa: E402
 
 TEAM_ORDER = ["阪神", "巨人", "DeNA", "横浜", "ヤクルト", "広島", "中日",
@@ -150,23 +150,25 @@ def assign(drafts, by_name):
 def load_seasons_people(data_dir, league, people):
     """在籍者名簿の「人」ごとに成績をまとめる。
     → ({pid: [(年, 打者, 投手)]}, {名前キー: [(年, 打者, 投手)]}（名簿と結びつかなかった行）, 最新の年)"""
-    by_pid = defaultdict(list)
-    by_name = defaultdict(list)
-    last_year = None
+    seasons = []
     for f in sorted(data_dir.glob("season_*.json")):
         st = json.loads(f.read_text(encoding="utf-8"))
         y = st["year"]
-        if str(y) not in league:
-            continue
-        batters, pitchers = compute_season(st, league[str(y)])
-        links = link_rows(people, y, batters, pitchers)
+        if str(y) in league:
+            seasons.append((y,) + compute_season(st, league[str(y)]))
+    links = people.link_all({y: season_rows(b, p) for y, b, p in seasons})
+
+    by_pid = defaultdict(list)
+    by_name = defaultdict(list)
+    last_year = None
+    for y, batters, pitchers in seasons:
         rows = defaultdict(lambda: [None, None])
         for b in batters:
             rows[b["name"]][0] = b
         for p in pitchers:
             rows[p["name"]][1] = p
         for name, (b, p) in rows.items():
-            pid = links.get(name)
+            pid = links[y].get(name)
             if pid:
                 by_pid[pid].append((y, b, p))
             else:
