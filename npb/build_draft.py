@@ -312,6 +312,10 @@ CSS = """
 body{ margin:0; padding:0 0 48px; font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
       color:var(--ink); line-height:1.75; background:#f5f5f5; }
 .page-wrapper{ max-width:1100px; margin:0 auto; padding:0 16px; }
+/* サイト共通の style.css が body を幅900pxに絞るので外し、本文を中央に置く。
+   下に付く「人気のページ」なども本文と同じ幅・左右の余白にそろえる */
+body{ max-width:none; }
+body .td-rail-inline{ max-width:1100px; padding:0 16px; }
 header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:18px; }
 header .page-wrapper{ padding:0; }
 h1{ margin:0; font-size:1.35rem; line-height:1.5; }
