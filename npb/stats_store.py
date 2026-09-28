@@ -20,6 +20,7 @@ import json
 import re
 import sys
 import time
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 
@@ -226,7 +227,96 @@ def fetch_draft(src, year):
     return {"year": year, "picks": picks}
 
 
+# ---------------------------------------------------------------- 在籍者名簿
+
+REGISTER_URL = "https://npb.jp/history/register/{page}"
+REGISTER_PAGES = ("a i u e o ka ki ku ke ko sa si su se so ta ti tu te to na ni nu ne no "
+                  "ha hi hu he ho ma mi mu me mo ya yu yo ra ri ru re ro wa").split()
+REGISTER_FROM = 2003          # これより前にしか在籍していない選手は保存しない
+REGISTER_REFRESH_DAYS = 7     # 名簿はこの日数ごとに取り直す
+YEAR_CHARS = r"[\d～途開幕閉\.春夏秋]*"
+
+
+def _full_year(yy):
+    yy = int(yy)
+    return 1900 + yy if yy >= 36 else 2000 + yy
+
+
+def parse_spans(text, this_year):
+    """'16途～17巨人（育）,18途～19巨人' → [[2016,'巨人','育'],[2017,'巨人','育'],[2018,'巨人',''],...]"""
+    spans, pending = [], []
+    for tok in re.split(r"[,、・]", text):
+        tok = tok.strip()
+        m = re.match(rf"^({YEAR_CHARS})(.*?)(?:（([^）]*)）)?$", tok)
+        if not m:
+            continue
+        nums = [int(x) for x in re.findall(r"(?<![\d.])\d{2}(?![\d])", m.group(1))]
+        if nums:
+            first = _full_year(nums[0])
+            last = _full_year(nums[-1]) if len(nums) > 1 else (this_year if m.group(1).endswith("～") else first)
+            pending.extend(range(first, last + 1))
+        team = unicodedata.normalize("NFKC", m.group(2)).strip()
+        if team:
+            kind = m.group(3) or ""
+            for y in pending:
+                spans.append([y, team, kind])
+            pending = []
+    return spans
+
+
+def parse_aliases(text):
+    """'～06.2.27宇部銀次,2.28～赤見内銀次（銀次）' → ['宇部銀次', '赤見内銀次', '銀次']"""
+    names = []
+    for tok in re.split(r"[,、]", text):
+        name = re.sub(rf"^{YEAR_CHARS}", "", tok.strip()).strip()
+        if not name:
+            continue
+        m = re.match(r"^(.*?)（(.+)）$", name)
+        found = [m.group(1), m.group(2)] if m else [name]
+        for n in found:
+            n = n.strip()
+            if n and n not in names:
+                names.append(n)
+    return names
+
+
+def parse_register(page, this_year):
+    out = []
+    for m in re.finditer(r'<(a|div) class="unit player_unit_\d+"(?: href="/bis/players/(\d+)\.html")?\s*>(.*?)</\1>',
+                         page, re.S):
+        tds = [_cell(td) for td in re.findall(r"<td[^>]*>(.*?)</td>", m.group(3), re.S)]
+        if len(tds) < 3:
+            continue
+        head = re.sub(r"\s*（[^）]*）\s*$", "", tds[0]).strip()
+        hist = tds[2]
+        rename = ""
+        if "［改名］" in hist:
+            hist, rename = hist.split("［改名］", 1)
+            if rename.strip().startswith("（読み方）"):    # 読み方だけの変更は名前ではない
+                rename = ""
+        spans = parse_spans(hist, this_year)
+        if not spans or max(y for y, _, _ in spans) < REGISTER_FROM:
+            continue
+        out.append({"id": m.group(2), "name": clean_name(head),
+                    "alias": parse_aliases(rename), "spans": spans})
+    return out
+
+
+def fetch_register(src, this_year):
+    entries = []
+    for pg in REGISTER_PAGES:
+        entries += parse_register(src.register(f"index_{pg}.html"), this_year)
+    return entries
+
+
 class Store(Source):
+    def register(self, page):
+        if self.dir:
+            return (self.dir / f"reg_{page.replace('index_', '')}").read_text(encoding="utf-8")
+        text = fetch(REGISTER_URL.format(page=page))
+        time.sleep(0.7)
+        return text
+
     def draft(self, year, page):
         if self.dir:
             name = f"draft_{year}.html" if not page else f"draft_{year}_{page.split('_')[-1]}"
@@ -287,6 +377,18 @@ def main(argv=None):
         season["final"] = y < year
         save(path, season)
         print(f"season {y}: 打者 {len(season['bat'])} 投手 {len(season['pit'])} 守備 {len(season['fld'])}")
+
+    reg_path = data / "register.json"
+    reg = load(reg_path)
+    today = datetime.now(JST).date()
+    if args.html_dir is None and (not reg or (today - datetime.fromisoformat(reg["fetched"]).date()).days
+                                  >= REGISTER_REFRESH_DAYS):
+        try:
+            entries = fetch_register(src, year)
+            save(reg_path, {"fetched": today.isoformat(), "players": entries})
+            print(f"register: {len(entries)}人")
+        except Exception as e:  # 名簿が取れなくても成績の集計は続ける
+            print(f"注意: 在籍者名簿を取れない: {e}", file=sys.stderr)
 
     for y in range(args.first, year + 1):
         path = data / f"draft_{y}.json"

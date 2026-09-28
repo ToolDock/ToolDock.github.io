@@ -122,7 +122,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 
 <div class="container">
 
-<p class="stamp"><span>成績：<strong id="stamp">2026年9月27日終了時点</strong></span><span>最終更新：2026年9月28日 13:20</span></p>
+<p class="stamp"><span>成績：<strong id="stamp">2026年9月27日終了時点</strong></span><span>最終更新：2026年9月28日 15:57</span></p>
 
 <div class="panel" id="app" data-kind="bat">
     <div class="seg" role="group" aria-label="野手・投手の切り替え">
@@ -275,6 +275,11 @@ function fmt(v, d){
     return d ? v.toFixed(d) : String(v);
 }
 
+/* 検索用：全角・半角と大文字・小文字をそろえ、空白を除く（SHINJO と ＳＨＩＮＪＯ） */
+function norm(s){
+    return String(s).normalize("NFKC").toLowerCase().replace(/\s/g, "");
+}
+
 function rows(){
     var cols = state.kind === "bat" ? data.bcols : data.pcols;
     var list = state.kind === "bat" ? data.bat : data.pit;
@@ -286,12 +291,12 @@ function rows(){
 }
 
 function filtered(){
-    var lg = $("f-lg").value, team = $("f-team").value, name = $("f-name").value.trim().replace(/[\s　]/g, "");
+    var lg = $("f-lg").value, team = $("f-team").value, name = norm($("f-name").value);
     var qual = $("f-qual").checked;
     return rows().filter(function(o){
         if (lg && o.lg !== lg) return false;
         if (team && o.teams.indexOf(team) < 0) return false;
-        if (name && o.name.replace(/[\s　]/g, "").indexOf(name) < 0) return false;
+        if (name && norm(o.name).indexOf(name) < 0) return false;
         if (qual && !o.qual) return false;
         if (state.kind === "bat"){
             if ($("f-pos").value && o.pos !== $("f-pos").value) return false;
