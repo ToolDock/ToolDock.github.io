@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- npb/build_draft.py が生成する。直接書き換えても、次の自動更新で消える -->
+<title>2014年ドラフト 答え合わせ｜指名選手のその後・通算成績とWAR</title>
+<meta name="description" content="2014年のプロ野球ドラフト会議で指名された104人の、その後の一軍通算成績と簡易WARの一覧。通算WARトップは岡本 和真（巨人1位）・外崎 修汰（西武3位）・中村 奨吾（ロッテ1位）。球団別のドラフト採点や、育成指名からの出世組もまとめています。">
+<link rel="canonical" href="https://tooldock.github.io/draft/2014/">
+
+<script> const CURRENT_TOOL = "draft"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<style>
+*{ box-sizing:border-box; }
+:root{
+    --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280;
+    --line:#d1d5db; --line-soft:#e5e7eb; --head-bg:#f3f4f6; --tint:#f9fafb;
+    --accent:#2563eb; --good:#15803d; --gold:#b45309;
+}
+body{ margin:0; padding:0 0 48px; font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+      color:var(--ink); line-height:1.75; background:#f5f5f5; }
+.page-wrapper{ max-width:1100px; margin:0 auto; padding:0 16px; }
+header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:18px; }
+header .page-wrapper{ padding:0; }
+h1{ margin:0; font-size:1.35rem; line-height:1.5; }
+header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
+h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong); border-bottom:2px solid var(--line); }
+h3{ margin:20px 0 8px; padding-left:10px; font-size:1rem; color:var(--ink-strong); border-left:4px solid var(--accent); }
+p{ margin:0 0 12px; }
+.lead{ font-size:0.95rem; }
+.note{ font-size:0.84rem; color:var(--ink-mute); }
+.years{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px; padding:0; list-style:none; }
+.years a, .years span{ display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:16px; background:#fff;
+                       font-size:0.86rem; color:var(--ink-sub); text-decoration:none; }
+.years span{ background:var(--ink-strong); color:#fff; border-color:var(--ink-strong); }
+.cards{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); margin:0 0 16px; }
+.card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+.card .k{ font-size:0.78rem; color:var(--ink-sub); }
+.card .v{ font-size:1.35rem; font-weight:800; color:var(--ink-strong); line-height:1.3; }
+.card .s{ font-size:0.8rem; color:var(--ink-mute); }
+.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; background:#fff; border:1px solid var(--line); border-radius:12px; margin:0 0 14px; }
+table{ border-collapse:collapse; width:100%; font-size:0.86rem; font-variant-numeric:tabular-nums; }
+th, td{ padding:7px 8px; border-bottom:1px solid var(--line-soft); text-align:left; white-space:nowrap; }
+thead th{ background:var(--head-bg); font-size:0.78rem; color:var(--ink-sub); }
+td.n, th.n{ text-align:right; }
+td.nm{ font-weight:700; color:var(--ink-strong); }
+td.sub{ font-size:0.78rem; color:var(--ink-mute); }
+td.war{ font-weight:800; text-align:right; }
+tr.none td{ color:var(--ink-mute); }
+tr.none td.nm{ font-weight:400; }
+.tag{ display:inline-block; font-size:0.7rem; padding:0 6px; border-radius:8px; background:#fef3c7; color:var(--gold); margin-left:4px; font-weight:700; }
+.tag.ik{ background:#e0e7ff; color:#3730a3; }
+.filter{ display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin:0 0 10px; font-size:0.86rem; color:var(--ink-sub); }
+.filter select{ font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+table.sortable th[data-k]{ cursor:pointer; }
+article{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px 18px; margin-top:26px; }
+footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
+@media (max-width:600px){
+    th, td{ padding:6px 6px; font-size:0.8rem; }
+    article{ padding:2px 14px 14px; }
+}
+</style>
+</head>
+
+<body>
+<div class="page-wrapper">
+<header>
+    <h1>2014年ドラフト 答え合わせ</h1>
+    <p>指名選手のその後を、一軍の通算成績と簡易WARで振り返ります</p>
+</header>
+<div class="container">
+
+<ul class="years"><li><a href="/draft/2025/">2025</a></li><li><a href="/draft/2024/">2024</a></li><li><a href="/draft/2023/">2023</a></li><li><a href="/draft/2022/">2022</a></li><li><a href="/draft/2021/">2021</a></li><li><a href="/draft/2020/">2020</a></li><li><a href="/draft/2019/">2019</a></li><li><a href="/draft/2018/">2018</a></li><li><a href="/draft/2017/">2017</a></li><li><a href="/draft/2016/">2016</a></li><li><a href="/draft/2015/">2015</a></li><li><span>2014</span></li><li><a href="/draft/2013/">2013</a></li><li><a href="/draft/2012/">2012</a></li><li><a href="/draft/2011/">2011</a></li><li><a href="/draft/2010/">2010</a></li><li><a href="/draft/2009/">2009</a></li><li><a href="/draft/2008/">2008</a></li><li><a href="/draft/2007/">2007</a></li><li><a href="/draft/2006/">2006</a></li><li><a href="/draft/2005/">2005</a></li></ul>
+<p class="lead">2014年のドラフト会議で指名された104人（うち育成23人）が、その後どうなったかを一軍の通算成績と簡易WARで振り返ります。成績は2026年シーズン途中までの一軍公式戦の合計です。</p>
+
+
+<div class="cards">
+  <div class="card"><div class="k">指名された選手</div><div class="v">104人</div><div class="s">うち育成 23人</div></div>
+  <div class="card"><div class="k">一軍に出場した選手</div><div class="v">76人</div><div class="s">73%</div></div>
+  <div class="card"><div class="k">通算WARトップ</div><div class="v">岡本 和真</div><div class="s">巨人 1位 ・WAR 32.1</div></div>
+  <div class="card"><div class="k">育成から一軍へ</div><div class="v">6人</div><div class="s">田中 貴也・近藤 弘基</div></div>
+</div>
+
+<h2>2014年ドラフトの「当たり」トップ5</h2>
+<div class="tbl-wrap"><table>
+<thead><tr><th>順位</th><th>選手</th><th>指名</th><th>一軍通算</th><th class="n">通算WAR</th></tr></thead>
+<tbody>
+<tr><td>1</td><td class="nm">岡本 和真</td><td>巨人 1位</td><td>1074試合 打率.277 248本 13盗塁</td><td class="war">32.1</td></tr><tr><td>2</td><td class="nm">外崎 修汰</td><td>西武 3位</td><td>1213試合 打率.245 108本 169盗塁</td><td class="war">20.4</td></tr><tr><td>3</td><td class="nm">中村 奨吾</td><td>ロッテ 1位</td><td>1268試合 打率.248 90本 108盗塁</td><td class="war">20.0</td></tr><tr><td>4</td><td class="nm">有原 航平</td><td>日本ハム 1位</td><td>215登板 105勝80敗 2S 1H 防御率3.40</td><td class="war">18.8</td></tr><tr><td>5</td><td class="nm">栗原 陵矢</td><td>ソフトバンク 2位</td><td>766試合 打率.262 121本 15盗塁</td><td class="war">18.3</td></tr>
+</tbody></table></div>
+
+<h2>球団別のドラフト採点（2014年）</h2>
+<p>その年に指名した選手の、一軍での通算WARの合計です。</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>順位</th><th>球団</th><th class="n">指名</th><th class="n">一軍出場</th><th class="n">通算WAR合計</th></tr></thead>
+<tbody>
+<tr><td>1</td><td class="nm">巨人</td><td class="n">8人</td><td class="n">5人</td><td class="war">31.2</td></tr><tr><td>2</td><td class="nm">西武</td><td class="n">6人</td><td class="n">5人</td><td class="war">30.9</td></tr><tr><td>3</td><td class="nm">日本ハム</td><td class="n">9人</td><td class="n">8人</td><td class="war">24.6</td></tr><tr><td>4</td><td class="nm">ソフトバンク</td><td class="n">13人</td><td class="n">4人</td><td class="war">21.1</td></tr><tr><td>5</td><td class="nm">ロッテ</td><td class="n">7人</td><td class="n">5人</td><td class="war">20.2</td></tr><tr><td>6</td><td class="nm">オリックス</td><td class="n">9人</td><td class="n">9人</td><td class="war">11.6</td></tr><tr><td>7</td><td class="nm">DeNA</td><td class="n">8人</td><td class="n">7人</td><td class="war">8.0</td></tr><tr><td>8</td><td class="nm">広島</td><td class="n">9人</td><td class="n">6人</td><td class="war">3.6</td></tr><tr><td>9</td><td class="nm">楽天</td><td class="n">9人</td><td class="n">7人</td><td class="war">-0.7</td></tr><tr><td>10</td><td class="nm">阪神</td><td class="n">5人</td><td class="n">5人</td><td class="war">-1.4</td></tr><tr><td>11</td><td class="nm">中日</td><td class="n">13人</td><td class="n">10人</td><td class="war">-2.1</td></tr><tr><td>12</td><td class="nm">ヤクルト</td><td class="n">8人</td><td class="n">5人</td><td class="war">-2.8</td></tr>
+</tbody></table></div>
+
+<h2>2014年ドラフト 指名選手一覧とその後</h2>
+<div class="filter"><label>球団で絞り込む <select id="team-filter"><option value="">全球団</option>
+<option>阪神</option><option>巨人</option><option>DeNA</option><option>ヤクルト</option><option>広島</option><option>中日</option><option>ソフトバンク</option><option>西武</option><option>日本ハム</option><option>オリックス</option><option>ロッテ</option><option>楽天</option>
+</select></label><span class="note">見出しを押すと並べ替えられます</span></div>
+<div class="tbl-wrap"><table class="sortable" id="picks">
+<thead><tr><th data-k>球団</th><th data-k>指名</th><th data-k>選手</th><th data-k>守備</th><th data-k>出身</th><th data-k class="n">一軍</th><th data-k>一軍通算成績</th><th data-k class="n">通算WAR</th></tr></thead>
+<tbody>
+<tr data-team="阪神"><td data-v="阪神">阪神</td><td data-v="101">1位</td><td class="nm" data-v="横山　雄哉">横山 雄哉</td><td data-v="投手">投手</td><td class="sub" data-v="新日鉄住金鹿島">新日鉄住金鹿島</td><td class="n" data-v="4">4年</td><td data-v="-0.2">9登板 3勝2敗 防御率4.67</td><td class="war" data-v="-0.2">-0.2</td></tr>
+<tr data-team="阪神"><td data-v="阪神">阪神</td><td data-v="102">2位</td><td class="nm" data-v="石崎　剛">石崎 剛</td><td data-v="投手">投手</td><td class="sub" data-v="新日鉄住金鹿島">新日鉄住金鹿島</td><td class="n" data-v="6">6年</td><td data-v="0.1">72登板 1勝2敗 11H 防御率4.13</td><td class="war" data-v="0.1">0.1</td></tr>
+<tr data-team="阪神"><td data-v="阪神">阪神</td><td data-v="103">3位</td><td class="nm" data-v="江越　大賀">江越 大賀</td><td data-v="外野手">外野手</td><td class="sub" data-v="駒澤大">駒澤大</td><td class="n" data-v="10">10年</td><td data-v="-2.5">453試合 打率.184 18本 32盗塁</td><td class="war" data-v="-2.5">-2.5</td></tr>
+<tr data-team="阪神"><td data-v="阪神">阪神</td><td data-v="104">4位</td><td class="nm" data-v="守屋　功輝">守屋 功輝</td><td data-v="投手">投手</td><td class="sub" data-v="Honda鈴鹿">Honda鈴鹿</td><td class="n" data-v="5">5年</td><td data-v="0.4">70登板 2勝3敗 7H 防御率4.99</td><td class="war" data-v="0.4">0.4</td></tr>
+<tr data-team="阪神"><td data-v="阪神">阪神</td><td data-v="105">5位</td><td class="nm" data-v="植田　海">植田 海</td><td data-v="内野手">内野手</td><td class="sub" data-v="近江高">近江高</td><td class="n" data-v="10">10年</td><td data-v="0.8">548試合 打率.196 1本 72盗塁</td><td class="war" data-v="0.8">0.8</td></tr>
+<tr data-team="巨人"><td data-v="巨人">巨人</td><td data-v="101">1位</td><td class="nm" data-v="岡本　和真">岡本 和真</td><td data-v="内野手">内野手</td><td class="sub" data-v="智弁学園高">智弁学園高</td><td class="n" data-v="11">11年</td><td data-v="32.1">1074試合 打率.277 248本 13盗塁</td><td class="war" data-v="32.1">32.1</td></tr>
+<tr data-team="巨人"><td data-v="巨人">巨人</td><td data-v="102">2位</td><td class="nm" data-v="戸根　千明">戸根 千明</td><td data-v="投手">投手</td><td class="sub" data-v="日本大">日本大</td><td class="n" data-v="7">7年</td><td data-v="-2.1">182登板 6勝2敗 3S 23H 防御率4.04</td><td class="war" data-v="-2.1">-2.1</td></tr>
+<tr data-team="巨人"><td data-v="巨人">巨人</td><td data-v="103">3位</td><td class="nm" data-v="高木　勇人">高木 勇人</td><td data-v="投手">投手</td><td class="sub" data-v="三菱重工名古屋">三菱重工名古屋</td><td class="n" data-v="5">5年</td><td data-v="-0.1">77登板 16勝23敗 1H 防御率3.90</td><td class="war" data-v="-0.1">-0.1</td></tr>
+<tr class="none" data-team="巨人"><td data-v="巨人">巨人</td><td data-v="104">4位</td><td class="nm" data-v="田中　大輝">田中 大輝</td><td data-v="投手">投手</td><td class="sub" data-v="国学院大">国学院大</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="巨人"><td data-v="巨人">巨人</td><td data-v="151">1位</td><td class="nm" data-v="篠原　慎平">篠原 慎平<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="香川オリーブガイナーズ">香川オリーブガイナーズ</td><td class="n" data-v="2">2年</td><td data-v="-0.3">30登板 1勝1敗 防御率4.34</td><td class="war" data-v="-0.3">-0.3</td></tr>
+<tr class="none" data-team="巨人"><td data-v="巨人">巨人</td><td data-v="152">2位</td><td class="nm" data-v="川相　拓也">川相 拓也<span class="tag ik">育成</span></td><td data-v="内野手">内野手</td><td class="sub" data-v="桜美林大卒">桜美林大卒</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="巨人"><td data-v="巨人">巨人</td><td data-v="153">3位</td><td class="nm" data-v="田中　貴也">田中 貴也<span class="tag ik">育成</span></td><td data-v="捕手">捕手</td><td class="sub" data-v="山梨学院大">山梨学院大</td><td class="n" data-v="6">6年</td><td data-v="1.6">91試合 打率.247 3本 0盗塁</td><td class="war" data-v="1.6">1.6</td></tr>
+<tr class="none" data-team="巨人"><td data-v="巨人">巨人</td><td data-v="154">4位</td><td class="nm" data-v="高橋　慎之介">高橋 慎之介<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="木更津総合高卒">木更津総合高卒</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="DeNA"><td data-v="DeNA">DeNA</td><td data-v="101">1位</td><td class="nm" data-v="山崎　康晃">山崎 康晃</td><td data-v="投手">投手</td><td class="sub" data-v="亜細亜大">亜細亜大</td><td class="n" data-v="12">12年</td><td data-v="5.6">586登板 22勝42敗 246S 96H 防御率2.98</td><td class="war" data-v="5.6">5.6</td></tr>
+<tr data-team="DeNA"><td data-v="DeNA">DeNA</td><td data-v="102">2位</td><td class="nm" data-v="石田　健大">石田 健大</td><td data-v="投手">投手</td><td class="sub" data-v="法政大">法政大</td><td class="n" data-v="11">11年</td><td data-v="6.0">255登板 39勝46敗 39H 防御率3.46</td><td class="war" data-v="6.0">6.0</td></tr>
+<tr data-team="DeNA"><td data-v="DeNA">DeNA</td><td data-v="103">3位</td><td class="nm" data-v="倉本　寿彦">倉本 寿彦</td><td data-v="内野手">内野手</td><td class="sub" data-v="日本新薬">日本新薬</td><td class="n" data-v="8">8年</td><td data-v="0.6">667試合 打率.255 8本 6盗塁</td><td class="war" data-v="0.6">0.6</td></tr>
+<tr data-team="DeNA"><td data-v="DeNA">DeNA</td><td data-v="104">4位</td><td class="nm" data-v="福地　元春">福地 元春</td><td data-v="投手">投手</td><td class="sub" data-v="三菱日立パワーシステムズ">三菱日立パワーシステムズ</td><td class="n" data-v="2">2年</td><td data-v="-0.2">19登板 0勝1敗 防御率5.64</td><td class="war" data-v="-0.2">-0.2</td></tr>
+<tr data-team="DeNA"><td data-v="DeNA">DeNA</td><td data-v="105">5位</td><td class="nm" data-v="山下　幸輝">山下 幸輝</td><td data-v="内野手">内野手</td><td class="sub" data-v="国学院大">国学院大</td><td class="n" data-v="7">7年</td><td data-v="-2.2">224試合 打率.210 1本 4盗塁</td><td class="war" data-v="-2.2">-2.2</td></tr>
+<tr data-team="DeNA"><td data-v="DeNA">DeNA</td><td data-v="106">6位</td><td class="nm" data-v="百瀬　大騎">百瀬 大騎</td><td data-v="内野手">内野手</td><td class="sub" data-v="松本第一高">松本第一高</td><td class="n" data-v="2">2年</td><td data-v="0.0">5試合 打率.200 0本 0盗塁</td><td class="war" data-v="0.0">0.0</td></tr>
+<tr data-team="DeNA"><td data-v="DeNA">DeNA</td><td data-v="107">7位</td><td class="nm" data-v="飯塚　悟史">飯塚 悟史</td><td data-v="投手">投手</td><td class="sub" data-v="日本文理高">日本文理高</td><td class="n" data-v="3">3年</td><td data-v="-1.8">23登板 2勝10敗 1H 防御率5.29</td><td class="war" data-v="-1.8">-1.8</td></tr>
+<tr class="none" data-team="DeNA"><td data-v="DeNA">DeNA</td><td data-v="151">1位</td><td class="nm" data-v="亀井　塔生">亀井 塔生<span class="tag ik">育成</span></td><td data-v="捕手">捕手</td><td class="sub" data-v="日星高">日星高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="ヤクルト"><td data-v="ヤクルト">ヤクルト</td><td data-v="101">1位</td><td class="nm" data-v="竹下　真吾">竹下 真吾</td><td data-v="投手">投手</td><td class="sub" data-v="ヤマハ">ヤマハ</td><td class="n" data-v="1">1年</td><td data-v="-0.5">1登板 0勝0敗 防御率13.50</td><td class="war" data-v="-0.5">-0.5</td></tr>
+<tr data-team="ヤクルト"><td data-v="ヤクルト">ヤクルト</td><td data-v="102">2位</td><td class="nm" data-v="風張　蓮">風張 蓮</td><td data-v="投手">投手</td><td class="sub" data-v="東農大北海道オホーツク">東農大北海道オホーツク</td><td class="n" data-v="7">7年</td><td data-v="-1.6">93登板 2勝4敗 5H 防御率5.91</td><td class="war" data-v="-1.6">-1.6</td></tr>
+<tr class="none" data-team="ヤクルト"><td data-v="ヤクルト">ヤクルト</td><td data-v="103">3位</td><td class="nm" data-v="山川　晃司">山川 晃司</td><td data-v="捕手">捕手</td><td class="sub" data-v="福岡工大城東高">福岡工大城東高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="ヤクルト"><td data-v="ヤクルト">ヤクルト</td><td data-v="104">4位</td><td class="nm" data-v="寺田　哲也">寺田 哲也</td><td data-v="投手">投手</td><td class="sub" data-v="香川オリーブガイナーズ">香川オリーブガイナーズ</td><td class="n" data-v="2">2年</td><td data-v="-0.3">3登板 0勝1敗 1H 防御率10.80</td><td class="war" data-v="-0.3">-0.3</td></tr>
+<tr class="none" data-team="ヤクルト"><td data-v="ヤクルト">ヤクルト</td><td data-v="105">5位</td><td class="nm" data-v="中元　勇作">中元 勇作</td><td data-v="投手">投手</td><td class="sub" data-v="伯和ビクトリーズ">伯和ビクトリーズ</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="ヤクルト"><td data-v="ヤクルト">ヤクルト</td><td data-v="106">6位</td><td class="nm" data-v="土肥　寛昌">土肥 寛昌</td><td data-v="投手">投手</td><td class="sub" data-v="Honda鈴鹿">Honda鈴鹿</td><td class="n" data-v="2">2年</td><td data-v="0.0">8登板 0勝0敗 防御率6.10</td><td class="war" data-v="0.0">0.0</td></tr>
+<tr class="none" data-team="ヤクルト"><td data-v="ヤクルト">ヤクルト</td><td data-v="107">7位</td><td class="nm" data-v="原　泉">原 泉</td><td data-v="外野手">外野手</td><td class="sub" data-v="第一工業大">第一工業大</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="ヤクルト"><td data-v="ヤクルト">ヤクルト</td><td data-v="151">1位</td><td class="nm" data-v="中島　彰吾">中島 彰吾<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="福岡大">福岡大</td><td class="n" data-v="2">2年</td><td data-v="-0.4">5登板 0勝0敗 防御率10.57</td><td class="war" data-v="-0.4">-0.4</td></tr>
+<tr data-team="広島"><td data-v="広島">広島</td><td data-v="101">1位</td><td class="nm" data-v="野間　峻祥">野間 峻祥</td><td data-v="外野手">外野手</td><td class="sub" data-v="中部学院大">中部学院大</td><td class="n" data-v="12">12年</td><td data-v="4.4">1075試合 打率.270 11本 87盗塁</td><td class="war" data-v="4.4">4.4</td></tr>
+<tr data-team="広島"><td data-v="広島">広島</td><td data-v="102">2位</td><td class="nm" data-v="薮田　和樹">薮田 和樹</td><td data-v="投手">投手</td><td class="sub" data-v="亜細亜大">亜細亜大</td><td class="n" data-v="9">9年</td><td data-v="-3.0">123登板 23勝11敗 6H 防御率3.94</td><td class="war" data-v="-3.0">-3.0</td></tr>
+<tr data-team="広島"><td data-v="広島">広島</td><td data-v="103">3位</td><td class="nm" data-v="塹江　敦哉">塹江 敦哉</td><td data-v="投手">投手</td><td class="sub" data-v="高松北高">高松北高</td><td class="n" data-v="9">9年</td><td data-v="-1.0">260登板 14勝15敗 1S 68H 防御率4.07</td><td class="war" data-v="-1.0">-1.0</td></tr>
+<tr data-team="広島"><td data-v="広島">広島</td><td data-v="104">4位</td><td class="nm" data-v="藤井　皓哉">藤井 皓哉</td><td data-v="投手">投手</td><td class="sub" data-v="おかやま山陽高">おかやま山陽高</td><td class="n" data-v="7">7年</td><td data-v="3.3">194登板 15勝8敗 6S 70H 防御率2.30</td><td class="war" data-v="3.3">3.3</td></tr>
+<tr data-team="広島"><td data-v="広島">広島</td><td data-v="105">5位</td><td class="nm" data-v="桒原　樹">桒原 樹</td><td data-v="内野手">内野手</td><td class="sub" data-v="常葉学園菊川高">常葉学園菊川高</td><td class="n" data-v="1">1年</td><td data-v="-0.1">3試合 打率.000 0本 0盗塁</td><td class="war" data-v="-0.1">-0.1</td></tr>
+<tr data-team="広島"><td data-v="広島">広島</td><td data-v="106">6位</td><td class="nm" data-v="飯田　哲矢">飯田 哲矢</td><td data-v="投手">投手</td><td class="sub" data-v="JR東日本">JR東日本</td><td class="n" data-v="4">4年</td><td data-v="0.0">40登板 0勝0敗 1H 防御率4.91</td><td class="war" data-v="0.0">0.0</td></tr>
+<tr class="none" data-team="広島"><td data-v="広島">広島</td><td data-v="107">7位</td><td class="nm" data-v="多田　大輔">多田 大輔</td><td data-v="捕手">捕手</td><td class="sub" data-v="鳴門渦潮高">鳴門渦潮高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="広島"><td data-v="広島">広島</td><td data-v="151">1位</td><td class="nm" data-v="松浦　耕大">松浦 耕大<span class="tag ik">育成</span></td><td data-v="捕手">捕手</td><td class="sub" data-v="MSH医療専門学校">MSH医療専門学校</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="広島"><td data-v="広島">広島</td><td data-v="152">2位</td><td class="nm" data-v="木村　聡司">木村 聡司<span class="tag ik">育成</span></td><td data-v="内野手">内野手</td><td class="sub" data-v="常葉橘高">常葉橘高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="中日"><td data-v="中日">中日</td><td data-v="101">1位</td><td class="nm" data-v="野村　亮介">野村 亮介</td><td data-v="投手">投手</td><td class="sub" data-v="三菱日立パワーシステムズ">三菱日立パワーシステムズ</td><td class="n" data-v="1">1年</td><td data-v="-0.1">3登板 0勝0敗 防御率10.12</td><td class="war" data-v="-0.1">-0.1</td></tr>
+<tr data-team="中日"><td data-v="中日">中日</td><td data-v="102">2位</td><td class="nm" data-v="浜田　智博">浜田 智博</td><td data-v="投手">投手</td><td class="sub" data-v="九州産業大">九州産業大</td><td class="n" data-v="1">1年</td><td data-v="-0.3">1登板 0勝0敗 防御率40.50</td><td class="war" data-v="-0.3">-0.3</td></tr>
+<tr data-team="中日"><td data-v="中日">中日</td><td data-v="103">3位</td><td class="nm" data-v="友永　翔太">友永 翔太</td><td data-v="外野手">外野手</td><td class="sub" data-v="日本通運">日本通運</td><td class="n" data-v="4">4年</td><td data-v="-0.6">34試合 打率.135 0本 2盗塁</td><td class="war" data-v="-0.6">-0.6</td></tr>
+<tr data-team="中日"><td data-v="中日">中日</td><td data-v="104">4位</td><td class="nm" data-v="石川　駿">石川 駿</td><td data-v="内野手">内野手</td><td class="sub" data-v="JX-ENEOS">JX-ENEOS</td><td class="n" data-v="5">5年</td><td data-v="-0.1">31試合 打率.244 1本 0盗塁</td><td class="war" data-v="-0.1">-0.1</td></tr>
+<tr data-team="中日"><td data-v="中日">中日</td><td data-v="105">5位</td><td class="nm" data-v="加藤　匠馬">加藤 匠馬</td><td data-v="捕手">捕手</td><td class="sub" data-v="青山学院大">青山学院大</td><td class="n" data-v="10">10年</td><td data-v="0.3">382試合 打率.177 3本 1盗塁</td><td class="war" data-v="0.3">0.3</td></tr>
+<tr data-team="中日"><td data-v="中日">中日</td><td data-v="106">6位</td><td class="nm" data-v="井領　雅貴">井領 雅貴</td><td data-v="外野手">外野手</td><td class="sub" data-v="JX-ENEOS">JX-ENEOS</td><td class="n" data-v="6">6年</td><td data-v="-1.0">216試合 打率.225 2本 1盗塁</td><td class="war" data-v="-1.0">-1.0</td></tr>
+<tr data-team="中日"><td data-v="中日">中日</td><td data-v="107">7位</td><td class="nm" data-v="遠藤　一星">遠藤 一星</td><td data-v="内野手">内野手</td><td class="sub" data-v="東京ガス">東京ガス</td><td class="n" data-v="6">6年</td><td data-v="-0.1">293試合 打率.242 8本 10盗塁</td><td class="war" data-v="-0.1">-0.1</td></tr>
+<tr data-team="中日"><td data-v="中日">中日</td><td data-v="108">8位</td><td class="nm" data-v="山本　雅士">山本 雅士</td><td data-v="投手">投手</td><td class="sub" data-v="徳島インディゴソックス">徳島インディゴソックス</td><td class="n" data-v="1">1年</td><td data-v="-0.2">3登板 0勝0敗 防御率10.38</td><td class="war" data-v="-0.2">-0.2</td></tr>
+<tr data-team="中日"><td data-v="中日">中日</td><td data-v="109">9位</td><td class="nm" data-v="金子　丈">金子 丈</td><td data-v="投手">投手</td><td class="sub" data-v="大阪商業大">大阪商業大</td><td class="n" data-v="2">2年</td><td data-v="0.2">11登板 0勝0敗 防御率4.91</td><td class="war" data-v="0.2">0.2</td></tr>
+<tr class="none" data-team="中日"><td data-v="中日">中日</td><td data-v="151">1位</td><td class="nm" data-v="佐藤　雄偉知">佐藤 雄偉知<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="東海大相模高">東海大相模高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="中日"><td data-v="中日">中日</td><td data-v="152">2位</td><td class="nm" data-v="石垣　幸大">石垣 幸大<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="いなべ総合高">いなべ総合高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="中日"><td data-v="中日">中日</td><td data-v="153">3位</td><td class="nm" data-v="藤吉　優">藤吉 優<span class="tag ik">育成</span></td><td data-v="捕手">捕手</td><td class="sub" data-v="秀岳館高">秀岳館高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="中日"><td data-v="中日">中日</td><td data-v="154">4位</td><td class="nm" data-v="近藤　弘基">近藤 弘基<span class="tag ik">育成</span></td><td data-v="外野手">外野手</td><td class="sub" data-v="名城大">名城大</td><td class="n" data-v="3">3年</td><td data-v="-0.2">40試合 打率.184 3本 0盗塁</td><td class="war" data-v="-0.2">-0.2</td></tr>
+<tr data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="101">1位</td><td class="nm" data-v="松本　裕樹">松本 裕樹</td><td data-v="投手">投手</td><td class="sub" data-v="盛岡大附属高">盛岡大附属高</td><td class="n" data-v="11">11年</td><td data-v="3.5">342登板 25勝22敗 18S 144H 防御率3.09</td><td class="war" data-v="3.5">3.5</td></tr>
+<tr data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="102">2位</td><td class="nm" data-v="栗原　陵矢">栗原 陵矢</td><td data-v="捕手">捕手</td><td class="sub" data-v="春江工業高">春江工業高</td><td class="n" data-v="10">10年</td><td data-v="18.3">766試合 打率.262 121本 15盗塁</td><td class="war" data-v="18.3">18.3</td></tr>
+<tr class="none" data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="103">3位</td><td class="nm" data-v="古澤　勝吾">古澤 勝吾</td><td data-v="内野手">内野手</td><td class="sub" data-v="九州国際大付属高">九州国際大付属高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="104">4位</td><td class="nm" data-v="笠谷　俊介">笠谷 俊介</td><td data-v="投手">投手</td><td class="sub" data-v="大分商業高">大分商業高</td><td class="n" data-v="7">7年</td><td data-v="-0.7">74登板 7勝9敗 1H 防御率3.93</td><td class="war" data-v="-0.7">-0.7</td></tr>
+<tr data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="105">5位</td><td class="nm" data-v="島袋　洋奨">島袋 洋奨</td><td data-v="投手">投手</td><td class="sub" data-v="中央大">中央大</td><td class="n" data-v="1">1年</td><td data-v="0.0">2登板 0勝0敗 防御率0.00</td><td class="war" data-v="0.0">0.0</td></tr>
+<tr class="none" data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="151">1位</td><td class="nm" data-v="幸山　一大">幸山 一大<span class="tag ik">育成</span></td><td data-v="外野手">外野手</td><td class="sub" data-v="富山第一高">富山第一高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="152">2位</td><td class="nm" data-v="齋藤　誠哉">齋藤 誠哉<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="磐田東高">磐田東高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="153">3位</td><td class="nm" data-v="山下　亜文">山下 亜文<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="小松大谷高">小松大谷高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="154">4位</td><td class="nm" data-v="堀内　汰門">堀内 汰門<span class="tag ik">育成</span></td><td data-v="捕手">捕手</td><td class="sub" data-v="山村国際高">山村国際高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="155">5位</td><td class="nm" data-v="柿木　映二">柿木 映二<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="柳川高">柳川高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="156">6位</td><td class="nm" data-v="金子　将太">金子 将太<span class="tag ik">育成</span></td><td data-v="外野手">外野手</td><td class="sub" data-v="大間々高">大間々高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="157">7位</td><td class="nm" data-v="河野　大樹">河野 大樹<span class="tag ik">育成</span></td><td data-v="内野手">内野手</td><td class="sub" data-v="NOMOベースボールクラブ">NOMOベースボールクラブ</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr class="none" data-team="ソフトバンク"><td data-v="ソフトバンク">ソフトバンク</td><td data-v="158">8位</td><td class="nm" data-v="中村　恵吾">中村 恵吾<span class="tag ik">育成</span></td><td data-v="投手">投手</td><td class="sub" data-v="富山サンダーバーズ">富山サンダーバーズ</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="西武"><td data-v="西武">西武</td><td data-v="101">1位</td><td class="nm" data-v="高橋　光成">高橋 光成</td><td data-v="投手">投手</td><td class="sub" data-v="前橋育英高">前橋育英高</td><td class="n" data-v="12">12年</td><td data-v="13.5">217登板 82勝83敗 防御率3.31</td><td class="war" data-v="13.5">13.5</td></tr>
+<tr data-team="西武"><td data-v="西武">西武</td><td data-v="102">2位</td><td class="nm" data-v="佐野　泰雄">佐野 泰雄</td><td data-v="投手">投手</td><td class="sub" data-v="平成国際大">平成国際大</td><td class="n" data-v="8">8年</td><td data-v="-1.2">105登板 6勝5敗 4H 防御率4.38</td><td class="war" data-v="-1.2">-1.2</td></tr>
+<tr data-team="西武"><td data-v="西武">西武</td><td data-v="103">3位</td><td class="nm" data-v="外崎　修汰">外崎 修汰</td><td data-v="内野手">内野手</td><td class="sub" data-v="富士大">富士大</td><td class="n" data-v="12">12年</td><td data-v="20.4">1213試合 打率.245 108本 169盗塁</td><td class="war" data-v="20.4">20.4</td></tr>
+<tr class="none" data-team="西武"><td data-v="西武">西武</td><td data-v="104">4位</td><td class="nm" data-v="玉村　祐典">玉村 祐典</td><td data-v="投手">投手</td><td class="sub" data-v="敦賀気比高卒">敦賀気比高卒</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="西武"><td data-v="西武">西武</td><td data-v="105">5位</td><td class="nm" data-v="山田　遥楓">山田 遥楓</td><td data-v="内野手">内野手</td><td class="sub" data-v="佐賀工業高">佐賀工業高</td><td class="n" data-v="7">7年</td><td data-v="-1.1">252試合 打率.196 1本 2盗塁</td><td class="war" data-v="-1.1">-1.1</td></tr>
+<tr data-team="西武"><td data-v="西武">西武</td><td data-v="151">1位</td><td class="nm" data-v="戸川　大輔">戸川 大輔<span class="tag ik">育成</span></td><td data-v="外野手">外野手</td><td class="sub" data-v="北海高">北海高</td><td class="n" data-v="4">4年</td><td data-v="-0.7">28試合 打率.109 1本 0盗塁</td><td class="war" data-v="-0.7">-0.7</td></tr>
+<tr data-team="日本ハム"><td data-v="日本ハム">日本ハム</td><td data-v="101">1位</td><td class="nm" data-v="有原　航平">有原 航平</td><td data-v="投手">投手</td><td class="sub" data-v="早稲田大">早稲田大</td><td class="n" data-v="10">10年</td><td data-v="18.8">215登板 105勝80敗 2S 1H 防御率3.40</td><td class="war" data-v="18.8">18.8</td></tr>
+<tr data-team="日本ハム"><td data-v="日本ハム">日本ハム</td><td data-v="102">2位</td><td class="nm" data-v="清水　優心">清水 優心</td><td data-v="捕手">捕手</td><td class="sub" data-v="九州国際大付属高">九州国際大付属高</td><td class="n" data-v="11">11年</td><td data-v="5.4">515試合 打率.215 21本 1盗塁</td><td class="war" data-v="5.4">5.4</td></tr>
+<tr data-team="日本ハム"><td data-v="日本ハム">日本ハム</td><td data-v="103">3位</td><td class="nm" data-v="淺間　大基">淺間 大基</td><td data-v="外野手">外野手</td><td class="sub" data-v="横浜高">横浜高</td><td class="n" data-v="12">12年</td><td data-v="-0.3">526試合 打率.233 18本 35盗塁</td><td class="war" data-v="-0.3">-0.3</td></tr>
+<tr data-team="日本ハム"><td data-v="日本ハム">日本ハム</td><td data-v="104">4位</td><td class="nm" data-v="石川　直也">石川 直也</td><td data-v="投手">投手</td><td class="sub" data-v="山形中央高">山形中央高</td><td class="n" data-v="6">6年</td><td data-v="2.2">202登板 6勝7敗 31S 58H 防御率3.67</td><td class="war" data-v="2.2">2.2</td></tr>
+<tr data-team="日本ハム"><td data-v="日本ハム">日本ハム</td><td data-v="105">5位</td><td class="nm" data-v="瀬川　隼郎">瀬川 隼郎</td><td data-v="投手">投手</td><td class="sub" data-v="室蘭シャークス">室蘭シャークス</td><td class="n" data-v="2">2年</td><td data-v="0.2">10登板 0勝0敗 防御率3.09</td><td class="war" data-v="0.2">0.2</td></tr>
+<tr data-team="日本ハム"><td data-v="日本ハム">日本ハム</td><td data-v="106">6位</td><td class="nm" data-v="立田　将太">立田 将太</td><td data-v="投手">投手</td><td class="sub" data-v="大和広陵高">大和広陵高</td><td class="n" data-v="1">1年</td><td data-v="0.0">1登板 0勝0敗 防御率0.00</td><td class="war" data-v="0.0">0.0</td></tr>
+<tr data-team="日本ハム"><td data-v="日本ハム">日本ハム</td><td data-v="107">7位</td><td class="nm" data-v="高濱　祐仁">高濱 祐仁</td><td data-v="内野手">内野手</td><td class="sub" data-v="横浜高">横浜高</td><td class="n" data-v="5">5年</td><td data-v="-0.2">128試合 打率.252 8本 2盗塁</td><td class="war" data-v="-0.2">-0.2</td></tr>
+<tr data-team="日本ハム"><td data-v="日本ハム">日本ハム</td><td data-v="108">8位</td><td class="nm" data-v="太田　賢吾">太田 賢吾</td><td data-v="内野手">内野手</td><td class="sub" data-v="川越工業高">川越工業高</td><td class="n" data-v="9">9年</td><td data-v="-1.5">336試合 打率.231 5本 3盗塁</td><td class="war" data-v="-1.5">-1.5</td></tr>
+<tr class="none" data-team="日本ハム"><td data-v="日本ハム">日本ハム</td><td data-v="109">9位</td><td class="nm" data-v="佐藤　正尭">佐藤 正尭</td><td data-v="捕手">捕手</td><td class="sub" data-v="愛知啓成高">愛知啓成高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="オリックス"><td data-v="オリックス">オリックス</td><td data-v="101">1位</td><td class="nm" data-v="山崎　福也">山崎 福也</td><td data-v="投手">投手</td><td class="sub" data-v="明治大">明治大</td><td class="n" data-v="12">12年</td><td data-v="3.3">237登板 61勝57敗 3H 防御率3.50</td><td class="war" data-v="3.3">3.3</td></tr>
+<tr data-team="オリックス"><td data-v="オリックス">オリックス</td><td data-v="102">2位</td><td class="nm" data-v="宗　佑磨">宗 佑磨</td><td data-v="内野手">内野手</td><td class="sub" data-v="横浜隼人高">横浜隼人高</td><td class="n" data-v="11">11年</td><td data-v="6.2">932試合 打率.249 45本 40盗塁</td><td class="war" data-v="6.2">6.2</td></tr>
+<tr data-team="オリックス"><td data-v="オリックス">オリックス</td><td data-v="103">3位</td><td class="nm" data-v="佐野　皓大">佐野 皓大</td><td data-v="投手">投手</td><td class="sub" data-v="大分高">大分高</td><td class="n" data-v="6">6年</td><td data-v="-2.6">341試合 打率.199 5本 50盗塁</td><td class="war" data-v="-2.6">-2.6</td></tr>
+<tr data-team="オリックス"><td data-v="オリックス">オリックス</td><td data-v="104">4位</td><td class="nm" data-v="高木　伴">高木 伴</td><td data-v="投手">投手</td><td class="sub" data-v="NTT東日本">NTT東日本</td><td class="n" data-v="2">2年</td><td data-v="-0.4">11登板 0勝0敗 防御率6.89</td><td class="war" data-v="-0.4">-0.4</td></tr>
+<tr data-team="オリックス"><td data-v="オリックス">オリックス</td><td data-v="105">5位</td><td class="nm" data-v="齋藤　綱記">齋藤 綱記</td><td data-v="投手">投手</td><td class="sub" data-v="北照高">北照高</td><td class="n" data-v="10">10年</td><td data-v="0.8">244登板 16勝7敗 67H 防御率3.13</td><td class="war" data-v="0.8">0.8</td></tr>
+<tr data-team="オリックス"><td data-v="オリックス">オリックス</td><td data-v="106">6位</td><td class="nm" data-v="坂寄　晴一">坂寄 晴一</td><td data-v="投手">投手</td><td class="sub" data-v="JR東日本">JR東日本</td><td class="n" data-v="1">1年</td><td data-v="0.0">1登板 0勝0敗 防御率27.00</td><td class="war" data-v="0.0">0.0</td></tr>
+<tr data-team="オリックス"><td data-v="オリックス">オリックス</td><td data-v="107">7位</td><td class="nm" data-v="西野　真弘">西野 真弘</td><td data-v="内野手">内野手</td><td class="sub" data-v="JR東日本">JR東日本</td><td class="n" data-v="12">12年</td><td data-v="6.7">750試合 打率.264 16本 44盗塁</td><td class="war" data-v="6.7">6.7</td></tr>
+<tr data-team="オリックス"><td data-v="オリックス">オリックス</td><td data-v="108">8位</td><td class="nm" data-v="小田　裕也">小田 裕也</td><td data-v="外野手">外野手</td><td class="sub" data-v="日本生命">日本生命</td><td class="n" data-v="10">10年</td><td data-v="-1.3">681試合 打率.239 10本 51盗塁</td><td class="war" data-v="-1.3">-1.3</td></tr>
+<tr data-team="オリックス"><td data-v="オリックス">オリックス</td><td data-v="109">9位</td><td class="nm" data-v="鈴木　優">鈴木 優</td><td data-v="投手">投手</td><td class="sub" data-v="雪谷高">雪谷高</td><td class="n" data-v="5">5年</td><td data-v="-1.1">27登板 1勝3敗 1S 2H 防御率7.91</td><td class="war" data-v="-1.1">-1.1</td></tr>
+<tr data-team="ロッテ"><td data-v="ロッテ">ロッテ</td><td data-v="101">1位</td><td class="nm" data-v="中村　奨吾">中村 奨吾</td><td data-v="内野手">内野手</td><td class="sub" data-v="早稲田大">早稲田大</td><td class="n" data-v="11">11年</td><td data-v="20.0">1268試合 打率.248 90本 108盗塁</td><td class="war" data-v="20.0">20.0</td></tr>
+<tr data-team="ロッテ"><td data-v="ロッテ">ロッテ</td><td data-v="102">2位</td><td class="nm" data-v="田中　英祐">田中 英祐</td><td data-v="投手">投手</td><td class="sub" data-v="京都大">京都大</td><td class="n" data-v="1">1年</td><td data-v="0.0">2登板 0勝1敗 防御率13.50</td><td class="war" data-v="0.0">0.0</td></tr>
+<tr data-team="ロッテ"><td data-v="ロッテ">ロッテ</td><td data-v="103">3位</td><td class="nm" data-v="岩下　大輝">岩下 大輝</td><td data-v="投手">投手</td><td class="sub" data-v="星稜高">星稜高</td><td class="n" data-v="7">7年</td><td data-v="1.6">141登板 25勝21敗 17H 防御率3.84</td><td class="war" data-v="1.6">1.6</td></tr>
+<tr class="none" data-team="ロッテ"><td data-v="ロッテ">ロッテ</td><td data-v="104">4位</td><td class="nm" data-v="寺嶋　寛大">寺嶋 寛大</td><td data-v="捕手">捕手</td><td class="sub" data-v="創価大">創価大</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="ロッテ"><td data-v="ロッテ">ロッテ</td><td data-v="105">5位</td><td class="nm" data-v="香月　一也">香月 一也</td><td data-v="内野手">内野手</td><td class="sub" data-v="大阪桐蔭高">大阪桐蔭高</td><td class="n" data-v="6">6年</td><td data-v="-1.6">109試合 打率.180 4本 0盗塁</td><td class="war" data-v="-1.6">-1.6</td></tr>
+<tr data-team="ロッテ"><td data-v="ロッテ">ロッテ</td><td data-v="106">6位</td><td class="nm" data-v="宮崎　敦次">宮崎 敦次</td><td data-v="投手">投手</td><td class="sub" data-v="広島国際学院大">広島国際学院大</td><td class="n" data-v="2">2年</td><td data-v="0.2">8登板 0勝0敗 防御率6.30</td><td class="war" data-v="0.2">0.2</td></tr>
+<tr class="none" data-team="ロッテ"><td data-v="ロッテ">ロッテ</td><td data-v="107">7位</td><td class="nm" data-v="脇本　直人">脇本 直人</td><td data-v="外野手">外野手</td><td class="sub" data-v="高崎健康福祉大高崎高">高崎健康福祉大高崎高</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="101">1位</td><td class="nm" data-v="安樂　智大">安樂 智大</td><td data-v="投手">投手</td><td class="sub" data-v="済美高">済美高</td><td class="n" data-v="9">9年</td><td data-v="1.5">231登板 18勝21敗 3S 50H 防御率3.59</td><td class="war" data-v="1.5">1.5</td></tr>
+<tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="102">2位</td><td class="nm" data-v="小野　郁">小野 郁</td><td data-v="投手">投手</td><td class="sub" data-v="西日本短大附属高">西日本短大附属高</td><td class="n" data-v="12">12年</td><td data-v="0.8">270登板 6勝12敗 50H 防御率3.65</td><td class="war" data-v="0.8">0.8</td></tr>
+<tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="103">3位</td><td class="nm" data-v="福田　将儀">福田 将儀</td><td data-v="外野手">外野手</td><td class="sub" data-v="中央大">中央大</td><td class="n" data-v="3">3年</td><td data-v="-1.1">112試合 打率.210 3本 8盗塁</td><td class="war" data-v="-1.1">-1.1</td></tr>
+<tr class="none" data-team="楽天"><td data-v="楽天">楽天</td><td data-v="104">4位</td><td class="nm" data-v="ルシアノ・　フェルナンド">ルシアノ・ フェルナンド</td><td data-v="外野手">外野手</td><td class="sub" data-v="白鴎大">白鴎大</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+<tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="105">5位</td><td class="nm" data-v="入野　貴大">入野 貴大</td><td data-v="投手">投手</td><td class="sub" data-v="徳島インディゴソックス">徳島インディゴソックス</td><td class="n" data-v="3">3年</td><td data-v="-1.1">30登板 1勝1敗 1H 防御率5.79</td><td class="war" data-v="-1.1">-1.1</td></tr>
+<tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="106">6位</td><td class="nm" data-v="加藤　正志">加藤 正志</td><td data-v="投手">投手</td><td class="sub" data-v="JR東日本東北">JR東日本東北</td><td class="n" data-v="2">2年</td><td data-v="-0.4">10登板 0勝0敗 防御率5.65</td><td class="war" data-v="-0.4">-0.4</td></tr>
+<tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="107">7位</td><td class="nm" data-v="伊東　亮大">伊東 亮大</td><td data-v="外野手">外野手</td><td class="sub" data-v="日本製紙石巻">日本製紙石巻</td><td class="n" data-v="1">1年</td><td data-v="0.2">8試合 打率.273 2本 1盗塁</td><td class="war" data-v="0.2">0.2</td></tr>
+<tr data-team="楽天"><td data-v="楽天">楽天</td><td data-v="151">1位</td><td class="nm" data-v="八百板　卓丸">八百板 卓丸<span class="tag ik">育成</span></td><td data-v="外野手">外野手</td><td class="sub" data-v="聖光学院高">聖光学院高</td><td class="n" data-v="3">3年</td><td data-v="-0.6">82試合 打率.202 0本 1盗塁</td><td class="war" data-v="-0.6">-0.6</td></tr>
+<tr class="none" data-team="楽天"><td data-v="楽天">楽天</td><td data-v="152">2位</td><td class="nm" data-v="大坂谷　啓生">大坂谷 啓生<span class="tag ik">育成</span></td><td data-v="内野手">内野手</td><td class="sub" data-v="青森中央学院大">青森中央学院大</td><td class="n" data-v="0">―</td><td data-v="-999">一軍出場なし</td><td class="war" data-v="-999">―</td></tr>
+</tbody></table></div>
+<p class="note">・「一軍」は一軍の公式戦に出場したシーズン数です。<br>
+・簡易WARは、打撃・盗塁・守備位置・代替水準（投手はFIP）から計算したもので、守備の上手さ（UZR）や球場の補正は入っていません（<a href="/war/">計算方法</a>）。<br>
+・名前で成績を照合しているため、指名後に登録名を変えた選手は、変更後の成績が入っていません。</p>
+
+
+<footer class="disclaimer">
+指名選手と成績はNPB（日本野球機構）公式サイトのドラフト会議・個人成績をもとに、当サイトが独自に集計したものです。
+成績は一軍の公式戦のみです。名前で照合しているため、登録名を変更した選手などは正しく集計できていない場合があります。
+</footer>
+</div>
+</div>
+
+<script>
+"use strict";
+/* 表の見出しを押すと並べ替え、球団で絞り込み */
+(function(){
+  var t = document.getElementById("picks");
+  if (!t) return;
+  var body = t.tBodies[0];
+  t.tHead.addEventListener("click", function(e){
+    var th = e.target.closest("th[data-k]");
+    if (!th) return;
+    var idx = Array.prototype.indexOf.call(th.parentNode.children, th);
+    var desc = th.dataset.dir !== "desc";
+    th.parentNode.querySelectorAll("th").forEach(function(x){ delete x.dataset.dir; });
+    th.dataset.dir = desc ? "desc" : "asc";
+    var rows = Array.prototype.slice.call(body.rows);
+    rows.sort(function(a, b){
+      var x = a.cells[idx].dataset.v, y = b.cells[idx].dataset.v;
+      var nx = parseFloat(x), ny = parseFloat(y);
+      if (!isNaN(nx) && !isNaN(ny)) return desc ? ny - nx : nx - ny;
+      return desc ? String(y).localeCompare(String(x), "ja") : String(x).localeCompare(String(y), "ja");
+    });
+    rows.forEach(function(r){ body.appendChild(r); });
+  });
+  var sel = document.getElementById("team-filter");
+  if (sel) sel.addEventListener("change", function(){
+    Array.prototype.forEach.call(body.rows, function(r){
+      r.hidden = !!sel.value && r.dataset.team !== sel.value;
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
