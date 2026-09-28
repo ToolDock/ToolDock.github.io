@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- このファイルは npb/template_pythagorean.html から npb/build_pythagorean.py が生成する。
+     pythagorean/index.html を直接書き換えても、次の自動更新で消える -->
+<title>プロ野球 ピタゴラス勝率ランキング｜得失点から見る各球団の「運」【{{YEAR}}年・毎日更新】</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<link rel="canonical" href="https://tooldock.github.io/pythagorean/">
+
+<script> const CURRENT_TOOL = "pythagorean"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="ピタゴラス勝率,ピタゴラス勝率 計算,得失点差,プロ野球,運,セイバーメトリクス,セ・リーグ,パ・リーグ">
+
+<style>
+*{ box-sizing:border-box; }
+
+:root{
+    --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280;
+    --line:#d1d5db; --line-soft:#e5e7eb; --head-bg:#f3f4f6; --tint:#f9fafb;
+    --accent:#2563eb;
+    --ce:#0f766e; --pa:#1d4ed8;
+    /* 運の棒：プラス（運が良い）は青、マイナス（運が悪い）は赤。色覚の違いでも見分けられることを確認済み */
+    --pos:#2a78d6; --neg:#e34948; --mid:#f0efec;
+}
+
+body{
+    margin:0; padding:0 0 48px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    color:var(--ink); line-height:1.75; background:#f5f5f5;
+}
+
+.page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
+/* ほかのページ（金特ツールなど）と同じく左に寄せ、左右に20pxの余白を取る。
+   サイト共通の style.css は body を幅900pxに絞るので外し、表の広さに合わせた幅にする。
+   下に付く「人気のページ」なども本文と同じ幅・余白にそろえる */
+body{ max-width:none; }
+.page-wrapper{ margin:0; padding:0 20px; }
+body .td-rail-inline{ max-width:1000px; margin:40px 0 0; padding:0 20px; }
+
+header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:22px; }
+header .page-wrapper{ padding:0; }
+h1{ margin:0; font-size:1.35rem; line-height:1.5; }
+header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
+
+h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
+    border-bottom:2px solid var(--line); }
+h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
+    border-left:4px solid var(--accent); }
+p{ margin:0 0 12px; }
+
+.stamp{ display:flex; flex-wrap:wrap; gap:4px 16px; font-size:0.88rem; color:var(--ink-sub); margin:0 0 6px; }
+.stamp strong{ color:var(--ink-strong); }
+.lead{ font-size:0.95rem; }
+
+.bar-ctl{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin:10px 0 16px; font-size:0.9rem; color:var(--ink-sub); }
+.bar-ctl label{ display:flex; align-items:center; gap:6px; font-weight:700; }
+.bar-ctl select{ font:inherit; font-size:0.95rem; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); }
+
+/* ── リーグ ───────────────────────────── */
+.league{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 16px 18px; margin:0 0 22px; }
+.league h2{ margin-top:14px; border-bottom:none; padding-bottom:0; display:flex; align-items:center; gap:8px; }
+.league h2::before{ content:""; width:10px; height:22px; border-radius:3px; background:var(--lg); }
+.league-central{ --lg:var(--ce); }
+.league-pacific{ --lg:var(--pa); }
+.hl{ font-size:0.95rem; margin:0 0 10px; }
+.box{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:6px 16px 10px; margin:0 0 22px; }
+.hl strong{ color:var(--ink-strong); }
+
+/* ── 運の横棒グラフ ───────────────────── */
+.chart{ margin:0 0 14px; position:relative; }
+/* 行は「球団名｜棒｜値」の3列。目盛りの行も同じ3列にして、中央の0を棒の0にそろえる */
+.chart-axis, .bar-row{ display:grid; grid-template-columns:7.5em 1fr 4em; align-items:center; gap:8px; }
+.chart-axis{ font-size:0.75rem; color:var(--ink-mute); }
+.chart-axis > span{ grid-column:2; grid-row:1; }
+.chart-axis > span:nth-child(1){ justify-self:start; }
+.chart-axis > span:nth-child(2){ justify-self:center; }
+.chart-axis > span:nth-child(3){ justify-self:end; }
+.bar-row{ height:26px; border-radius:6px; outline:none; }
+.bar-row:hover, .bar-row:focus-visible{ background:var(--tint); }
+.bar-name{ font-size:0.86rem; font-weight:700; color:var(--ink-strong); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bar-track{ position:relative; height:14px; background:linear-gradient(to right, transparent calc(50% - 1px), var(--line) calc(50% - 1px), var(--line) calc(50% + 1px), transparent calc(50% + 1px)); }
+.bar{ position:absolute; top:0; height:14px; }
+.bar.pos{ left:50%; background:var(--pos); border-radius:0 4px 4px 0; }
+.bar.neg{ right:50%; background:var(--neg); border-radius:4px 0 0 4px; }
+.bar-val{ font-size:0.84rem; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; text-align:right; }
+.chart figcaption{ font-size:0.78rem; color:var(--ink-mute); margin-top:4px; }
+.tip{ position:fixed; z-index:50; pointer-events:none; background:var(--ink-strong); color:#fff; font-size:0.82rem;
+      padding:6px 10px; border-radius:8px; max-width:280px; line-height:1.5; box-shadow:0 4px 14px rgba(0,0,0,.18); }
+.tip[hidden]{ display:none; }
+
+.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table{ border-collapse:collapse; width:100%; font-size:0.92rem; font-variant-numeric:tabular-nums; }
+th, td{ border-bottom:1px solid var(--line-soft); padding:8px 6px; text-align:center; white-space:nowrap; }
+thead th{ background:var(--head-bg); font-size:0.8rem; color:var(--ink-sub); font-weight:700; border-bottom:1px solid var(--line); line-height:1.35; }
+tbody tr:hover{ background:var(--tint); }
+th.tm{ text-align:left; font-weight:700; color:var(--ink-strong); }
+td.rk{ font-weight:700; color:var(--ink-sub); width:2.6em; }
+td.pct, td.luck{ font-weight:700; }
+
+/* ── 計算機 ───────────────────────────── */
+.calc{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:0 0 22px; }
+.calc-in{ display:flex; flex-wrap:wrap; gap:10px 14px; align-items:flex-end; }
+.calc-in label{ display:flex; flex-direction:column; gap:3px; font-size:0.8rem; font-weight:700; color:var(--ink-sub); }
+.calc-in input{ font:inherit; font-size:1rem; padding:7px 10px; border:1px solid var(--line); border-radius:8px; width:8em; }
+.calc-out{ margin:12px 0 0; font-size:0.95rem; }
+.calc-out strong{ font-size:1.4rem; color:var(--ink-strong); font-variant-numeric:tabular-nums; }
+
+/* ── 解説 ───────────────────────────── */
+article{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px 18px; margin-top:26px; }
+article h2:first-child{ margin-top:18px; }
+.formula{ background:var(--tint); border:1px solid var(--line-soft); border-radius:10px; padding:10px 14px; margin:0 0 12px; font-size:0.93rem; }
+.note{ font-size:0.86rem; color:var(--ink-mute); }
+article ul{ margin:0 0 12px; padding-left:1.3em; }
+article li{ margin:4px 0; }
+
+footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
+
+@media (max-width:600px){
+    .league{ padding:2px 10px 14px; }
+    th, td{ padding:7px 3px; font-size:0.82rem; }
+    table.std .opt{ display:none; }
+    .chart-axis, .bar-row{ grid-template-columns:5.5em 1fr 3.2em; gap:6px; }
+    article{ padding:2px 14px 14px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>プロ野球 ピタゴラス勝率ランキング</h1>
+    <p>得点と失点から「実力どおりなら何勝か」を計算し、実際の勝ち数との差（運）を球団ごとに並べます</p>
+</header>
+
+<div class="container">
+
+<p class="stamp"><span>成績：<strong>{{AS_OF}}</strong></span><span>最終更新：{{UPDATED}}</span></p>
+<p class="lead">「運」は、実際の勝ち数から、得点と失点で見込まれる勝ち数（ピタゴラス勝率 × 勝敗の数）を引いたものです。プラスなら得失点の割に勝てている（接戦に強い・運が良い）、マイナスなら得失点の割に負けている球団です。</p>
+
+<div class="bar-ctl">
+    <label>シーズン <select id="year">{{OPTIONS}}</select></label>
+</div>
+
+{{SEASONS}}
+
+<h2>歴代の「運が良かった」球団（{{FIRST}}〜{{LAST}}年）</h2>
+<p>得失点から見込まれる勝ち数より、実際に多く勝ったシーズンです。最も運が良かったのは{{LUCKIEST}}でした。</p>
+{{LUCKY}}
+
+<h2>歴代の「運が悪かった」球団（{{FIRST}}〜{{LAST}}年）</h2>
+<p>得失点の割に勝てなかったシーズンです。最も運が悪かったのは{{UNLUCKIEST}}でした。</p>
+{{UNLUCKY}}
+
+<h2>ピタゴラス勝率の計算機</h2>
+<div class="calc">
+    <div class="calc-in">
+        <label>得点<input id="c-rs" type="number" min="0" inputmode="numeric" value="500"></label>
+        <label>失点<input id="c-ra" type="number" min="0" inputmode="numeric" value="450"></label>
+        <label>勝敗の数（勝＋敗）<input id="c-n" type="number" min="0" inputmode="numeric" value="140"></label>
+    </div>
+    <p class="calc-out" id="c-out"></p>
+</div>
+
+<article>
+<h2>ピタゴラス勝率とは</h2>
+<p>ピタゴラス勝率は、チームの得点と失点から「その得失点なら、どれくらいの勝率になるのが普通か」を見積もる式です。セイバーメトリクスの祖ビル・ジェームズが考案し、式の形が三平方の定理（ピタゴラスの定理）に似ていることからこう呼ばれます。</p>
+<div class="formula">ピタゴラス勝率 ＝ 得点<sup>{{EXP}}</sup> ÷（得点<sup>{{EXP}}</sup> ＋ 失点<sup>{{EXP}}</sup>）<br>
+見込み勝数 ＝ ピタゴラス勝率 ×（勝＋敗）<br>
+運 ＝ 実際の勝ち数 − 見込み勝数</div>
+<p>元の式は指数が2ですが、このページでは1.83を使っています。{{FIRST}}〜{{LAST}}年のプロ野球で試すと、指数2より1.83の方が実際の勝ち数に近くなるためです。引き分けは勝率の計算に入れないので、見込み勝数も「勝＋敗」の数に掛けています。</p>
+
+<h2>「運」の数字の読み方</h2>
+<ul>
+<li><strong>±{{RMSE}}勝くらいまでは普通の範囲</strong>です。{{FIRST}}〜{{LAST}}年の全球団で、実際の勝ち数と見込み勝数のずれは平均で約{{RMSE}}勝あります。</li>
+<li>大きくプラスの球団は、1点差の試合に強い、リリーフが勝ちゲームをしっかり締めている、大差で負ける試合が多い（失点がかさんでも負けは1つ）、といった理由が考えられます。</li>
+<li>大きくマイナスの球団はその逆で、大勝が多いのに接戦を落としている球団です。</li>
+</ul>
+
+<h2>運は続かない：翌年は得失点どおりに戻りやすい</h2>
+<p>運で勝った分は、翌年には持ち越されにくいことがデータから分かります。</p>
+<ul>
+<li>ある年の「運」と翌年の「運」の相関は{{LUCK_CORR}}で、ほぼ無関係です。</li>
+<li>翌年の勝率を当てるには、その年の実際の勝率（相関{{PCT_CORR}}）より、ピタゴラス勝率（相関{{PYTH_CORR}}）の方が向いています。</li>
+<li>運で4勝以上多く勝った{{LUCKY_N}}球団のうち、{{LUCKY_DROP}}球団（{{LUCKY_DROP_PCT}}%）は翌年に勝率を落としました。</li>
+</ul>
+<p>順位の割に得失点差が小さい球団は、来季に向けて戦力を過信しない方がよい、ということになります。</p>
+
+<h2>よくある質問</h2>
+<h3>いつ更新されますか？</h3>
+<p>毎日0時ごろと7時ごろ（日本時間）に、NPB公式の個人成績を取得して計算し直しています。</p>
+<h3>順位表の得点・失点と数字が違うことはありますか？</h3>
+<p>得点は打者の得点、失点は投手の失点をそれぞれ球団ごとに足して出しています。勝敗も投手の勝利・敗戦の合計で、順位表と一致します。</p>
+<h3>関連するページは？</h3>
+<p>現在の順位と優勝の条件は<a href="/magic/">マジックナンバー・クリンチナンバー</a>、選手ごとの指標は<a href="/saber/">セイバーメトリクス ランキング</a>、選手の貢献度の計算は<a href="/war/">WAR計算ツール</a>でどうぞ。</p>
+</article>
+
+<footer class="disclaimer">
+成績はNPB（日本野球機構）公式サイトの個人成績をもとに、当サイトが独自に集計・計算したものです。
+</footer>
+
+</div>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "ピタゴラス勝率とは何ですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "チームの得点と失点から、その得失点なら普通はどれくらいの勝率になるかを見積もる式です。得点の{{EXP}}乗を、得点の{{EXP}}乗と失点の{{EXP}}乗の和で割って求めます。" } },
+    { "@type": "Question", "name": "ピタゴラス勝率と実際の勝率の差は何を表しますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "得失点の割に多く勝てているか（接戦に強い・運が良い）、負けているかを表します。{{FIRST}}〜{{LAST}}年のプロ野球では、実際の勝ち数と見込み勝数のずれは平均で約{{RMSE}}勝で、この差は翌年に持ち越されにくい傾向があります。" } },
+    { "@type": "Question", "name": "いつ更新されますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "毎日0時ごろと7時ごろ（日本時間）に、NPB公式の個人成績を取得して計算し直しています。" } }
+  ]
+}
+</script>
+
+<script>
+(function(){
+  // シーズンの切り替え（?year=2015 で開ける）
+  var sel = document.getElementById("year");
+  function show(y){
+    Array.prototype.forEach.call(document.querySelectorAll(".season"), function(el){
+      el.hidden = el.getAttribute("data-year") !== String(y);
+    });
+  }
+  var q = new URLSearchParams(location.search).get("year");
+  if (q && sel.querySelector('option[value="' + q + '"]')) { sel.value = q; show(q); }
+  sel.addEventListener("change", function(){
+    show(sel.value);
+    try { history.replaceState(null, "", sel.value === sel.options[0].value ? location.pathname : "?year=" + sel.value); } catch (e) {}
+  });
+
+  // 棒にカーソルを合わせたとき（タップ・キーボードでも）の詳細
+  var tip = document.getElementById("tip");
+  function place(e, row){
+    tip.textContent = row.getAttribute("data-tip");
+    tip.hidden = false;
+    var r = row.getBoundingClientRect();
+    var x = e && e.clientX ? e.clientX + 12 : r.left + 20;
+    var y = e && e.clientY ? e.clientY + 14 : r.bottom + 6;
+    x = Math.min(x, window.innerWidth - tip.offsetWidth - 8);
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".bar-row"), function(row){
+    row.addEventListener("mousemove", function(e){ place(e, row); });
+    row.addEventListener("mouseleave", function(){ tip.hidden = true; });
+    row.addEventListener("focus", function(){ place(null, row); });
+    row.addEventListener("blur", function(){ tip.hidden = true; });
+    row.addEventListener("touchstart", function(){ place(null, row); }, {passive:true});
+  });
+  window.addEventListener("scroll", function(){ tip.hidden = true; }, {passive:true});
+
+  // 計算機
+  var EXP = {{EXP}};
+  function calc(){
+    var rs = parseFloat(document.getElementById("c-rs").value) || 0;
+    var ra = parseFloat(document.getElementById("c-ra").value) || 0;
+    var n = parseFloat(document.getElementById("c-n").value) || 0;
+    var out = document.getElementById("c-out");
+    if (rs + ra <= 0) { out.textContent = "得点と失点を入れてください。"; return; }
+    var p = Math.pow(rs, EXP) / (Math.pow(rs, EXP) + Math.pow(ra, EXP));
+    var p2 = rs * rs / (rs * rs + ra * ra);
+    var f = function(x){ return x.toFixed(3).replace(/^0/, ""); };
+    out.innerHTML = "ピタゴラス勝率 <strong>" + f(p) + "</strong>" +
+      (n > 0 ? "　見込み <strong>" + (p * n).toFixed(1) + "</strong>勝 " + (n - p * n).toFixed(1) + "敗" : "") +
+      "<br><span class=\"note\">（指数2の元の式では " + f(p2) + "）</span>";
+  }
+  ["c-rs", "c-ra", "c-n"].forEach(function(id){ document.getElementById(id).addEventListener("input", calc); });
+  calc();
+})();
+</script>
+
+</body>
+</html>
