@@ -78,6 +78,10 @@ td.mk{ font-weight:700; }
 td.need{ font-weight:800; font-size:1.05rem; color:var(--ink-strong); }
 td .sub{ display:block; font-size:0.72rem; color:var(--ink-mute); font-weight:400; }
 .m-only{ display:none !important; }
+/* 節目までの進み具合（0から節目までの割合。載せるのは88%を超えた選手だけ） */
+td.cur .prog{ display:block; width:100%; min-width:64px; height:6px; margin:4px 0 1px; background:var(--line-soft); border-radius:3px; overflow:hidden; }
+td.cur .prog i{ display:block; height:100%; background:linear-gradient(90deg, #93c5fd, #2563eb); border-radius:3px; }
+td.cur .pct{ display:block; font-size:0.7rem; color:var(--ink-mute); font-variant-numeric:tabular-nums; }
 td.when{ font-size:0.86rem; }
 td.when.w1{ color:var(--good); font-weight:700; }
 
