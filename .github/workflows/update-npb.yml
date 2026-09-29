@@ -5,6 +5,7 @@
 #   /draft/  ドラフト答え合わせ
 #   /pythagorean/  運ランキング（ピタゴラス勝率）
 #   /milestone/  記録達成カウントダウン
+#   /kings/  いろんな「王」ランキング（部門別の上位5人）
 #   /player/  選手ページ（シーズン終了時だけ作り直す）
 #
 # NPB公式の勝敗表・個人成績・ドラフト指名選手を取り、npb/ のスクリプトで計算して書き出す。
@@ -65,6 +66,9 @@ jobs:
       - name: 記録達成カウントダウンを作成
         run: python npb/build_milestone.py --data npb/data --league war/league.json --out milestone
 
+      - name: いろんな「王」ランキングを作成
+        run: python npb/build_kings.py --data npb/data --out kings
+
       - name: サイトマップを作り直す（新しい年のドラフトのページを載せる）
         run: python scripts/build_sitemap.py
 
@@ -73,14 +77,14 @@ jobs:
           # 「最終更新」の時刻だけが変わった場合はコミットしない。
           # テンプレートを直したときは本文が変わるので、それはコミットする。
           # 新しく増えたファイル（新しい年のデータ・ページ）があればコミットする
-          if git diff --quiet -I '最終更新' -- magic war/league.json saber draft pythagorean milestone player npb/data sitemap.xml \
-             && [ -z "$(git status --porcelain --untracked-files=all -- saber draft pythagorean milestone player npb/data | grep '^??')" ]; then
+          if git diff --quiet -I '最終更新' -- magic war/league.json saber draft pythagorean milestone kings player npb/data sitemap.xml \
+             && [ -z "$(git status --porcelain --untracked-files=all -- saber draft pythagorean milestone kings player npb/data | grep '^??')" ]; then
             echo "成績に変化なし。コミットしません。"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add magic war/league.json saber draft pythagorean milestone player npb/data sitemap.xml
+          git add magic war/league.json saber draft pythagorean milestone kings player npb/data sitemap.xml
           git commit -m "chore: プロ野球データを更新 ($(date -u '+%Y-%m-%d %H:%M UTC'))"
           for i in 1 2 3; do
             git push && break
