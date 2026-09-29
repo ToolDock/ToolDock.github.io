@@ -91,6 +91,8 @@ td.rk{ color:var(--ink-mute); text-align:center; width:2.8em; }
 td.pl, th.pl{ text-align:left; position:sticky; left:0; background:#fff; z-index:1; }
 thead th.pl{ background:var(--head-bg); z-index:2; }
 td.pl .nm, .lead .nm{ font-weight:700; color:var(--ink-strong); }
+td.pl .nm a, .lead .nm a{ color:inherit; text-decoration:none; border-bottom:1px dotted var(--ink-mute); }
+td.pl .nm a:hover, .lead .nm a:hover{ color:var(--accent); border-bottom-color:var(--accent); }
 td.pl .tm, .lead .tm{ display:block; font-size:0.72rem; color:var(--ink-mute); }
 td.c{ text-align:center; }
 td.key{ font-weight:800; color:var(--ink-strong); }
@@ -326,7 +328,7 @@ function render(){
     var html = "";
     list.slice(0, state.shown).forEach(function(o, i){
         html += '<tr><td class="rk">' + (i + 1) + '</td>'
-             + '<td class="pl"><span class="nm">' + esc(o.name.replace(/　/g, " ")) + '</span><span class="tm">' + esc(o.teams.join("→")) + '</span></td>';
+             + '<td class="pl"><span class="nm">' + (o.id ? '<a href="/player/' + o.id + '/">' : '') + esc(o.name.replace(/　/g, " ")) + (o.id ? '</a>' : '') + '</span><span class="tm">' + esc(o.teams.join("→")) + '</span></td>';
         if (state.kind === "bat"){
             html += '<td class="c">' + o.pos + '</td><td class="c">' + ({ R:"右", L:"左", S:"両" })[o.hand] + '</td>';
         } else {

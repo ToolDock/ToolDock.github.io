@@ -1,0 +1,57 @@
+{
+ "_説明": "名球会の日米通算に使う、メジャーリーグでの通算（MLB公式の統計APIで確認、2026年9月時点）。選手ID: {名前, h安打, hr本塁打, w勝利, sv セーブ, hld ホールド}",
+ "51655114": {
+  "name": "Kenta Maeda",
+  "w": 68,
+  "sv": 6,
+  "hld": 10,
+  "h": 28,
+  "hr": 1
+ },
+ "11215114": {
+  "name": "Masahiro Tanaka",
+  "w": 78,
+  "sv": 0,
+  "hld": 0
+ },
+ "41945131": {
+  "name": "Yoshi Tsutsugo",
+  "h": 110,
+  "hr": 18
+ },
+ "81285112": {
+  "name": "Yoshihisa Hirano",
+  "w": 9,
+  "sv": 8,
+  "hld": 48
+ },
+ "51155130": {
+  "name": "Kohei Arihara",
+  "w": 3,
+  "sv": 0,
+  "hld": 0
+ },
+ "31135133": {
+  "name": "Shogo Akiyama",
+  "h": 71,
+  "hr": 0
+ },
+ "41045137": {
+  "name": "Shintaro Fujinami",
+  "w": 7,
+  "sv": 2,
+  "hld": 5
+ },
+ "71575132": {
+  "name": "Shinnosuke Ogasawara",
+  "w": 1,
+  "sv": 0,
+  "hld": 1
+ },
+ "51355135": {
+  "name": "Naoyuki Uwasawa",
+  "w": 0,
+  "sv": 0,
+  "hld": 0
+ }
+}

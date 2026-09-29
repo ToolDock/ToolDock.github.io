@@ -55,13 +55,15 @@ def season_rows(st):
     return sorted(rows)
 
 
-def compute_season(st, lg_consts, links=None):
+def compute_season(st, lg_consts, links=None, include_zero=False):
     """season_<年>.json → (打者のリスト, 投手のリスト)。各要素は dict。
     lg_consts: {"central": {...}, "pacific": {...}}（league.json のその年の値）
     links: {(登録名, 球団名): pid}（People.link_all のその年の分）。
       あれば、同じ人と確定した行だけを1人にまとめる（途中移籍・移籍で登録名が変わった選手）。
       別の球団の同じ登録名は別人のことがあるので、結びつかなかった行は球団ごとに分ける。
-      なければ登録名でまとめる。"""
+      なければ登録名でまとめる。
+    include_zero: 打席0の野手（代走・守備固めだけ）・アウト0の投手も、数の成績だけの行として入れる
+      （選手ページ・記録カウントダウンの通算用。率やWARは None / 0）"""
     bc = {c: i for i, c in enumerate(st["bat_cols"])}
     pc = {c: i for i, c in enumerate(st["pit_cols"])}
     teams = st["teams"]
@@ -96,6 +98,19 @@ def compute_season(st, lg_consts, links=None):
     for idt, b in bat.items():
         pa = b["打席"]
         if pa <= 0:
+            if include_zero and b["試合"] > 0:
+                main_team = max(b["pa_by_team"], key=b["pa_by_team"].get)
+                fg = fld.get(idt, {})
+                batters.append({
+                    "name": b["name_by_team"][main_team], "pid": idt[1] if idt[0] == "p" else None,
+                    "teams": [teams[c]["name"] for c in b["teams"]], "lg": teams[main_team]["league"],
+                    "pos": POS_SHORT[max(fg, key=fg.get)] if fg else POS_SHORT["代打"], "hand": b["hand"],
+                    "g": b["試合"], "pa": 0, "ab": 0, "h": 0, "hr": 0, "rbi": b["打点"], "sb": b["盗塁"],
+                    "bb": 0, "so": 0, "d2": 0, "d3": 0, "hbp": 0, "sf": 0,
+                    "r": b["得点"], "sh": 0, "cs": b["盗塁刺"], "ibb": 0, "gdp": 0,
+                    "avg": None, "obp": None, "slg": None, "ops": None, "woba": None, "wrcp": None,
+                    "iso": None, "babip": None, "kp": None, "bbp": None,
+                    "wraa": 0, "wsb": 0, "posr": 0, "repl": 0, "war": 0.0, "qual": False, "zero": True})
             continue
         main_team = max(b["pa_by_team"], key=b["pa_by_team"].get)
         name = b["name_by_team"][main_team]
@@ -132,6 +147,8 @@ def compute_season(st, lg_consts, links=None):
             "pos": POS_SHORT[main_pos], "hand": b["hand"],
             "g": b["試合"], "pa": pa, "ab": ab, "h": h, "hr": hr, "rbi": b["打点"], "sb": sb,
             "bb": bb, "so": so, "d2": d2, "d3": d3, "hbp": hbp, "sf": sf,
+            # 選手ページで使う（ランキングのJSONには出さない）
+            "r": b["得点"], "sh": b["犠打"], "cs": cs, "ibb": ibb, "gdp": b["併殺打"],
             "avg": r(avg, 3), "obp": r(obp, 3), "slg": r(slg, 3),
             "ops": r(obp + slg, 3) if obp is not None and slg is not None else None,
             "woba": r(woba, 3), "wrcp": round(wrcp) if wrcp is not None else None,
@@ -161,6 +178,17 @@ def compute_season(st, lg_consts, links=None):
     for idt, p in pit.items():
         outs = p["outs"]
         if outs <= 0:
+            if include_zero and p["登板"] > 0:
+                main_team = p["teams"][0]
+                pitchers.append({
+                    "name": p["name_by_team"][main_team], "pid": idt[1] if idt[0] == "p" else None,
+                    "teams": [teams[c]["name"] for c in p["teams"]], "lg": teams[main_team]["league"],
+                    "role": "救援", "hand": p["hand"],
+                    "g": p["登板"], "w": p["勝利"], "l": p["敗北"], "sv": p["セーブ"], "hld": p["ホールド"],
+                    "ip": 0, "outs": 0, "so": p["三振"], "bb": p["四球"], "hr": p["本塁打"], "er": p["自責点"],
+                    "ha": p["安打"], "ra": p["失点"], "hbp": p["死球"], "cg": 0, "bf": p["打者"],
+                    "era": None, "fip": None, "whip": None, "kp": None, "bbp": None, "kbb": None, "hr9": None,
+                    "war": 0.0, "qual": False, "zero": True})
             continue
         main_team = max(p["outs_by_team"], key=p["outs_by_team"].get)
         name = p["name_by_team"][main_team]
@@ -181,6 +209,8 @@ def compute_season(st, lg_consts, links=None):
             "role": role, "hand": p["hand"],
             "g": g, "w": p["勝利"], "l": p["敗北"], "sv": p["セーブ"], "hld": p["ホールド"],
             "ip": r(ip, 1), "outs": outs, "so": so, "bb": bb, "hr": hr, "er": er,
+            # 選手ページで使う（ランキングのJSONには出さない）
+            "ha": p["安打"], "ra": p["失点"], "hbp": hbp, "cg": p["完投"], "bf": bf,
             "era": r(9 * er / ip, 2), "fip": r(fip, 2),
             "whip": r((p["安打"] + bb) / ip, 2),
             "kp": r(div(so, bf), 3), "bbp": r(div(bb, bf), 3),
@@ -211,7 +241,10 @@ def top_table(rows, cols, n=10):
 
 
 def name_cell(row):
-    return (f'<span class="nm">{html.escape(row["name"].replace(chr(0x3000), " "))}</span>'
+    nm = html.escape(row["name"].replace(chr(0x3000), " "))
+    if row.get("id"):
+        nm = f'<a href="/player/{row["id"]}/">{nm}</a>'
+    return (f'<span class="nm">{nm}</span>'
             f'<span class="tm">{html.escape("・".join(row["teams"]))}</span>')
 
 
@@ -254,11 +287,12 @@ def render(year, as_of, final, batters, pitchers, years):
 
 
 def pack(year, st, batters, pitchers):
+    # id：選手ページ（/player/<id>/）がある選手だけ。無ければ null
     bcols = ["name", "teams", "lg", "pos", "hand", "g", "pa", "h", "hr", "rbi", "sb", "avg", "obp", "slg",
              "ops", "woba", "wrcp", "iso", "babip", "kp", "bbp", "war", "qual",
-             "ab", "bb", "so", "wraa", "wsb", "posr", "repl"]
+             "ab", "bb", "so", "wraa", "wsb", "posr", "repl", "id"]
     pcols = ["name", "teams", "lg", "role", "hand", "g", "w", "l", "sv", "hld", "ip", "so", "era", "fip",
-             "whip", "kp", "bbp", "kbb", "hr9", "war", "qual", "outs", "bb", "hr"]
+             "whip", "kp", "bbp", "kbb", "hr9", "war", "qual", "outs", "bb", "hr", "id"]
     return {"year": year, "as_of": st.get("as_of"), "final": bool(st.get("final")),
             "bcols": bcols, "bat": [[b[c] for c in bcols] for b in batters],
             "pcols": pcols, "pit": [[p[c] for c in pcols] for p in pitchers]}
@@ -301,8 +335,13 @@ def main(argv=None):
     links = people.link_all({y: season_rows(st) for y, st in stores.items()}) if people else {}
     seasons = [(y, st) + compute_season(st, league[str(y)], links.get(y)) for y, st in stores.items()]
 
+    # 選手ページ（npb/build_players.py が作る）がある選手には、名前にリンクを付ける
+    built = out.parent / "player" / "built.json"
+    has_page = set(json.loads(built.read_text(encoding="utf-8"))["pids"]) if built.exists() else set()
     years, latest = [], None
     for y, st, batters, pitchers in seasons:
+        for x in batters + pitchers:
+            x["id"] = x["pid"] if x["pid"] in has_page else None
         if people:
             apply_names(people, batters, pitchers)
         (out / "data" / f"{y}.json").write_text(
