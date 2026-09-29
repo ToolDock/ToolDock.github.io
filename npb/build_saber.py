@@ -76,7 +76,7 @@ def compute_season(st, lg_consts, links=None, include_zero=False):
 
     # --- 守備：人ごと・位置ごとの試合数
     fld = {}
-    for code, name, pos, g in st["fld"]:
+    for code, name, pos, g, *_ in st["fld"]:
         f = fld.setdefault(ident(name, code), {})
         f[pos] = f.get(pos, 0) + g
 
