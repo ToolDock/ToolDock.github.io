@@ -36,25 +36,65 @@ def parse_tools():
     for block in re.findall(r"\{[^{}]*?id:\s*\"[^\"]+\"[\s\S]*?\n  \}", body):
         if re.search(r"hidden:\s*true", block):
             continue
-        got = {k: re.search(k + r':\s*"([^"]*)"', block) for k in
-               ("title", "url", "category")}
+        got = {k: re.search(r"\b" + k + r':\s*"([^"]*)"', block) for k in
+               ("id", "title", "desc", "url", "category")}
         if all(got.values()):
-            tools.append({k: v.group(1) for k, v in got.items()})
+            tool = {k: v.group(1) for k, v in got.items()}
+            pop = re.search(r"popularity:\s*(\d+)", block)
+            tool["popularity"] = int(pop.group(1)) if pop else 0
+            tools.append(tool)
     return categories, tools
 
 
+# トップの「よく使われているツール」に出す数（tool-data.js の popularity の大きい順）
+POPULAR = 6
+
+
+def card(t, rank=None):
+    """ツール1件のカード。一覧は <div id="tool-list"> の中に置くので </div> は使わない"""
+    badge = f'<span class="tc-rank">{rank}</span>' if rank else ""
+    return (f'    <li><a class="tool-card c-{html.escape(t["category"])}" '
+            f'href="{html.escape(t["url"])}">{badge}'
+            f'<span class="tc-title">{html.escape(t["title"])}</span>'
+            f'<span class="tc-desc">{html.escape(t["desc"])}</span></a></li>')
+
+
 def render(categories, tools):
+    labels = dict(categories)
     out = [BEGIN]
+
+    # カテゴリへのジャンプ
+    out.append('  <nav class="cat-jump" aria-label="カテゴリ">')
+    for key, label in categories:
+        n = sum(t["category"] == key for t in tools)
+        if n:
+            out.append(f'    <a class="c-{key}" href="#cat-{key}">'
+                       f'{html.escape(label)}<span>{n}</span></a>')
+    out.append("  </nav>")
+
+    popular = sorted((t for t in tools if t["popularity"] > 0),
+                     key=lambda t: -t["popularity"])[:POPULAR]
+    if popular:
+        out.append('  <section class="cat" id="popular">')
+        out.append("  <h2>よく使われているツール</h2>")
+        out.append('  <ul class="tool-grid">')
+        for rank, t in enumerate(popular, 1):
+            out.append(card(t, rank))
+        out.append("  </ul>")
+        out.append("  </section>")
+
     for key, label in categories:
         items = [t for t in tools if t["category"] == key]
         if not items:
             continue
-        out.append(f"  <h2>{html.escape(label)}</h2>")
-        out.append("  <ul>")
+        out.append(f'  <section class="cat c-{key}" id="cat-{key}">')
+        out.append(f'  <h2>{html.escape(labels[key])}'
+                   f'<span class="cat-n">{len(items)}</span></h2>')
+        out.append('  <ul class="tool-grid">')
         for t in items:
-            out.append(f'    <li><a href="{html.escape(t["url"])}">'
-                       f'{html.escape(t["title"])}</a></li>')
+            out.append(card(t))
         out.append("  </ul>")
+        out.append("  </section>")
     out.append(END)
     return "\n".join(out)
 
