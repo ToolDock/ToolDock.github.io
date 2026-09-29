@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import html
 import re
 import sys
 import time
@@ -35,8 +36,14 @@ DRAFT_URL = "https://npb.jp/draft/{year}/{page}"
 BAT_COLS = ["team", "name", "hand", "試合", "打席", "打数", "得点", "安打", "二塁打", "三塁打",
             "本塁打", "打点", "盗塁", "盗塁刺", "犠打", "犠飛", "四球", "故意四", "死球", "三振", "併殺打"]
 PIT_COLS = ["team", "name", "hand", "登板", "勝利", "敗北", "セーブ", "ホールド", "完投", "打者",
-            "outs", "安打", "本塁打", "四球", "故意四", "死球", "三振", "失点", "自責点"]
-FLD_COLS = ["team", "name", "pos", "試合"]
+            "outs", "安打", "本塁打", "四球", "故意四", "死球", "三振", "失点", "自責点",
+            "完封勝", "無四球", "暴投", "ボーク"]
+FLD_COLS = ["team", "name", "pos", "試合", "刺殺", "補殺", "失策", "併殺", "捕逸"]
+FLD_NUMS = FLD_COLS[3:]          # 守備成績の数の列（捕逸は捕手だけ。ほかの位置は0）
+# リーグ全体の守備部門のページ（llf_c / llf_p）にだけある順位（個人の成績表には無い）
+LEADER_TITLES = {"csp": "盗塁阻止率（捕手）"}
+TEAM_ABBR = {"巨": "巨人", "ヤ": "ヤクルト", "神": "阪神", "広": "広島", "中": "中日", "デ": "DeNA", "横": "横浜",
+             "ソ": "ソフトバンク", "日": "日本ハム", "ロ": "ロッテ", "西": "西武", "楽": "楽天", "オ": "オリックス"}
 POSITIONS = ("捕手", "一塁手", "二塁手", "三塁手", "遊撃手", "外野手")
 
 
@@ -88,27 +95,54 @@ def parse_fielding(page):
             row = dict(zip(heads, tds))
             name = row.get("選手", "")
             if name:
-                out.append([clean_name(name), best[0], num(row["試合"])])
+                out.append([clean_name(name), best[0]] + [num(row.get(k, 0)) for k in FLD_NUMS])
     return out
 
 
 def parse_fielding_old(page):
-    """古い年の個人守備成績：1つの表の中に「【一塁手】」の見出し行が挟まっている"""
+    """古い年の個人守備成績：1つの表の中に「【一塁手】」の見出し行が挟まっている。
+    見出し行は【一塁手】・試合・刺殺…、選手の行は 印・選手名・試合・刺殺… の順"""
     out = []
-    pos = None
+    pos, heads = None, []
     for tr in re.findall(r"<tr[^>]*>(.*?)</tr>", page, re.S):
         head = re.search(r"【(.+?)】", _cell(tr)) if "<th" in tr else None
         if head:
             pos = head.group(1) if head.group(1) in POSITIONS else None
+            new = [re.sub(r"\s", "", _cell(h)) for h in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", tr, re.S)][1:]
+            # 列名は最初の【一塁手】の行にだけあり、2つ目からの見出し行は空
+            if any(new):
+                heads = new
             continue
         if not pos:
             continue
-        tds = [_cell(td) for td in re.findall(r"<td[^>]*>(.*?)</td>", tr, re.S)]
-        m = re.search(r'<td class="stplayer">(.*?)</td>\s*<td[^>]*>(.*?)</td>', tr, re.S)
-        if m:
-            name, g = _cell(m.group(1)), _cell(m.group(2))
-            if name and re.fullmatch(r"\d+", g):
-                out.append([clean_name(name), pos, int(g)])
+        m = re.search(r'<td class="stplayer">(.*?)</td>(.*)', tr, re.S)
+        if not m:
+            continue
+        name = _cell(m.group(1))
+        vals = [_cell(td) for td in re.findall(r"<td[^>]*>(.*?)</td>", m.group(2), re.S)]
+        row = dict(zip(heads, vals))
+        if name and re.fullmatch(r"\d+", row.get("試合", "")):
+            out.append([clean_name(name), pos] + [num(row.get(k, 0)) for k in FLD_NUMS])
+    return out
+
+
+def parse_leaders(page):
+    """守備部門のページ → {"csp": [{"rank": 1, "name": "古賀　優大", "team": "ヤクルト", "value": 0.5}, ...]}。
+    同じ順位に何人もいて「( 3 選手 )」とまとめられている行は、名前が無いので外す"""
+    text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", page)))
+    out = {}
+    for key, title in LEADER_TITLES.items():
+        i = text.find(title)
+        if i < 0:
+            continue
+        rest = text[i + len(title):]
+        nxt = re.search(r"\S+（[^）]+）", rest)          # 次の部門の見出し（守備率（投手） など）
+        body = rest[:nxt.start()] if nxt else rest[:400]
+        rows = []
+        for m in re.finditer(r"(\d+)\s+([^()（）]+?)\s*[（(]\s*(\S)\s*[）)]\s*([\d.]+)", body):
+            rows.append({"rank": int(m.group(1)), "name": clean_name(m.group(2)),
+                         "team": TEAM_ABBR.get(m.group(3), m.group(3)), "value": float(m.group(4))})
+        out[key] = rows
     return out
 
 
@@ -153,14 +187,22 @@ def fetch_season(src, year):
                 row.append(outs if k == "outs" else num(r.get(k, 0)))
             pit.append(row)
         try:
-            for name, pos, g in fetch_fielding(src, year, code):
-                fld.append([code, name, pos, g])
+            for row in fetch_fielding(src, year, code):
+                fld.append([code] + row)
         except Exception as e:  # 守備は無くても打撃・投手の集計はできる
             print(f"注意: {year} {code} 守備成績を読めない: {e}", file=sys.stderr)
 
+    leaders = {}
+    for lg, key, label in LEAGUES:
+        try:
+            for k, rows in parse_leaders(src.get(year, f"llf_{lg}")).items():
+                leaders.setdefault(k, {})[key] = rows
+        except Exception as e:  # 無くても成績の集計はできる
+            print(f"注意: {year} {label} 守備部門の順位を読めない: {e}", file=sys.stderr)
+
     return {"year": year, "as_of": as_of, "teams": teams, "totals": totals,
             "bat_cols": BAT_COLS, "bat": bat, "pit_cols": PIT_COLS, "pit": pit,
-            "fld_cols": FLD_COLS, "fld": fld}
+            "fld_cols": FLD_COLS, "fld": fld, "leaders": leaders}
 
 
 # ---------------------------------------------------------------- ドラフト
@@ -350,28 +392,21 @@ def main(argv=None):
     data.mkdir(parents=True, exist_ok=True)
     year = args.year or datetime.now(JST).year
 
-    # 守備成績が空の年（古いページ形式を読めなかった年）は、守備だけ取り直す
-    for y in range(args.first, year):
-        path = data / f"season_{y}.json"
-        old = load(path)
-        if old and old.get("final") and not old.get("fld"):
-            fld = []
-            for code in old["teams"]:
-                fld += [[code, n, p, g] for n, p, g in fetch_fielding(src, y, code)]
-            old["fld"] = fld
-            save(path, old)
-            print(f"season {y}: 守備 {len(fld)} を補完")
-
     for y in range(args.first, year + 1):
         path = data / f"season_{y}.json"
         old = load(path)
-        if old and old.get("final") and y < year:
+        # 終わった年は取り直さない。ただし保存する項目を増やしたあと（列が足りない年）は1回だけ取り直す
+        current = old and old.get("pit_cols") == PIT_COLS and old.get("fld_cols") == FLD_COLS and "leaders" in old
+        if old and old.get("final") and y < year and current:
             continue
         try:
             season = fetch_season(src, y)
         except Exception as e:
             if y == year:          # 開幕前
                 print(f"{y}年の成績はまだない: {e}", file=sys.stderr)
+                continue
+            if old:                # 取り直しに失敗した過去の年は、前のデータのまま
+                print(f"注意: {y}年を取り直せない（前のデータのまま）: {e}", file=sys.stderr)
                 continue
             raise
         season["final"] = y < year

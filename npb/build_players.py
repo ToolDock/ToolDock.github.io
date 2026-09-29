@@ -28,7 +28,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_draft as bd  # noqa: E402
 import player_profile  # noqa: E402
-from people import People, franchise, key  # noqa: E402
+from people import People, franchise, is_foreign_style, key  # noqa: E402
 
 JST = timezone(timedelta(hours=9))
 SITE = "https://tooldock.github.io"
@@ -427,6 +427,43 @@ def page(title, desc, canonical, h1_html, body, extra_head="", h1_text=None):
 """
 
 
+POS_GROUP = {"捕": "捕手", "一": "内野手", "二": "内野手", "三": "内野手", "遊": "内野手", "外": "外野手"}
+
+
+def pos_group(bat, pit):
+    """投手・捕手・内野手・外野手（最も多く守った位置の組）"""
+    if kind_of(bat, pit) == "p":
+        return "投手"
+    cnt = defaultdict(int)
+    for r in bat:
+        g = POS_GROUP.get(r.get("pos") or "")
+        if g:
+            cnt[g] += r["g"]
+    return max(cnt, key=cnt.get) if cnt else "野手"
+
+
+def kana_parts(kana):
+    """読み → (苗字, 名前) のひらがな。外国出身の選手は「名前・苗字」の順なので入れ替える"""
+    k = clean_kana(kana)
+    parts = [x for x in re.split(r"[・･\s　]+", k) if x]
+    if not parts:
+        return "", ""
+    if is_foreign_kana(kana):
+        return hira(parts[-1]), hira("".join(parts[:-1]))
+    return hira(parts[0]), hira("".join(parts[1:]))
+
+
+def search_data(entries, latest):
+    """選手一覧の検索用（/player/players.json）"""
+    cols = ["id", "name", "kana", "sei", "mei", "names", "teams", "first", "last", "pos", "hand", "school", "active"]
+    rows = []
+    for e in sorted(entries, key=lambda e: (sort_kana(e["kana"]) or "ん", e["name"])):
+        sei, mei = kana_parts(e["kana"])
+        rows.append([e["pid"], disp(e["name"]), clean_kana(e["kana"]), sei, mei, e["names"], e["teams"],
+                     e["first"], e["last"], e["pos"], e["hand"], e["school"], 1 if e["last"] == latest else 0])
+    return json.dumps({"latest": latest, "cols": cols, "rows": rows}, ensure_ascii=False, separators=(",", ":")) + "\n"
+
+
 def index_page(entries, stores_latest):
     """一覧：50音の行ごと（読みが分からない選手は最後に）"""
     groups = defaultdict(list)
@@ -445,11 +482,165 @@ def index_page(entries, stores_latest):
                                + (f'〜{e["last"]}' if e["last"] != e["first"] else "") + '</span></li>' for e in es)
                      + "</ul>")
     body = (f'<p class="lead">2005年以降に一軍の公式戦に出場した{len(entries)}人の選手ページです。'
-            '年度別の成績と通算成績、wOBA・wRC+・FIPなどのセイバー指標と簡易WAR、ドラフトの指名、登録名の変遷をまとめています。</p>'
-            f'<nav class="kana-nav">{nav}</nav>' + "".join(parts))
-    return page("プロ野球 選手一覧｜年度別成績・通算成績とWAR【2005年〜】",
+            '年度別の成績と通算成績、wOBA・wRC+・FIPなどのセイバー指標と簡易WAR、ドラフトの指名、登録名の変遷をまとめています。'
+            '名前・読み・出身校や、球団・ポジションで探せるほか、しりとりで使える選手も探せます。</p>'
+            + SEARCH_HTML +
+            f'<h2 class="list-head">50音順の一覧</h2><nav class="kana-nav">{nav}</nav>' + "".join(parts)
+            + '<script src="/player/search.js" defer></script>')
+    return page("プロ野球 選手一覧・選手検索｜年度別成績とWAR、しりとり検索も【2005年〜】",
                 f"2005年以降に一軍に出場したプロ野球選手{len(entries)}人の、年度別成績・通算成績とセイバー指標（wOBA・wRC+・FIP・簡易WAR）を選手ごとにまとめたページの一覧です。",
                 "/player/", "プロ野球 選手一覧", body)
+
+
+SEARCH_HTML = """
+<section class="search" id="search" aria-label="選手を探す">
+  <input id="q" type="search" placeholder="名前・読み・登録名・出身校（例：さかもと、大阪桐蔭）" autocomplete="off">
+  <div class="filters">
+    <label>球団<select id="f-team"><option value="">すべて</option></select></label>
+    <label>ポジション<select id="f-pos"><option value="">すべて</option><option>投手</option><option>捕手</option><option>内野手</option><option>外野手</option></select></label>
+    <label>投げ<select id="f-t"><option value="">すべて</option><option value="右投">右投げ</option><option value="左投">左投げ</option></select></label>
+    <label>打席<select id="f-b"><option value="">すべて</option><option value="右打">右打ち</option><option value="左打">左打ち</option><option value="両打">両打ち</option></select></label>
+    <label>在籍<select id="f-act"><option value="">すべて</option><option value="1">現役</option><option value="0">引退・退団</option></select></label>
+  </div>
+  <fieldset class="shiritori">
+    <legend>しりとりで探す</legend>
+    <label>読むところ<select id="s-part"><option value="full">フルネーム</option><option value="sei">苗字</option><option value="mei">名前</option></select></label>
+    <label>最初の文字<input id="s-head" maxlength="2" inputmode="kana" placeholder="例：と"></label>
+    <label>最後の文字<input id="s-tail" maxlength="2" inputmode="kana" placeholder="例：た"></label>
+    <label class="check"><input type="checkbox" id="s-dak">濁点・半濁点を区別しない</label>
+    <label class="check"><input type="checkbox" id="s-non">「ん」で終わる選手を除く</label>
+    <p class="hint">小さい字は大きい字（しょ→よ）、最後の「ー」は前の音の母音（ルー→う）として数えます。外国出身の選手のフルネームは「名前・苗字」の順です。</p>
+  </fieldset>
+  <p class="count" id="count">読み込み中…</p>
+  <ul class="results" id="results"></ul>
+  <button type="button" class="more" id="more" hidden>もっと見る</button>
+</section>
+"""
+
+SEARCH_JS = r"""// 選手一覧の検索（npb/build_players.py が書き出す。/player/players.json を読む）
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var PAGE = 60;
+  var SMALL = {"ぁ":"あ","ぃ":"い","ぅ":"う","ぇ":"え","ぉ":"お","ゃ":"や","ゅ":"ゆ","ょ":"よ","っ":"つ","ゎ":"わ","ゕ":"か","ゖ":"け"};
+  var VOWEL = {};
+  ["あかさたなはまやらわがざだばぱぁゃゎ", "いきしちにひみりぎじぢびぴぃ", "うくすつぬふむゆるぐずづぶぷぅゅっゔ",
+   "えけせてねへめれげぜでべぺぇ", "おこそとのほもよろをごぞどぼぽぉょ"].forEach(function(row, i){
+    for (var j = 0; j < row.length; j++) VOWEL[row[j]] = "あいうえお"[i];
+  });
+  function hira(s){ return String(s || "").replace(/[ァ-ヶ]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0x60); }); }
+  function plain(c){ return c.normalize("NFD").replace(/[゙゚]/g, "").normalize("NFC"); }
+  function norm(s){ return hira(String(s || "").normalize("NFKC")).replace(/[\s・･.．]/g, "").toLowerCase(); }
+  function kanaOnly(s){ return hira(s).replace(/[^ぁ-ゖー]/g, ""); }
+  function big(c){ return SMALL[c] || c; }
+  function head(s){ s = kanaOnly(s); return big(s.charAt(0)); }
+  function tail(s){
+    s = kanaOnly(s);
+    var c = s.charAt(s.length - 1);
+    if (c === "ー") c = VOWEL[s.charAt(s.length - 2)] || "";
+    return big(c);
+  }
+  function letter(v, dak){ var c = big(kanaOnly(v).charAt(0)); return dak ? plain(c) : c; }
+
+  var data = null, list = [], shown = PAGE;
+  function reading(o, part){ return part === "sei" ? o.sei : part === "mei" ? o.mei : o.kana; }
+
+  function run(){
+    if (!data) return;
+    var q = norm($("q").value), team = $("f-team").value, pos = $("f-pos").value,
+        t = $("f-t").value, b = $("f-b").value, act = $("f-act").value,
+        part = $("s-part").value, dak = $("s-dak").checked, non = $("s-non").checked,
+        h = letter($("s-head").value, dak), tl = letter($("s-tail").value, dak);
+    var fix = function(c){ return dak ? plain(c) : c; };
+    list = data.filter(function(o){
+      if (team && o.teams.indexOf(team) < 0) return false;
+      if (pos && o.pos !== pos) return false;
+      if (t && o.hand.indexOf(t) !== 0) return false;
+      if (b && o.hand.indexOf(b) < 0) return false;
+      if (act !== "" && String(o.active) !== act) return false;
+      if (q && o.key.indexOf(q) < 0) return false;
+      var r = reading(o, part);
+      if ((h || tl || non) && !kanaOnly(r)) return false;
+      if (h && fix(head(r)) !== h) return false;
+      if (tl && fix(tail(r)) !== tl) return false;
+      if (non && tail(r) === "ん") return false;
+      return true;
+    });
+    shown = PAGE;
+    render();
+    save();
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  function render(){
+    var part = $("s-part").value, sh = $("s-head").value || $("s-tail").value;
+    var act = list.filter(function(o){ return o.active; }).length;
+    $("count").textContent = list.length + "人" + (list.length ? "（うち現役 " + act + "人）" : "") +
+      (list.length > shown ? "　上から" + shown + "人を表示" : "");
+    $("results").innerHTML = list.slice(0, shown).map(function(o){
+      var r = reading(o, part), last = tail(r);
+      var yrs = o.first === o.last ? o.first : o.first + "〜" + o.last;
+      return '<li><a href="/player/' + o.id + '/">' + esc(o.name) + '</a>' +
+        (o.names.length ? '<span class="al">（' + esc(o.names.join("／")) + '）</span>' : '') +
+        '<span class="kn">' + esc(r || o.kana) + (sh && last ? ' <b>' + esc(last) + '</b>' : '') + '</span>' +
+        '<span class="mt">' + esc(o.pos) + '・' + esc(o.teams.join("→")) + '・' + yrs + (o.active ? '・現役' : '') + '</span>' +
+        (last && last !== "ん" ? '<button type="button" class="next" data-c="' + esc(last) + '">「' + esc(last) + '」から続ける</button>' : '') +
+        '</li>';
+    }).join("");
+    $("more").hidden = list.length <= shown;
+  }
+
+  function save(){
+    var p = new URLSearchParams();
+    [["q","q"],["team","f-team"],["pos","f-pos"],["t","f-t"],["b","f-b"],["act","f-act"],["part","s-part"],["head","s-head"],["tail","s-tail"]].forEach(function(x){
+      var v = $(x[1]).value; if (v && !(x[0] === "part" && v === "full")) p.set(x[0], v);
+    });
+    if ($("s-dak").checked) p.set("dak", "1");
+    if ($("s-non").checked) p.set("non", "1");
+    var s = p.toString();
+    try { history.replaceState(null, "", location.pathname + (s ? "?" + s : "") + (s ? "#search" : "")); } catch (e) {}
+  }
+
+  function load(){
+    var p = new URLSearchParams(location.search);
+    [["q","q"],["team","f-team"],["pos","f-pos"],["t","f-t"],["b","f-b"],["act","f-act"],["part","s-part"],["head","s-head"],["tail","s-tail"]].forEach(function(x){
+      if (p.get(x[0])) $(x[1]).value = p.get(x[0]);
+    });
+    $("s-dak").checked = p.get("dak") === "1";
+    $("s-non").checked = p.get("non") === "1";
+  }
+
+  ["q","s-head","s-tail"].forEach(function(id){ $(id).addEventListener("input", run); });
+  ["f-team","f-pos","f-t","f-b","f-act","s-part","s-dak","s-non"].forEach(function(id){ $(id).addEventListener("change", run); });
+  $("more").addEventListener("click", function(){ shown += PAGE * 2; render(); });
+  $("results").addEventListener("click", function(e){
+    var btn = e.target.closest("button.next");
+    if (!btn) return;
+    $("s-head").value = btn.getAttribute("data-c");
+    $("s-tail").value = "";
+    run();
+    $("search").scrollIntoView({behavior: "smooth", block: "start"});
+  });
+
+  fetch("/player/players.json").then(function(r){ return r.json(); }).then(function(d){
+    var c = {}; d.cols.forEach(function(k, i){ c[k] = i; });
+    data = d.rows.map(function(r){
+      var o = {}; d.cols.forEach(function(k){ o[k] = r[c[k]]; });
+      o.key = norm([o.name, o.kana, o.names.join(" "), o.school].join(" "));
+      return o;
+    });
+    var teams = {};
+    data.forEach(function(o){ o.teams.forEach(function(t){ teams[t] = 1; }); });
+    var order = ["巨人","阪神","DeNA","横浜","広島","中日","ヤクルト","ソフトバンク","日本ハム","ロッテ","西武","楽天","オリックス"];
+    Object.keys(teams).sort(function(a, b){ return (order.indexOf(a) + 99) % 99 - (order.indexOf(b) + 99) % 99; }).forEach(function(t){
+      var op = document.createElement("option"); op.textContent = t; $("f-team").appendChild(op);
+    });
+    load();
+    run();
+  }).catch(function(){ $("count").textContent = "データを読み込めませんでした。"; });
+})();
+"""
 
 
 CSS = """*{ box-sizing:border-box; }
@@ -499,6 +690,29 @@ ul.plist{ list-style:none; margin:0; padding:0; display:grid; grid-template-colu
 ul.plist li{ padding:3px 0; border-bottom:1px solid var(--line-soft); font-size:0.92rem; }
 ul.plist li span{ display:block; font-size:0.74rem; color:var(--ink-mute); }
 footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
+.search{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:14px 0 8px; scroll-margin-top:10px; }
+.search input[type=search]{ width:100%; font:inherit; font-size:1rem; padding:9px 12px; border:1px solid var(--line); border-radius:10px; }
+.search .filters, .search .shiritori{ display:flex; flex-wrap:wrap; gap:8px 12px; margin:10px 0 0; }
+.search label{ display:flex; flex-direction:column; gap:2px; font-size:0.78rem; font-weight:700; color:var(--ink-sub); }
+.search select, .search .shiritori input[type=text], .search .shiritori input:not([type]), .search .shiritori input[inputmode]{
+    font:inherit; font-size:0.92rem; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+.search .shiritori input[inputmode]{ width:4.5em; text-align:center; font-size:1.05rem; }
+.search .shiritori{ border:1px dashed var(--line); border-radius:12px; padding:6px 12px 10px; }
+.search legend{ font-size:0.86rem; font-weight:800; color:var(--ink-strong); padding:0 4px; }
+.search label.check{ flex-direction:row; align-items:center; gap:6px; font-size:0.86rem; padding-top:14px; }
+.search .hint{ flex-basis:100%; margin:2px 0 0; font-size:0.76rem; color:var(--ink-mute); }
+.search .count{ margin:12px 0 6px; font-size:0.9rem; font-weight:700; color:var(--ink-sub); }
+ul.results{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:6px 14px; }
+ul.results li{ border-bottom:1px solid var(--line-soft); padding:6px 0; }
+ul.results li a{ font-weight:700; }
+ul.results .al{ font-size:0.8rem; color:var(--ink-sub); }
+ul.results .kn, ul.results .mt{ display:block; font-size:0.78rem; color:var(--ink-mute); }
+ul.results .kn b{ color:var(--accent); font-size:0.95rem; }
+ul.results button.next{ margin-top:3px; font:inherit; font-size:0.76rem; padding:2px 10px; border:1px solid var(--line);
+    border-radius:999px; background:var(--tint); color:var(--ink-sub); cursor:pointer; }
+ul.results button.next:hover{ border-color:var(--accent); color:var(--accent); }
+.search .more{ margin:10px 0 0; font:inherit; font-size:0.9rem; padding:6px 16px; border:1px solid var(--line); border-radius:999px; background:#fff; cursor:pointer; }
+h2.list-head{ margin-top:34px; }
 @media (max-width:600px){
     dl.prof{ grid-template-columns:1fr; gap:0 0; }
     dl.prof dd{ margin-bottom:6px; }
@@ -561,9 +775,22 @@ def main(argv=None):
         (d_ / "index.html").write_text(html_text, encoding="utf-8")
         years = [r["y"] for r in bat + pit]
         last_row = max(bat + pit, key=lambda r: r["y"])
+        teams = []
+        for r in sorted(bat + pit, key=lambda r: r["y"]):
+            for t in r["teams"]:
+                if t not in teams:
+                    teams.append(t)
+        # 外国出身の選手の「Ｔ．バティスタ」と「バティスタ」のような、頭文字だけの違いは添えない
+        names = [n for n in list(person["alias"]) + seen if key(n) != key(person["name"])
+                 and not (is_foreign_style(person["name"]) and key(n) in key(person["name"]))]
         entries.append({"pid": pid, "name": person["name"], "kana": (profile or {}).get("kana", ""),
-                        "team": last_row["teams"][-1], "first": min(years), "last": max(years)})
+                        "team": last_row["teams"][-1], "first": min(years), "last": max(years),
+                        "teams": teams, "pos": pos_group(bat, pit), "hand": (profile or {}).get("profile", {}).get("投打", ""),
+                        "school": (profile or {}).get("profile", {}).get("経歴", ""),
+                        "names": list(dict.fromkeys(disp(n) for n in names))})
     (out / "index.html").write_text(index_page(entries, latest), encoding="utf-8")
+    (out / "players.json").write_text(search_data(entries, latest), encoding="utf-8")
+    (out / "search.js").write_text(SEARCH_JS, encoding="utf-8")
     built_path.write_text(json.dumps({"season": latest, "final": final, "as_of": as_of,
                                       "pids": sorted(e["pid"] for e in entries)}, ensure_ascii=False) + "\n",
                           encoding="utf-8")
