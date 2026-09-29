@@ -35,22 +35,22 @@ FULL_SEASON = 143
 # (キー, 部門名, 単位, 表示の形 "int"/"ip")
 BAT = [
     ("試合", "出場試合数", "試合", "int"), ("打席", "打席数", "打席", "int"), ("得点", "得点王", "得点", "int"),
-    ("安打", "安打王", "本", "int"), ("二塁打", "二塁打王", "本", "int"), ("三塁打", "三塁打王", "本", "int"),
+    ("安打", "最多安打", "本", "int"), ("二塁打", "二塁打王", "本", "int"), ("三塁打", "三塁打王", "本", "int"),
     ("本塁打", "本塁打王", "本", "int"), ("塁打", "塁打王", "塁打", "int"), ("打点", "打点王", "打点", "int"),
     ("盗塁", "盗塁王", "盗塁", "int"), ("盗塁刺", "盗塁死王（盗塁失敗）", "回", "int"), ("犠打", "犠打王", "犠打", "int"),
     ("犠飛", "犠飛王", "犠飛", "int"), ("四球", "四球王", "個", "int"), ("故意四", "敬遠王（故意四球）", "個", "int"),
     ("死球", "死球王", "個", "int"), ("三振", "三振王", "三振", "int"), ("併殺打", "併殺打王", "本", "int"),
 ]
-BAT_RATES = [("打率", "打率"), ("出塁率", "出塁率"), ("長打率", "長打率"), ("OPS", "OPS")]
+BAT_RATES = [("打率", "首位打者（打率）"), ("出塁率", "最高出塁率"), ("長打率", "長打率"), ("OPS", "OPS")]
 PIT = [
-    ("登板", "登板王", "登板", "int"), ("勝利", "最多勝", "勝", "int"), ("敗北", "敗戦王", "敗", "int"),
-    ("セーブ", "セーブ王", "S", "int"), ("ホールド", "ホールド王", "H", "int"), ("完投", "完投王", "完投", "int"),
+    ("登板", "登板王", "登板", "int"), ("勝利", "最多勝利", "勝", "int"), ("敗北", "敗戦王", "敗", "int"),
+    ("セーブ", "最多セーブ", "S", "int"), ("ホールド", "ホールド王", "H", "int"), ("完投", "完投王", "完投", "int"),
     ("完封勝", "完封王", "完封", "int"), ("無四球", "無四球王", "試合", "int"), ("outs", "投球回", "回", "ip"),
-    ("三振", "奪三振王", "個", "int"), ("四球", "与四球王", "個", "int"), ("死球", "与死球王", "個", "int"),
+    ("三振", "最多奪三振", "個", "int"), ("四球", "与四球王", "個", "int"), ("死球", "与死球王", "個", "int"),
     ("本塁打", "被本塁打王", "本", "int"), ("安打", "被安打王", "本", "int"), ("暴投", "暴投王", "個", "int"),
     ("ボーク", "ボーク王", "個", "int"), ("失点", "失点王", "点", "int"), ("自責点", "自責点王", "点", "int"),
 ]
-PIT_RATES = [("防御率", "防御率", "asc"), ("WHIP", "WHIP", "asc"), ("K9", "奪三振率", "desc"), ("勝率", "勝率", "desc")]
+PIT_RATES = [("防御率", "最優秀防御率", "asc"), ("WHIP", "WHIP", "asc"), ("K9", "奪三振率", "desc"), ("勝率", "最高勝率", "desc")]
 FLD = [  # (守備位置, 項目, 部門名)
     ("一塁手", "機会", "守備機会王（一塁手）"), ("二塁手", "機会", "守備機会王（二塁手）"), ("三塁手", "機会", "守備機会王（三塁手）"),
     ("遊撃手", "機会", "守備機会王（遊撃手）"), ("外野手", "機会", "守備機会王（外野手）"), ("捕手", "機会", "守備機会王（捕手）"),
@@ -159,6 +159,16 @@ def name_cell(e, has_page):
     return f'{n}<span class="tm">{esc("・".join(e["teams"]))}</span>'
 
 
+# NPBの表彰のタイトル（各分類の先頭に、この順で並べて「タイトル」の印を付ける）。
+# 最優秀中継ぎはホールドポイント（救援勝利＋ホールド）で決まり、救援勝利の数が無いので入れない
+TITLES = ["首位打者（打率）", "本塁打王", "打点王", "最多安打", "盗塁王", "最高出塁率",
+          "最多勝利", "最優秀防御率", "最多奪三振", "最高勝率", "最多セーブ"]
+
+
+def title_first(cards):
+    return sorted(cards, key=lambda c: (TITLES.index(c[0]) if c[0] in TITLES else len(TITLES)))
+
+
 def card(title, per_league, kind, unit, note, has_page):
     cols = []
     for lg, label in LEAGUES:
@@ -171,7 +181,8 @@ def card(title, per_league, kind, unit, note, has_page):
         else:
             body = '<li class="none">該当なし</li>'
         cols.append(f'<div class="lg lg-{lg}"><h4>{label}</h4><ol>{body}</ol></div>')
-    return (f'<section class="card"><h3>{esc(title)}</h3>' + (f'<p class="q">{esc(note)}</p>' if note else "")
+    badge = '<span class="title-badge">タイトル</span>' if title in TITLES else ""
+    return (f'<section class="card{" title" if badge else ""}"><h3>{esc(title)}{badge}</h3>' + (f'<p class="q">{esc(note)}</p>' if note else "")
             + f'<div class="two">{"".join(cols)}</div></section>')
 
 
@@ -197,7 +208,7 @@ def year_cards(st, links, has_page):
     for k, title in BAT_RATES:
         per = {lg: ranked(P[lg]["bat"].values(), lambda e, k=k: e.get(k), qualify=qual_pa) for lg, _ in LEAGUES}
         cards.append((title, card(title, per, "rate3", "", "規定打席以上", has_page), per))
-    groups.append(("打撃", "bat", cards))
+    groups.append(("打撃", "bat", title_first(cards)))
 
     cards = []
     for k, title, unit, kind in PIT:
@@ -208,7 +219,7 @@ def year_cards(st, links, has_page):
         note = ("13勝以上" if final else "13勝相当以上（今季の試合数に応じて）") if k == "勝率" else "規定投球回以上"
         per = {lg: ranked(P[lg]["pit"].values(), lambda e, k=k: e.get(k), order=order, qualify=q) for lg, _ in LEAGUES}
         cards.append((title, card(title, per, "rate3" if k == "勝率" else "rate2", "", note, has_page), per))
-    groups.append(("投手", "pit", cards))
+    groups.append(("投手", "pit", title_first(cards)))
 
     cards = []
     if any((None, "刺殺") in e for lg, _ in LEAGUES for e in P[lg]["fld"].values()):
@@ -258,7 +269,9 @@ ul.years span{ background:var(--ink-strong); color:#fff; border-color:var(--ink-
 .jump a{ padding:4px 12px; border:1px solid var(--line); border-radius:999px; background:#fff; text-decoration:none; font-size:0.9rem; }
 .cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:12px; }
 .card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 12px 10px; }
-.card h3{ margin:2px 0 4px; font-size:1rem; color:var(--ink-strong); }
+.card h3{ margin:2px 0 4px; font-size:1rem; color:var(--ink-strong); display:flex; align-items:center; gap:8px; }
+.card.title{ border-color:#e7c77a; }
+.title-badge{ font-size:0.68rem; font-weight:700; color:var(--gold); background:#fef3c7; border-radius:999px; padding:1px 8px; }
 .card .q{ margin:0 0 4px; font-size:0.74rem; color:var(--ink-mute); }
 .two{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .lg h4{ margin:0 0 2px; font-size:0.76rem; color:var(--lgc); border-bottom:2px solid var(--lgc); }
@@ -350,14 +363,14 @@ def year_page(y, st, groups, years, as_of_text, final):
         parts.append(f'<h2 id="{slug}">{y}年 {label}部門</h2><div class="cards">{"".join(c for _, c, _ in cards)}</div>')
     pick = {t: per for label, slug, cards in groups for t, _, per in cards}
     hl = []
-    for t in ("三振王", "併殺打王", "犠打王", "死球王"):
+    for t in ("三振王", "併殺打王", "犠打王", "死球王"):  # 説明文にはタイトルにならない部門を
         if t in pick and top1(pick[t]):
             hl.append(f"{t}は{top1(pick[t])}")
     status = "シーズン終了" if final else f"{as_of_text}時点"
     body = (years_nav(years, y)
             + f'<p class="stamp">成績：{esc(status)}</p>'
             + f'<p class="lead">{y}年のプロ野球で、打撃・投手・守備の{n}部門について、セ・パそれぞれの上位5人を並べています。'
-            '首位打者や本塁打王のようなタイトルの部門だけでなく、三振・併殺打・犠打・死球・失策・守備機会など、'
+            '首位打者・本塁打王・最多勝利のようなタイトルの部門に加えて、三振・併殺打・犠打・死球・失策・守備機会など、'
             'ふだん順位が出ない部門も「王」として載せています。</p>'
             + f'<nav class="jump">{jump}</nav>' + "".join(parts)
             + '<p class="note">・同じ数で並んだ選手は同じ順位です。5位までに同じ数の選手が多いときは、8人まで出して残りを「ほか○人」としています。<br>'

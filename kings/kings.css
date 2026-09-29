@@ -25,7 +25,9 @@ ul.years span{ background:var(--ink-strong); color:#fff; border-color:var(--ink-
 .jump a{ padding:4px 12px; border:1px solid var(--line); border-radius:999px; background:#fff; text-decoration:none; font-size:0.9rem; }
 .cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:12px; }
 .card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 12px 10px; }
-.card h3{ margin:2px 0 4px; font-size:1rem; color:var(--ink-strong); }
+.card h3{ margin:2px 0 4px; font-size:1rem; color:var(--ink-strong); display:flex; align-items:center; gap:8px; }
+.card.title{ border-color:#e7c77a; }
+.title-badge{ font-size:0.68rem; font-weight:700; color:var(--gold); background:#fef3c7; border-radius:999px; padding:1px 8px; }
 .card .q{ margin:0 0 4px; font-size:0.74rem; color:var(--ink-mute); }
 .two{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .lg h4{ margin:0 0 2px; font-size:0.76rem; color:var(--lgc); border-bottom:2px solid var(--lgc); }

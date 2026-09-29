@@ -8,6 +8,7 @@
 - noindex のページは載せない
 - 同じ canonical を指すページ（market/web → /us-market/）は1つにまとめる
 - lastmod は付けない（CIの取り出しではファイルの日時が当てにならないため）
+- 同じ中身のテキスト形式 sitemap.txt も書く
 
     python3 scripts/build_sitemap.py
     python3 scripts/build_sitemap.py --check   # ずれていたら終了コード1
@@ -20,6 +21,7 @@ from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "sitemap.xml"
+TXT = ROOT / "sitemap.txt"
 SITE = "https://tooldock.github.io"
 SKIP_DIRS = {".git", ".github", "node_modules", "npb", "scripts", "_probe"}
 
@@ -51,13 +53,17 @@ def main(argv):
     xml = render(urls)
     if "--check" in argv:
         old = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
-        if old != xml:
+        old_txt = TXT.read_text(encoding="utf-8") if TXT.exists() else ""
+        if old != xml or old_txt != "\n".join(urls) + "\n":
             print("sitemap.xml が古い。python3 scripts/build_sitemap.py を実行すること", file=sys.stderr)
             return 1
         print(f"サイトマップは最新（{len(urls)}件）")
         return 0
     OUT.write_text(xml, encoding="utf-8")
-    print(f"sitemap.xml に {len(urls)}件を書き込み")
+    # 同じ中身のテキスト形式（1行に1つのURL）。Googleが正式に対応している形式で、
+    # Search ConsoleでXMLの送信が「取得できませんでした」になるときの代わりに送れる
+    TXT.write_text("\n".join(urls) + "\n", encoding="utf-8")
+    print(f"sitemap.xml・sitemap.txt に {len(urls)}件を書き込み")
     return 0
 
 
