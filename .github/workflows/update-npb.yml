@@ -3,7 +3,7 @@
 #   /war/    WAR計算ツールのリーグ平均（league.json）
 #   /saber/  セイバーメトリクス ランキング
 #   /draft/  ドラフト答え合わせ
-#   /pythagorean/  ピタゴラス勝率ランキング（得失点から見る運）
+#   /pythagorean/  運ランキング（ピタゴラス勝率）
 #   /milestone/  記録達成カウントダウン
 #   /player/  選手ページ（シーズン終了時だけ作り直す）
 #
@@ -59,7 +59,7 @@ jobs:
       - name: ドラフト答え合わせを作成
         run: python npb/build_draft.py --data npb/data --league war/league.json --out draft
 
-      - name: ピタゴラス勝率ランキングを作成
+      - name: 運ランキング（ピタゴラス勝率）を作成
         run: python npb/build_pythagorean.py --data npb/data --out pythagorean
 
       - name: 記録達成カウントダウンを作成

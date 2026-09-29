@@ -1,4 +1,4 @@
-"""プロ野球 ピタゴラス勝率ランキング（/pythagorean/）を作る。
+"""プロ野球 運ランキング（ピタゴラス勝率、/pythagorean/）を作る。
 
 得点と失点から「実力どおりなら何勝か」（ピタゴラス勝率 × 勝敗の数）を計算し、
 実際の勝ち数との差を「運」として球団ごとに並べる。
@@ -220,8 +220,8 @@ def render(seasons, latest, template):
                      f'{worst["name"]}（{signed(worst["luck"])}勝）が最も運が悪い')
     ly, lt = lucky[0]
     uy, ut = unlucky[0]
-    desc = (f"得点と失点から計算するピタゴラス勝率で、プロ野球12球団の「実力どおりなら何勝か」と実際の勝ち数の差（運）を"
-            f"毎日更新。{latest}年は" + "。".join(lines) + "。"
+    desc = (f"プロ野球12球団のどこが運で勝っているかを、得点と失点から計算するピタゴラス勝率で毎日更新。"
+            f"{latest}年は" + "。".join(lines) + "。"
             f"{f['first']}年以降の歴代の運ランキングと、ピタゴラス勝率の計算機もあります。")
     options = "".join(f'<option value="{y}"{" selected" if y == latest else ""}>{y}年{"（途中）" if not seasons[y]["final"] else ""}</option>'
                       for y in sorted(seasons, reverse=True))
