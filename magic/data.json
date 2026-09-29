@@ -1,6 +1,6 @@
 {
  "year": 2026,
- "as_of": "2026-09-28",
+ "as_of": "2026-09-29",
  "final": false,
  "central": [
   {
@@ -20,10 +20,10 @@
   },
   {
    "team": "巨人",
-   "w": 75,
+   "w": 76,
    "l": 62,
    "t": 2,
-   "remaining": 4,
+   "remaining": 3,
    "magic": null,
    "own_v": null,
    "own_cs": 0,
@@ -49,11 +49,11 @@
    "target": null
   },
   {
-   "team": "広島",
-   "w": 58,
-   "l": 75,
-   "t": 4,
-   "remaining": 6,
+   "team": "ヤクルト",
+   "w": 59,
+   "l": 77,
+   "t": 2,
+   "remaining": 5,
    "magic": null,
    "own_v": null,
    "own_cs": null,
@@ -64,10 +64,10 @@
    "target": null
   },
   {
-   "team": "ヤクルト",
-   "w": 59,
-   "l": 77,
-   "t": 2,
+   "team": "広島",
+   "w": 58,
+   "l": 76,
+   "t": 4,
    "remaining": 5,
    "magic": null,
    "own_v": null,
@@ -112,10 +112,10 @@
   },
   {
    "team": "西武",
-   "w": 76,
+   "w": 77,
    "l": 60,
    "t": 4,
-   "remaining": 3,
+   "remaining": 2,
    "magic": null,
    "own_v": null,
    "own_cs": 0,
@@ -143,9 +143,9 @@
   {
    "team": "オリックス",
    "w": 65,
-   "l": 74,
+   "l": 75,
    "t": 2,
-   "remaining": 2,
+   "remaining": 1,
    "magic": null,
    "own_v": null,
    "own_cs": null,
@@ -157,10 +157,10 @@
   },
   {
    "team": "ロッテ",
-   "w": 60,
+   "w": 61,
    "l": 72,
    "t": 3,
-   "remaining": 8,
+   "remaining": 7,
    "magic": null,
    "own_v": null,
    "own_cs": null,
@@ -173,9 +173,9 @@
   {
    "team": "楽天",
    "w": 55,
-   "l": 81,
+   "l": 82,
    "t": 1,
-   "remaining": 6,
+   "remaining": 5,
    "magic": null,
    "own_v": null,
    "own_cs": null,
