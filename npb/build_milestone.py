@@ -158,7 +158,9 @@ def main(argv=None):
         body = "".join(
             f'<tr><th class="nm">{name_cell(e)}<span class="tm">{esc(e["team"])}</span></th>'
             f'<td class="mk">{e["m"]}{unit}</td>'
-            f'<td>{e["cur"]}' + (f'<span class="sub">NPB {e["v"]}＋MLB {e["mlb"]}</span>' if e["mlb"] else "") + '</td>'
+            f'<td class="cur">{e["cur"]}' + (f'<span class="sub">NPB {e["v"]}＋MLB {e["mlb"]}</span>' if e["mlb"] else "")
+            + f'<span class="prog" title="節目の{100 * e["cur"] / e["m"]:.1f}%"><i style="width:{min(100, 100 * e["cur"] / e["m"]):.1f}%"></i></span>'
+            f'<span class="pct">{100 * e["cur"] / e["m"]:.1f}%</span></td>'
             f'<td class="need">{e["need"]}<span class="sub m-only">{e["m"]}{unit}まで</span></td>'
             f'<td class="opt">{e["now"]}</td>'
             f'<td class="when w{min(3, int(e["order"]))}">{esc(e["when"])}</td></tr>' for e in es)

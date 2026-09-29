@@ -38,6 +38,13 @@ table.stats td.war{ font-weight:700; }
 table.stats tfoot td, table.stats tfoot th{ font-weight:700; background:var(--tint); border-top:2px solid var(--line); }
 table.stats tfoot th:first-child{ background:var(--tint); }
 .note{ font-size:0.84rem; color:var(--ink-mute); margin-top:12px; }
+.trend{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap:10px; }
+.tchart{ margin:0; background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px 6px; min-height:200px; }
+.tchart figcaption{ font-size:0.86rem; font-weight:800; color:var(--ink-strong); }
+.tchart figcaption span{ font-weight:400; font-size:0.76rem; color:var(--ink-mute); }
+.tchart figcaption b{ float:right; font-size:0.78rem; font-weight:700; color:var(--ink-sub); }
+.tchart svg{ display:block; width:100%; height:auto; overflow:visible; font-family:inherit; }
+.tchart .none{ margin:40px 0; text-align:center; font-size:0.85rem; color:var(--ink-mute); }
 .related h3{ margin:14px 0 4px; font-size:0.95rem; color:var(--ink-strong); }
 .related .rel{ margin:0; font-size:0.9rem; line-height:1.9; }
 .related .pn{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 16px; margin:16px 0 0;

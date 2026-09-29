@@ -144,6 +144,69 @@ def bar_chart(teams, lg_label, year):
             f'<figcaption>棒の長さ：実際の勝ち数 − 得失点から見込まれる勝ち数（目盛りは±{SCALE}勝）</figcaption></figure>')
 
 
+def scatter(teams, year):
+    """12球団の「実力（ピタゴラス勝率）」と「実際の勝率」の散布図。斜めの線より上が、運で勝っている球団"""
+    # スマホでは縮めて表示されるので、文字が小さくなりすぎないよう全体を小さめに作る
+    W, H, L, R, T, B = 440, 380, 44, 12, 12, 40
+    vals = [t["pct"] for t in teams] + [t["pyth"] for t in teams]
+    lo = min(0.35, (int(min(vals) * 20)) / 20)
+    hi = max(0.65, (int(max(vals) * 20) + 1) / 20)
+    pw, ph = W - L - R, H - T - B
+
+    def X(v):
+        return L + (v - lo) / (hi - lo) * pw
+
+    def Y(v):
+        return T + (hi - v) / (hi - lo) * ph
+
+    out = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-label="{year}年 12球団のピタゴラス勝率と実際の勝率">']
+    # 斜めの線の上下を、運が良い・悪いの色で薄く塗る
+    out.append(f'<polygon points="{X(lo):.1f},{Y(lo):.1f} {X(lo):.1f},{Y(hi):.1f} {X(hi):.1f},{Y(hi):.1f}" fill="#2a78d6" fill-opacity=".06"/>')
+    out.append(f'<polygon points="{X(lo):.1f},{Y(lo):.1f} {X(hi):.1f},{Y(lo):.1f} {X(hi):.1f},{Y(hi):.1f}" fill="#e34948" fill-opacity=".06"/>')
+    v = lo
+    while v <= hi + 1e-9:
+        lab = f"{v:.3f}".lstrip("0")
+        out.append(f'<line x1="{L}" x2="{W - R}" y1="{Y(v):.1f}" y2="{Y(v):.1f}" stroke="#e5e7eb"/>')
+        out.append(f'<line y1="{T}" y2="{H - B}" x1="{X(v):.1f}" x2="{X(v):.1f}" stroke="#e5e7eb"/>')
+        out.append(f'<text x="{L - 6}" y="{Y(v) + 4:.1f}" text-anchor="end" font-size="11" fill="#6b7280">{lab}</text>')
+        out.append(f'<text x="{X(v):.1f}" y="{H - B + 16}" text-anchor="middle" font-size="11" fill="#6b7280">{lab}</text>')
+        v += 0.05
+    out.append(f'<line x1="{X(lo):.1f}" y1="{Y(lo):.1f}" x2="{X(hi):.1f}" y2="{Y(hi):.1f}" stroke="#9ca3af" stroke-dasharray="5 4"/>')
+    out.append(f'<text x="{X(lo) + 8:.1f}" y="{T + 16}" font-size="12" font-weight="700" fill="#2a78d6">↖ 運が良い</text>')
+    out.append(f'<text x="{X(hi) - 8:.1f}" y="{H - B - 10}" text-anchor="end" font-size="12" font-weight="700" fill="#e34948">運が悪い ↘</text>')
+    out.append(f'<text x="{L + pw / 2:.1f}" y="{H - 6}" text-anchor="middle" font-size="11.5" fill="#4b5563">ピタゴラス勝率（得失点から見た実力）→</text>')
+    out.append(f'<text transform="translate(13,{T + ph / 2:.1f}) rotate(-90)" text-anchor="middle" font-size="11.5" fill="#4b5563">実際の勝率 →</text>')
+    # 名前は点の右に。ほかの名前と重なるときは左、それでも重なるときは上下にずらす
+    # 名前の文字の箱（左端, 下端の y, 幅）。点も同じ扱いで、名前を点に重ねない
+    placed = [(X(t["pyth"]) - 6, Y(t["pct"]) + 6, 12) for t in teams]
+
+    def free(x0, y0, w):
+        return all(not (y0 - 12 < py and py - 12 < y0 and x0 < px + pw_ and px < x0 + w)
+                   for px, py, pw_ in placed)
+
+    for t in sorted(teams, key=lambda t: -t["pct"]):
+        cx, cy = X(t["pyth"]), Y(t["pct"])
+        color = "#0f766e" if t["lg"] == "central" else "#1d4ed8"
+        tip = f'{t["name"]}：勝率 {fmt_pct(t["pct"])} ／ ピタゴラス勝率 {fmt_pct(t["pyth"])} ／ 運 {signed(t["luck"])}勝'
+        out.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="5.5" fill="{color}" stroke="#fff" stroke-width="1.5">'
+                   f'<title>{esc(tip)}</title></circle>')
+    for t in sorted(teams, key=lambda t: -t["pct"]):
+        cx, cy = X(t["pyth"]), Y(t["pct"])
+        color = "#0f766e" if t["lg"] == "central" else "#1d4ed8"
+        w = sum(7.5 if c.isascii() else 12.5 for c in t["name"])
+        for dx, dy, anchor in ((8, 4, "start"), (-8, 4, "end"), (6, -8, "start"), (6, 17, "start"),
+                               (-6, -8, "end"), (-6, 17, "end"), (8, -18, "start"), (8, 27, "start")):
+            x0 = cx + dx if anchor == "start" else cx + dx - w
+            if free(x0, cy + dy, w) and x0 >= L and x0 + w <= W - R:
+                break
+        placed.append((x0, cy + dy, w))
+        out.append(f'<text x="{cx + dx:.1f}" y="{cy + dy:.1f}" text-anchor="{anchor}" font-size="12" font-weight="700" fill="{color}">{esc(t["name"])}</text>')
+    out.append("</svg>")
+    return ('<figure class="scatter">' + "".join(out) +
+            '<figcaption><span class="lg ce">●</span> セ・リーグ　<span class="lg pa">●</span> パ・リーグ　'
+            '点線より上の球団は、得失点から見込まれるより多く勝っています。</figcaption></figure>')
+
+
 def league_table(teams):
     teams = sorted(teams, key=lambda t: (-t["pct"], -t["w"]))
     rows = []
@@ -181,6 +244,8 @@ def season_block(year, s, latest):
             f'<section class="league league-{key}"><h2>{year}年 {label}</h2>'
             f'<p class="hl">{headline(teams)}</p>'
             f'{bar_chart(teams, label, year)}{league_table(teams)}</section>')
+    if len(s["teams"]) >= 2:
+        parts.insert(0, f'<section class="league league-all"><h2>{year}年 12球団の実力と勝率</h2>{scatter(s["teams"], year)}</section>')
     hidden = "" if year == latest else " hidden"
     return (f'<div class="season" data-year="{year}"{hidden}>'
             f'<p class="stamp"><span>{year}年：<strong>{status}</strong>'
