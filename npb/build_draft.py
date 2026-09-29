@@ -162,7 +162,8 @@ def load_seasons_people(data_dir, league, people):
     by_name = defaultdict(list)
     last_year = None
     for y, st in sorted(stores.items()):
-        batters, pitchers = compute_season(st, league[str(y)], links[y])
+        # 打席0（代走・守備固め）・アウト0の出場も数える（一軍に出た年・通算の試合数・盗塁）
+        batters, pitchers = compute_season(st, league[str(y)], links[y], include_zero=True)
         rows = defaultdict(lambda: [None, None])
         for b in batters:
             rows[b["pid"] or (b["name"], tuple(b["teams"]))][0] = b
@@ -353,6 +354,8 @@ th, td{ padding:7px 8px; border-bottom:1px solid var(--line-soft); text-align:le
 thead th{ background:var(--head-bg); font-size:0.78rem; color:var(--ink-sub); }
 td.n, th.n{ text-align:right; }
 td.nm{ font-weight:700; color:var(--ink-strong); }
+td.nm a.pl{ color:inherit; text-decoration:none; border-bottom:1px dotted var(--ink-mute); }
+td.nm a.pl:hover{ color:var(--accent); border-bottom-color:var(--accent); }
 td.sub{ font-size:0.78rem; color:var(--ink-mute); }
 td.war{ font-weight:800; text-align:right; }
 tr.none td{ color:var(--ink-mute); }
@@ -451,6 +454,12 @@ def shell(title, desc, canonical, h1, sub, body, tool_id, crumb=None):
 """
 
 
+def name_link(p):
+    """選手ページ（/player/<id>/）がある選手は、名前をリンクにする"""
+    n = esc(disp(p["name"]))
+    return f'<a class="pl" href="/player/{p["page"]}/">{n}</a>' if p.get("page") else n
+
+
 def pick_label(p):
     if p["label"] == "希望枠":
         return "希望枠"
@@ -502,7 +511,7 @@ def pick_rows(picks):
             f'<tr{cls} data-team="{esc(p["team"])}">'
             f'<td data-v="{esc(p["team"])}">{esc(p["team"])}</td>'
             f'<td data-v="{order}">{esc(pick_label(p))}</td>'
-            f'<td class="nm" data-v="{esc(p["name"])}">{esc(disp(p["name"]))}{tags}</td>'
+            f'<td class="nm" data-v="{esc(p["name"])}">{name_link(p)}{tags}</td>'
             f'<td data-v="{esc(p["pos"])}">{esc(p["pos"] or "―")}</td>'
             f'<td class="sub" data-v="{esc(p["from"])}">{esc(p["from"])}</td>'
             f'<td class="n" data-v="{c["years"]}">{yrs}</td>'
@@ -612,7 +621,7 @@ def year_page(year, picks, years, last_season):
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>選手</th><th>指名</th><th>一軍通算</th><th class="n">通算WAR</th></tr></thead>
 <tbody>
-{"".join(f'<tr><td>{i}</td><td class="nm">{esc(disp(p["name"]))}</td><td>{esc(p["team"])} {esc(pick_label(p))}</td><td>{esc(stat_text(p["career"]))}</td><td class="war">{p["career"]["war"]:.1f}</td></tr>' for i, p in enumerate(tops, 1))}
+{"".join(f'<tr><td>{i}</td><td class="nm">{name_link(p)}</td><td>{esc(p["team"])} {esc(pick_label(p))}</td><td>{esc(stat_text(p["career"]))}</td><td class="war">{p["career"]["war"]:.1f}</td></tr>' for i, p in enumerate(tops, 1))}
 </tbody></table></div>
 
 <h2>球団別のドラフト採点（{year}年）</h2>
@@ -718,7 +727,7 @@ def index_page(drafts, last_season):
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>選手</th><th>指名</th><th>一軍通算</th><th class="n">通算WAR</th></tr></thead>
 <tbody>
-{"".join(f'<tr><td>{i}</td><td class="nm">{esc(disp(p["name"]))}</td><td><a href="/draft/{p["year"]}/">{p["year"]}年</a> {esc(p["team"])} {esc(pick_label(p))}</td><td>{esc(stat_text(p["career"]))}</td><td class="war">{p["career"]["war"]:.1f}</td></tr>' for i, p in enumerate(tops, 1))}
+{"".join(f'<tr><td>{i}</td><td class="nm">{name_link(p)}</td><td><a href="/draft/{p["year"]}/">{p["year"]}年</a> {esc(p["team"])} {esc(pick_label(p))}</td><td>{esc(stat_text(p["career"]))}</td><td class="war">{p["career"]["war"]:.1f}</td></tr>' for i, p in enumerate(tops, 1))}
 </tbody></table></div>
 
 <h2>球団別 ドラフト指名選手の通算WAR合計（{min(drafts)}年以降）</h2>
@@ -770,9 +779,12 @@ def main(argv=None):
     else:
         by_name, last_season = load_seasons(data, league)
         assign(drafts, by_name)
+    built = Path(args.out).parent / "player" / "built.json"
+    has_page = set(json.loads(built.read_text(encoding="utf-8"))["pids"]) if built.exists() else set()
     for y in drafts:
         for p in drafts[y]:
             p.setdefault("unsigned", False)
+            p["page"] = p.get("pid") if p.get("pid") in has_page else None
             p["career"] = career(p)
 
     out = Path(args.out)

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- このファイルは npb/template_milestone.html から npb/build_milestone.py が生成する。
+     milestone/index.html を直接書き換えても、次の自動更新で消える -->
+<title>プロ野球 記録達成カウントダウン｜2000本安打・200勝・250セーブまであと何本【2026年・毎日更新】</title>
+<meta name="description" content="プロ野球の現役選手が、2000本安打・200勝・250セーブ（名球会）や300本塁打・1500奪三振などの節目の記録まであと何本かを毎日更新。山﨑 康晃（250セーブまであと4）、石川 雅規（200勝まであと12）、丸 佳浩（2000本まであと46）など。今のペースでいつ届くかの見込みも出しています。">
+<link rel="canonical" href="https://tooldock.github.io/milestone/">
+
+<script> const CURRENT_TOOL = "milestone"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="2000本安打,200勝,250セーブ,名球会,あと何本,記録達成,通算記録,プロ野球,カウントダウン">
+
+<style>
+*{ box-sizing:border-box; }
+
+:root{
+    --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280;
+    --line:#d1d5db; --line-soft:#e5e7eb; --head-bg:#f3f4f6; --tint:#f9fafb;
+    --accent:#2563eb; --gold:#b45309; --gold-bg:#fef3c7; --good:#15803d;
+}
+
+body{
+    margin:0; padding:0 0 48px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    color:var(--ink); line-height:1.75; background:#f5f5f5;
+}
+
+.page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
+/* ほかのページ（金特ツールなど）と同じく左に寄せ、左右に20pxの余白を取る。
+   サイト共通の style.css は body を幅900pxに絞るので外し、表の広さに合わせた幅にする。
+   下に付く「人気のページ」なども本文と同じ幅・余白にそろえる */
+body{ max-width:none; }
+.page-wrapper{ margin:0; padding:0 20px; }
+body .td-rail-inline{ max-width:1000px; margin:40px 0 0; padding:0 20px; }
+
+header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:22px; }
+h1{ margin:0; font-size:1.35rem; line-height:1.5; }
+header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
+
+h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
+    border-bottom:2px solid var(--line); }
+h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
+    border-left:4px solid var(--accent); }
+p{ margin:0 0 12px; }
+a{ color:var(--accent); }
+
+.stamp{ display:flex; flex-wrap:wrap; gap:4px 16px; font-size:0.88rem; color:var(--ink-sub); margin:0 0 6px; }
+.stamp strong{ color:var(--ink-strong); }
+.lead{ font-size:0.95rem; }
+.jump{ display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 14px; }
+.jump a{ padding:4px 12px; border:1px solid var(--line); border-radius:999px; background:#fff; text-decoration:none; font-size:0.9rem; }
+
+.rec{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 16px 14px; margin:0 0 20px; scroll-margin-top:12px; }
+.rec h2{ margin-top:14px; border-bottom:none; padding-bottom:0; display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+.badge{ font-size:0.76rem; font-weight:700; color:var(--gold); background:var(--gold-bg); border-radius:999px; padding:2px 10px; }
+.marks{ font-size:0.82rem; color:var(--ink-mute); margin:0 0 8px; }
+
+.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table{ border-collapse:collapse; width:100%; font-size:0.92rem; font-variant-numeric:tabular-nums; }
+th, td{ border-bottom:1px solid var(--line-soft); padding:8px 6px; text-align:center; white-space:nowrap; }
+thead th{ background:var(--head-bg); font-size:0.8rem; color:var(--ink-sub); font-weight:700; border-bottom:1px solid var(--line); }
+tbody tr:hover{ background:var(--tint); }
+th.nm{ text-align:left; font-weight:700; color:var(--ink-strong); }
+th.nm a{ color:inherit; text-decoration:none; border-bottom:1px dotted var(--ink-mute); }
+th.nm a:hover{ color:var(--accent); border-bottom-color:var(--accent); }
+th.nm .tm{ display:block; font-weight:400; color:var(--ink-mute); font-size:0.74rem; }
+td.mk{ font-weight:700; }
+td.need{ font-weight:800; font-size:1.05rem; color:var(--ink-strong); }
+td .sub{ display:block; font-size:0.72rem; color:var(--ink-mute); font-weight:400; }
+.m-only{ display:none !important; }
+td.when{ font-size:0.86rem; }
+td.when.w1{ color:var(--good); font-weight:700; }
+
+article{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px 18px; margin-top:26px; }
+article h2:first-child{ margin-top:18px; }
+article ul{ margin:0 0 12px; padding-left:1.3em; }
+article li{ margin:4px 0; }
+.note{ font-size:0.86rem; color:var(--ink-mute); }
+
+footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
+
+@media (max-width:600px){
+    .rec{ padding:2px 10px 12px; }
+    th, td{ padding:7px 4px; font-size:0.84rem; }
+    table .opt, table .mk{ display:none; }
+    .m-only{ display:block !important; }
+    td.when{ white-space:normal; }
+    article{ padding:2px 14px 14px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page-wrapper">
+
+<header>
+    <h1>プロ野球 記録達成カウントダウン</h1>
+    <p>2000本安打・200勝・250セーブ（名球会）など、現役選手の節目の記録まで「あと何本」かを毎日更新します</p>
+</header>
+
+<div class="container">
+
+<p class="stamp"><span>成績：<strong>2026年9月28日終了時点</strong></span><span>最終更新：2026年9月29日 9:11</span></p>
+<p class="lead">2026年に一軍に出場している現役選手のうち、節目の記録の88%を超えて近づいている選手（92件）を並べています。通算はデビューからのNPBの一軍公式戦の合計で、名球会の3記録（2000安打・200勝・250セーブ）だけはメジャーリーグでの成績を足した日米通算です。</p>
+
+<nav class="jump"><a href="#bat-h">安打</a><a href="#bat-hr">本塁打</a><a href="#bat-rbi">打点</a><a href="#bat-sb">盗塁</a><a href="#bat-g">出場試合</a><a href="#pit-w">勝利</a><a href="#pit-sv">セーブ</a><a href="#pit-hld">ホールド</a><a href="#pit-so">奪三振</a><a href="#pit-g">登板</a></nav>
+
+<section class="rec" id="bat-h"><h2>安打<span class="badge">名球会 2000本（日米通算）</span></h2><p class="marks">節目：1000本・1500本・2000本・2500本</p><div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">節目</th><th>通算</th><th>あと</th><th class="opt">2026年</th><th>見込み</th></tr></thead><tbody><tr><th class="nm"><a href="/player/51955114/">坂本 勇人</a><span class="tm">巨人</span></th><td class="mk">2500本</td><td>2474</td><td class="need">26<span class="sub m-only">2500本まで</span></td><td class="opt">27</td><td class="when w2">来季6月ごろ</td></tr><tr><th class="nm"><a href="/player/21425116/">丸 佳浩</a><span class="tm">巨人</span></th><td class="mk">2000本</td><td>1954</td><td class="need">46<span class="sub m-only">2000本まで</span></td><td class="opt">25</td><td class="when w2">来季7月ごろ</td></tr><tr><th class="nm"><a href="/player/61565135/">菊池 涼介</a><span class="tm">広島</span></th><td class="mk">2000本</td><td>1895</td><td class="need">105<span class="sub m-only">2000本まで</span></td><td class="opt">106</td><td class="when w2">来季9月ごろ</td></tr><tr><th class="nm"><a href="/player/31135133/">秋山 翔吾</a><span class="tm">広島</span></th><td class="mk">2000本</td><td>1883<span class="sub">NPB 1812＋MLB 71</span></td><td class="need">117<span class="sub m-only">2000本まで</span></td><td class="opt">51</td><td class="when w3">約1シーズン後</td></tr><tr><th class="nm"><a href="/player/81085115/">中村 剛也</a><span class="tm">西武</span></th><td class="mk">2000本</td><td>1844</td><td class="need">156<span class="sub m-only">2000本まで</span></td><td class="opt">14</td><td class="when w3">約4シーズン後</td></tr><tr><th class="nm"><a href="/player/31335131/">今宮 健太</a><span class="tm">ソフトバンク</span></th><td class="mk">1500本</td><td>1447</td><td class="need">53<span class="sub m-only">1500本まで</span></td><td class="opt">35</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/21225133/">西川 遥輝</a><span class="tm">日本ハム</span></th><td class="mk">1500本</td><td>1438</td><td class="need">62<span class="sub m-only">1500本まで</span></td><td class="opt">12</td><td class="when w3">約2シーズン後</td></tr><tr><th class="nm"><a href="/player/51455137/">宮﨑 敏郎</a><span class="tm">DeNA</span></th><td class="mk">1500本</td><td>1438</td><td class="need">62<span class="sub m-only">1500本まで</span></td><td class="opt">85</td><td class="when w2">来季7月ごろ</td></tr><tr><th class="nm"><a href="/player/41545114/">角中 勝也</a><span class="tm">ロッテ</span></th><td class="mk">1500本</td><td>1345</td><td class="need">155<span class="sub m-only">1500本まで</span></td><td class="opt">1</td><td class="when w3">約5シーズン後</td></tr><tr><th class="nm"><a href="/player/21425139/">山川 穂高</a><span class="tm">ソフトバンク</span></th><td class="mk">1000本</td><td>949</td><td class="need">51<span class="sub m-only">1000本まで</span></td><td class="opt">32</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/03505136/">Ｎ．ソト</a><span class="tm">ロッテ</span></th><td class="mk">1000本</td><td>935</td><td class="need">65<span class="sub m-only">1000本まで</span></td><td class="opt">74</td><td class="when w2">来季7月ごろ</td></tr><tr><th class="nm"><a href="/player/91095135/">高橋 周平</a><span class="tm">中日</span></th><td class="mk">1000本</td><td>896</td><td class="need">104<span class="sub m-only">1000本まで</span></td><td class="opt">27</td><td class="when w3">約3シーズン後</td></tr></tbody></table></div></section>
+<section class="rec" id="bat-hr"><h2>本塁打</h2><p class="marks">節目：100本・150本・200本・250本・300本・400本・500本</p><div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">節目</th><th>通算</th><th>あと</th><th class="opt">2026年</th><th>見込み</th></tr></thead><tbody><tr><th class="nm"><a href="/player/81085115/">中村 剛也</a><span class="tm">西武</span></th><td class="mk">500本</td><td>482</td><td class="need">18<span class="sub m-only">500本まで</span></td><td class="opt">1</td><td class="when w3">約3シーズン後</td></tr><tr><th class="nm"><a href="/player/21425116/">丸 佳浩</a><span class="tm">巨人</span></th><td class="mk">300本</td><td>291</td><td class="need">9<span class="sub m-only">300本まで</span></td><td class="opt">2</td><td class="when w2">来季9月ごろ</td></tr><tr><th class="nm"><a href="/player/31835133/">柳田 悠岐</a><span class="tm">ソフトバンク</span></th><td class="mk">300本</td><td>286</td><td class="need">14<span class="sub m-only">300本まで</span></td><td class="opt">18</td><td class="when w3">約1シーズン後</td></tr><tr><th class="nm"><a href="/player/21425139/">山川 穂高</a><span class="tm">ソフトバンク</span></th><td class="mk">300本</td><td>286</td><td class="need">14<span class="sub m-only">300本まで</span></td><td class="opt">11</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/13115153/">牧 秀悟</a><span class="tm">DeNA</span></th><td class="mk">150本</td><td>144</td><td class="need">6<span class="sub m-only">150本まで</span></td><td class="opt">30</td><td class="when w2">来季5月ごろ</td></tr><tr><th class="nm"><a href="/player/61565135/">菊池 涼介</a><span class="tm">広島</span></th><td class="mk">150本</td><td>142</td><td class="need">8<span class="sub m-only">150本まで</span></td><td class="opt">7</td><td class="when w3">約1シーズン後</td></tr><tr><th class="nm"><a href="/player/13715132/">Ｄ．ビシエド</a><span class="tm">DeNA</span></th><td class="mk">150本</td><td>142</td><td class="need">8<span class="sub m-only">150本まで</span></td><td class="opt">1</td><td class="when w3">約3シーズン後</td></tr><tr><th class="nm"><a href="/player/41745135/">近藤 健介</a><span class="tm">ソフトバンク</span></th><td class="mk">150本</td><td>137</td><td class="need">13<span class="sub m-only">150本まで</span></td><td class="opt">30</td><td class="when w2">来季7月ごろ</td></tr><tr><th class="nm"><a href="/player/91495139/">森 友哉</a><span class="tm">オリックス</span></th><td class="mk">150本</td><td>137</td><td class="need">13<span class="sub m-only">150本まで</span></td><td class="opt">7</td><td class="when w3">約1シーズン後</td></tr><tr><th class="nm"><a href="/player/31135133/">秋山 翔吾</a><span class="tm">広島</span></th><td class="mk">150本</td><td>133</td><td class="need">17<span class="sub m-only">150本まで</span></td><td class="opt">3</td><td class="when w3">5シーズン以上先</td></tr><tr><th class="nm"><a href="/player/61965132/">杉本 裕太郎</a><span class="tm">オリックス</span></th><td class="mk">100本</td><td>99</td><td class="need">1<span class="sub m-only">100本まで</span></td><td class="opt">0</td><td class="when w2">来季4月ごろ</td></tr><tr><th class="nm"><a href="/player/41545136/">清宮 幸太郎</a><span class="tm">日本ハム</span></th><td class="mk">100本</td><td>99</td><td class="need">1<span class="sub m-only">100本まで</span></td><td class="opt">23</td><td class="when w2">来季4月ごろ</td></tr><tr><th class="nm"><a href="/player/31835134/">細川 成也</a><span class="tm">中日</span></th><td class="mk">100本</td><td>97</td><td class="need">3<span class="sub m-only">100本まで</span></td><td class="opt">24</td><td class="when w2">来季4月ごろ</td></tr><tr><th class="nm"><a href="/player/23525153/">Ｊ．オスナ</a><span class="tm">ヤクルト</span></th><td class="mk">100本</td><td>95</td><td class="need">5<span class="sub m-only">100本まで</span></td><td class="opt">8</td><td class="when w2">来季5月ごろ</td></tr><tr><th class="nm"><a href="/player/71475132/">西川 龍馬</a><span class="tm">オリックス</span></th><td class="mk">100本</td><td>89</td><td class="need">11<span class="sub m-only">100本まで</span></td><td class="opt">13</td><td class="when w3">約1シーズン後</td></tr><tr><th class="nm"><a href="/player/53755153/">Ｄ．サンタナ</a><span class="tm">ヤクルト</span></th><td class="mk">100本</td><td>89</td><td class="need">11<span class="sub m-only">100本まで</span></td><td class="opt">17</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/73075159/">Ｆ．レイエス</a><span class="tm">日本ハム</span></th><td class="mk">100本</td><td>89</td><td class="need">11<span class="sub m-only">100本まで</span></td><td class="opt">32</td><td class="when w2">来季6月ごろ</td></tr></tbody></table></div></section>
+<section class="rec" id="bat-rbi"><h2>打点</h2><p class="marks">節目：500打点・1000打点・1500打点</p><div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">節目</th><th>通算</th><th>あと</th><th class="opt">2026年</th><th>見込み</th></tr></thead><tbody><tr><th class="nm"><a href="/player/81085115/">中村 剛也</a><span class="tm">西武</span></th><td class="mk">1500打点</td><td>1373</td><td class="need">127<span class="sub m-only">1500打点まで</span></td><td class="opt">7</td><td class="when w3">5シーズン以上先</td></tr><tr><th class="nm"><a href="/player/31835133/">柳田 悠岐</a><span class="tm">ソフトバンク</span></th><td class="mk">1000打点</td><td>967</td><td class="need">33<span class="sub m-only">1000打点まで</span></td><td class="opt">68</td><td class="when w2">来季7月ごろ</td></tr><tr><th class="nm"><a href="/player/21425116/">丸 佳浩</a><span class="tm">巨人</span></th><td class="mk">1000打点</td><td>964</td><td class="need">36<span class="sub m-only">1000打点まで</span></td><td class="opt">20</td><td class="when w3">約1シーズン後</td></tr><tr><th class="nm"><a href="/player/91895133/">山田 哲人</a><span class="tm">ヤクルト</span></th><td class="mk">1000打点</td><td>921</td><td class="need">79<span class="sub m-only">1000打点まで</span></td><td class="opt">4</td><td class="when w3">約3シーズン後</td></tr><tr><th class="nm"><a href="/player/51755115/">栗山 巧</a><span class="tm">西武</span></th><td class="mk">1000打点</td><td>914</td><td class="need">86<span class="sub m-only">1000打点まで</span></td><td class="opt">0</td><td class="when w3">5シーズン以上先</td></tr><tr><th class="nm"><a href="/player/71475132/">西川 龍馬</a><span class="tm">オリックス</span></th><td class="mk">500打点</td><td>481</td><td class="need">19<span class="sub m-only">500打点まで</span></td><td class="opt">54</td><td class="when w2">来季6月ごろ</td></tr><tr><th class="nm"><a href="/player/41245130/">外崎 修汰</a><span class="tm">西武</span></th><td class="mk">500打点</td><td>460</td><td class="need">40<span class="sub m-only">500打点まで</span></td><td class="opt">8</td><td class="when w3">約1シーズン後</td></tr><tr><th class="nm"><a href="/player/13115153/">牧 秀悟</a><span class="tm">DeNA</span></th><td class="mk">500打点</td><td>459</td><td class="need">41<span class="sub m-only">500打点まで</span></td><td class="opt">75</td><td class="when w2">来季7月ごろ</td></tr><tr><th class="nm"><a href="/player/21225133/">西川 遥輝</a><span class="tm">日本ハム</span></th><td class="mk">500打点</td><td>458</td><td class="need">42<span class="sub m-only">500打点まで</span></td><td class="opt">6</td><td class="when w3">約4シーズン後</td></tr><tr><th class="nm"><a href="/player/01705130/">栗原 陵矢</a><span class="tm">ソフトバンク</span></th><td class="mk">500打点</td><td>455</td><td class="need">45<span class="sub m-only">500打点まで</span></td><td class="opt">117</td><td class="when w2">来季7月ごろ</td></tr></tbody></table></div></section>
+<section class="rec" id="bat-sb"><h2>盗塁</h2><p class="marks">節目：100盗塁・200盗塁・300盗塁</p><div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">節目</th><th>通算</th><th>あと</th><th class="opt">2026年</th><th>見込み</th></tr></thead><tbody><tr><th class="nm"><a href="/player/01305131/">大島 洋平</a><span class="tm">中日</span></th><td class="mk">300盗塁</td><td>272</td><td class="need">28<span class="sub m-only">300盗塁まで</span></td><td class="opt">1</td><td class="when w3">5シーズン以上先</td></tr><tr><th class="nm"><a href="/player/91895133/">山田 哲人</a><span class="tm">ヤクルト</span></th><td class="mk">200盗塁</td><td>198</td><td class="need">2<span class="sub m-only">200盗塁まで</span></td><td class="opt">0</td><td class="when w3">来季9月ごろ</td></tr><tr><th class="nm"><a href="/player/21425116/">丸 佳浩</a><span class="tm">巨人</span></th><td class="mk">200盗塁</td><td>189</td><td class="need">11<span class="sub m-only">200盗塁まで</span></td><td class="opt">1</td><td class="when w3">約2シーズン後</td></tr><tr><th class="nm"><a href="/player/71775134/">源田 壮亮</a><span class="tm">西武</span></th><td class="mk">200盗塁</td><td>181</td><td class="need">19<span class="sub m-only">200盗塁まで</span></td><td class="opt">1</td><td class="when w3">約3シーズン後</td></tr><tr><th class="nm"><a href="/player/33135134/">三森 大貴</a><span class="tm">DeNA</span></th><td class="mk">100盗塁</td><td>94</td><td class="need">6<span class="sub m-only">100盗塁まで</span></td><td class="opt">16</td><td class="when w2">来季6月ごろ</td></tr><tr><th class="nm"><a href="/player/33335136/">和田 康士朗</a><span class="tm">ロッテ</span></th><td class="mk">100盗塁</td><td>93</td><td class="need">7<span class="sub m-only">100盗塁まで</span></td><td class="opt">4</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/61465133/">牧原 大成</a><span class="tm">ソフトバンク</span></th><td class="mk">100盗塁</td><td>90</td><td class="need">10<span class="sub m-only">100盗塁まで</span></td><td class="opt">11</td><td class="when w3">約1シーズン後</td></tr><tr><th class="nm"><a href="/player/21625135/">松本 剛</a><span class="tm">巨人</span></th><td class="mk">100盗塁</td><td>88</td><td class="need">12<span class="sub m-only">100盗塁まで</span></td><td class="opt">17</td><td class="when w2">来季9月ごろ</td></tr></tbody></table></div></section>
+<section class="rec" id="bat-g"><h2>出場試合</h2><p class="marks">節目：1000試合・1500試合・2000試合</p><div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">節目</th><th>通算</th><th>あと</th><th class="opt">2026年</th><th>見込み</th></tr></thead><tbody><tr><th class="nm"><a href="/player/01305131/">大島 洋平</a><span class="tm">中日</span></th><td class="mk">2000試合</td><td>1966</td><td class="need">34<span class="sub m-only">2000試合まで</span></td><td class="opt">21</td><td class="when w2">来季6月ごろ</td></tr><tr><th class="nm"><a href="/player/61565135/">菊池 涼介</a><span class="tm">広島</span></th><td class="mk">2000試合</td><td>1904</td><td class="need">96<span class="sub m-only">2000試合まで</span></td><td class="opt">127</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/81985135/">鈴木 大地</a><span class="tm">楽天</span></th><td class="mk">2000試合</td><td>1800</td><td class="need">200<span class="sub m-only">2000試合まで</span></td><td class="opt">34</td><td class="when w3">約2シーズン後</td></tr><tr><th class="nm"><a href="/player/41745135/">近藤 健介</a><span class="tm">ソフトバンク</span></th><td class="mk">1500試合</td><td>1496</td><td class="need">4<span class="sub m-only">1500試合まで</span></td><td class="opt">135</td><td class="when w2">来季4月ごろ</td></tr><tr><th class="nm"><a href="/player/51255118/">中村 悠平</a><span class="tm">ヤクルト</span></th><td class="mk">1500試合</td><td>1459</td><td class="need">41<span class="sub m-only">1500試合まで</span></td><td class="opt">32</td><td class="when w2">来季7月ごろ</td></tr><tr><th class="nm"><a href="/player/51455137/">宮﨑 敏郎</a><span class="tm">DeNA</span></th><td class="mk">1500試合</td><td>1410</td><td class="need">90<span class="sub m-only">1500試合まで</span></td><td class="opt">109</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/41945137/">田村 龍弘</a><span class="tm">ロッテ</span></th><td class="mk">1000試合</td><td>992</td><td class="need">8<span class="sub m-only">1000試合まで</span></td><td class="opt">2</td><td class="when w2">来季5月ごろ</td></tr><tr><th class="nm"><a href="/player/11515139/">岡 大海</a><span class="tm">ロッテ</span></th><td class="mk">1000試合</td><td>964</td><td class="need">36<span class="sub m-only">1000試合まで</span></td><td class="opt">26</td><td class="when w2">来季6月ごろ</td></tr><tr><th class="nm"><a href="/player/11815130/">宗 佑磨</a><span class="tm">オリックス</span></th><td class="mk">1000試合</td><td>932</td><td class="need">68<span class="sub m-only">1000試合まで</span></td><td class="opt">133</td><td class="when w2">来季7月ごろ</td></tr><tr><th class="nm"><a href="/player/21325136/">大城 卓三</a><span class="tm">巨人</span></th><td class="mk">1000試合</td><td>919</td><td class="need">81<span class="sub m-only">1000試合まで</span></td><td class="opt">108</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/41945132/">柴田 竜拓</a><span class="tm">DeNA</span></th><td class="mk">1000試合</td><td>906</td><td class="need">94<span class="sub m-only">1000試合まで</span></td><td class="opt">46</td><td class="when w3">約1シーズン後</td></tr><tr><th class="nm"><a href="/player/81185134/">糸原 健斗</a><span class="tm">阪神</span></th><td class="mk">1000試合</td><td>906</td><td class="need">94<span class="sub m-only">1000試合まで</span></td><td class="opt">15</td><td class="when w3">約2シーズン後</td></tr><tr><th class="nm"><a href="/player/21625135/">松本 剛</a><span class="tm">巨人</span></th><td class="mk">1000試合</td><td>900</td><td class="need">100<span class="sub m-only">1000試合まで</span></td><td class="opt">127</td><td class="when w2">来季9月ごろ</td></tr><tr><th class="nm"><a href="/player/11915134/">坂倉 将吾</a><span class="tm">広島</span></th><td class="mk">1000試合</td><td>898</td><td class="need">102<span class="sub m-only">1000試合まで</span></td><td class="opt">134</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/73375134/">吉川 尚輝</a><span class="tm">巨人</span></th><td class="mk">1000試合</td><td>890</td><td class="need">110<span class="sub m-only">1000試合まで</span></td><td class="opt">48</td><td class="when w3">約1シーズン後</td></tr></tbody></table></div></section>
+<section class="rec" id="pit-w"><h2>勝利<span class="badge">名球会 200勝（日米通算）</span></h2><p class="marks">節目：100勝・150勝・200勝</p><div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">節目</th><th>通算</th><th>あと</th><th class="opt">2026年</th><th>見込み</th></tr></thead><tbody><tr><th class="nm"><a href="/player/11315115/">石川 雅規</a><span class="tm">ヤクルト</span></th><td class="mk">200勝</td><td>188</td><td class="need">12<span class="sub m-only">200勝まで</span></td><td class="opt">0</td><td class="when w3">5シーズン以上先</td></tr><tr><th class="nm"><a href="/player/61365139/">大瀬良 大地</a><span class="tm">広島</span></th><td class="mk">100勝</td><td>95</td><td class="need">5<span class="sub m-only">100勝まで</span></td><td class="opt">1</td><td class="when w2">来季9月ごろ</td></tr><tr><th class="nm"><a href="/player/71775139/">九里 亜蓮</a><span class="tm">オリックス</span></th><td class="mk">100勝</td><td>91</td><td class="need">9<span class="sub m-only">100勝まで</span></td><td class="opt">9</td><td class="when w3">約1シーズン後</td></tr><tr><th class="nm"><a href="/player/51355135/">上沢 直之</a><span class="tm">ソフトバンク</span></th><td class="mk">100勝</td><td>91</td><td class="need">9<span class="sub m-only">100勝まで</span></td><td class="opt">9</td><td class="when w2">来季9月ごろ</td></tr></tbody></table></div></section>
+<section class="rec" id="pit-sv"><h2>セーブ<span class="badge">名球会 250セーブ（日米通算）</span></h2><p class="marks">節目：100セーブ・200セーブ・250セーブ</p><div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">節目</th><th>通算</th><th>あと</th><th class="opt">2026年</th><th>見込み</th></tr></thead><tbody><tr><th class="nm"><a href="/player/41845130/">山﨑 康晃</a><span class="tm">DeNA</span></th><td class="mk">250セーブ</td><td>246</td><td class="need">4<span class="sub m-only">250セーブまで</span></td><td class="opt">14</td><td class="when w2">来季6月ごろ</td></tr><tr><th class="nm"><a href="/player/01205118/">西野 勇士</a><span class="tm">ロッテ</span></th><td class="mk">100セーブ</td><td>88</td><td class="need">12<span class="sub m-only">100セーブまで</span></td><td class="opt">0</td><td class="when w3">―</td></tr></tbody></table></div></section>
+<section class="rec" id="pit-hld"><h2>ホールド</h2><p class="marks">節目：100ホールド・150ホールド・200ホールド・250ホールド・300ホールド</p><div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">節目</th><th>通算</th><th>あと</th><th class="opt">2026年</th><th>見込み</th></tr></thead><tbody><tr><th class="nm"><a href="/player/71675135/">益田 直也</a><span class="tm">ロッテ</span></th><td class="mk">200ホールド</td><td>176</td><td class="need">24<span class="sub m-only">200ホールドまで</span></td><td class="opt">2</td><td class="when w3">約4シーズン後</td></tr><tr><th class="nm"><a href="/player/61665130/">松本 裕樹</a><span class="tm">ソフトバンク</span></th><td class="mk">150ホールド</td><td>144</td><td class="need">6<span class="sub m-only">150ホールドまで</span></td><td class="opt">32</td><td class="when w2">来季5月ごろ</td></tr><tr><th class="nm"><a href="/player/81285132/">中川 皓太</a><span class="tm">巨人</span></th><td class="mk">150ホールド</td><td>142</td><td class="need">8<span class="sub m-only">150ホールドまで</span></td><td class="opt">22</td><td class="when w2">来季6月ごろ</td></tr><tr><th class="nm"><a href="/player/63965134/">Ｌ．モイネロ</a><span class="tm">ソフトバンク</span></th><td class="mk">150ホールド</td><td>135</td><td class="need">15<span class="sub m-only">150ホールドまで</span></td><td class="opt">0</td><td class="when w3">約5シーズン後</td></tr><tr><th class="nm"><a href="/player/41845130/">山﨑 康晃</a><span class="tm">DeNA</span></th><td class="mk">100ホールド</td><td>96</td><td class="need">4<span class="sub m-only">100ホールドまで</span></td><td class="opt">2</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/21525139/">加治屋 蓮</a><span class="tm">楽天</span></th><td class="mk">100ホールド</td><td>96</td><td class="need">4<span class="sub m-only">100ホールドまで</span></td><td class="opt">16</td><td class="when w2">来季5月ごろ</td></tr><tr><th class="nm"><a href="/player/73375153/">森浦 大輔</a><span class="tm">広島</span></th><td class="mk">100ホールド</td><td>95</td><td class="need">5<span class="sub m-only">100ホールドまで</span></td><td class="opt">12</td><td class="when w2">来季5月ごろ</td></tr><tr><th class="nm"><a href="/player/81285151/">津森 宥紀</a><span class="tm">ソフトバンク</span></th><td class="mk">100ホールド</td><td>94</td><td class="need">6<span class="sub m-only">100ホールドまで</span></td><td class="opt">20</td><td class="when w2">来季6月ごろ</td></tr><tr><th class="nm"><a href="/player/13215157/">Ｌ．ペルドモ</a><span class="tm">オリックス</span></th><td class="mk">100ホールド</td><td>91</td><td class="need">9<span class="sub m-only">100ホールドまで</span></td><td class="opt">3</td><td class="when w2">来季6月ごろ</td></tr><tr><th class="nm"><a href="/player/91295134/">玉井 大翔</a><span class="tm">日本ハム</span></th><td class="mk">100ホールド</td><td>90</td><td class="need">10<span class="sub m-only">100ホールドまで</span></td><td class="opt">1</td><td class="when w2">来季9月ごろ</td></tr><tr><th class="nm"><a href="/player/21625134/">藤嶋 健人</a><span class="tm">中日</span></th><td class="mk">100ホールド</td><td>90</td><td class="need">10<span class="sub m-only">100ホールドまで</span></td><td class="opt">7</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/51855134/">堀 瑞輝</a><span class="tm">日本ハム</span></th><td class="mk">100ホールド</td><td>88</td><td class="need">12<span class="sub m-only">100ホールドまで</span></td><td class="opt">18</td><td class="when w3">約3シーズン後</td></tr></tbody></table></div></section>
+<section class="rec" id="pit-so"><h2>奪三振</h2><p class="marks">節目：1000奪三振・1500奪三振・2000奪三振</p><div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">節目</th><th>通算</th><th>あと</th><th class="opt">2026年</th><th>見込み</th></tr></thead><tbody><tr><th class="nm"><a href="/player/51055137/">則本 昂大</a><span class="tm">巨人</span></th><td class="mk">2000奪三振</td><td>1846</td><td class="need">154<span class="sub m-only">2000奪三振まで</span></td><td class="opt">42</td><td class="when w3">約3シーズン後</td></tr><tr><th class="nm"><a href="/player/11315115/">石川 雅規</a><span class="tm">ヤクルト</span></th><td class="mk">2000奪三振</td><td>1787</td><td class="need">213<span class="sub m-only">2000奪三振まで</span></td><td class="opt">0</td><td class="when w3">5シーズン以上先</td></tr><tr><th class="nm"><a href="/player/11515133/">大野 雄大</a><span class="tm">中日</span></th><td class="mk">1500奪三振</td><td>1380</td><td class="need">120<span class="sub m-only">1500奪三振まで</span></td><td class="opt">92</td><td class="when w3">約2シーズン後</td></tr><tr><th class="nm"><a href="/player/71075130/">髙橋 光成</a><span class="tm">西武</span></th><td class="mk">1000奪三振</td><td>976</td><td class="need">24<span class="sub m-only">1000奪三振まで</span></td><td class="opt">106</td><td class="when w2">来季5月ごろ</td></tr><tr><th class="nm"><a href="/player/63165134/">柳 裕也</a><span class="tm">中日</span></th><td class="mk">1000奪三振</td><td>940</td><td class="need">60<span class="sub m-only">1000奪三振まで</span></td><td class="opt">122</td><td class="when w2">来季8月ごろ</td></tr><tr><th class="nm"><a href="/player/51355153/">伊藤 大海</a><span class="tm">日本ハム</span></th><td class="mk">1000奪三振</td><td>902</td><td class="need">98<span class="sub m-only">1000奪三振まで</span></td><td class="opt">159</td><td class="when w2">来季7月ごろ</td></tr></tbody></table></div></section>
+<section class="rec" id="pit-g"><h2>登板</h2><p class="marks">節目：500登板・600登板・700登板・800登板・1000登板</p><div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">節目</th><th>通算</th><th>あと</th><th class="opt">2026年</th><th>見込み</th></tr></thead><tbody><tr><th class="nm"><a href="/player/41445116/">宮西 尚生</a><span class="tm">日本ハム</span></th><td class="mk">1000登板</td><td>908</td><td class="need">92<span class="sub m-only">1000登板まで</span></td><td class="opt">8</td><td class="when w3">約4シーズン後</td></tr><tr><th class="nm"><a href="/player/41845130/">山﨑 康晃</a><span class="tm">DeNA</span></th><td class="mk">600登板</td><td>586</td><td class="need">14<span class="sub m-only">600登板まで</span></td><td class="opt">23</td><td class="when w2">来季6月ごろ</td></tr><tr><th class="nm"><a href="/player/11315115/">石川 雅規</a><span class="tm">ヤクルト</span></th><td class="mk">600登板</td><td>551</td><td class="need">49<span class="sub m-only">600登板まで</span></td><td class="opt">1</td><td class="when w3">5シーズン以上先</td></tr><tr><th class="nm"><a href="/player/31635110/">涌井 秀章</a><span class="tm">中日</span></th><td class="mk">600登板</td><td>529</td><td class="need">71<span class="sub m-only">600登板まで</span></td><td class="opt">12</td><td class="when w3">約5シーズン後</td></tr><tr><th class="nm"><a href="/player/31235133/">中﨑 翔太</a><span class="tm">広島</span></th><td class="mk">600登板</td><td>529</td><td class="need">71<span class="sub m-only">600登板まで</span></td><td class="opt">27</td><td class="when w3">約2シーズン後</td></tr><tr><th class="nm"><a href="/player/91095134/">高梨 雄平</a><span class="tm">巨人</span></th><td class="mk">500登板</td><td>467</td><td class="need">33<span class="sub m-only">500登板まで</span></td><td class="opt">18</td><td class="when w2">来季9月ごろ</td></tr></tbody></table></div></section>
+
+<article>
+<h2>見込みの出し方</h2>
+<ul>
+<li><strong>今季中に届くペース</strong>：今季のここまでのペースのまま残り試合を戦うと、節目に届く選手です。</li>
+<li><strong>来季○月ごろ</strong>：今季の残りで届かない分を、1シーズンの量（今季のペースと直近3年の平均）で割り、来季の何月ごろになるかを出しています。4月〜9月を6つに分けた目安です。</li>
+<li>けがや起用の変化で大きく変わるので、あくまで目安です。</li>
+</ul>
+
+<h2>名球会（日本プロ野球名球会）の入会条件</h2>
+<p>打者は通算2000安打、投手は通算200勝または通算250セーブが条件です。日米通算で数えるので、このページでもこの3記録だけはメジャーリーグでの成績を足しています（例：NPBで安打を重ねてメジャーに移った選手は、両方の合計で2000本）。</p>
+
+<h2>よくある質問</h2>
+<h3>いつ更新されますか？</h3>
+<p>毎日0時ごろと7時ごろ（日本時間）に、NPB公式の個人成績を取得して計算し直しています。</p>
+<h3>2004年以前の成績も入っていますか？</h3>
+<p>入っています。2004年以前はNPB公式の選手ページの年度別成績、2005年以降は当サイトで集計した個人成績を足しています。選手名から、年度別の成績をまとめた選手ページを開けます。</p>
+<h3>関連するページは？</h3>
+<p>選手ごとの年度別成績は<a href="/player/">選手一覧</a>、今季の指標は<a href="/saber/">セイバーメトリクス ランキング</a>、優勝争いは<a href="/magic/">マジックナンバー</a>でどうぞ。</p>
+</article>
+
+<footer class="disclaimer">
+成績はNPB（日本野球機構）公式サイトの記録をもとに、当サイトが独自に集計・計算したものです。メジャーリーグでの成績はMLB公式の記録によります。
+</footer>
+
+</div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "いつ更新されますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "毎日0時ごろと7時ごろ（日本時間）に、NPB公式の個人成績を取得して計算し直しています。" } },
+    { "@type": "Question", "name": "名球会の入会条件は？",
+      "acceptedAnswer": { "@type": "Answer", "text": "打者は通算2000安打、投手は通算200勝または通算250セーブです。日米通算で数えます。" } },
+    { "@type": "Question", "name": "2004年以前の成績も入っていますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "入っています。デビューからの通算で数えています。" } }
+  ]
+}
+</script>
+
+</body>
+</html>
