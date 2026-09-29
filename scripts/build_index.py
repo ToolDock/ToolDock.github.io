@@ -46,8 +46,8 @@ def parse_tools():
     return categories, tools
 
 
-# トップの「よく使われているツール」に出す数（tool-data.js の popularity の大きい順）
-POPULAR = 6
+# トップの「よく使われているツール」に出す数（tool-data.js の popularity の大きい順。4列で2行）
+POPULAR = 8
 
 
 def card(t, rank=None):
