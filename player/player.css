@@ -38,6 +38,10 @@ table.stats td.war{ font-weight:700; }
 table.stats tfoot td, table.stats tfoot th{ font-weight:700; background:var(--tint); border-top:2px solid var(--line); }
 table.stats tfoot th:first-child{ background:var(--tint); }
 .note{ font-size:0.84rem; color:var(--ink-mute); margin-top:12px; }
+.related h3{ margin:14px 0 4px; font-size:0.95rem; color:var(--ink-strong); }
+.related .rel{ margin:0; font-size:0.9rem; line-height:1.9; }
+.related .pn{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 16px; margin:16px 0 0;
+              padding-top:10px; border-top:1px solid var(--line); font-size:0.9rem; }
 .links{ font-size:0.92rem; }
 .kana-nav{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 8px; }
 .kana-nav a{ padding:4px 12px; border:1px solid var(--line); border-radius:999px; background:#fff; text-decoration:none; font-size:0.9rem; }

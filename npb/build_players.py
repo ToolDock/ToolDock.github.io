@@ -298,12 +298,73 @@ def spans_text(person, current=None):
     return "、".join(one(a, b, names, ik) for a, b, _, names, ik in items)
 
 
+TEAMMATES = 20        # 選手ページに載せるチームメイトの人数（出場の多い順）
+
+
+def list_order(e):
+    """一覧（/player/）と同じ並び：50音の行 → 外国出身 → その他、行の中は読みの順"""
+    slugs = [s for s, _, _ in ROWS] + ["foreign", "other"]
+    return (slugs.index(row_of(e["kana"]) or "other"), sort_kana(e["kana"]) or "ん", e["name"])
+
+
+_REL = {}
+
+
+def related_html(pid, entries, data, picks):
+    """選手ページの下に付ける、ほかの選手ページへのリンク。
+    前後の選手（一覧の並び）・同期入団（同じ年・同じ球団の指名）・最後の年のチームメイト。
+    どの選手ページからでも、ほかの選手ページをたどれるようにする（検索エンジンが見つけやすくなる）"""
+    if not _REL:
+        order = sorted(entries, key=list_order)
+        _REL["pos"] = {e["pid"]: i for i, e in enumerate(order)}
+        _REL["order"] = order
+        _REL["name"] = {e["pid"]: e["name"] for e in entries}
+        mates = defaultdict(dict)                  # (年, 球団) → {pid: 出場}
+        for q, (_, _, bat, pit, _) in data.items():
+            for r in bat + pit:
+                for t in r["teams"]:
+                    mates[(r["y"], franchise(t))][q] = max(mates[(r["y"], franchise(t))].get(q, 0), r["g"])
+        _REL["mates"] = mates
+        classes = defaultdict(list)                # (指名の年, 球団) → pid
+        for q, ps in picks.items():
+            for p in ps:
+                if q in data:
+                    classes[(p["year"], p["team"])].append((p["ikusei"], p["round"] or 0, q))
+        _REL["classes"] = classes
+
+    def link(q):
+        return f'<a href="/player/{q}/">{esc(disp(_REL["name"][q]))}</a>'
+
+    parts = []
+    order, i = _REL["order"], _REL["pos"][pid]
+    nav = []
+    if i > 0:
+        nav.append(f'<span>前の選手：{link(order[i - 1]["pid"])}</span>')
+    if i + 1 < len(order):
+        nav.append(f'<span>次の選手：{link(order[i + 1]["pid"])}</span>')
+    for p in picks.get(pid, []):
+        same = [q for _, _, q in sorted(_REL["classes"].get((p["year"], p["team"]), [])) if q != pid]
+        if same:
+            parts.append(f'<h3>{p["year"]}年ドラフトで{esc(p["team"])}に指名された同期</h3>'
+                         f'<p class="rel">{"・".join(link(q) for q in same)}</p>')
+    person, profile, bat, pit, seen = data[pid]
+    last = max(bat + pit, key=lambda r: r["y"])
+    team = last["teams"][-1]
+    ms = _REL["mates"].get((last["y"], franchise(team)), {})
+    top = sorted((q for q in ms if q != pid), key=lambda q: -ms[q])[:TEAMMATES]
+    if top:
+        parts.append(f'<h3>{last["y"]}年の{esc(team)}のチームメイト（出場の多い順）</h3>'
+                     f'<p class="rel">{"・".join(link(q) for q in top)}</p>')
+    return ('<section class="related"><h2>ほかの選手</h2>' + "".join(parts)
+            + (f'<p class="pn">{"".join(nav)}</p>' if nav else "") + "</section>")
+
+
 def pick_text(p):
     lab = bd.pick_label(p)
     return f"{p['year']}年 {p['team']} {'育成' if p['ikusei'] else ''}{lab}"
 
 
-def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_of_text, final):
+def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_of_text, final, related=""):
     name = disp(person["name"])
     kana = clean_kana((profile or {}).get("kana", ""))
     kind = kind_of(bat, pit)
@@ -379,6 +440,7 @@ def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_
         notes.append("2004年以前の成績はNPB公式の記録です。wOBA・wRC+・FIP・WARは2005年以降だけ計算しています。")
     notes.append("複数の球団に在籍した年は、その年の合計です。守備位置は最も多く守った位置です。")
     body.append('<p class="note">' + "<br>".join("・" + n for n in notes) + "</p>")
+    body.append(related)
     body.append(f'<p class="links"><a href="/saber/?k={"pit" if kind == "p" else "bat"}&amp;year={last}">'
                 f'{last}年のセイバーメトリクス ランキング</a>　<a href="/player/">選手一覧</a></p>')
 
@@ -683,6 +745,10 @@ table.stats td.war{ font-weight:700; }
 table.stats tfoot td, table.stats tfoot th{ font-weight:700; background:var(--tint); border-top:2px solid var(--line); }
 table.stats tfoot th:first-child{ background:var(--tint); }
 .note{ font-size:0.84rem; color:var(--ink-mute); margin-top:12px; }
+.related h3{ margin:14px 0 4px; font-size:0.95rem; color:var(--ink-strong); }
+.related .rel{ margin:0; font-size:0.9rem; line-height:1.9; }
+.related .pn{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 16px; margin:16px 0 0;
+              padding-top:10px; border-top:1px solid var(--line); font-size:0.9rem; }
 .links{ font-size:0.92rem; }
 .kana-nav{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 8px; }
 .kana-nav a{ padding:4px 12px; border:1px solid var(--line); border-radius:999px; background:#fff; text-decoration:none; font-size:0.9rem; }
@@ -759,6 +825,7 @@ def main(argv=None):
     out.mkdir(parents=True, exist_ok=True)
     (out / "player.css").write_text(CSS, encoding="utf-8")
     entries = []
+    data = {}
     for pid, rows in by_pid.items():
         if pid.startswith("r") or pid not in people.by_pid:
             continue
@@ -768,11 +835,7 @@ def main(argv=None):
         if not bat and not pit:
             continue
         seen = people.seen_names.get(pid, [])
-        html_text = render_player(pid, person, people.display(pid), seen, bat, pit, picks.get(pid, []),
-                                  profile, as_of_text, final)
-        d_ = out / pid
-        d_.mkdir(exist_ok=True)
-        (d_ / "index.html").write_text(html_text, encoding="utf-8")
+        data[pid] = (person, profile, bat, pit, seen)
         years = [r["y"] for r in bat + pit]
         last_row = max(bat + pit, key=lambda r: r["y"])
         teams = []
@@ -788,6 +851,14 @@ def main(argv=None):
                         "teams": teams, "pos": pos_group(bat, pit), "hand": (profile or {}).get("profile", {}).get("投打", ""),
                         "school": (profile or {}).get("profile", {}).get("経歴", ""),
                         "names": list(dict.fromkeys(disp(n) for n in names))})
+    for e in entries:
+        pid = e["pid"]
+        person, profile, bat, pit, seen = data[pid]
+        html_text = render_player(pid, person, people.display(pid), seen, bat, pit, picks.get(pid, []),
+                                  profile, as_of_text, final, related_html(pid, entries, data, picks))
+        d_ = out / pid
+        d_.mkdir(exist_ok=True)
+        (d_ / "index.html").write_text(html_text, encoding="utf-8")
     (out / "index.html").write_text(index_page(entries, latest), encoding="utf-8")
     (out / "players.json").write_text(search_data(entries, latest), encoding="utf-8")
     (out / "search.js").write_text(SEARCH_JS, encoding="utf-8")
