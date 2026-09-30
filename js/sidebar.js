@@ -17,7 +17,7 @@
   const WIDE = "(min-width: 1300px)";
 
   /* 「人気のページ」に出す件数。
-     並び順は tool-data.js の popularity（直近3か月のクリック数）で決める。
+     並び順は tool-data.js の popularity（Search Console の上位の順）で決める。
      ここに直書きすると、実際のアクセスとすぐズレる */
   const POPULAR_COUNT = 6;
 
