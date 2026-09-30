@@ -2955,3 +2955,15 @@ https://tooldock.github.io/player/93995150/
 https://tooldock.github.io/player/93995155/
 https://tooldock.github.io/player/93995157/
 https://tooldock.github.io/player/93995159/
+https://tooldock.github.io/draft/team/baystars/
+https://tooldock.github.io/draft/team/buffaloes/
+https://tooldock.github.io/draft/team/carp/
+https://tooldock.github.io/draft/team/dragons/
+https://tooldock.github.io/draft/team/eagles/
+https://tooldock.github.io/draft/team/fighters/
+https://tooldock.github.io/draft/team/giants/
+https://tooldock.github.io/draft/team/hawks/
+https://tooldock.github.io/draft/team/lions/
+https://tooldock.github.io/draft/team/marines/
+https://tooldock.github.io/draft/team/swallows/
+https://tooldock.github.io/draft/team/tigers/

@@ -19,7 +19,7 @@ import json
 import re
 import sys
 from collections import defaultdict
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -31,6 +31,15 @@ TEAM_ORDER = ["阪神", "巨人", "DeNA", "横浜", "ヤクルト", "広島", "�
               "ソフトバンク", "西武", "日本ハム", "オリックス", "ロッテ", "楽天"]
 STAR_WAR = 10       # 通算WARがこれ以上なら「主力級」と書く
 TOO_EARLY = 3        # 直近この年数のドラフトは「評価はまだ早い」と添える
+# ドラフト会議の直後は、まだ成績が無いので「答え合わせ」ではなく「指名結果一覧」のページにする。
+# 翌年のこの日（オープン戦の終盤）からの最初の更新で、自動で「答え合わせ」に切り替わる
+RESULT_UNTIL = (3, 25)
+
+
+def result_mode(year, today=None):
+    """その年のページを「指名結果一覧」として出す期間か"""
+    today = today or datetime.now(JST).date()
+    return today < date(year + 1, *RESULT_UNTIL)
 
 
 def disp(name):
@@ -354,8 +363,8 @@ th, td{ padding:7px 8px; border-bottom:1px solid var(--line-soft); text-align:le
 thead th{ background:var(--head-bg); font-size:0.78rem; color:var(--ink-sub); }
 td.n, th.n{ text-align:right; }
 td.nm{ font-weight:700; color:var(--ink-strong); }
-td.nm a.pl{ color:inherit; text-decoration:none; border-bottom:1px dotted var(--ink-mute); }
-td.nm a.pl:hover{ color:var(--accent); border-bottom-color:var(--accent); }
+td a.pl{ color:inherit; text-decoration:none; border-bottom:1px dotted var(--ink-mute); }
+td a.pl:hover{ color:var(--accent); border-bottom-color:var(--accent); }
 td.sub{ font-size:0.78rem; color:var(--ink-mute); }
 td.war{ font-weight:800; text-align:right; }
 tr.none td{ color:var(--ink-mute); }
@@ -629,7 +638,7 @@ def year_page(year, picks, years, last_season):
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>球団</th><th class="n">指名</th><th class="n">一軍出場</th><th class="n">通算WAR合計</th></tr></thead>
 <tbody>
-{"".join(f'<tr><td>{i}</td><td class="nm">{esc(t)}</td><td class="n">{v[1]}人</td><td class="n">{v[2]}人</td><td class="war">{v[0]:.1f}</td></tr>' for i, (t, v) in enumerate(team_rank, 1))}
+{"".join(f'<tr><td>{i}</td><td class="nm">{team_link(t)}</td><td class="n">{v[1]}人</td><td class="n">{v[2]}人</td><td class="war">{v[0]:.1f}</td></tr>' for i, (t, v) in enumerate(team_rank, 1))}
 </tbody></table></div>
 
 <h2>{year}年ドラフト 指名選手一覧とその後</h2>
@@ -656,6 +665,102 @@ def year_page(year, picks, years, last_season):
            f"{year}年のプロ野球ドラフト会議で指名された{n_all}人の指名結果と、その後の一軍成績。"
     return shell(title, desc, f"/draft/{year}/", f"{year}年ドラフト 答え合わせ",
                  "指名選手のその後を、一軍の通算成績と簡易WARで振り返ります", body, "draft",
+                 crumb=f"{year}年")
+
+
+def school_kind(p):
+    """出身の区分（高校・大学・社会人など）。指名結果一覧の内訳に使う"""
+    f = p["from"] or ""
+    if "高校" in f or "高等学校" in f or "高等部" in f or f.endswith("高"):
+        return "高校"
+    if "大学" in f or "大" == f[-1:]:
+        return "大学"
+    return "社会人・独立ほか"
+
+
+def result_page(year, picks, years):
+    """ドラフト会議の直後の「指名結果一覧」。成績はまだ無いので、指名の中身だけを並べる"""
+    n_all = len(picks)
+    n_ik = sum(p["ikusei"] for p in picks)
+    teams = sorted({p["team"] for p in picks}, key=team_sort_key)
+    firsts = sorted((p for p in picks if not p["ikusei"] and p["round"] == 1), key=lambda p: team_sort_key(p["team"]))
+    kinds = ["高校", "大学", "社会人・独立ほか"]
+    cnt = defaultdict(lambda: defaultdict(int))
+    for p in picks:
+        c = cnt[p["team"]]
+        c["ik" if p["ikusei"] else "sh"] += 1
+        c["pit" if p["pos"] == "投手" else "fld"] += 1
+        c[school_kind(p)] += 1
+    total = defaultdict(int)
+    for c in cnt.values():
+        for k, v in c.items():
+            total[k] += v
+
+    nav = '<ul class="years">' + "".join(
+        f'<li><span>{y}</span></li>' if y == year else f'<li><a href="/draft/{y}/">{y}</a></li>'
+        for y in sorted(years, reverse=True)) + "</ul>"
+    first_rows = "".join(
+        f'<tr><td class="nm">{esc(p["team"])}</td><td class="nm">{name_link(p)}</td>'
+        f'<td>{esc(p["pos"] or "―")}</td><td class="sub">{esc(p["from"])}</td></tr>' for p in firsts)
+    team_rows = "".join(
+        f'<tr><td class="nm">{esc(t)}</td><td class="n">{cnt[t]["sh"]}人</td><td class="n">{cnt[t]["ik"]}人</td>'
+        f'<td class="n">{cnt[t]["pit"]}</td><td class="n">{cnt[t]["fld"]}</td>'
+        + "".join(f'<td class="n">{cnt[t][k]}</td>' for k in kinds) + "</tr>" for t in teams)
+    rows = []
+    for p in sorted(picks, key=lambda p: (team_sort_key(p["team"]), p["ikusei"], 0 if p["label"] == "希望枠" else 1, p["round"] or 0)):
+        order = (0 if p["label"] == "希望枠" else 1) * 100 + (p["round"] or 0) + (50 if p["ikusei"] else 0)
+        tags = '<span class="tag ik">育成</span>' if p["ikusei"] else ""
+        if p["redrafted"]:
+            tags += f'<span class="tag">{p["redrafted"][0]}年に{esc(p["redrafted"][1])}が再指名</span>'
+        rows.append(
+            f'<tr data-team="{esc(p["team"])}">'
+            f'<td data-v="{esc(p["team"])}">{esc(p["team"])}</td>'
+            f'<td data-v="{order}">{esc(pick_label(p))}</td>'
+            f'<td class="nm" data-v="{esc(p["name"])}">{name_link(p)}{tags}</td>'
+            f'<td data-v="{esc(p["pos"])}">{esc(p["pos"] or "―")}</td>'
+            f'<td class="sub" data-v="{esc(p["from"])}">{esc(p["from"])}</td></tr>')
+
+    body = f"""
+{nav}
+<p class="lead">{year}年のプロ野球ドラフト会議で指名された{n_all}人（支配下{n_all - n_ik}人・育成{n_ik}人）の一覧です。12球団の1位指名と、球団ごとの指名選手をまとめています。</p>
+
+<div class="cards">
+  <div class="card"><div class="k">指名された選手</div><div class="v">{n_all}人</div><div class="s">支配下 {n_all - n_ik}人・育成 {n_ik}人</div></div>
+  <div class="card"><div class="k">投手 / 野手</div><div class="v">{total["pit"]} / {total["fld"]}</div><div class="s">人</div></div>
+  <div class="card"><div class="k">高校 / 大学</div><div class="v">{total["高校"]} / {total["大学"]}</div><div class="s">人</div></div>
+  <div class="card"><div class="k">社会人・独立ほか</div><div class="v">{total["社会人・独立ほか"]}人</div><div class="s">&nbsp;</div></div>
+</div>
+
+<h2>{year}年ドラフト 12球団の1位指名</h2>
+<div class="tbl-wrap"><table>
+<thead><tr><th>球団</th><th>選手</th><th>守備</th><th>出身</th></tr></thead>
+<tbody>{first_rows}</tbody></table></div>
+
+<h2>{year}年ドラフト 指名選手一覧</h2>
+<div class="filter"><label>球団で絞り込む <select id="team-filter"><option value="">全球団</option>
+{"".join(f'<option>{esc(t)}</option>' for t in teams)}
+</select></label><span class="note">見出しを押すと並べ替えられます</span></div>
+<div class="tbl-wrap"><table class="sortable" id="picks">
+<thead><tr><th data-k>球団</th><th data-k>指名</th><th data-k>選手</th><th data-k>守備</th><th data-k>出身</th></tr></thead>
+<tbody>
+{chr(10).join(rows)}
+</tbody></table></div>
+
+<h2>球団別の指名人数（{year}年）</h2>
+<div class="tbl-wrap"><table>
+<thead><tr><th>球団</th><th class="n">支配下</th><th class="n">育成</th><th class="n">投手</th><th class="n">野手</th><th class="n">高校</th><th class="n">大学</th><th class="n">社会人・独立ほか</th></tr></thead>
+<tbody>{team_rows}</tbody></table></div>
+
+<p class="note">・{year + 1}年のシーズンが始まる前に、このページは指名選手のその後（一軍の成績と簡易WAR）を振り返る「答え合わせ」に切り替わります。過去の年の答え合わせは、上の年の一覧から見られます。<br>
+・出身の区分（高校・大学・社会人など）は、NPBの発表の出身校・所属先の名前から分けています。</p>
+"""
+    top = "・".join(f'{disp(p["name"])}（{p["team"]}）' for p in firsts[:4])
+    title = f"{year}年ドラフト 指名結果一覧｜12球団の1位指名・全指名選手と育成指名"
+    desc = (f"{year}年のプロ野球ドラフト会議で指名された{n_all}人（支配下{n_all - n_ik}人・育成{n_ik}人）の一覧。"
+            + (f"1位指名は{top}など。" if top else "")
+            + "12球団の指名選手を球団別に絞り込めるほか、投手・野手、高校・大学・社会人の内訳もまとめています。")
+    return shell(title, desc, f"/draft/{year}/", f"{year}年ドラフト 指名結果一覧",
+                 "12球団の指名選手を、1位指名と球団別の一覧でまとめています", body, "draft",
                  crumb=f"{year}年")
 
 
@@ -695,12 +800,16 @@ def index_page(drafts, last_season):
     for p in all_picks:
         if not p["ambiguous"]:
             by_team[team_short_franchise(p["team"])] += p["career"]["war"]
-    team_rows = "".join(f'<tr><td>{i}</td><td class="nm">{esc(t)}</td><td class="war">{w:.1f}</td></tr>'
+    team_rows = "".join(f'<tr><td>{i}</td><td class="nm">{team_link(t)}</td><td class="war">{w:.1f}</td></tr>'
                         for i, (t, w) in enumerate(sorted(by_team.items(), key=lambda kv: -kv[1]), 1))
 
     years = sorted(drafts, reverse=True)
     year_rows = ""
     for y in years:
+        if result_mode(y):
+            year_rows += (f'<tr><td class="nm"><a href="/draft/{y}/">{y}年</a></td><td class="n">{len(drafts[y])}人</td>'
+                          f'<td><a href="/draft/{y}/">指名結果一覧</a>（答え合わせは{y + 1}年の開幕前から）</td><td class="war">―</td></tr>')
+            continue
         ps = [p for p in drafts[y] if not p["ambiguous"]]
         best = max(ps, key=lambda p: p["career"]["war"]) if ps else None
         year_rows += (f'<tr><td class="nm"><a href="/draft/{y}/">{y}年</a></td><td class="n">{len(drafts[y])}人</td>'
@@ -735,7 +844,7 @@ def index_page(drafts, last_season):
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>球団</th><th class="n">通算WAR合計</th></tr></thead>
 <tbody>{team_rows}</tbody></table></div>
-<p class="note">横浜（〜2011年）はDeNAに含めています。</p>
+<p class="note">横浜（〜2011年）はDeNAに含めています。球団名から、その球団の年ごとの指名とその後を見られます。</p>
 
 <article>
 <h2>このページについて</h2>
@@ -754,6 +863,155 @@ def index_page(drafts, last_season):
 
 def team_short_franchise(t):
     return "DeNA" if t == "横浜" else t
+
+
+# 球団別のページ /draft/team/<slug>/。横浜（〜2011年）は DeNA のページに含める
+TEAM_SLUG = {"阪神": "tigers", "巨人": "giants", "DeNA": "baystars", "ヤクルト": "swallows", "広島": "carp",
+             "中日": "dragons", "ソフトバンク": "hawks", "西武": "lions", "日本ハム": "fighters",
+             "オリックス": "buffaloes", "ロッテ": "marines", "楽天": "eagles"}
+
+
+def team_link(t):
+    """球団名を球団別のページへのリンクにする（年別ページ・一覧の球団別の表で使う）"""
+    slug = TEAM_SLUG.get(team_short_franchise(t))
+    return f'<a class="pl" href="/draft/team/{slug}/">{esc(t)}</a>' if slug else esc(t)
+
+
+def team_page(team, drafts, last_season):
+    """1球団の、年ごとの指名とその後"""
+    years = sorted(drafts)
+    graded_years = [y for y in years if not result_mode(y)]
+    mine = [p for y in years for p in drafts[y] if team_short_franchise(p["team"]) == team]
+    ok = [p for p in mine if not p["ambiguous"] and not p["unsigned"] and not result_mode(p["year"])]
+    played = [p for p in ok if p["career"]["years"]]
+    war_total = sum(p["career"]["war"] for p in ok)
+
+    # 年ごとの12球団の中の順位（その年の指名選手の通算WAR合計）
+    year_rows, ranks = [], {}
+    for y in sorted(graded_years, reverse=True):
+        tot = defaultdict(float)
+        for p in drafts[y]:
+            if not p["ambiguous"]:
+                tot[team_short_franchise(p["team"])] += p["career"]["war"]
+        order = sorted(tot, key=lambda t: -tot[t])
+        ranks[y] = order.index(team) + 1 if team in order else None
+        ps = [p for p in drafts[y] if team_short_franchise(p["team"]) == team]
+        good = [p for p in ps if not p["ambiguous"] and p["career"]["years"]]
+        best = max(good, key=lambda p: p["career"]["war"]) if good else None
+        best_cell = (f'{name_link(best)}（{esc(pick_label(best))}・{best["career"]["war"]:.1f}）' if best else "―")
+        year_rows.append(
+            f'<tr><td class="nm"><a href="/draft/{y}/">{y}年</a></td><td class="n">{len(ps)}人</td>'
+            f'<td class="n">{len(good)}人</td><td class="war">{tot.get(team, 0):.1f}</td>'
+            f'<td class="n">{ranks[y] or "―"}位</td><td>{best_cell}</td></tr>')
+    all_tot = defaultdict(float)
+    for y in graded_years:
+        for p in drafts[y]:
+            if not p["ambiguous"]:
+                all_tot[team_short_franchise(p["team"])] += p["career"]["war"]
+    all_rank = sorted(all_tot, key=lambda t: -all_tot[t]).index(team) + 1 if team in all_tot else None
+    # 当たり年は、評価が固まってきた年（指名から5年以上。指名順位ごとの集計と同じ）から選ぶ
+    best_years = sorted((y for y in ranks if ranks[y] and last_season - y >= 5), key=lambda y: ranks[y])[:3]
+    tops = sorted(played, key=lambda p: -p["career"]["war"])[:10]
+
+    # 指名順位ごと（5年以上たった年だけ）
+    def bucket(p):
+        if p["ikusei"]:
+            return "育成"
+        if p["label"] == "希望枠" or p["round"] is None:
+            return None
+        return f'{p["round"]}位' if p["round"] <= 5 else "6位以下"
+    bk = defaultdict(list)
+    for p in ok:
+        if last_season - p["year"] >= 5 and bucket(p):
+            bk[bucket(p)].append(p)
+    rank_rows = ""
+    for b in ["1位", "2位", "3位", "4位", "5位", "6位以下", "育成"]:
+        ps = bk.get(b, [])
+        if ps:
+            n_up = sum(1 for p in ps if p["career"]["years"])
+            n_good = sum(1 for p in ps if p["career"]["war"] >= STAR_WAR)
+            rank_rows += (f'<tr><td class="nm">{b}</td><td class="n">{len(ps)}人</td><td class="n">{n_up * 100 // len(ps)}%</td>'
+                          f'<td class="n">{n_good}人</td><td class="war">{sum(p["career"]["war"] for p in ps) / len(ps):.1f}</td></tr>')
+
+    rows = []
+    for p in sorted(mine, key=lambda p: (-p["year"], p["ikusei"], 0 if p["label"] == "希望枠" else 1, p["round"] or 0)):
+        c = p["career"]
+        tags = '<span class="tag ik">育成</span>' if p["ikusei"] else ""
+        if p["ambiguous"]:
+            stat, war_v, war_t = "同姓同名の選手がいるため集計していません", -999, "―"
+        elif p.get("unsigned"):
+            stat, war_v, war_t = "入団せず", -999, "―"
+        else:
+            stat = stat_text(c)
+            war_v = c["war"] if c["years"] else -999
+            war_t = f'{c["war"]:.1f}' if c["years"] else "―"
+        order = (0 if p["label"] == "希望枠" else 1) * 100 + (p["round"] or 0) + (50 if p["ikusei"] else 0)
+        cls = "" if c["years"] else ' class="none"'
+        rows.append(
+            f'<tr{cls} data-team="{p["year"]}"><td data-v="{p["year"]}"><a href="/draft/{p["year"]}/">{p["year"]}</a></td>'
+            f'<td data-v="{order}">{esc(pick_label(p))}</td>'
+            f'<td class="nm" data-v="{esc(p["name"])}">{name_link(p)}{tags}</td>'
+            f'<td data-v="{esc(p["pos"])}">{esc(p["pos"] or "―")}</td>'
+            f'<td class="sub" data-v="{esc(p["from"])}">{esc(p["from"])}</td>'
+            f'<td class="n" data-v="{c["years"]}">{c["years"] or "―"}{"年" if c["years"] else ""}</td>'
+            f'<td data-v="{war_v}">{esc(stat)}</td><td class="war" data-v="{war_v}">{war_t}</td></tr>')
+
+    others = "".join(f'<li><span>{esc(t)}</span></li>' if t == team else
+                     f'<li><a href="/draft/team/{slug}/">{esc(t)}</a></li>' for t, slug in TEAM_SLUG.items())
+    first, last = min(graded_years), max(graded_years)
+    yokohama = "（2011年までの横浜を含む）" if team == "DeNA" else ""
+    best_txt = "・".join(f"{y}年" for y in best_years)
+    body = f"""
+<ul class="years">{others}</ul>
+<p class="lead">{first}年以降のドラフト会議で{esc(team)}{yokohama}が指名した{len(mine)}人（入団しなかった選手を含む）について、その後の一軍通算成績と簡易WARを年ごとにまとめました。他球団に移ってからの成績も含めています。</p>
+
+<div class="cards">
+  <div class="card"><div class="k">指名した選手（{first}〜{last}年）</div><div class="v">{len(mine)}人</div><div class="s">うち育成 {sum(p["ikusei"] for p in mine)}人</div></div>
+  <div class="card"><div class="k">一軍に出場した選手</div><div class="v">{len(played)}人</div><div class="s">{len(played) * 100 // max(1, len(ok))}%</div></div>
+  <div class="card"><div class="k">通算WAR合計</div><div class="v">{war_total:.1f}</div><div class="s">12球団中 {all_rank or "―"}位</div></div>
+  <div class="card"><div class="k">通算WARトップ</div><div class="v">{esc(disp(tops[0]["name"])) if tops else "―"}</div><div class="s">{(f'{tops[0]["year"]}年 ' + esc(pick_label(tops[0])) + f' ・WAR {tops[0]["career"]["war"]:.1f}') if tops else ""}</div></div>
+</div>
+{f'<p>{esc(team)}のドラフトの「当たり年」は、その年の指名選手の通算WAR合計が12球団で上位だった{best_txt}です。</p>' if best_years else ""}
+
+<h2>{esc(team)}のドラフト 年別の採点</h2>
+<p>その年に指名した選手の、一軍での通算WARの合計と、12球団の中での順位です。</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>年</th><th class="n">指名</th><th class="n">一軍出場</th><th class="n">通算WAR合計</th><th class="n">12球団中</th><th>その年のトップ</th></tr></thead>
+<tbody>{"".join(year_rows)}</tbody></table></div>
+
+<h2>{esc(team)}のドラフト指名選手 通算WARトップ10</h2>
+<div class="tbl-wrap"><table>
+<thead><tr><th>順位</th><th>選手</th><th>指名</th><th>一軍通算</th><th class="n">通算WAR</th></tr></thead>
+<tbody>
+{"".join(f'<tr><td>{i}</td><td class="nm">{name_link(p)}</td><td><a href="/draft/{p["year"]}/">{p["year"]}年</a> {esc(pick_label(p))}</td><td>{esc(stat_text(p["career"]))}</td><td class="war">{p["career"]["war"]:.1f}</td></tr>' for i, p in enumerate(tops, 1))}
+</tbody></table></div>
+
+<h2>指名順位ごとの「当たり」（{esc(team)}）</h2>
+<p>指名から5年以上たったドラフト（{first}〜{last_season - 5}年）について、指名順位ごとに一軍に出場した割合と、通算WAR{STAR_WAR}以上の主力級の人数です。</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>指名順位</th><th class="n">人数</th><th class="n">一軍出場</th><th class="n">WAR{STAR_WAR}以上</th><th class="n">平均WAR</th></tr></thead>
+<tbody>{rank_rows}</tbody></table></div>
+
+<h2>{esc(team)}のドラフト指名選手一覧とその後</h2>
+<div class="filter"><label>年で絞り込む <select id="team-filter"><option value="">全部の年</option>
+{"".join(f'<option>{y}</option>' for y in sorted({p["year"] for p in mine}, reverse=True))}
+</select></label><span class="note">見出しを押すと並べ替えられます</span></div>
+<div class="tbl-wrap"><table class="sortable" id="picks">
+<thead><tr><th data-k>年</th><th data-k>指名</th><th data-k>選手</th><th data-k>守備</th><th data-k>出身</th><th data-k class="n">一軍</th><th data-k>一軍通算成績</th><th data-k class="n">通算WAR</th></tr></thead>
+<tbody>
+{chr(10).join(rows)}
+</tbody></table></div>
+<p class="note">・簡易WARは、打撃・盗塁・守備位置・代替水準（投手はFIP）から計算したもので、守備の上手さ（UZR）や球場の補正は入っていません（<a href="/war/">計算方法</a>）。<br>
+・年別の採点と指名順位ごとの集計には、指名直後でまだ答え合わせをしていない年は入れていません。<br>
+・ほかの年・ほかの球団は<a href="/draft/">ドラフト答え合わせ</a>から見られます。</p>
+"""
+    top_txt = "・".join(disp(p["name"]) for p in tops[:3])
+    title = f"{team}のドラフト答え合わせ｜{first}年以降の指名選手のその後と当たり年"
+    desc = (f"{first}年以降に{team}{yokohama}がドラフトで指名した{len(mine)}人の、その後の一軍通算成績と簡易WAR。"
+            + (f"通算WARトップは{top_txt}。" if top_txt else "")
+            + f"年別の採点（12球団中の順位）と指名順位ごとの当たりの割合もまとめています。")
+    return shell(title, desc, f"/draft/team/{TEAM_SLUG[team]}/", f"{team}のドラフト答え合わせ",
+                 "指名選手のその後を、一軍の通算成績と簡易WARで振り返ります", body, "draft", crumb=team)
 
 
 def main(argv=None):
@@ -793,8 +1051,13 @@ def main(argv=None):
     for y in years:
         d = out / str(y)
         d.mkdir(exist_ok=True)
-        (d / "index.html").write_text(year_page(y, drafts[y], years, last_season), encoding="utf-8")
+        page = result_page(y, drafts[y], years) if result_mode(y) else year_page(y, drafts[y], years, last_season)
+        (d / "index.html").write_text(page, encoding="utf-8")
     (out / "index.html").write_text(index_page(drafts, last_season), encoding="utf-8")
+    for team, slug in TEAM_SLUG.items():
+        d = out / "team" / slug
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "index.html").write_text(team_page(team, drafts, last_season), encoding="utf-8")
     print(f"draft: {years[0]}〜{years[-1]}年 {sum(len(v) for v in drafts.values())}人")
     return 0
 
