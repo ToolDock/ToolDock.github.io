@@ -19,7 +19,7 @@ import json
 import re
 import sys
 from collections import defaultdict
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -31,6 +31,15 @@ TEAM_ORDER = ["阪神", "巨人", "DeNA", "横浜", "ヤクルト", "広島", "�
               "ソフトバンク", "西武", "日本ハム", "オリックス", "ロッテ", "楽天"]
 STAR_WAR = 10       # 通算WARがこれ以上なら「主力級」と書く
 TOO_EARLY = 3        # 直近この年数のドラフトは「評価はまだ早い」と添える
+# ドラフト会議の直後は、まだ成績が無いので「答え合わせ」ではなく「指名結果一覧」のページにする。
+# 翌年のこの日（オープン戦の終盤）からの最初の更新で、自動で「答え合わせ」に切り替わる
+RESULT_UNTIL = (3, 25)
+
+
+def result_mode(year, today=None):
+    """その年のページを「指名結果一覧」として出す期間か"""
+    today = today or datetime.now(JST).date()
+    return today < date(year + 1, *RESULT_UNTIL)
 
 
 def disp(name):
@@ -659,6 +668,102 @@ def year_page(year, picks, years, last_season):
                  crumb=f"{year}年")
 
 
+def school_kind(p):
+    """出身の区分（高校・大学・社会人など）。指名結果一覧の内訳に使う"""
+    f = p["from"] or ""
+    if "高校" in f or "高等学校" in f or "高等部" in f or f.endswith("高"):
+        return "高校"
+    if "大学" in f or "大" == f[-1:]:
+        return "大学"
+    return "社会人・独立ほか"
+
+
+def result_page(year, picks, years):
+    """ドラフト会議の直後の「指名結果一覧」。成績はまだ無いので、指名の中身だけを並べる"""
+    n_all = len(picks)
+    n_ik = sum(p["ikusei"] for p in picks)
+    teams = sorted({p["team"] for p in picks}, key=team_sort_key)
+    firsts = sorted((p for p in picks if not p["ikusei"] and p["round"] == 1), key=lambda p: team_sort_key(p["team"]))
+    kinds = ["高校", "大学", "社会人・独立ほか"]
+    cnt = defaultdict(lambda: defaultdict(int))
+    for p in picks:
+        c = cnt[p["team"]]
+        c["ik" if p["ikusei"] else "sh"] += 1
+        c["pit" if p["pos"] == "投手" else "fld"] += 1
+        c[school_kind(p)] += 1
+    total = defaultdict(int)
+    for c in cnt.values():
+        for k, v in c.items():
+            total[k] += v
+
+    nav = '<ul class="years">' + "".join(
+        f'<li><span>{y}</span></li>' if y == year else f'<li><a href="/draft/{y}/">{y}</a></li>'
+        for y in sorted(years, reverse=True)) + "</ul>"
+    first_rows = "".join(
+        f'<tr><td class="nm">{esc(p["team"])}</td><td class="nm">{name_link(p)}</td>'
+        f'<td>{esc(p["pos"] or "―")}</td><td class="sub">{esc(p["from"])}</td></tr>' for p in firsts)
+    team_rows = "".join(
+        f'<tr><td class="nm">{esc(t)}</td><td class="n">{cnt[t]["sh"]}人</td><td class="n">{cnt[t]["ik"]}人</td>'
+        f'<td class="n">{cnt[t]["pit"]}</td><td class="n">{cnt[t]["fld"]}</td>'
+        + "".join(f'<td class="n">{cnt[t][k]}</td>' for k in kinds) + "</tr>" for t in teams)
+    rows = []
+    for p in sorted(picks, key=lambda p: (team_sort_key(p["team"]), p["ikusei"], 0 if p["label"] == "希望枠" else 1, p["round"] or 0)):
+        order = (0 if p["label"] == "希望枠" else 1) * 100 + (p["round"] or 0) + (50 if p["ikusei"] else 0)
+        tags = '<span class="tag ik">育成</span>' if p["ikusei"] else ""
+        if p["redrafted"]:
+            tags += f'<span class="tag">{p["redrafted"][0]}年に{esc(p["redrafted"][1])}が再指名</span>'
+        rows.append(
+            f'<tr data-team="{esc(p["team"])}">'
+            f'<td data-v="{esc(p["team"])}">{esc(p["team"])}</td>'
+            f'<td data-v="{order}">{esc(pick_label(p))}</td>'
+            f'<td class="nm" data-v="{esc(p["name"])}">{name_link(p)}{tags}</td>'
+            f'<td data-v="{esc(p["pos"])}">{esc(p["pos"] or "―")}</td>'
+            f'<td class="sub" data-v="{esc(p["from"])}">{esc(p["from"])}</td></tr>')
+
+    body = f"""
+{nav}
+<p class="lead">{year}年のプロ野球ドラフト会議で指名された{n_all}人（支配下{n_all - n_ik}人・育成{n_ik}人）の一覧です。12球団の1位指名と、球団ごとの指名選手をまとめています。</p>
+
+<div class="cards">
+  <div class="card"><div class="k">指名された選手</div><div class="v">{n_all}人</div><div class="s">支配下 {n_all - n_ik}人・育成 {n_ik}人</div></div>
+  <div class="card"><div class="k">投手 / 野手</div><div class="v">{total["pit"]} / {total["fld"]}</div><div class="s">人</div></div>
+  <div class="card"><div class="k">高校 / 大学</div><div class="v">{total["高校"]} / {total["大学"]}</div><div class="s">人</div></div>
+  <div class="card"><div class="k">社会人・独立ほか</div><div class="v">{total["社会人・独立ほか"]}人</div><div class="s">&nbsp;</div></div>
+</div>
+
+<h2>{year}年ドラフト 12球団の1位指名</h2>
+<div class="tbl-wrap"><table>
+<thead><tr><th>球団</th><th>選手</th><th>守備</th><th>出身</th></tr></thead>
+<tbody>{first_rows}</tbody></table></div>
+
+<h2>{year}年ドラフト 指名選手一覧</h2>
+<div class="filter"><label>球団で絞り込む <select id="team-filter"><option value="">全球団</option>
+{"".join(f'<option>{esc(t)}</option>' for t in teams)}
+</select></label><span class="note">見出しを押すと並べ替えられます</span></div>
+<div class="tbl-wrap"><table class="sortable" id="picks">
+<thead><tr><th data-k>球団</th><th data-k>指名</th><th data-k>選手</th><th data-k>守備</th><th data-k>出身</th></tr></thead>
+<tbody>
+{chr(10).join(rows)}
+</tbody></table></div>
+
+<h2>球団別の指名人数（{year}年）</h2>
+<div class="tbl-wrap"><table>
+<thead><tr><th>球団</th><th class="n">支配下</th><th class="n">育成</th><th class="n">投手</th><th class="n">野手</th><th class="n">高校</th><th class="n">大学</th><th class="n">社会人・独立ほか</th></tr></thead>
+<tbody>{team_rows}</tbody></table></div>
+
+<p class="note">・{year + 1}年のシーズンが始まる前に、このページは指名選手のその後（一軍の成績と簡易WAR）を振り返る「答え合わせ」に切り替わります。過去の年の答え合わせは、上の年の一覧から見られます。<br>
+・出身の区分（高校・大学・社会人など）は、NPBの発表の出身校・所属先の名前から分けています。</p>
+"""
+    top = "・".join(f'{disp(p["name"])}（{p["team"]}）' for p in firsts[:4])
+    title = f"{year}年ドラフト 指名結果一覧｜12球団の1位指名・全指名選手と育成指名"
+    desc = (f"{year}年のプロ野球ドラフト会議で指名された{n_all}人（支配下{n_all - n_ik}人・育成{n_ik}人）の一覧。"
+            + (f"1位指名は{top}など。" if top else "")
+            + "12球団の指名選手を球団別に絞り込めるほか、投手・野手、高校・大学・社会人の内訳もまとめています。")
+    return shell(title, desc, f"/draft/{year}/", f"{year}年ドラフト 指名結果一覧",
+                 "12球団の指名選手を、1位指名と球団別の一覧でまとめています", body, "draft",
+                 crumb=f"{year}年")
+
+
 def index_page(drafts, last_season):
     all_picks = [p for y in drafts for p in drafts[y]]
     graded = [p for p in all_picks if not p["ambiguous"] and last_season - p["year"] >= 5]
@@ -701,6 +806,10 @@ def index_page(drafts, last_season):
     years = sorted(drafts, reverse=True)
     year_rows = ""
     for y in years:
+        if result_mode(y):
+            year_rows += (f'<tr><td class="nm"><a href="/draft/{y}/">{y}年</a></td><td class="n">{len(drafts[y])}人</td>'
+                          f'<td><a href="/draft/{y}/">指名結果一覧</a>（答え合わせは{y + 1}年の開幕前から）</td><td class="war">―</td></tr>')
+            continue
         ps = [p for p in drafts[y] if not p["ambiguous"]]
         best = max(ps, key=lambda p: p["career"]["war"]) if ps else None
         year_rows += (f'<tr><td class="nm"><a href="/draft/{y}/">{y}年</a></td><td class="n">{len(drafts[y])}人</td>'
@@ -793,7 +902,8 @@ def main(argv=None):
     for y in years:
         d = out / str(y)
         d.mkdir(exist_ok=True)
-        (d / "index.html").write_text(year_page(y, drafts[y], years, last_season), encoding="utf-8")
+        page = result_page(y, drafts[y], years) if result_mode(y) else year_page(y, drafts[y], years, last_season)
+        (d / "index.html").write_text(page, encoding="utf-8")
     (out / "index.html").write_text(index_page(drafts, last_season), encoding="utf-8")
     print(f"draft: {years[0]}〜{years[-1]}年 {sum(len(v) for v in drafts.values())}人")
     return 0
