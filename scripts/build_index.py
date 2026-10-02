@@ -99,6 +99,31 @@ def render(categories, tools):
     return "\n".join(out)
 
 
+CATEGORY = ROOT / "category" / "index.html"
+
+
+def render_category(tools):
+    """「すべてのツール」のページ（/category/）のカード。?cat= での絞り込みは、ページのJSが data-cat を見て行う"""
+    out = [BEGIN]
+    for t in tools:
+        out.append(f'  <a class="tool-card" data-cat="{html.escape(t["category"])}" href="{html.escape(t["url"])}">'
+                   f'<h2>{html.escape(t["title"])}</h2><p>{html.escape(t["desc"])}</p></a>')
+    out.append(END)
+    return "\n".join(out)
+
+
+def category_page(tools):
+    page = CATEGORY.read_text(encoding="utf-8")
+    block = re.compile(re.escape(BEGIN) + ".*?" + re.escape(END), re.S)
+    return page, block.sub(lambda m: render_category(tools), page, count=1)
+
+
+def write_category(tools):
+    page, updated = category_page(tools)
+    CATEGORY.write_text(updated, encoding="utf-8")
+    print(f"category/index.html にツール {len(tools)}件を書き込み")
+
+
 def main(argv):
     categories, tools = parse_tools()
     listing = render(categories, tools)
@@ -115,8 +140,9 @@ def main(argv):
                      rf"\g<1>{len(tools)}\g<2>", updated)
 
     if "--check" in argv:
-        if updated != page:
-            print("index.html の一覧が tool-data.js とずれている。"
+        cat_page, cat_updated = category_page(tools)
+        if updated != page or cat_updated != cat_page:
+            print("index.html・category/index.html の一覧が tool-data.js とずれている。"
                   "python3 scripts/build_index.py を実行すること", file=sys.stderr)
             return 1
         print(f"一覧は最新（{len(tools)}件）")
@@ -124,6 +150,7 @@ def main(argv):
 
     INDEX.write_text(updated, encoding="utf-8")
     print(f"index.html にツール {len(tools)}件を書き込み")
+    write_category(tools)
     # ツールを足したらサイトマップにも載せる
     import build_sitemap
     return build_sitemap.main([])
