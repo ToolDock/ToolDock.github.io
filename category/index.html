@@ -52,6 +52,8 @@
       transition:.2s;
     }
 
+    .tool-card[hidden]{ display:none; }
+
     .tool-card:hover{
       transform:translateY(-2px);
       border-color:#2563eb;
@@ -76,10 +78,63 @@
 
 <body>
 
-  <h1 id="category-title"></h1>
+  <h1 id="category-title">すべてのツール</h1>
 
+  <!-- 全ツールの一覧は scripts/build_index.py が tool-data.js から生のHTMLとして書き出す。
+       JSを動かさないと空のページになっていたため。
+       ?cat=baseball のようにカテゴリが付いたときは、下のJSでほかのカテゴリのカードを隠す -->
   <div class="tool-grid"
-       id="tool-list"></div>
+       id="tool-list">
+  <!-- ここから scripts/build_index.py が生成する。手で書き換えない -->
+  <a class="tool-card" data-cat="life" href="/roulette/"><h2>ルーレットツール</h2><p>選択肢を入れて回すだけ。抽選・順番決め・罰ゲームをランダムに決められます。</p></a>
+  <a class="tool-card" data-cat="life" href="/i_roulette/"><h2>イカサマルーレット</h2><p>当たりをあらかじめ指定できるルーレット。ドッキリや台本のある進行に使えます。</p></a>
+  <a class="tool-card" data-cat="life" href="/h_roulette/"><h2>ギリギリまで結果が分からないヒリつくルーレット</h2><p>急加速・逆回転・跳ね返りで、止まる直前まで結果が読めないルーレット。罰ゲームや余興の盛り上げに。</p></a>
+  <a class="tool-card" data-cat="finance" href="/us-market/"><h2>米国市場ダッシュボード</h2><p>主要銘柄のヒートマップ、円建てS&amp;P500、VIX、Fear &amp; Greed Indexなど、昨夜引けた米国市場を一面にまとめたダッシュボード。</p></a>
+  <a class="tool-card" data-cat="finance" href="/fukuri/"><h2>複利計算・積立シミュレーター</h2><p>リスク（標準偏差）を入れて、将来資産のブレ幅まで出す積立・複利シミュレーター。</p></a>
+  <a class="tool-card" data-cat="finance" href="/torikuzushi/"><h2>取り崩しシミュレーター</h2><p>貯めた資産を取り崩すと何歳まで持つのか、資産が尽きる確率を出すツール。</p></a>
+  <a class="tool-card" data-cat="finance" href="/ikkatsu/"><h2>一括投資と積立投資の比較</h2><p>まとまった資金を一度に投資するか分けて投資するか、どちらが勝つ確率が高いかを出すツール。</p></a>
+  <a class="tool-card" data-cat="finance" href="/kuriage/"><h2>繰り上げ返済と投資はどっちが得？</h2><p>住宅ローンの繰り上げ返済に回すか投資に回すか、投資が勝つ確率で比べるツール。</p></a>
+  <a class="tool-card" data-cat="life" href="/seiza/"><h2>星座占い｜12星座の運勢チェック</h2><p>簡潔で前向きな星座占い。毎日4時更新です。</p></a>
+  <a class="tool-card" data-cat="life" href="/omikuji/"><h2>おみくじ</h2><p>大凶から大吉、0.1%の超大吉まで引ける無料おみくじ。結果は紙の画像で保存・共有できます。</p></a>
+  <a class="tool-card" data-cat="work" href="/todolist/"><h2>Todoリスト</h2><p>期限と優先度をつけて、やることを管理できるTodoリスト。登録不要で使えます。</p></a>
+  <a class="tool-card" data-cat="work" href="/genkoyosi/"><h2>Web原稿用紙エディタ</h2><p>縦書き・横書きに対応した原稿用紙エディタ。字下げや句読点の処理は自動、そのまま印刷もできます。</p></a>
+  <a class="tool-card" data-cat="work" href="/timer/"><h2>Webタイマー・ストップウォッチ</h2><p>1分・3分・5分などをワンタッチで測れるタイマーとストップウォッチ。</p></a>
+  <a class="tool-card" data-cat="work" href="/makejson/"><h2>JSON成形・圧縮ツール</h2><p>JSONの整形・圧縮・検証ができるツール。エラー箇所も分かります。</p></a>
+  <a class="tool-card" data-cat="life" href="/mojibake/"><h2>文字化け生成・復元ツール</h2><p>文字化けを再現するツール。化けた文章を元に戻すこともできます。</p></a>
+  <a class="tool-card" data-cat="work" href="/seiki/"><h2>正規表現テスター</h2><p>正規表現（Regex）のマッチ箇所をリアルタイムでハイライト表示して確認できるツール。</p></a>
+  <a class="tool-card" data-cat="work" href="/qr/"><h2>QRコード作成ツール</h2><p>URL・Wi-Fi・メール・電話・連絡先などのQRコードを作成。PNGとSVGで保存できます。</p></a>
+  <a class="tool-card" data-cat="life" href="/whichcheap/"><h2>どっちが安い？コスパ計算ツール</h2><p>容量の違う商品を単価で比べて、どちらが安いかを判定するツール。</p></a>
+  <a class="tool-card" data-cat="math" href="/hakohige/"><h2>きれいな箱ひげ図を描写するツール</h2><p>最小値・第一四分位数・中央値・第三四分位数・最大値を入力し、きれいに箱ひげ図を描くツールです。</p></a>
+  <a class="tool-card" data-cat="math" href="/matrix/"><h2>行列計算ツール</h2><p>行列式・逆行列・転置行列を途中式つきで計算するツール。分数のまま正確に求められます。</p></a>
+  <a class="tool-card" data-cat="math" href="/circuit/"><h2>論理回路図メーカー</h2><p>論理式・真理値表・状態遷移表から、MIL記号の回路図を自動で描くツール。簡単化と順序回路の設計にも対応。</p></a>
+  <a class="tool-card" data-cat="math" href="/insubunkai/"><h2>因数分解の計算</h2><p>2次式の因数分解を、たすき掛けの過程つきで表示するツール。展開による検算もできます。</p></a>
+  <a class="tool-card" data-cat="math" href="/renritsu/"><h2>連立方程式の計算</h2><p>加減法の途中式つきで連立方程式を解くツール。2元から5元まで、分数のまま正確に計算します。</p></a>
+  <a class="tool-card" data-cat="math" href="/hakidasi/"><h2>途中式付き・掃き出し法ツール</h2><p>掃き出し法（ガウス・ジョルダン法）を途中式つきで。ランク・逆行列・連立一次方程式まで求められます。</p></a>
+  <a class="tool-card" data-cat="math" href="/koyuchi/"><h2>固有値・固有ベクトルの計算</h2><p>特性方程式から固有値・固有ベクトルを途中式つきで求めるツール。対角化の判定もできます。</p></a>
+  <a class="tool-card" data-cat="math" href="/yukosuji/"><h2>有効数字の計算</h2><p>有効数字を考慮した計算を、どのルールでどの位を丸めたかまで表示するツール。</p></a>
+  <a class="tool-card" data-cat="math" href="/ode/"><h2>途中式付き・微分方程式ツール</h2><p>変数分離形から二階定係数線形まで、10種類の微分方程式を途中式つきで解くツール。</p></a>
+  <a class="tool-card" data-cat="math" href="/radix/"><h2>n進数変換ツール</h2><p>2進数・8進数・10進数・16進数など、2〜36進法の相互変換を行うツール。小数にも対応。</p></a>
+  <a class="tool-card" data-cat="game" href="/typing-game/"><h2>横文字ばっかりのタイピングゲーム</h2><p>やたら横文字しか出てこない、無料のタイピングゲームです。</p></a>
+  <a class="tool-card" data-cat="game" href="/mylife-start/"><h2>パワプロ2026-2027 マイライフ アピールポイントのすゝめ</h2><p>経歴・ドラフト順位・アピールポイント・ウィークポイントによる初期能力とボーナスの解説です。</p></a>
+  <a class="tool-card" data-cat="game" href="/eikan-kintoku/"><h2>パワプロ2026-2027 栄冠ナイン 金特の入手方法まとめ</h2><p>金特本・国際大会・特訓の3つの手段。欲しい金特から狙う評価を逆引きできます。</p></a>
+  <a class="tool-card" data-cat="game" href="/shippo/"><h2>パワプロ2026-2027 マイライフ 尻尾 入手方法一覧</h2><p>尻尾12種の入手方法とオススメ度。9個でMAXになるので、あと何個かも分かります。</p></a>
+  <a class="tool-card" data-cat="game" href="/crystal-banno/"><h2>パワプロ2026-2027 マイライフ 万能クリスタル（小）（大）入手方法一覧</h2><p>万能クリスタル（小）9通りと（大）の入手方法を、チェックしながら管理できる一覧。</p></a>
+  <a class="tool-card" data-cat="game" href="/crystal/"><h2>パワプロ2026-2027 マイライフ イベントクリスタル（小）（大）入手方法一覧</h2><p>特殊能力ファイルに使うイベントクリスタルの入手方法と、怪しい露店の交換レート一覧。</p></a>
+  <a class="tool-card" data-cat="game" href="/kintoku/"><h2>パワプロ2026-2027 マイライフ 能力研究所の金特ミッション一覧</h2><p>マイライフの能力研究所で受けられる金特ミッションの内容と取得条件の一覧。2024-2025 とも共通です。</p></a>
+  <a class="tool-card" data-cat="work" href="/counter/"><h2>文字数カウント</h2><p>原稿用紙換算・全角半角の内訳・X(Twitter)の文字数まで数えられる文字数カウンター。</p></a>
+  <a class="tool-card" data-cat="game" href="/satei/"><h2>パワプロ2026-2027 ⭐︎(星)計算ツール</h2><p>能力値と所持する特殊能力を入力すると、査定である☆(星)を計算します。</p></a>
+  <a class="tool-card" data-cat="game" href="/nouryoku/"><h2>パワプロ風 能力画像ジェネレーター（野手）</h2><p>パワプロ風の能力画像を作れる能力メーカー。野手の能力値と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
+  <a class="tool-card" data-cat="game" href="/nouryoku-pitcher/"><h2>パワプロ風 能力画像ジェネレーター（投手）</h2><p>パワプロ風の能力画像を作れる能力メーカー。投手の能力値・変化球と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
+  <a class="tool-card" data-cat="baseball" href="/magic/"><h2>プロ野球 マジックナンバー・クリンチナンバー</h2><p>セ・パの順位表と、優勝マジック・CS進出のクリンチナンバー・自力優勝の有無を毎日自動で計算します。</p></a>
+  <a class="tool-card" data-cat="baseball" href="/war/"><h2>WAR計算ツール（セイバーメトリクス計算機）</h2><p>成績を入れるだけでWARを途中式つきで計算。wOBA・wRC+・FIP・OPSも同時に出し、WARの仕組みも解説します。</p></a>
+  <a class="tool-card" data-cat="baseball" href="/saber/"><h2>プロ野球 セイバーメトリクス ランキング</h2><p>全選手のwOBA・wRC+・FIP・K−BB%・簡易WARを毎日計算。リーグ・球団・守備位置で絞り込んで並べ替えられます。</p></a>
+  <a class="tool-card" data-cat="baseball" href="/draft/"><h2>ドラフト答え合わせ</h2><p>2005年以降のドラフト指名選手のその後を、一軍の通算成績と簡易WARで年ごとに振り返ります。</p></a>
+  <a class="tool-card" data-cat="baseball" href="/pythagorean/"><h2>プロ野球 運ランキング（ピタゴラス勝率）</h2><p>得点と失点から「実力どおりなら何勝か」を計算し、どの球団が運で勝っているかを毎日更新で並べます。</p></a>
+  <a class="tool-card" data-cat="baseball" href="/player/"><h2>プロ野球 選手一覧・選手検索</h2><p>2005年以降に一軍に出場した選手を、名前・出身校・球団・ポジションや、しりとりで探せます。選手ごとに年度別成績・通算成績と簡易WARをまとめています。</p></a>
+  <a class="tool-card" data-cat="baseball" href="/milestone/"><h2>プロ野球 記録達成カウントダウン</h2><p>2000本安打・200勝・250セーブ（名球会）や300本塁打など、現役選手の節目の記録まであと何本かを毎日更新します。</p></a>
+  <a class="tool-card" data-cat="baseball" href="/kings/"><h2>プロ野球 いろんな「王」ランキング</h2><p>三振王・併殺打王・犠打王・死球王・失策王・守備機会王など、タイトルにならない部門も含めて、年ごとのセ・パ上位5人を並べます。</p></a>
+  <!-- ここまで -->
+  </div>
 
   <script>
 
@@ -88,45 +143,20 @@
 
     const cat = params.get("cat");
 
-    /* cat 未指定、または未知のカテゴリ名のときは全ツールを並べる。
+    /* cat 未指定、または未知のカテゴリ名のときは全ツールのまま。
        静的な <title> をそのまま活かすため上書きしない */
 
     const isKnownCategory =
       cat !== null && Object.hasOwn(CATEGORY_NAMES, cat);
 
-    const heading = isKnownCategory
-      ? CATEGORY_NAMES[cat] + "ツール"
-      : "すべてのツール";
-
     if (isKnownCategory) {
+      const heading = CATEGORY_NAMES[cat] + "ツール";
       document.title = heading + " | ToolDock";
+      document.getElementById("category-title").textContent = heading;
+      document.querySelectorAll("#tool-list .tool-card").forEach(card => {
+        card.hidden = card.dataset.cat !== cat;
+      });
     }
-
-    document.getElementById(
-      "category-title"
-    ).textContent = heading;
-
-    const list =
-      TOOLS.filter(
-        t => !t.hidden && (!isKnownCategory || t.category === cat)
-      );
-
-    const listContainer =
-      document.getElementById(
-        "tool-list"
-      );
-
-    listContainer.innerHTML =
-      list.map(tool => `
-        <a class="tool-card"
-           href="${tool.url}">
-
-          <h2>${tool.title}</h2>
-
-          <p>${tool.desc}</p>
-
-        </a>
-      `).join("");
 
   </script>
 
