@@ -1,6 +1,6 @@
 {
  "year": 2026,
- "as_of": "2026-10-04",
+ "as_of": "2026-10-05",
  "final": false,
  "central": [
   {
@@ -98,9 +98,9 @@
   {
    "team": "ソフトバンク",
    "w": 91,
-   "l": 48,
+   "l": 49,
    "t": 3,
-   "remaining": 1,
+   "remaining": 0,
    "magic": 0,
    "own_v": 0,
    "own_cs": 0,
@@ -112,10 +112,10 @@
   },
   {
    "team": "西武",
-   "w": 77,
+   "w": 78,
    "l": 60,
    "t": 4,
-   "remaining": 2,
+   "remaining": 1,
    "magic": null,
    "own_v": null,
    "own_cs": 0,
@@ -158,9 +158,9 @@
   {
    "team": "ロッテ",
    "w": 63,
-   "l": 75,
+   "l": 76,
    "t": 3,
-   "remaining": 2,
+   "remaining": 1,
    "magic": null,
    "own_v": null,
    "own_cs": null,
@@ -172,10 +172,10 @@
   },
   {
    "team": "楽天",
-   "w": 57,
+   "w": 58,
    "l": 84,
    "t": 1,
-   "remaining": 1,
+   "remaining": 0,
    "magic": null,
    "own_v": null,
    "own_cs": null,

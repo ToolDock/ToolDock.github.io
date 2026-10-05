@@ -2,7 +2,7 @@
  "latest": 2026,
  "seasons": {
   "2026": {
-   "as_of": "2026-10-04",
+   "as_of": "2026-10-05",
    "central": {
     "woba": 0.2998,
     "woba_scale": 1.24,
@@ -20,18 +20,18 @@
     "pitcher_pa": 1895
    },
    "pacific": {
-    "woba": 0.3053,
+    "woba": 0.3052,
     "woba_scale": 1.24,
     "obp": 0.3095,
-    "avg": 0.246,
-    "slg": 0.3778,
-    "r_pa": 0.10195,
-    "era": 3.427,
-    "ra9": 3.774,
-    "fip_const": 2.795,
-    "run_cs": -0.3546,
-    "wsb_rate": 0.00227,
-    "rpw": 9.2,
+    "avg": 0.2459,
+    "slg": 0.3774,
+    "r_pa": 0.10184,
+    "era": 3.426,
+    "ra9": 3.771,
+    "fip_const": 2.798,
+    "run_cs": -0.3543,
+    "wsb_rate": 0.0024,
+    "rpw": 9.196,
     "label": "パ・リーグ",
     "pitcher_pa": 431
    }
