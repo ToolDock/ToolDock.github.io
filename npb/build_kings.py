@@ -312,6 +312,11 @@ ul.years span{ background:var(--ink-strong); color:#fff; border-color:var(--ink-
 table.kings{ border-collapse:collapse; width:100%; font-size:0.88rem; background:#fff; }
 table.kings th, table.kings td{ border-bottom:1px solid var(--line-soft); padding:6px 8px; text-align:left; }
 table.kings thead th{ background:var(--head-bg); font-size:0.78rem; color:var(--ink-sub); }
+table.kings .tm{ display:block; font-size:0.72rem; color:var(--ink-mute); }
+table.hist th:first-child{ white-space:nowrap; }
+table.hist a{ color:inherit; text-decoration:none; border-bottom:1px dotted var(--ink-mute); }
+table.hist th a{ color:var(--accent); border:0; }
+h3{ margin:22px 0 8px; font-size:1rem; color:var(--ink-strong); }
 table.kings td.v{ text-align:right; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .tbl-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:12px; }
 .note{ font-size:0.84rem; color:var(--ink-mute); }
@@ -366,14 +371,47 @@ def years_nav(years, current=None):
         for y in sorted(years, reverse=True)) + "</ul>"
 
 
-def top1(per):
-    """各リーグの1位の名前（説明文用）"""
+# 説明文と /kings/ の「歴代」の表に出す、タイトルにならない部門（カードの部門名, 短い名前）
+HISTORY = [("三振王", "三振王"), ("併殺打王", "併殺打王"), ("犠打王", "犠打王"), ("死球王", "死球王"),
+           ("失策王（全守備位置）", "失策王"), ("暴投王", "暴投王")]
+
+
+def top1(per, with_league=False):
+    """各リーグの1位の名前（説明文用）。同じ数で並んだときは最初の1人"""
     out = []
-    for lg, _ in LEAGUES:
+    for lg, label in LEAGUES:
         rows, _ = per.get(lg, ([], 0))
         if rows:
-            out.append(disp(rows[0][2]["name"]))
+            out.append(disp(rows[0][2]["name"]) + (f"（{label[0]}）" if with_league else ""))
     return "・".join(out)
+
+
+def history_tables(all_groups, has_page):
+    """歴代の1位（年ごと・リーグごと）の表を、部門ごとに"""
+    out = []
+    for t, short in HISTORY:
+        rows = []
+        for y in sorted(all_groups, reverse=True):
+            per = {tt: pr for _, _, cards in all_groups[y] for tt, _, pr in cards}.get(t)
+            if not per:
+                continue
+            cells = []
+            for lg, _ in LEAGUES:
+                rs, _ = per.get(lg, ([], 0))
+                firsts = [(v, e) for r, v, e in rs if r == 1]
+                if firsts:
+                    names = "・".join(f'<a href="/player/{e["pid"]}/">{esc(disp(e["name"]))}</a>' if e["pid"] in has_page
+                                      else esc(disp(e["name"])) for _, e in firsts[:3]) + ("ほか" if len(firsts) > 3 else "")
+                    cells.append(f'<td>{names}<span class="tm">{esc("・".join(firsts[0][1]["teams"]))}</span></td>'
+                                 f'<td class="v">{firsts[0][0]}</td>')
+                else:
+                    cells.append('<td>―</td><td class="v"></td>')
+            rows.append(f'<tr><th><a href="/kings/{y}/">{y}年</a></th>{"".join(cells)}</tr>')
+        if rows:
+            out.append(f'<h3>歴代の{short}</h3><div class="tbl-wrap"><table class="kings hist"><thead><tr><th>年</th>'
+                       '<th>セ・リーグ</th><th class="v"></th><th>パ・リーグ</th><th class="v"></th></tr></thead>'
+                       f'<tbody>{"".join(rows)}</tbody></table></div>')
+    return "".join(out)
 
 
 def year_page(y, st, groups, years, as_of_text, final):
@@ -384,9 +422,9 @@ def year_page(y, st, groups, years, as_of_text, final):
         parts.append(f'<h2 id="{slug}">{y}年 {label}部門</h2><div class="cards">{"".join(c for _, c, _ in cards)}</div>')
     pick = {t: per for label, slug, cards in groups for t, _, per in cards}
     hl = []
-    for t in ("三振王", "併殺打王", "犠打王", "死球王"):  # 説明文にはタイトルにならない部門を
-        if t in pick and top1(pick[t]):
-            hl.append(f"{t}は{top1(pick[t])}")
+    for t, short in HISTORY:  # 説明文には、タイトルにならない部門の1位の名前を
+        if t in pick and top1(pick[t], with_league=True):
+            hl.append(f"{short}は{top1(pick[t], with_league=True)}")
     status = "シーズン終了" if final else f"{as_of_text}時点"
     body = (years_nav(years, y)
             + f'<p class="stamp">成績：{esc(status)}</p>'
@@ -398,15 +436,15 @@ def year_page(y, st, groups, years, as_of_text, final):
               '・同じ数で並んだ選手は同じ順位です。5位までに同じ数の選手が多いときは、8人まで出して残りを「ほか○人」としています。<br>'
               '・シーズン途中で同じリーグの中で移籍した選手は、両球団の成績を足しています。<br>'
               '・規定打席は所属球団の試合数×3.1、規定投球回は試合数×1.0です。得点圏打率はNPB公式の個人成績に無いため載せていません。</p>')
-    title = f"{y}年 プロ野球 いろんな「王」ランキング｜三振王・併殺打王・犠打王・死球王・失策王など全{n}部門"
-    desc = (f"{y}年のプロ野球（セ・パ）の打撃・投手・守備{n}部門の上位5人。" + ("、".join(hl) + "。" if hl else "")
+    title = f"{y}年 三振王・併殺打王・犠打王・死球王・失策王｜プロ野球 部門別ランキング（セ・パ全{n}部門）"
+    desc = (f"{y}年のプロ野球の" + ("、".join(hl) + "。" if hl else "") + f"セ・パの打撃・投手・守備{n}部門の上位5人を並べています。"
             + "得点・二塁打・三塁打・盗塁死・四球・故意四球・暴投・ボーク・守備機会・外野手の補殺・盗塁阻止率など、"
             "タイトルにならない部門の「王」や、小松式ドネーション・アダム・ダン率・赤星式盗塁もまとめています。")
-    return page(title, desc, f"/kings/{y}/", f"{y}年 プロ野球 いろんな「王」ランキング",
-                "タイトルにならない部門も含めた、打撃・投手・守備の部門別の上位5人", body, crumb=f"{y}年")
+    return page(title, desc, f"/kings/{y}/", f"{y}年 プロ野球 三振王・併殺打王・犠打王ほか 部門別ランキング",
+                "いろんな「王」：タイトルにならない部門も含めた、打撃・投手・守備の部門別の上位5人", body, crumb=f"{y}年")
 
 
-def index_page(latest, groups, years, as_of_text, final):
+def index_page(latest, groups, years, as_of_text, final, all_groups, has_page):
     rows = []
     for label, slug, cards in groups:
         for t, _, per in cards:
@@ -427,12 +465,16 @@ def index_page(latest, groups, years, as_of_text, final):
             + f'<h2>{latest}年の各部門の1位（{esc(status)}）</h2>'
             + '<div class="tbl-wrap"><table class="kings"><thead><tr><th>分類</th><th>部門</th><th>セ・リーグ</th><th>パ・リーグ</th></tr></thead>'
             + f'<tbody>{"".join(rows)}</tbody></table></div>'
-            + f'<p class="note">2位〜5位は<a href="/kings/{latest}/">{latest}年のページ</a>で見られます。</p>')
+            + f'<p class="note">2位〜5位は<a href="/kings/{latest}/">{latest}年のページ</a>で見られます。</p>'
+            + f'<h2>歴代の三振王・併殺打王・犠打王・死球王・失策王・暴投王（{min(years)}〜{latest}年）</h2>'
+            + '<p>タイトルにならない部門の、年ごとの1位です。年を押すと、その年の上位5人とほかの部門が見られます。</p>'
+            + history_tables(all_groups, has_page))
     n = sum(len(c) for _, _, c in groups)
-    return page(f"プロ野球 いろんな「王」ランキング｜三振王・併殺打王・犠打王など部門別の1位【{min(years)}〜{latest}年】",
-                f"プロ野球の打撃・投手・守備{n}部門の、年ごとの上位5人。三振王・併殺打王・犠打王・死球王・失策王・守備機会王など、"
-                "タイトルにならない部門の「王」や、小松式ドネーション・アダム・ダン率・赤星式盗塁のランキングもまとめています。",
-                "/kings/", "プロ野球 いろんな「王」ランキング", "タイトルにならない部門も含めた、部門別の1位と上位5人", body)
+    return page(f"プロ野球 歴代の三振王・併殺打王・犠打王・死球王・失策王｜部門別ランキング【{min(years)}〜{latest}年】",
+                f"プロ野球の歴代の三振王・併殺打王・犠打王・死球王・失策王・暴投王を、{min(years)}年から年ごとにセ・パ別で一覧。"
+                f"打撃・投手・守備{n}部門の上位5人や、小松式ドネーション・アダム・ダン率・赤星式盗塁のランキングもまとめています。",
+                "/kings/", "プロ野球 歴代の三振王・併殺打王・犠打王ほか 部門別ランキング",
+                "いろんな「王」：タイトルにならない部門も含めた、部門別の1位と上位5人", body)
 
 
 def main(argv=None):
@@ -456,9 +498,11 @@ def main(argv=None):
     years = sorted(stores)
     latest = years[-1]
     latest_groups = None
+    all_groups = {}
     for y in years:
         st = stores[y]
         groups = year_cards(st, links.get(y, {}), has_page)
+        all_groups[y] = groups
         d = datetime.strptime(st.get("as_of") or f"{y}-12-31", "%Y-%m-%d")
         as_of_text = f"{d.year}年{d.month}月{d.day}日"
         (out / str(y)).mkdir(exist_ok=True)
@@ -466,7 +510,8 @@ def main(argv=None):
             year_page(y, st, groups, years, as_of_text, bool(st.get("final"))), encoding="utf-8")
         if y == latest:
             latest_groups = (groups, as_of_text, bool(st.get("final")))
-    (out / "index.html").write_text(index_page(latest, latest_groups[0], years, latest_groups[1], latest_groups[2]),
+    (out / "index.html").write_text(index_page(latest, latest_groups[0], years, latest_groups[1], latest_groups[2], all_groups,
+                                               has_page),
                                     encoding="utf-8")
     print(f"kings: {years[0]}〜{latest}年")
     return 0
