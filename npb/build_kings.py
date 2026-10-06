@@ -61,13 +61,13 @@ FLD = [  # (守備位置, 項目, 部門名)
 
 
 # なんJで昔から「ネタだが優秀」と言われてきた指標
-# (部門名, 打撃/投手, 計算, 表示の形, 単位, 規定打席の条件を付けるか, 説明)
+# (部門名, 打撃/投手, 計算, 表示の形, 単位, 対象の条件（None は全員）, 説明)
 NETA = [
-    ("小松式ドネーション", "pit", lambda e: e["outs"] + 10 * (e["勝利"] + e["ホールド"] + e["セーブ"]), "int", "", False,
+    ("小松式ドネーション", "pit", lambda e: e["outs"] + 10 * (e["勝利"] + e["ホールド"] + e["セーブ"]), "int", "", None,
      "投球回×3＋（勝利＋ホールド＋セーブ）×10。先発・中継ぎ・抑えを問わない、投手のチームへの貢献度"),
     ("アダム・ダン率", "bat", lambda e: (e["本塁打"] + e["四球"] + e["三振"]) / e["打席"] if e["打席"] else None, "rate3", "",
-     True, "（本塁打＋四球＋三振）÷打席・規定打席以上。高いほど良いのではなく「アダム・ダンらしさ」（本家の通算は約5割）"),
-    ("赤星式盗塁", "bat", lambda e: e["盗塁"] - 2 * e["盗塁刺"], "int", "", False,
+     lambda e: e["本塁打"] >= 5, "（本塁打＋四球＋三振）÷打席・本塁打5本以上。高いほど良いのではなく「アダム・ダンらしさ」（本家の通算は約5割）"),
+    ("赤星式盗塁", "bat", lambda e: e["盗塁"] - 2 * e["盗塁刺"], "int", "", None,
      "盗塁−盗塁死×2。盗塁死の痛さを成功の2倍とみた、盗塁によるチームへの貢献度"),
 ]
 
@@ -92,7 +92,7 @@ def fmt(v, kind):
 
 
 def season_players(st, links):
-    """→ {リーグ: {"bat": {名前: 合計}, "pit": {...}, "fld": {...}}}。リーグの中の移籍は合計する"""
+    """→ {リーグ: {"bat": {選手ID: 合計}, "pit": {...}, "fld": {...}}}。リーグの中の移籍は合計する"""
     teams = st["teams"]
     bc = {c: i for i, c in enumerate(st["bat_cols"])}
     pc = {c: i for i, c in enumerate(st["pit_cols"])}
@@ -100,12 +100,14 @@ def season_players(st, links):
     out = {lg: {"bat": {}, "pit": {}, "fld": {}} for lg, _ in LEAGUES}
 
     def ent(lg, kind, name, code):
-        e = out[lg][kind].setdefault(name, {"name": name, "teams": [], "pid": None, "games": 0})
+        # 同じリーグの同じ登録名の別人（2014年の阪神と中日のゴメスなど）を合算しないよう、選手IDでまとめる。
+        # 照合できなかった選手は、名前と球団で分ける
         tname = teams[code]["name"]
+        pid = links.get((name, tname))
+        e = out[lg][kind].setdefault(pid or (name, tname), {"name": name, "teams": [], "pid": pid, "games": 0})
         if tname not in e["teams"]:
             e["teams"].append(tname)
             e["games"] = max(e["games"], teams[code].get("games") or FULL_SEASON)
-        e["pid"] = e["pid"] or links.get((name, tname))
         return e
 
     for r in st["bat"]:
@@ -253,8 +255,8 @@ def year_cards(st, links, has_page):
         groups.append(("守備", "fld", cards))
 
     cards = []
-    for title, kind_of, calc, kind, unit, need_pa, note in NETA:
-        per = {lg: ranked(P[lg][kind_of].values(), calc, qualify=qual_pa if need_pa else (lambda e: True))
+    for title, kind_of, calc, kind, unit, cond, note in NETA:
+        per = {lg: ranked(P[lg][kind_of].values(), calc, qualify=cond or (lambda e: True))
                for lg, _ in LEAGUES}
         cards.append((title, card(title, per, kind, unit, note, has_page), per))
     groups.append(("ネタ指標", "neta", cards))
