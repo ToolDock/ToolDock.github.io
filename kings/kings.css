@@ -47,6 +47,11 @@ ul.years span{ background:var(--ink-strong); color:#fff; border-color:var(--ink-
 table.kings{ border-collapse:collapse; width:100%; font-size:0.88rem; background:#fff; }
 table.kings th, table.kings td{ border-bottom:1px solid var(--line-soft); padding:6px 8px; text-align:left; }
 table.kings thead th{ background:var(--head-bg); font-size:0.78rem; color:var(--ink-sub); }
+table.kings .tm{ display:block; font-size:0.72rem; color:var(--ink-mute); }
+table.hist th:first-child{ white-space:nowrap; }
+table.hist a{ color:inherit; text-decoration:none; border-bottom:1px dotted var(--ink-mute); }
+table.hist th a{ color:var(--accent); border:0; }
+h3{ margin:22px 0 8px; font-size:1rem; color:var(--ink-strong); }
 table.kings td.v{ text-align:right; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .tbl-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:12px; }
 .note{ font-size:0.84rem; color:var(--ink-mute); }
