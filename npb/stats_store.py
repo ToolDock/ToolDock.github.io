@@ -7,6 +7,7 @@
 保存するもの
   season_<年>.json … 12球団の個人打撃・投手・守備成績と、リーグごとのチーム成績の合計
   draft_<年>.json  … その年のドラフト会議の指名選手（球団・順位・守備位置・出身）
+  roster_<年度>.json … 球団の選手一覧（支配下・育成、シーズン途中の退団・移籍を含む）。毎日取り直す
 
 過去の年は一度作れば変わらないので取り直さない（final が付く）。
 毎日取り直すのは今シーズンと、まだ指名が出ていない今年のドラフトだけ。
@@ -351,7 +352,54 @@ def fetch_register(src, this_year):
     return entries
 
 
+# ---------------------------------------------------------------- 球団の選手一覧（いまの在籍）
+
+ROSTER_URL = "https://npb.jp/bis/teams/rst_{code}.html"
+ROSTER_TEAMS = {"g": "巨人", "t": "阪神", "db": "DeNA", "s": "ヤクルト", "c": "広島", "d": "中日",
+                "h": "ソフトバンク", "f": "日本ハム", "l": "西武", "b": "オリックス", "e": "楽天", "m": "ロッテ"}
+
+
+def parse_roster(page, team):
+    """球団の選手一覧（支配下・育成）→ (年度, 現在の日付, [{id, name, team, no, ikusei, left, note}])。
+    シーズン途中に退団・移籍した選手も「left」として載っている（備考に「6/8 自由契約」など）"""
+    y = re.search(r"(\d{4})年度 選手一覧", page)
+    d = re.search(r'class="rosterUpdate">(\d{4})年(\d{1,2})月(\d{1,2})日', page)
+    if not y:
+        raise ValueError(f"{team}の選手一覧が読めない")
+    as_of = f"{d.group(1)}-{int(d.group(2)):02d}-{int(d.group(3)):02d}" if d else None
+    out = []
+    for part in re.split(r"<h3>", page)[1:]:
+        ikusei = part.startswith("■ 育成")
+        for m in re.finditer(r'<tr class="(rosterPlayer|rosterRetire)"><td>([^<]*)</td><td class="rosterRegister">'
+                             r'<a href="/bis/players/(\d+)\.html">([^<]*)</a></td>.*?<td class="rosterdetail">(.*?)</td></tr>',
+                             part, re.S):
+            note = _cell(m.group(5))
+            out.append({"id": m.group(3), "name": html.unescape(m.group(4)).strip(), "team": team, "no": m.group(2),
+                        "ikusei": ikusei, "left": m.group(1) == "rosterRetire", "note": note})
+    return int(y.group(1)), as_of, out
+
+
+def fetch_roster(src):
+    """12球団の選手一覧 → {year, as_of, players}"""
+    year, as_of, players = None, None, []
+    for code, team in ROSTER_TEAMS.items():
+        y, d, ps = parse_roster(src.roster(code), team)
+        year = max(year or y, y)
+        as_of = max(as_of or d or "", d or "")
+        players += ps
+    if len(players) < 600:     # 12球団で900人ほど。読めていないページがある
+        raise ValueError(f"選手一覧の人数が少ない（{len(players)}人）")
+    return {"year": year, "as_of": as_of, "players": players}
+
+
 class Store(Source):
+    def roster(self, code):
+        if self.dir:
+            return (self.dir / f"rst_{code}.html").read_text(encoding="utf-8")
+        text = fetch(ROSTER_URL.format(code=code))
+        time.sleep(0.7)
+        return text
+
     def register(self, page):
         if self.dir:
             return (self.dir / f"reg_{page.replace('index_', '')}").read_text(encoding="utf-8")
@@ -424,6 +472,17 @@ def main(argv=None):
             print(f"register: {len(entries)}人")
         except Exception as e:  # 名簿が取れなくても成績の集計は続ける
             print(f"注意: 在籍者名簿を取れない: {e}", file=sys.stderr)
+
+    # 球団の選手一覧（いまの在籍）は毎日取り、年度ごとに保存する。
+    # 在籍者名簿（前のシーズンまで）に載っていない今シーズンの新しい選手の結びつけと、現役・いまの所属に使う。
+    # 年度が変わっても前の年度のファイルは残す（名簿に載るまでの、その年の新しい選手の結びつけに要る）
+    try:
+        ro = fetch_roster(src)
+        ro["fetched"] = today.isoformat()
+        save(data / f"roster_{ro['year']}.json", ro)
+        print(f"roster {ro['year']}: {len(ro['players'])}人（{ro['as_of'] or '日付なし'}）")
+    except Exception as e:  # 取れなくても前のファイルのまま
+        print(f"注意: 球団の選手一覧を取れない: {e}", file=sys.stderr)
 
     for y in range(args.first, year + 1):
         path = data / f"draft_{y}.json"

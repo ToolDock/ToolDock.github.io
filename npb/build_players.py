@@ -7,9 +7,11 @@
 - 2004年以前の成績・読み仮名・プロフィールは npb/data/player_profiles.json（NPB公式の選手ページから取得）
 - 選手の照合は在籍者名簿（npb/people.py）
 
-約2900ページあり、毎日作り直すとリポジトリの履歴が膨らむので、シーズン終了時にだけ作り直す。
+約2900ページあり、毎日作り直すとリポジトリの履歴が膨らむので、全ページはシーズン終了時にだけ作り直す。
 どのシーズンまでで作ったかを player/built.json に残し、
-「最新のシーズンが終了し、まだそのシーズンで作っていない」ときだけ作る（--force で常に作る）。
+「最新のシーズンが終了し、まだそのシーズンで作っていない」ときだけ全ページを作る（--force で常に作る）。
+それ以外の日は、球団の選手一覧（npb/data/roster_<年度>.json）をもとに、
+検索用の players.json と、新しく一軍に出た選手・在籍が変わった選手（移籍・退団・引退）のページだけを作る。
 
     python npb/build_players.py --data npb/data --league war/league.json --out player
 """
@@ -328,13 +330,14 @@ def pit_table(rows):
             f"<tbody>{''.join(body)}</tbody><tfoot>{foot}</tfoot></table></div>")
 
 
-def spans_text(person, current=None):
+def spans_text(person, extra=(), now=None):
     """在籍の履歴を「2007〜2025 巨人」のように縮める（育成は（育成）と添える）。
-    current=(年, 球団)：名簿にまだ無い今シーズンの在籍（成績から分かるもの）。
-    続いている在籍は「2007〜 巨人」とする"""
+    extra：名簿にまだ無い年の在籍（成績・球団の選手一覧から分かるもの）[[年, 球団, 区分]]。
+    now：いまの年度。その年度まで続いている在籍は「2007〜 巨人」とする"""
     spans = list(person["spans"])
-    if current and not any(y == current[0] for y, _, _ in spans):
-        spans.append([current[0], current[1], ""])
+    for s in extra:
+        if not any(y == s[0] and t == s[1] for y, t, _ in spans):
+            spans.append(list(s))
     # [最初の年, 最後の年, 球団（横浜とDeNAは同じ）, 表示する球団名, 育成か]
     items = []
     for y, team, kind in sorted(spans, key=lambda s: (s[0], s[2] != "育")):
@@ -347,8 +350,6 @@ def spans_text(person, current=None):
                 it[3].append(team)
         elif not any(it[0] <= y <= it[1] for it in same):
             items.append([y, y, franchise(team), [team], ik])
-    now = current[0] if current else None
-
     def one(a, b, names, ik):
         n = "・".join(names) + ("（育成）" if ik else "")
         if b == now:
@@ -460,12 +461,16 @@ def trend_html(bat, pit, kind):
             f'<span>（{cond}）</span></figcaption></figure></div>')
 
 
-def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_of_text, final, related="", fld=None):
+def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_of_text, final, related="", fld=None,
+                  cur=None, cur_year=None):
+    """cur：球団の選手一覧で、いま在籍している球団と育成か (球団, 育成か)。退団・引退していれば None。
+    cur_year：その選手一覧の年度（一覧が無いときは None で、成績だけで判断する）"""
     name = disp(person["name"])
     kana = clean_kana((profile or {}).get("kana", ""))
     kind = kind_of(bat, pit)
     last_row = max(bat + pit, key=lambda r: r["y"])
     last_team = last_row["teams"][-1]
+    team_now = cur[0] if cur else last_team
     t_bat = totals(bat, BAT_KEYS)
     t_pit = totals(pit, PIT_KEYS)
     show_bat = bool(bat) and (kind == "b" or t_bat["pa"] >= 100)
@@ -495,7 +500,10 @@ def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_
     dl = []
     if kana:
         dl.append(("読み", kana))
-    dl.append(("所属", f"{last_team}（{last}年）"))
+    if cur:
+        dl.append(("所属", f"{cur[0]}{'（育成）' if cur[1] else ''}"))
+    else:
+        dl.append(("所属", f"{last_team}（{last}年）" if cur_year is None else f"{last_team}（{last}年まで）"))
     for k in ("投打", "身長／体重", "生年月日", "経歴"):
         if prof.get(k):
             dl.append((k, prof[k]))
@@ -513,13 +521,23 @@ def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_
             names.append(n)
     if names:
         dl.append(("登録名・旧名", "、".join(esc(disp(n)) for n in names)))
-    current = (last, last_team) if last > max(y for y, _, _ in person["spans"]) else None
-    dl.append(("在籍", esc(spans_text(person, current))))
+    # 名簿にまだ無い年の在籍は、成績の球団と、球団の選手一覧（いまの在籍）で補う
+    max_span = max((y for y, _, _ in person["spans"]), default=0)
+    extra = sorted({(r["y"], t) for r in bat + pit if r["y"] > max_span for t in r["teams"]})
+    extra = [[y, t, ""] for y, t in extra]
+    if cur_year is None:
+        now = last if last > max_span else None
+    elif cur:
+        extra.append([cur_year, cur[0], "育" if cur[1] else ""])
+        now = cur_year
+    else:
+        now = None
+    dl.append(("在籍", esc(spans_text(person, extra, now))))
 
     trend = trend_html(bat if show_bat else [], pit, kind)
 
-    title = f"{name}の成績・WAR｜年度別成績と通算（{last_team}）"
-    desc = (f"{name}（{last_team}）の{first}〜{last}年の年度別成績と通算成績。{summary}。"
+    title = f"{name}の成績・WAR｜年度別成績と通算（{team_now}）"
+    desc = (f"{name}（{team_now}）の{first}〜{last}年の年度別成績と通算成績。{summary}。"
             f"wOBA・wRC+・FIPなどのセイバー指標と簡易WAR（{war_note or '通算'}{f1(war)}）も年ごとに掲載。")
     status = f"成績は{as_of_text}{'' if final else '時点'}までの一軍公式戦です。"
     body = [f'<p class="stamp">{esc(status)}</p>',
@@ -622,13 +640,14 @@ def kana_parts(kana):
 
 
 def search_data(entries, latest):
-    """選手一覧の検索用（/player/players.json）"""
-    cols = ["id", "name", "kana", "sei", "mei", "names", "teams", "first", "last", "pos", "hand", "school", "active"]
+    """選手一覧の検索用（/player/players.json）。cur はいま在籍している球団（退団・引退していれば空）"""
+    cols = ["id", "name", "kana", "sei", "mei", "names", "teams", "first", "last", "pos", "hand", "school", "active", "cur"]
     rows = []
     for e in sorted(entries, key=lambda e: (sort_kana(e["kana"]) or "ん", e["name"])):
         sei, mei = kana_parts(e["kana"])
+        active = bool(e["cur"]) if e["cur"] is not None else e["last"] == latest
         rows.append([e["pid"], disp(e["name"]), clean_kana(e["kana"]), sei, mei, e["names"], e["teams"],
-                     e["first"], e["last"], e["pos"], e["hand"], e["school"], 1 if e["last"] == latest else 0])
+                     e["first"], e["last"], e["pos"], e["hand"], e["school"], 1 if active else 0, e["cur"] or ""])
     return json.dumps({"latest": latest, "cols": cols, "rows": rows}, ensure_ascii=False, separators=(",", ":")) + "\n"
 
 
@@ -668,7 +687,7 @@ SEARCH_HTML = """
     <label>ポジション<select id="f-pos"><option value="">すべて</option><option>投手</option><option>捕手</option><option>内野手</option><option>外野手</option></select></label>
     <label>投げ<select id="f-t"><option value="">すべて</option><option value="右投">右投げ</option><option value="左投">左投げ</option></select></label>
     <label>打席<select id="f-b"><option value="">すべて</option><option value="右打">右打ち</option><option value="左打">左打ち</option><option value="両打">両打ち</option></select></label>
-    <label>在籍<select id="f-act"><option value="">すべて</option><option value="1">現役</option><option value="0">引退・退団</option></select></label>
+    <label>在籍<select id="f-act"><option value="">すべて</option><option value="1">現役（いまの所属）</option><option value="0">引退・退団</option></select></label>
   </div>
   <fieldset class="shiritori">
     <legend>しりとりで探す</legend>
@@ -721,7 +740,8 @@ SEARCH_JS = r"""// 選手一覧の検索（npb/build_players.py が書き出す�
         h = letter($("s-head").value, dak), tl = letter($("s-tail").value, dak);
     var fix = function(c){ return dak ? plain(c) : c; };
     list = data.filter(function(o){
-      if (team && o.teams.indexOf(team) < 0) return false;
+      // 在籍を「現役」にしたときは、いまその球団にいる選手だけ（移籍・退団した選手は除く）
+      if (team && (act === "1" ? o.cur !== team : o.teams.indexOf(team) < 0)) return false;
       if (pos && o.pos !== pos) return false;
       if (t && o.hand.indexOf(t) !== 0) return false;
       if (b && o.hand.indexOf(b) < 0) return false;
@@ -752,7 +772,7 @@ SEARCH_JS = r"""// 選手一覧の検索（npb/build_players.py が書き出す�
       return '<li><a href="/player/' + o.id + '/">' + esc(o.name) + '</a>' +
         (o.names.length ? '<span class="al">（' + esc(o.names.join("／")) + '）</span>' : '') +
         '<span class="kn">' + esc(r || o.kana) + (sh && last ? ' <b>' + esc(last) + '</b>' : '') + '</span>' +
-        '<span class="mt">' + esc(o.pos) + '・' + esc(o.teams.join("→")) + '・' + yrs + (o.active ? '・現役' : '') + '</span>' +
+        '<span class="mt">' + esc(o.pos) + '・' + esc(o.teams.join("→")) + '・' + yrs + (o.active ? '・現役' + (o.cur && o.cur !== o.teams[o.teams.length - 1] ? '（いま' + esc(o.cur) + '）' : '') : '') + '</span>' +
         (last && last !== "ん" ? '<button type="button" class="next" data-c="' + esc(last) + '">「' + esc(last) + '」から続ける</button>' : '') +
         '</li>';
     }).join("");
@@ -1022,12 +1042,9 @@ def main(argv=None):
     final = bool(st_latest.get("final"))
     built_path = out / "built.json"
     built = json.loads(built_path.read_text(encoding="utf-8")) if built_path.exists() else {}
-    if not args.force and built.get("season") == latest and (built.get("final") or not final):
-        print(f"player: {latest}年は作成済み（{'シーズン終了' if built.get('final') else 'シーズン途中'}）。作り直さない")
-        return 0
-    if not args.force and not final and built:
-        print(f"player: {latest}年はシーズン途中。シーズン終了まで作り直さない")
-        return 0
+    # 全ページを作り直すのは、最新のシーズンが終わってまだ作っていないとき（と --force）。
+    # それ以外は、新しい選手と在籍が変わった選手のページだけ（毎日）
+    full = args.force or not built or (final and not (built.get("season") == latest and built.get("final")))
 
     if not args.no_fetch:
         # 新しく一軍に出た選手（新人など）の読み仮名・プロフィールを公式ページから取る
@@ -1065,28 +1082,49 @@ def main(argv=None):
         # 外国出身の選手の「Ｔ．バティスタ」と「バティスタ」のような、頭文字だけの違いは添えない
         names = [n for n in list(person["alias"]) + seen if key(n) != key(person["name"])
                  and not (is_foreign_style(person["name"]) and key(n) in key(person["name"]))]
+        cur = people.current.get(pid)
         entries.append({"pid": pid, "name": person["name"], "kana": (profile or {}).get("kana", ""),
-                        "team": last_row["teams"][-1], "first": min(years), "last": max(years),
+                        "team": cur[0] if cur else last_row["teams"][-1], "first": min(years), "last": max(years),
+                        "cur": (cur[0] if cur else "") if people.current_year else None,
                         "teams": teams, "pos": pos_group(bat, pit), "hand": (profile or {}).get("profile", {}).get("投打", ""),
                         "school": (profile or {}).get("profile", {}).get("経歴", ""),
                         "names": list(dict.fromkeys(disp(n) for n in names))})
-    for e in entries:
+    def state(pid):
+        cur = people.current.get(pid)
+        return (cur[0] + ("育" if cur[1] else "")) if cur else ""
+
+    old_pids, old_state = set(built.get("pids", [])), built.get("state", {})
+    no_prof = set(built.get("noprof", []))   # プロフィール（読み仮名など）を取れないまま作ったページ
+    if full:
+        todo = entries
+    else:
+        todo = [e for e in entries if e["pid"] not in old_pids or old_state.get(e["pid"], "") != state(e["pid"])
+                or (e["pid"] in no_prof and profiles.get(e["pid"]))]
+    for e in todo:
         pid = e["pid"]
         person, profile, bat, pit, seen = data[pid]
         html_text = render_player(pid, person, people.display(pid), seen, bat, pit, picks.get(pid, []),
                                   profile, as_of_text, final, related_html(pid, entries, data, picks),
-                                  fielding.get(pid))
+                                  fielding.get(pid), people.current.get(pid), people.current_year)
         d_ = out / pid
         d_.mkdir(exist_ok=True)
         (d_ / "index.html").write_text(html_text, encoding="utf-8")
-    (out / "index.html").write_text(index_page(entries, latest), encoding="utf-8")
+    pids = sorted(e["pid"] for e in entries)
+    if full or set(pids) != old_pids:
+        (out / "index.html").write_text(index_page(entries, latest), encoding="utf-8")
     (out / "players.json").write_text(search_data(entries, latest), encoding="utf-8")
     (out / "search.js").write_text(SEARCH_JS, encoding="utf-8")
     (out / "chart.js").write_text(CHART_JS, encoding="utf-8")
-    built_path.write_text(json.dumps({"season": latest, "final": final, "as_of": as_of,
-                                      "pids": sorted(e["pid"] for e in entries)}, ensure_ascii=False) + "\n",
-                          encoding="utf-8")
-    print(f"player: {len(entries)}人（{latest}年{'シーズン終了' if final else 'シーズン途中'}）")
+    keep = {"season": latest, "final": final, "as_of": as_of} if full else \
+        {k: built[k] for k in ("season", "final", "as_of")}
+    built_path.write_text(json.dumps({**keep, "pids": pids,
+                                      "state": {e["pid"]: state(e["pid"]) for e in entries if state(e["pid"])},
+                                      "noprof": sorted(e["pid"] for e in entries if not profiles.get(e["pid"]))},
+                                     ensure_ascii=False) + "\n", encoding="utf-8")
+    if full:
+        print(f"player: {len(entries)}人（{latest}年{'シーズン終了' if final else 'シーズン途中'}）")
+    else:
+        print(f"player: 新しい選手・在籍が変わった選手の{len(todo)}ページだけ作成（全ページはシーズン終了時）")
     return 0
 
 

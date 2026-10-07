@@ -116,6 +116,40 @@ class People:
             if draft.exists() else set()
         self.seen_names = defaultdict(list)     # pid → 成績に出てきた登録名
         self.hint = defaultdict(set)            # (球団, 登録名) → 別の年に結びついた pid
+        self._load_rosters(Path(register_path).parent)
+
+    def _load_rosters(self, data_dir):
+        """球団の選手一覧（npb/data/roster_<年度>.json）を読む。
+        - 名簿にまだ載っていない年度の (登録名, 球団) → 選手ID を、その年の結びつけに最初に使う
+          （新外国人・新人・シーズン途中の加入。名簿に無いので、ほかの手がかりでは結べない）
+        - 名簿に無い人は、選手一覧の名前で「人」を足す（在籍はその年度の球団だけ）
+        - 最新の年度の一覧に今いる人（退団・移籍していない人）を self.current に入れる：{pid: (球団, 育成か)}"""
+        self.on_roster = {}                     # (年度, 登録名キー, 球団) → pid
+        self.current, self.current_year = {}, None
+        files = sorted(data_dir.glob("roster_*.json"))
+        for f in files:
+            ro = json.loads(f.read_text(encoding="utf-8"))
+            y = ro["year"]
+            if y <= self.max_year:
+                continue                        # 名簿に載った年度は名簿で足りる
+            for x in ro["players"]:
+                pid = x["id"]
+                self.on_roster[(y, key(x["name"]), x["team"])] = pid
+                if pid not in self.by_pid:
+                    p = {"id": pid, "pid": pid, "name": x["name"], "alias": [],
+                         "spans": [], "keys": {key(x["name"])}, "from_roster": True}
+                    self.players.append(p)
+                    self.by_pid[pid] = p
+                    self.by_key[key(x["name"])].append(p)
+                p = self.by_pid[pid]
+                if p.get("from_roster"):
+                    span = [y, x["team"], "育" if x["ikusei"] else ""]
+                    if span not in p["spans"]:
+                        p["spans"].append(span)
+        if files:
+            ro = json.loads(files[-1].read_text(encoding="utf-8"))
+            self.current_year = ro["year"]
+            self.current = {x["id"]: (x["team"], x["ikusei"]) for x in ro["players"] if not x["left"]}
 
     def _in(self, p, year, teams, ikusei=False):
         year = min(year, self.max_year)
@@ -163,6 +197,10 @@ class People:
         pending = []
         for name, team in rows:
             k = key(name)
+            # 球団の選手一覧に、その年度・その球団・その登録名の人がいれば、その人（選手IDつきの公式の一覧）
+            if (year, k, team) in self.on_roster:
+                out[(name, team)] = self.on_roster[(year, k, team)]
+                continue
             to = self.manual_at.get((k, year, team)) or self.manual.get(k, k)
             if to.startswith("#") and to[1:] in self.by_pid:
                 out[(name, team)] = to[1:]
