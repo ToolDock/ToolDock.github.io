@@ -6,7 +6,7 @@
 #   /pythagorean/  運ランキング（ピタゴラス勝率）
 #   /milestone/  記録達成カウントダウン
 #   /kings/  いろんな「王」ランキング（部門別の上位5人）
-#   /player/  選手ページ（シーズン終了時だけ作り直す）
+#   /player/  選手ページ（全ページはシーズン終了時。毎日は新しい選手・在籍が変わった選手だけ）
 #
 # NPB公式の勝敗表・個人成績・ドラフト指名選手を取り、npb/ のスクリプトで計算して書き出す。
 # 個人成績は npb/data/ に年ごとに保存し、過去の年は取り直さない。
@@ -48,9 +48,11 @@ jobs:
       - name: リーグ平均を計算
         run: python npb/build_league.py --data npb/data --out war
 
-      - name: 選手ページを作成（シーズン終了時だけ作り直す）
+      - name: 選手ページを作成（全ページはシーズン終了時だけ）
         # 約2900ページあり、毎日作り直すとリポジトリの履歴が膨らむので、
-        # 最新のシーズンが終わった最初の更新でだけ作る（player/built.json で判断）。
+        # 全ページは最新のシーズンが終わった最初の更新でだけ作る（player/built.json で判断）。
+        # 毎日は、球団の選手一覧（npb/data/roster_<年度>.json）をもとに、検索用のデータと、
+        # 新しく一軍に出た選手・移籍や退団で在籍が変わった選手のページだけを作る。
         # ランキング・ドラフトの選手名のリンクは player/built.json を見るので、それより先に作る
         run: python npb/build_players.py --data npb/data --league war/league.json --out player
 

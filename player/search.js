@@ -34,7 +34,8 @@
         h = letter($("s-head").value, dak), tl = letter($("s-tail").value, dak);
     var fix = function(c){ return dak ? plain(c) : c; };
     list = data.filter(function(o){
-      if (team && o.teams.indexOf(team) < 0) return false;
+      // 在籍を「現役」にしたときは、いまその球団にいる選手だけ（移籍・退団した選手は除く）
+      if (team && (act === "1" ? o.cur !== team : o.teams.indexOf(team) < 0)) return false;
       if (pos && o.pos !== pos) return false;
       if (t && o.hand.indexOf(t) !== 0) return false;
       if (b && o.hand.indexOf(b) < 0) return false;
@@ -65,7 +66,7 @@
       return '<li><a href="/player/' + o.id + '/">' + esc(o.name) + '</a>' +
         (o.names.length ? '<span class="al">（' + esc(o.names.join("／")) + '）</span>' : '') +
         '<span class="kn">' + esc(r || o.kana) + (sh && last ? ' <b>' + esc(last) + '</b>' : '') + '</span>' +
-        '<span class="mt">' + esc(o.pos) + '・' + esc(o.teams.join("→")) + '・' + yrs + (o.active ? '・現役' : '') + '</span>' +
+        '<span class="mt">' + esc(o.pos) + '・' + esc(o.teams.join("→")) + '・' + yrs + (o.active ? '・現役' + (o.cur && o.cur !== o.teams[o.teams.length - 1] ? '（いま' + esc(o.cur) + '）' : '') : '') + '</span>' +
         (last && last !== "ん" ? '<button type="button" class="next" data-c="' + esc(last) + '">「' + esc(last) + '」から続ける</button>' : '') +
         '</li>';
     }).join("");
