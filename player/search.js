@@ -55,6 +55,14 @@
 
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 
+  // 「（いまDeNA・育成）」のような添え書き（所属が成績の最後の球団と違う、育成契約）
+  function note(o){
+    var xs = [];
+    if (o.cur && o.cur !== o.teams[o.teams.length - 1]) xs.push("いま" + esc(o.cur));
+    if (o.ik) xs.push("育成");
+    return xs.length ? "（" + xs.join("・") + "）" : "";
+  }
+
   function render(){
     var part = $("s-part").value, sh = $("s-head").value || $("s-tail").value;
     var act = list.filter(function(o){ return o.active; }).length;
@@ -66,7 +74,7 @@
       return '<li><a href="/player/' + o.id + '/">' + esc(o.name) + '</a>' +
         (o.names.length ? '<span class="al">（' + esc(o.names.join("／")) + '）</span>' : '') +
         '<span class="kn">' + esc(r || o.kana) + (sh && last ? ' <b>' + esc(last) + '</b>' : '') + '</span>' +
-        '<span class="mt">' + esc(o.pos) + '・' + esc(o.teams.join("→")) + '・' + yrs + (o.active ? '・現役' + (o.cur && o.cur !== o.teams[o.teams.length - 1] ? '（いま' + esc(o.cur) + '）' : '') : '') + '</span>' +
+        '<span class="mt">' + esc(o.pos) + '・' + esc(o.teams.join("→")) + '・' + yrs + (o.active ? '・現役' + note(o) : '') + '</span>' +
         (last && last !== "ん" ? '<button type="button" class="next" data-c="' + esc(last) + '">「' + esc(last) + '」から続ける</button>' : '') +
         '</li>';
     }).join("");

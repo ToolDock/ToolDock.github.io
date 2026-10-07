@@ -262,6 +262,10 @@ def kind_of(bat, pit):
     outs = sum(r["outs"] for r in pit)
     if outs and outs >= 3 * max(10, pa / 4):
         return "p"
+    # 登板が少ない投手も、セ・リーグでは打席に立つので打席の数で野手と取り違えやすい。
+    # 登板した試合が、打席に立った試合以上なら投手（2026年のビド：2登板・2試合で打席）
+    if pit and sum(r["g"] for r in pit) >= sum(r["g"] for r in bat):
+        return "p"
     return "b" if pa else "p"
 
 
@@ -640,14 +644,16 @@ def kana_parts(kana):
 
 
 def search_data(entries, latest):
-    """選手一覧の検索用（/player/players.json）。cur はいま在籍している球団（退団・引退していれば空）"""
-    cols = ["id", "name", "kana", "sei", "mei", "names", "teams", "first", "last", "pos", "hand", "school", "active", "cur"]
+    """選手一覧の検索用（/player/players.json）。cur はいま在籍している球団（退団・引退していれば空）、ik はいま育成契約か"""
+    cols = ["id", "name", "kana", "sei", "mei", "names", "teams", "first", "last", "pos", "hand", "school", "active", "cur",
+            "ik"]
     rows = []
     for e in sorted(entries, key=lambda e: (sort_kana(e["kana"]) or "ん", e["name"])):
         sei, mei = kana_parts(e["kana"])
         active = bool(e["cur"]) if e["cur"] is not None else e["last"] == latest
         rows.append([e["pid"], disp(e["name"]), clean_kana(e["kana"]), sei, mei, e["names"], e["teams"],
-                     e["first"], e["last"], e["pos"], e["hand"], e["school"], 1 if active else 0, e["cur"] or ""])
+                     e["first"], e["last"], e["pos"], e["hand"], e["school"], 1 if active else 0, e["cur"] or "",
+                     1 if e.get("ik") else 0])
     return json.dumps({"latest": latest, "cols": cols, "rows": rows}, ensure_ascii=False, separators=(",", ":")) + "\n"
 
 
@@ -761,6 +767,14 @@ SEARCH_JS = r"""// 選手一覧の検索（npb/build_players.py が書き出す�
 
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 
+  // 「（いまDeNA・育成）」のような添え書き（所属が成績の最後の球団と違う、育成契約）
+  function note(o){
+    var xs = [];
+    if (o.cur && o.cur !== o.teams[o.teams.length - 1]) xs.push("いま" + esc(o.cur));
+    if (o.ik) xs.push("育成");
+    return xs.length ? "（" + xs.join("・") + "）" : "";
+  }
+
   function render(){
     var part = $("s-part").value, sh = $("s-head").value || $("s-tail").value;
     var act = list.filter(function(o){ return o.active; }).length;
@@ -772,7 +786,7 @@ SEARCH_JS = r"""// 選手一覧の検索（npb/build_players.py が書き出す�
       return '<li><a href="/player/' + o.id + '/">' + esc(o.name) + '</a>' +
         (o.names.length ? '<span class="al">（' + esc(o.names.join("／")) + '）</span>' : '') +
         '<span class="kn">' + esc(r || o.kana) + (sh && last ? ' <b>' + esc(last) + '</b>' : '') + '</span>' +
-        '<span class="mt">' + esc(o.pos) + '・' + esc(o.teams.join("→")) + '・' + yrs + (o.active ? '・現役' + (o.cur && o.cur !== o.teams[o.teams.length - 1] ? '（いま' + esc(o.cur) + '）' : '') : '') + '</span>' +
+        '<span class="mt">' + esc(o.pos) + '・' + esc(o.teams.join("→")) + '・' + yrs + (o.active ? '・現役' + note(o) : '') + '</span>' +
         (last && last !== "ん" ? '<button type="button" class="next" data-c="' + esc(last) + '">「' + esc(last) + '」から続ける</button>' : '') +
         '</li>';
     }).join("");
@@ -1088,7 +1102,7 @@ def main(argv=None):
         cur = people.current.get(pid)
         entries.append({"pid": pid, "name": person["name"], "kana": (profile or {}).get("kana", ""),
                         "team": cur[0] if cur else last_row["teams"][-1], "first": min(years), "last": max(years),
-                        "cur": (cur[0] if cur else "") if people.current_year else None,
+                        "cur": (cur[0] if cur else "") if people.current_year else None, "ik": bool(cur and cur[1]),
                         "teams": teams, "pos": pos_group(bat, pit), "hand": (profile or {}).get("profile", {}).get("投打", ""),
                         "school": (profile or {}).get("profile", {}).get("経歴", ""),
                         "names": list(dict.fromkeys(disp(n) for n in names))})
