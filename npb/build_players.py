@@ -1016,7 +1016,10 @@ ul.results .kn b{ color:var(--accent); font-size:0.95rem; }
 ul.results button.next{ margin-top:3px; font:inherit; font-size:0.76rem; padding:2px 10px; border:1px solid var(--line);
     border-radius:999px; background:var(--tint); color:var(--ink-sub); cursor:pointer; }
 ul.results button.next:hover{ border-color:var(--accent); color:var(--accent); }
-.search .more{ margin:10px 0 0; font:inherit; font-size:0.9rem; padding:6px 16px; border:1px solid var(--line); border-radius:999px; background:#fff; cursor:pointer; }
+.search .more{ display:block; margin:12px auto 0; font:inherit; font-size:0.9rem; font-weight:700; padding:8px 28px;
+    border:1px solid #bfdbfe; border-radius:999px; background:#eff6ff; color:#1d4ed8; cursor:pointer; }
+.search .more:hover{ background:#dbeafe; border-color:#93c5fd; }
+.search .more[hidden]{ display:none; }
 h2.list-head{ margin-top:34px; }
 @media (max-width:600px){
     dl.prof{ grid-template-columns:1fr; gap:0 0; }
