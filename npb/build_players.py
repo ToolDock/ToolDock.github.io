@@ -27,6 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_draft as bd  # noqa: E402
+from build_saber import season_rows  # noqa: E402
 import player_profile  # noqa: E402
 from people import People, franchise, is_foreign_style, key  # noqa: E402
 
@@ -139,11 +140,69 @@ def load(data_dir: Path, league):
                 picks[p["pid"]].append(p)
     prof_path = data_dir / "player_profiles.json"
     profiles = json.loads(prof_path.read_text(encoding="utf-8")) if prof_path.exists() else {}
-    stores = {}
+    stores, full = {}, {}
     for f in sorted(data_dir.glob("season_*.json")):
         st = json.loads(f.read_text(encoding="utf-8"))
         stores[st["year"]] = {"as_of": st.get("as_of"), "final": bool(st.get("final"))}
-    return people, by_pid, picks, profiles, stores, last_season
+        full[st["year"]] = st
+    fielding = load_fielding(full, people)
+    return people, by_pid, picks, profiles, stores, last_season, fielding
+
+
+FLD_POS = ["捕手", "一塁手", "二塁手", "三塁手", "遊撃手", "外野手"]
+FLD_KEYS = ("g", "po", "a", "e", "dp", "pb")
+
+
+def load_fielding(full, people):
+    """守備成績（NPB公式の守備部門、2005年以降）→ {pid: [{y, pos, teams, g, po, a, e, dp, pb}]}。
+    シーズン途中で移籍した年は、同じ守備位置の成績を足す"""
+    links = people.link_all({y: season_rows(st) for y, st in full.items()})
+    out = defaultdict(dict)
+    for y, st in full.items():
+        cols = st.get("fld_cols") or []
+        if "刺殺" not in cols:
+            continue
+        c = {k: i for i, k in enumerate(cols)}
+        for r in st["fld"]:
+            tname = st["teams"][r[c["team"]]]["name"]
+            pid = links.get(y, {}).get((r[c["name"]], tname))
+            if not pid:
+                continue
+            row = out[pid].setdefault((y, r[c["pos"]]), {"y": y, "pos": r[c["pos"]], "teams": [],
+                                                           **{k: 0 for k in FLD_KEYS}})
+            if tname not in row["teams"]:
+                row["teams"].append(tname)
+            for k, col in zip(FLD_KEYS, ("試合", "刺殺", "補殺", "失策", "併殺", "捕逸")):
+                row[k] += r[c[col]]
+    return {pid: sorted(rows.values(), key=lambda r: (r["y"], FLD_POS.index(r["pos"]) if r["pos"] in FLD_POS else 9))
+            for pid, rows in out.items()}
+
+
+def fld_pct(r):
+    n = r["po"] + r["a"] + r["e"]
+    return f3((r["po"] + r["a"]) / n) if n else "―"
+
+
+def fld_table(rows):
+    """守備成績の年度別の表と、守備位置ごとの通算"""
+    has_pb = any(r["pos"] == "捕手" for r in rows)
+    head = ("<tr><th>年度</th><th class='tm'>球団</th><th class='tm'>守備位置</th><th>試合</th><th>刺殺</th><th>補殺</th>"
+            "<th>失策</th><th>併殺</th>" + ("<th>捕逸</th>" if has_pb else "") + "<th>守備率</th></tr>")
+
+    def cells(r):
+        return ("".join(f"<td>{r[k]}</td>" for k in ("g", "po", "a", "e", "dp"))
+                + (f"<td>{r['pb'] if r['pos'] == '捕手' else '―'}</td>" if has_pb else "") + f"<td>{fld_pct(r)}</td>")
+    body = "".join(f"<tr><td>{r['y']}</td><td class='tm'>{esc(team_text(r['teams']))}</td><td class='tm'>{esc(r['pos'])}</td>"
+                   + cells(r) + "</tr>" for r in rows)
+    foot = ""
+    for pos in FLD_POS:
+        ps = [r for r in rows if r["pos"] == pos]
+        if ps:
+            t = {k: sum(r[k] for r in ps) for k in FLD_KEYS}
+            t["pos"] = pos
+            foot += f"<tr class='total'><th colspan='3'>通算 {esc(pos)}（{len(ps)}年）</th>" + cells(t) + "</tr>"
+    return (f"<div class='tbl-wrap'><table class='stats'><thead>{head}</thead>"
+            f"<tbody>{body}</tbody><tfoot>{foot}</tfoot></table></div>")
 
 
 def seasons_of(pid, by_pid, profile):
@@ -212,7 +271,7 @@ def team_text(teams):
 
 def bat_table(rows, show_saber=True):
     head = ("<tr><th>年度</th><th class='tm'>球団</th><th>守</th><th>試合</th><th>打席</th><th>打数</th><th>得点</th>"
-            "<th>安打</th><th>二塁打</th><th>三塁打</th><th>本塁打</th><th>打点</th><th>盗塁</th><th>盗塁刺</th>"
+            "<th>安打</th><th>二塁打</th><th>三塁打</th><th>本塁打</th><th>打点</th><th>盗塁</th><th>盗塁死</th>"
             "<th>犠打</th><th>犠飛</th><th>四球</th><th>死球</th><th>三振</th><th>併殺打</th>"
             "<th>打率</th><th>出塁率</th><th>長打率</th><th>OPS</th>"
             + ("<th>wOBA</th><th>wRC+</th><th class='war'>WAR</th>" if show_saber else "") + "</tr>")
@@ -401,7 +460,7 @@ def trend_html(bat, pit, kind):
             f'<span>（{cond}）</span></figcaption></figure></div>')
 
 
-def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_of_text, final, related=""):
+def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_of_text, final, related="", fld=None):
     name = disp(person["name"])
     kana = clean_kana((profile or {}).get("kana", ""))
     kind = kind_of(bat, pit)
@@ -475,8 +534,12 @@ def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_
         body.append(f"<h2>投手成績（年度別）</h2>{pit_table(pit)}")
     if show_bat:
         body.append(f"<h2>打撃成績（年度別）</h2>{bat_table(bat)}")
+    if fld:
+        body.append(f"<h2>守備成績（年度別）</h2>{fld_table(fld)}")
     notes = ["簡易WARは、打撃・盗塁・守備位置・代替水準（投手はFIP）から計算したもので、"
              "守備の上手さ（UZR）や球場の補正は入っていません（<a href=\"/war/\">計算方法</a>）。"]
+    if fld:
+        notes.append("守備成績はNPB公式の守備部門の記録（2005年以降・一軍・投手を除く）です。守備率は（刺殺＋補殺）÷（刺殺＋補殺＋失策）です。")
     if first < 2005:
         notes.append("2004年以前の成績はNPB公式の記録です。wOBA・wRC+・FIP・WARは2005年以降だけ計算しています。")
     notes.append("複数の球団に在籍した年は、その年の合計です。守備位置は最も多く守った位置です。")
@@ -973,7 +1036,7 @@ def main(argv=None):
         got = player_profile.fill_missing(data / "player_profiles.json",
                                           [p for p in by_pid0 if not p.startswith("r")])
         print(f"player: プロフィールを{got}人分取得")
-    people, by_pid, picks, profiles, stores, last_season = load(data, league)
+    people, by_pid, picks, profiles, stores, last_season, fielding = load(data, league)
     as_of = st_latest.get("as_of") or f"{latest}-12-31"
     d = datetime.strptime(as_of, "%Y-%m-%d")
     as_of_text = f"{d.year}年{d.month}月{d.day}日" if not final else f"{latest}年シーズン終了"
@@ -1011,7 +1074,8 @@ def main(argv=None):
         pid = e["pid"]
         person, profile, bat, pit, seen = data[pid]
         html_text = render_player(pid, person, people.display(pid), seen, bat, pit, picks.get(pid, []),
-                                  profile, as_of_text, final, related_html(pid, entries, data, picks))
+                                  profile, as_of_text, final, related_html(pid, entries, data, picks),
+                                  fielding.get(pid))
         d_ = out / pid
         d_.mkdir(exist_ok=True)
         (d_ / "index.html").write_text(html_text, encoding="utf-8")

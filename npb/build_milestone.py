@@ -89,7 +89,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
     data = Path(args.data)
     league = json.loads(Path(args.league).read_text(encoding="utf-8"))["seasons"]
-    people, by_pid, picks, profiles, stores, last_season = bp.load(data, league)
+    people, by_pid, picks, profiles, stores, last_season, _ = bp.load(data, league)
     mlb = load_mlb(data)
     latest = max(stores)
     st = json.loads((data / f"season_{latest}.json").read_text(encoding="utf-8"))
