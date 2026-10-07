@@ -1,14 +1,14 @@
 {
  "year": 2026,
- "as_of": "2026-10-06",
+ "as_of": "2026-10-07",
  "final": false,
  "central": [
   {
    "team": "阪神",
-   "w": 78,
+   "w": 79,
    "l": 61,
    "t": 2,
-   "remaining": 2,
+   "remaining": 1,
    "magic": 0,
    "own_v": 0,
    "own_cs": 0,
@@ -51,9 +51,9 @@
   {
    "team": "広島",
    "w": 61,
-   "l": 77,
+   "l": 78,
    "t": 4,
-   "remaining": 1,
+   "remaining": 0,
    "magic": null,
    "own_v": null,
    "own_cs": null,
