@@ -573,7 +573,7 @@ def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_
         title_html = '<div class="titles"><h2>獲得タイトル</h2>' + "".join(rows) + "</div>"
         y = max(titles)
         names = [t["title"] for t in titles[y]]
-        triple = [n for n in names if n in ("三冠王", "投手三冠")]
+        triple = [n for n in names if n in ("三冠王", "投手四冠", "投手三冠")]
         title_txt = f"{y}年{titles[y][0]['league'][0]}・リーグ" + ("・".join(triple) if triple else "・".join(names[:3]))
     title = (f"{name}の成績・WAR｜{title_txt}・年度別成績と通算（{team_now}）" if title_txt
              else f"{name}の成績・WAR｜年度別成績と通算（{team_now}）")

@@ -186,12 +186,15 @@ TITLE_FMT = {"首位打者（打率）": ("rate3", ""), "最高出塁率": ("rat
 for _k, _t, _u, _kind in BAT + PIT:
     if _t in ("本塁打王", "打点王", "最多安打", "盗塁王", "最多勝利", "最多奪三振", "最多セーブ"):
         TITLE_FMT[_t] = (_kind, _u)
-TRIPLE = [("三冠王", ("首位打者（打率）", "本塁打王", "打点王")), ("投手三冠", ("最多勝利", "最優秀防御率", "最多奪三振"))]
+# 冠の数え方。上から見て、そろった最初のものだけを付ける（投手四冠なら投手三冠は付けない）
+TRIPLE = [("三冠王", ("首位打者（打率）", "本塁打王", "打点王")),
+          ("投手四冠", ("最多勝利", "最優秀防御率", "最多奪三振", "最高勝率")),
+          ("投手三冠", ("最多勝利", "最優秀防御率", "最多奪三振"))]
 
 
 def season_titles(st, links):
     """その年のタイトル（王のページと同じ集計の1位。同じ数で並べば全員）
-    → {pid: [{"title", "league", "value"}]}。三冠王・投手三冠も足す。結びつかない選手は入れない"""
+    → {pid: [{"title", "league", "value"}]}。三冠王・投手四冠・投手三冠も足す。結びつかない選手は入れない"""
     out = defaultdict(list)
     for _, _, cards in year_cards(st, links, set()):
         for t, _, per in cards:
@@ -206,9 +209,12 @@ def season_titles(st, links):
                                               "value": fmt(v, kind) + unit})
     for pid, ts in out.items():
         have = {x["key"] for x in ts}
+        crowns = []
         for name, need in TRIPLE:
-            if all(n in have for n in need):
-                ts.insert(0, {"title": name, "key": name, "league": ts[0]["league"], "value": ""})
+            if all(n in have for n in need) and not (name == "投手三冠" and "投手四冠" in crowns):
+                crowns.append(name)
+        for name in reversed(crowns):
+            ts.insert(0, {"title": name, "key": name, "league": ts[0]["league"], "value": ""})
     return dict(out)
 
 
