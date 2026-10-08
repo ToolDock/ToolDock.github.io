@@ -179,6 +179,39 @@ TITLES = ["首位打者（打率）", "本塁打王", "打点王", "最多安打
           "最多勝利", "最優秀防御率", "最多奪三振", "最高勝率", "最多セーブ"]
 
 
+# タイトルの短い名前と、数の書き方（選手ページの「タイトル」用）
+TITLE_SHORT = {"首位打者（打率）": "首位打者"}
+TITLE_FMT = {"首位打者（打率）": ("rate3", ""), "最高出塁率": ("rate3", ""), "最優秀防御率": ("rate2", ""),
+             "最高勝率": ("rate3", "")}
+for _k, _t, _u, _kind in BAT + PIT:
+    if _t in ("本塁打王", "打点王", "最多安打", "盗塁王", "最多勝利", "最多奪三振", "最多セーブ"):
+        TITLE_FMT[_t] = (_kind, _u)
+TRIPLE = [("三冠王", ("首位打者（打率）", "本塁打王", "打点王")), ("投手三冠", ("最多勝利", "最優秀防御率", "最多奪三振"))]
+
+
+def season_titles(st, links):
+    """その年のタイトル（王のページと同じ集計の1位。同じ数で並べば全員）
+    → {pid: [{"title", "league", "value"}]}。三冠王・投手三冠も足す。結びつかない選手は入れない"""
+    out = defaultdict(list)
+    for _, _, cards in year_cards(st, links, set()):
+        for t, _, per in cards:
+            if t not in TITLES:
+                continue
+            kind, unit = TITLE_FMT[t]
+            for lg, label in LEAGUES:
+                rows, _ = per.get(lg, ([], 0))
+                for rank, v, e in rows:
+                    if rank == 1 and e.get("pid"):
+                        out[e["pid"]].append({"title": TITLE_SHORT.get(t, t), "key": t, "league": label,
+                                              "value": fmt(v, kind) + unit})
+    for pid, ts in out.items():
+        have = {x["key"] for x in ts}
+        for name, need in TRIPLE:
+            if all(n in have for n in need):
+                ts.insert(0, {"title": name, "key": name, "league": ts[0]["league"], "value": ""})
+    return dict(out)
+
+
 def title_first(cards):
     return sorted(cards, key=lambda c: (TITLES.index(c[0]) if c[0] in TITLES else len(TITLES)))
 

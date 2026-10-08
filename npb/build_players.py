@@ -29,6 +29,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_draft as bd  # noqa: E402
+import build_kings as bk  # noqa: E402
 from build_saber import season_rows  # noqa: E402
 import player_profile  # noqa: E402
 from people import People, franchise, is_foreign_style, key  # noqa: E402
@@ -149,6 +150,25 @@ def load(data_dir: Path, league):
         full[st["year"]] = st
     fielding = load_fielding(full, people)
     return people, by_pid, picks, profiles, stores, last_season, fielding
+
+
+# 選手ページに「獲得タイトル」を出す年（王のページと同じ集計の1位。この年から、シーズン終了した年だけ）
+TITLE_FROM = 2026
+
+
+def load_titles(data_dir, people):
+    """{pid: {年: [{title, league, value}]}}"""
+    full = {}
+    for f in sorted(data_dir.glob("season_*.json")):
+        st = json.loads(f.read_text(encoding="utf-8"))
+        full[st["year"]] = st
+    links = people.link_all({y: season_rows(st) for y, st in full.items()})
+    out = defaultdict(dict)
+    for y, st in full.items():
+        if y >= TITLE_FROM and st.get("final"):
+            for pid, ts in bk.season_titles(st, links.get(y, {})).items():
+                out[pid][y] = ts
+    return out
 
 
 FLD_POS = ["捕手", "一塁手", "二塁手", "三塁手", "遊撃手", "外野手"]
@@ -466,7 +486,7 @@ def trend_html(bat, pit, kind):
 
 
 def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_of_text, final, related="", fld=None,
-                  cur=None, cur_year=None):
+                  cur=None, cur_year=None, titles=None):
     """cur：球団の選手一覧で、いま在籍している球団と育成か (球団, 育成か)。退団・引退していれば None。
     cur_year：その選手一覧の年度（一覧が無いときは None で、成績だけで判断する）"""
     name = disp(person["name"])
@@ -540,8 +560,24 @@ def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_
 
     trend = trend_html(bat if show_bat else [], pit, kind)
 
-    title = f"{name}の成績・WAR｜年度別成績と通算（{team_now}）"
-    desc = (f"{name}（{team_now}）の{first}〜{last}年の年度別成績と通算成績。{summary}。"
+    # 獲得したタイトル {年: [{title, league, value}]}（新しい年から）
+    title_html, title_txt = "", ""
+    if titles:
+        rows = []
+        for y in sorted(titles, reverse=True):
+            ts = titles[y]
+            items = "".join(f'<li><b>{esc(t["title"])}</b>' + (f'<span>{esc(t["value"])}</span>' if t["value"] else "")
+                            + "</li>" for t in ts)
+            rows.append(f'<div class="ttl-y"><span class="ttl-head">{y}年 {esc(ts[0]["league"])}</span>'
+                        f'<ul class="ttl">{items}</ul></div>')
+        title_html = '<div class="titles"><h2>獲得タイトル</h2>' + "".join(rows) + "</div>"
+        y = max(titles)
+        names = [t["title"] for t in titles[y]]
+        triple = [n for n in names if n in ("三冠王", "投手三冠")]
+        title_txt = f"{y}年{titles[y][0]['league'][0]}・リーグ" + ("・".join(triple) if triple else "・".join(names[:3]))
+    title = (f"{name}の成績・WAR｜{title_txt}・年度別成績と通算（{team_now}）" if title_txt
+             else f"{name}の成績・WAR｜年度別成績と通算（{team_now}）")
+    desc = (f"{title_txt}。" if title_txt else "") + (f"{name}（{team_now}）の{first}〜{last}年の年度別成績と通算成績。{summary}。"
             f"wOBA・wRC+・FIPなどのセイバー指標と簡易WAR（{war_note or '通算'}{f1(war)}）も年ごとに掲載。")
     status = f"成績は{as_of_text}{'' if final else '時点'}までの一軍公式戦です。"
     body = [f'<p class="stamp">{esc(status)}</p>',
@@ -550,6 +586,8 @@ def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_
             '<h2>プロフィール</h2><dl class="prof">'
             + "".join(f"<dt>{esc(k)}</dt><dd>{v if k in ('ドラフト', '登録名・旧名', '在籍') else esc(v)}</dd>" for k, v in dl)
             + "</dl>"]
+    if title_html:
+        body.insert(2, title_html)
     if trend:
         body.append(trend)
     if pit:
@@ -991,6 +1029,13 @@ table.stats td.war{ font-weight:700; }
 table.stats tfoot td, table.stats tfoot th{ font-weight:700; background:var(--tint); border-top:2px solid var(--line); }
 table.stats tfoot th:first-child{ background:var(--tint); }
 .note{ font-size:0.84rem; color:var(--ink-mute); margin-top:12px; }
+.titles .ttl-y{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; background:#fffbeb; border:1px solid #f5d98b;
+    border-radius:12px; padding:10px 14px; margin:0 0 8px; }
+.titles .ttl-head{ font-weight:800; color:#92400e; font-size:0.9rem; }
+.titles ul.ttl{ list-style:none; display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; }
+.titles ul.ttl li{ background:#fff; border:1px solid #f5d98b; border-radius:999px; padding:2px 12px; font-size:0.88rem; }
+.titles ul.ttl li b{ color:#b45309; }
+.titles ul.ttl li span{ margin-left:6px; color:var(--ink-sub); font-variant-numeric:tabular-nums; }
 .trend{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap:10px; }
 .tchart{ margin:0; background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px 6px; min-height:200px; }
 .tchart figcaption{ font-size:0.86rem; font-weight:800; color:var(--ink-strong); }
@@ -1071,6 +1116,7 @@ def main(argv=None):
                                           [p for p in by_pid0 if not p.startswith("r")])
         print(f"player: プロフィールを{got}人分取得")
     people, by_pid, picks, profiles, stores, last_season, fielding = load(data, league)
+    titles = load_titles(data, people)
     as_of = st_latest.get("as_of") or f"{latest}-12-31"
     d = datetime.strptime(as_of, "%Y-%m-%d")
     as_of_text = f"{d.year}年{d.month}月{d.day}日" if not final else f"{latest}年シーズン終了"
@@ -1122,7 +1168,7 @@ def main(argv=None):
         person, profile, bat, pit, seen = data[pid]
         html_text = render_player(pid, person, people.display(pid), seen, bat, pit, picks.get(pid, []),
                                   profile, as_of_text, final, related_html(pid, entries, data, picks),
-                                  fielding.get(pid), people.current.get(pid), people.current_year)
+                                  fielding.get(pid), people.current.get(pid), people.current_year, titles.get(pid))
         d_ = out / pid
         d_.mkdir(exist_ok=True)
         (d_ / "index.html").write_text(html_text, encoding="utf-8")
