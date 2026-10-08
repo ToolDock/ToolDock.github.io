@@ -155,8 +155,10 @@ def fetch_fielding(src, year, code):
 def fetch_season(src, year):
     teams, bat, pit, fld, totals = {}, [], [], [], {}
     as_of = None
+    ended = True    # 両リーグの成績ページに「全日程終了」と出ていれば、その年のレギュラーシーズンは終わり
     for lg, key, label in LEAGUES:
         tmb = src.get(year, f"tmb_{lg}")
+        ended = ended and "全日程終了" in tmb
         a, team_bat = parse_table(tmb, ("チーム", "打席"))
         _, team_pit = parse_table(src.get(year, f"tmp_{lg}"), ("チーム", "投球回"))
         as_of = as_of or a
@@ -201,7 +203,7 @@ def fetch_season(src, year):
         except Exception as e:  # 無くても成績の集計はできる
             print(f"注意: {year} {label} 守備部門の順位を読めない: {e}", file=sys.stderr)
 
-    return {"year": year, "as_of": as_of, "teams": teams, "totals": totals,
+    return {"year": year, "as_of": as_of, "ended": ended, "teams": teams, "totals": totals,
             "bat_cols": BAT_COLS, "bat": bat, "pit_cols": PIT_COLS, "pit": pit,
             "fld_cols": FLD_COLS, "fld": fld, "leaders": leaders}
 
@@ -457,7 +459,12 @@ def main(argv=None):
                 print(f"注意: {y}年を取り直せない（前のデータのまま）: {e}", file=sys.stderr)
                 continue
             raise
-        season["final"] = y < year
+        # 年が変わるのを待たず、全日程が終わった時点でシーズン終了とする（選手ページの作り直し・各ページの表示）。
+        # 終了後のページには日付が無い（「全日程終了」）ので、日付は前に取れた日付のまま
+        ended = season.pop("ended", False)
+        season["final"] = y < year or ended
+        if not season["as_of"] and old:
+            season["as_of"] = old.get("as_of")
         save(path, season)
         print(f"season {y}: 打者 {len(season['bat'])} 投手 {len(season['pit'])} 守備 {len(season['fld'])}")
 
