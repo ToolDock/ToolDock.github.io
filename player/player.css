@@ -38,6 +38,13 @@ table.stats td.war{ font-weight:700; }
 table.stats tfoot td, table.stats tfoot th{ font-weight:700; background:var(--tint); border-top:2px solid var(--line); }
 table.stats tfoot th:first-child{ background:var(--tint); }
 .note{ font-size:0.84rem; color:var(--ink-mute); margin-top:12px; }
+.titles .ttl-y{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; background:#fffbeb; border:1px solid #f5d98b;
+    border-radius:12px; padding:10px 14px; margin:0 0 8px; }
+.titles .ttl-head{ font-weight:800; color:#92400e; font-size:0.9rem; }
+.titles ul.ttl{ list-style:none; display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; }
+.titles ul.ttl li{ background:#fff; border:1px solid #f5d98b; border-radius:999px; padding:2px 12px; font-size:0.88rem; }
+.titles ul.ttl li b{ color:#b45309; }
+.titles ul.ttl li span{ margin-left:6px; color:var(--ink-sub); font-variant-numeric:tabular-nums; }
 .trend{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap:10px; }
 .tchart{ margin:0; background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px 6px; min-height:200px; }
 .tchart figcaption{ font-size:0.86rem; font-weight:800; color:var(--ink-strong); }
