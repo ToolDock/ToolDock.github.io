@@ -1,33 +1,31 @@
 *{ box-sizing:border-box; }
-:root{ --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280; --line:#d1d5db; --line-soft:#e5e7eb;
-       --head-bg:#f3f4f6; --tint:#f9fafb; --accent:#2563eb; --ce:#0f766e; --pa:#1d4ed8; --gold:#b45309; }
+:root{
+    --ink-strong:var(--ink); --ink-sub:var(--ink); --ink-mute:var(--ink); --head-bg:var(--surface-2); --tint:var(--surface-2); --ce:#0f766e; --pa:#1d4ed8; --gold:#b45309;
+}
 body{ margin:0; padding:0 0 48px; font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-      color:var(--ink); line-height:1.7; background:#f5f5f5; }
+      color:var(--ink); line-height:1.7; background:var(--bg); }
 /* ほかのページ（金特ツールなど）と同じく左に寄せ、左右に20pxの余白を取る。
    サイト共通の style.css は body を幅900pxに絞るので外し、表の広さに合わせた幅にする。
    下に付く「人気のページ」なども本文と同じ幅・余白にそろえる */
 body{ max-width:none; }
 .page-wrapper{ max-width:1100px; margin:0; padding:0 20px; }
 body .td-rail-inline{ max-width:1100px; margin:40px 0 0; padding:0 20px; }
-header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:18px; }
-h1{ margin:0; font-size:1.35rem; line-height:1.5; }
-header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
-h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong); border-bottom:2px solid var(--line); scroll-margin-top:10px; }
+h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong); border-bottom:2px solid var(--c); scroll-margin-top:10px; }
 p{ margin:0 0 12px; }
 a{ color:var(--accent); }
 .stamp{ font-size:0.88rem; color:var(--ink-sub); }
 .lead{ font-size:0.95rem; }
 ul.years{ list-style:none; display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px; padding:0; }
-ul.years a, ul.years span{ display:inline-block; padding:4px 12px; border:1px solid var(--line); border-radius:999px; background:#fff;
+ul.years a, ul.years span{ display:inline-block; padding:4px 12px; border:1px solid var(--line); background:var(--surface);
     text-decoration:none; font-size:0.9rem; color:var(--ink); }
 ul.years span{ background:var(--ink-strong); color:#fff; border-color:var(--ink-strong); }
 .jump{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 6px; }
-.jump a{ padding:4px 12px; border:1px solid var(--line); border-radius:999px; background:#fff; text-decoration:none; font-size:0.9rem; }
+.jump a{ padding:4px 12px; border:1px solid var(--line); background:var(--surface); text-decoration:none; font-size:0.9rem; }
 .cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:12px; }
-.card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 12px 10px; }
+.card{ background:var(--surface); border:1px solid var(--line); padding:8px 12px 10px; }
 .card h3{ margin:2px 0 4px; font-size:1rem; color:var(--ink-strong); display:flex; align-items:center; gap:8px; }
 .card.title{ border-color:#e7c77a; }
-.title-badge{ font-size:0.68rem; font-weight:700; color:var(--gold); background:#fef3c7; border-radius:999px; padding:1px 8px; }
+.title-badge{ font-size:0.68rem; font-weight:700; color:var(--gold); background:#fef3c7; padding:1px 8px; }
 .card .q{ margin:0 0 4px; font-size:0.74rem; color:var(--ink-mute); }
 .two{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .lg h4{ margin:0 0 2px; font-size:0.76rem; color:var(--lgc); border-bottom:2px solid var(--lgc); }
@@ -44,7 +42,7 @@ ul.years span{ background:var(--ink-strong); color:#fff; border-color:var(--ink-
 .lg .v{ font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .lg .v small{ font-size:0.7rem; font-weight:400; color:var(--ink-mute); margin-left:1px; }
 .lg li.more, .lg li.none{ display:block; font-size:0.76rem; color:var(--ink-mute); }
-table.kings{ border-collapse:collapse; width:100%; font-size:0.88rem; background:#fff; }
+table.kings{ border-collapse:collapse; width:100%; font-size:0.88rem; background:var(--surface); }
 table.kings th, table.kings td{ border-bottom:1px solid var(--line-soft); padding:6px 8px; text-align:left; }
 table.kings thead th{ background:var(--head-bg); font-size:0.78rem; color:var(--ink-sub); }
 table.kings .tm{ display:block; font-size:0.72rem; color:var(--ink-mute); }
@@ -53,7 +51,7 @@ table.hist a{ color:inherit; text-decoration:none; border-bottom:1px dotted var(
 table.hist th a{ color:var(--accent); border:0; }
 h3{ margin:22px 0 8px; font-size:1rem; color:var(--ink-strong); }
 table.kings td.v{ text-align:right; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
-.tbl-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:12px; }
+.tbl-wrap{ overflow-x:auto; border:1px solid var(--line); }
 .note{ font-size:0.84rem; color:var(--ink-mute); }
 footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 @media (max-width:600px){ .cards{ grid-template-columns:1fr; } }

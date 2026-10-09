@@ -57,9 +57,8 @@
         background: #ffffff;
         color: #1f2937;
         line-height: 1.2;
-        /* フッターと同じ系統の青を、細く1本だけ。
-           太い線や濃い色を敷くと本文より目立ってしまう */
-        border-bottom: 2px solid #7dd3fc;
+        /* いまの分野の色（style.css の --c）。分野の無いページは墨色 */
+        border-bottom: 3px solid var(--c, #1c1d1f);
       }
 
       /* ロゴは画面の左端に寄せる。
@@ -97,7 +96,7 @@
       .td-header-tag {
         display: block;
         margin-top: 1px;
-        color: #7b8794;
+        color: #1c1d1f;
         font-size: 10px;
         line-height: 1.2;
         letter-spacing: 0;
@@ -129,22 +128,22 @@
       .td-header-nav a {
         display: inline-block;
         padding: 4px 9px;
-        border-radius: 999px;
-        color: #374151;
+        color: #1c1d1f;
         font-size: 13px;
         font-weight: 700;
         white-space: nowrap;
       }
 
       .td-header-nav a:hover {
-        background: #eef6fd;
-        color: #0369a1;
+        text-decoration: underline;
+        text-underline-offset: 3px;
       }
 
-      /* いま見ているカテゴリを塗って示す */
+      /* いま見ているカテゴリを、その分野の色で塗って示す */
       .td-header-nav a[aria-current="page"] {
-        background: #e0f2fe;
-        color: #0369a1;
+        background: var(--c, #1c1d1f);
+        color: #ffffff;
+        text-decoration: none;
       }
 
       @media (max-width: 600px) {
@@ -213,7 +212,10 @@
       : null;
 
     return cats.map(c => {
-      const here = current && current.category === c;
+      /* カテゴリ一覧（/category/?cat=game など）では、絞り込んでいる分野を示す */
+      const here = (current && !current.hidden && current.category === c)
+        || (location.pathname === "/category/"
+            && new URLSearchParams(location.search).get("cat") === c);
       return `<a href="/category/?cat=${encodeURIComponent(c)}"${
         here ? ' aria-current="page"' : ""}>${names[c]}</a>`;
     }).join("");

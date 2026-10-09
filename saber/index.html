@@ -24,15 +24,13 @@
 *{ box-sizing:border-box; }
 
 :root{
-    --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280;
-    --line:#d1d5db; --line-soft:#e5e7eb; --head-bg:#f3f4f6; --tint:#f9fafb;
-    --accent:#2563eb; --good:#15803d; --bad:#b91c1c;
+    --ink-strong:var(--ink); --ink-sub:var(--ink); --ink-mute:var(--ink); --head-bg:var(--surface-2); --tint:var(--surface-2); --good:#15803d; --bad:#b91c1c;
 }
 
 body{
     margin:0; padding:0 0 48px;
     font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-    color:var(--ink); line-height:1.75; background:#f5f5f5;
+    color:var(--ink); line-height:1.75; background:var(--bg);
 }
 
 .page-wrapper{ max-width:1200px; margin:0 auto; padding:0 16px; }
@@ -43,29 +41,24 @@ body{ max-width:none; }
 .page-wrapper{ margin:0; padding:0 20px; }
 body .td-rail-inline{ max-width:1200px; margin:40px 0 0; padding:0 20px; }
 
-header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:18px; }
-header .page-wrapper{ padding:0; }
-h1{ margin:0; font-size:1.35rem; line-height:1.5; }
-header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
-
-h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong); border-bottom:2px solid var(--line); }
-h3{ margin:20px 0 8px; padding-left:10px; font-size:1rem; color:var(--ink-strong); border-left:4px solid var(--accent); }
+h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong); border-bottom:2px solid var(--c); }
+h3{ margin:20px 0 8px; font-size:1rem; color:var(--ink-strong); }
 p{ margin:0 0 12px; }
 
 .stamp{ font-size:0.86rem; color:var(--ink-sub); margin:0 0 10px; display:flex; flex-wrap:wrap; gap:4px 16px; }
 .stamp strong{ color:var(--ink-strong); }
 
 /* ── 絞り込み ───────────────────────────── */
-.panel{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:14px; }
+.panel{ background:var(--surface); border:1px solid var(--line); padding:14px; margin-bottom:14px; }
 .seg{ display:flex; gap:6px; margin-bottom:12px; }
 .seg button{ flex:1; font:inherit; font-size:0.98rem; font-weight:700; padding:9px; border:1px solid var(--line);
-             border-radius:8px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+             border-radius:var(--r-ctl); background:var(--surface); color:var(--ink-sub); cursor:pointer; }
 .seg button[aria-pressed="true"]{ background:var(--ink-strong); border-color:var(--ink-strong); color:#fff; }
 
 .filters{ display:grid; gap:10px 12px; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); }
 .filters label{ display:flex; flex-direction:column; gap:3px; font-size:0.78rem; font-weight:700; color:var(--ink-sub); min-width:0; }
 .filters select, .filters input[type="number"], .filters input[type="search"]{
-    font:inherit; font-size:0.92rem; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);
+    font:inherit; font-size:0.92rem; padding:6px 8px; border:1px solid var(--line); border-radius:var(--r-ctl); background:var(--surface); color:var(--ink);
     width:100%; min-width:0;
 }
 .filters .check{ flex-direction:row; align-items:center; gap:6px; font-size:0.86rem; padding-top:18px; }
@@ -79,7 +72,7 @@ p{ margin:0 0 12px; }
 .scroll-hint[hidden]{ display:none; }
 
 /* ── 表 ───────────────────────────── */
-.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; background:#fff; border:1px solid var(--line); border-radius:12px; }
+.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; background:var(--surface); border:1px solid var(--line); }
 table{ border-collapse:collapse; width:100%; font-size:0.86rem; font-variant-numeric:tabular-nums; }
 th, td{ padding:7px 8px; border-bottom:1px solid var(--line-soft); text-align:right; white-space:nowrap; }
 thead th{ background:var(--head-bg); font-size:0.78rem; color:var(--ink-sub); position:sticky; top:0; z-index:1; }
@@ -88,7 +81,7 @@ table.board thead th.sorted{ color:var(--accent); }
 table.board thead th.sorted::after{ content:" ▼"; font-size:0.7em; }
 table.board thead th.sorted.asc::after{ content:" ▲"; }
 td.rk{ color:var(--ink-mute); text-align:center; width:2.8em; }
-td.pl, th.pl{ text-align:left; position:sticky; left:0; background:#fff; z-index:1; }
+td.pl, th.pl{ text-align:left; position:sticky; left:0; background:var(--surface); z-index:1; }
 thead th.pl{ background:var(--head-bg); z-index:2; }
 td.pl .nm, .lead .nm{ font-weight:700; color:var(--ink-strong); }
 td.pl .nm a, .lead .nm a{ color:inherit; text-decoration:none; border-bottom:1px dotted var(--ink-mute); }
@@ -98,7 +91,7 @@ td.c{ text-align:center; }
 td.key{ font-weight:800; color:var(--ink-strong); }
 tbody tr:hover td{ background:var(--tint); }
 .more{ display:block; margin:10px auto 0; font:inherit; font-size:0.9rem; padding:8px 18px; border:1px solid var(--line);
-       border-radius:20px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+       border-radius:var(--r-ctl); background:var(--surface); color:var(--ink-sub); cursor:pointer; }
 
 table.lead{ font-size:0.88rem; }
 table.lead td:nth-child(2){ text-align:left; }
@@ -106,7 +99,7 @@ table.lead td:nth-child(2){ text-align:left; }
 @media (min-width:900px){ .lg-grid{ grid-template-columns:1fr 1fr; } }
 
 /* ── 解説 ───────────────────────────── */
-article{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px 18px; margin-top:26px; }
+article{ background:var(--surface); border:1px solid var(--line); padding:4px 20px 18px; margin-top:26px; }
 article table{ border-collapse:collapse; width:100%; font-size:0.9rem; margin:0 0 14px; }
 article th, article td{ border:1px solid var(--line-soft); padding:6px 10px; text-align:left; white-space:normal; }
 article thead th{ background:var(--head-bg); position:static; }
@@ -126,10 +119,10 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 
 <div class="page-wrapper">
 
-<header>
+<div class="td-banner">
     <h1>プロ野球 セイバーメトリクス ランキング</h1>
     <p>全選手のwOBA・wRC+・FIP・K−BB%・簡易WARを毎日自動で計算。条件で絞り込んで並べ替えられます</p>
-</header>
+</div>
 
 <div class="container">
 

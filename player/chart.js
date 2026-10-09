@@ -42,8 +42,8 @@
     var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img" });
     for (var v = sc.lo; v <= sc.hi + 1e-9; v += sc.step) {
       var yy = Y(v), zero = series === "war" && Math.abs(v) < 1e-9;
-      svg.appendChild(el("line", { x1: L, x2: W - R, y1: yy, y2: yy, stroke: zero ? "#9ca3af" : "#e5e7eb", "stroke-width": zero ? 1.2 : 1 }));
-      svg.appendChild(el("text", { x: L - 6, y: yy + 3.5, "text-anchor": "end", "font-size": 10, fill: "#6b7280" }, fmt(v, series, kind)));
+      svg.appendChild(el("line", { x1: L, x2: W - R, y1: yy, y2: yy, stroke: zero ? "#1c1d1f" : "#e6e4de", "stroke-width": zero ? 1.2 : 1 }));
+      svg.appendChild(el("text", { x: L - 6, y: yy + 3.5, "text-anchor": "end", "font-size": 10, fill: "#1c1d1f" }, fmt(v, series, kind)));
     }
     // 年のラベル。多いときは間引く
     var fit = Math.max(1, Math.floor((W - L - R) / 34));   // 年のラベルが入る数
@@ -51,7 +51,7 @@
     for (var y = y0; y <= y1; y++) {
       if ((y - y0) % every && y !== y1) continue;
       if (y !== y1 && y1 - y < every && (y - y0) % every === 0 && y !== y0) continue;
-      svg.appendChild(el("text", { x: X(y), y: H - 8, "text-anchor": "middle", "font-size": 10, fill: "#6b7280" },
+      svg.appendChild(el("text", { x: X(y), y: H - 8, "text-anchor": "middle", "font-size": 10, fill: "#1c1d1f" },
         n > fit / 1.6 ? "'" + String(y).slice(2) : String(y)));
     }
     var best = pts.reduce(function (a, r) {
@@ -63,7 +63,7 @@
       pts.forEach(function (r) {
         var v = r[1], top = Y(Math.max(v, 0)), h = Math.max(1, Math.abs(Y(v) - Y(0)));
         var b = el("rect", { x: X(r[0]) - bw / 2, y: top, width: bw, height: h, rx: 2,
-          fill: v < 0 ? "#dc2626" : (r === best ? "#1d4ed8" : "#60a5fa") });
+          fill: v < 0 ? "#c62828" : (r === best ? "#1c1d1f" : "#aeaba2") });
         b.appendChild(el("title", {}, r[0] + "年 WAR " + v.toFixed(1)));
         svg.appendChild(b);
       });
@@ -80,11 +80,11 @@
       segs.forEach(function (s) {
         if (s.length < 2) return;
         svg.appendChild(el("polyline", { points: s.map(function (r) { return X(r[0]) + "," + Y(r[2]); }).join(" "),
-          fill: "none", stroke: "#0f766e", "stroke-width": 2, "stroke-linejoin": "round" }));
+          fill: "none", stroke: "#1c1d1f", "stroke-width": 2, "stroke-linejoin": "round" }));
       });
       pts.forEach(function (r) {
         var c = el("circle", { cx: X(r[0]), cy: Y(r[2]), r: r === best ? 4 : 3,
-          fill: r === best ? "#0f766e" : "#fff", stroke: "#0f766e", "stroke-width": 2 });
+          fill: r === best ? "#1c1d1f" : "#fff", stroke: "#1c1d1f", "stroke-width": 2 });
         c.appendChild(el("title", {}, r[0] + "年 " + (kind === "p" ? "防御率 " : "OPS ") + fmt(r[2], "val", kind)));
         svg.appendChild(c);
       });

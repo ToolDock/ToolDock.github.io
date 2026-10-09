@@ -106,7 +106,8 @@ def render_category(tools):
     """「すべてのツール」のページ（/category/）のカード。?cat= での絞り込みは、ページのJSが data-cat を見て行う"""
     out = [BEGIN]
     for t in tools:
-        out.append(f'  <a class="tool-card" data-cat="{html.escape(t["category"])}" href="{html.escape(t["url"])}">'
+        cat = html.escape(t["category"])
+        out.append(f'  <a class="tool-card c-{cat}" data-cat="{cat}" href="{html.escape(t["url"])}">'
                    f'<h2>{html.escape(t["title"])}</h2><p>{html.escape(t["desc"])}</p></a>')
     out.append(END)
     return "\n".join(out)

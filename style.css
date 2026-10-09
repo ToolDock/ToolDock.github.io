@@ -1,3 +1,50 @@
+/* =========================
+   デザインの決まり（全ページ共通）
+
+   - 文字はすべて墨色（灰色の文字は使わない）。差は太さと大きさで付ける
+   - 角の丸い囲みは使わない。丸めるのは入力欄とボタンだけ（3px）
+   - 影は付けない。区切りは細い線と、背景との明るさの差で出す
+   - 色は意味のある所だけ。分野の色はページ見出しの帯・見出しの下線・ヘッダーに使う
+
+   分野の色は head.js が <html data-cat="..."> を付けて切り替える。
+   各ページのCSSも、この変数を使って書く
+========================= */
+
+:root {
+  --bg: #edece8;          /* ページの地。白い面との差で区切りを見せる */
+  --surface: #ffffff;     /* 入力欄・表・説明欄などの面 */
+  --surface-2: #f4f3ef;   /* 表の見出し行など、面の中の一段濃い所 */
+  --ink: #1c1d1f;         /* 文字 */
+  --line: #d8d6cf;        /* 囲み・区切りの線 */
+  --line-soft: #e6e4de;   /* 表の行の区切り */
+  --line-input: #bcbab2;  /* 入力欄の枠 */
+  --accent: #1d4fbf;      /* リンク */
+  --gold: #8a5a00;        /* タイトル・受賞 */
+  --gold-soft: #fbf3dc;
+  --gold-line: #e2c77d;
+  --r-ctl: 3px;           /* 入力欄・ボタンの角 */
+
+  /* 文字の大きさはこの段階だけを使う */
+  --fs-xs: 12px;
+  --fs-s: 13.5px;
+  --fs-m: 15px;
+  --fs-b: 16px;
+  --fs-h3: 17px;
+  --fs-h2: 20px;
+  --fs-h1: 28px;
+
+  --c: var(--ink);        /* いまの分野の色（分野の無いページは墨色） */
+}
+
+/* 分野の色。白い文字が読める濃さにそろえる。
+   野球は黒（緑や青は特定の球団・リーグを思わせるため） */
+:root[data-cat="life"],     .c-life     { --c: #c2410c; }
+:root[data-cat="finance"],  .c-finance  { --c: #15803d; }
+:root[data-cat="work"],     .c-work     { --c: #1d4ed8; }
+:root[data-cat="math"],     .c-math     { --c: #6d28d9; }
+:root[data-cat="game"],     .c-game     { --c: #be185d; }
+:root[data-cat="baseball"], .c-baseball { --c: #1c1d1f; }
+
 /* サイト共通のフォントは Noto Sans JP（head.js で Google Fonts から読み込む）。
    各ページのCSSも同じ並びで指定している */
 body {
@@ -6,6 +53,16 @@ body {
   margin: auto;
   padding: 20px;
   line-height: 1.7;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* 見出しは字間を詰め（palt）、言葉の切れ目で改行する */
+h1, h2, h3 {
+  font-feature-settings: "palt";
+  letter-spacing: .02em;
+  word-break: auto-phrase;
+  text-wrap: balance;
 }
 
 h1 {
@@ -19,7 +76,57 @@ button, input, select {
 }
 
 a {
-  color: blue;
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+table {
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================
+   ページ見出しの帯
+
+   <div class="td-banner">
+     <h1>ページ名</h1>
+     <p>一行の説明</p>
+   </div>
+
+   地は分野の色。選手・球団のページは、ページ側で
+   style="--tm-bg:…; --tm-fg:…; --tm-line:…" を付けて球団の色にする
+========================= */
+
+.td-banner {
+  box-sizing: border-box;
+  margin: 12px 0 24px;
+  padding: 22px 24px 20px;
+  background: var(--tm-bg, var(--c));
+  color: var(--tm-fg, #fff);
+  border-bottom: 6px solid var(--tm-line, var(--tm-bg, var(--c)));
+  text-align: left;
+}
+
+.td-banner h1 {
+  margin: 0;
+  color: inherit;
+  font-size: var(--fs-h1);
+  line-height: 1.4;
+}
+
+.td-banner p {
+  margin: 8px 0 0;
+  color: inherit;
+  font-size: var(--fs-m);
+  line-height: 1.8;
+}
+
+.td-banner a {
+  color: inherit;
+}
+
+@media (max-width: 600px) {
+  .td-banner { padding: 18px 16px; }
+  .td-banner h1 { font-size: 23px; }
 }
 
 textarea {
@@ -38,7 +145,7 @@ footer {
 .related-tools-section {
   margin-top: 48px;
   padding-top: 24px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--line);
 }
 
 .related-tools-section h2 {
@@ -54,15 +161,15 @@ footer {
 .related-tool-card {
   display: block;
   padding: 16px;
-  border: 1px solid #ddd;
-  border-radius: 12px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--c);
+  background: var(--surface);
   text-decoration: none;
   color: inherit;
-  transition: 0.2s;
 }
 
 .related-tool-card:hover {
-  transform: translateY(-2px);
+  border-color: var(--c);
 }
 
 .related-tool-card h3 {
@@ -73,10 +180,9 @@ footer {
     margin: 24px 0;
     padding: 12px;
 
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    border: 1px solid var(--line);
 
-    background: #f8f8f8;
+    background: var(--surface);
 
     font-size: 14px;
     line-height: 1.8;
@@ -96,22 +202,22 @@ footer {
   margin: 40px auto 0;
   padding: 28px;
 
-  background: #ffffff;
-  color: #222;
+  background: var(--surface);
+  color: var(--ink);
 
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--line);
 
   text-align: left;
-  line-height: 1.8;
+  font-size: var(--fs-m);
+  line-height: 1.95;
 }
 
+/* 見出しは下に分野の色の線を引く */
 .tool-article h2 {
-  margin-top: 32px;
-  font-size: 1.3rem;
-
-  border-left: 5px solid #2563eb;
-  padding-left: 12px;
+  margin-top: 40px;
+  padding-bottom: 8px;
+  font-size: var(--fs-h2);
+  border-bottom: 2px solid var(--c);
 }
 
 .tool-article h2:first-child {
@@ -119,8 +225,8 @@ footer {
 }
 
 .tool-article h3 {
-  margin-top: 24px;
-  font-size: 1.05rem;
+  margin-top: 28px;
+  font-size: var(--fs-h3);
 }
 
 /* * { margin:0 } を敷いているページでも余白が潰れないようにする */
@@ -151,14 +257,14 @@ footer {
 
 .tool-article th,
 .tool-article td {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--line-soft);
   padding: 10px;
   text-align: left;
   vertical-align: top;
 }
 
 .tool-article th {
-  background: #f8fafc;
+  background: var(--surface-2);
   white-space: nowrap;
 }
 
@@ -175,19 +281,17 @@ footer {
   margin-top: 20px;
   padding: 14px;
 
-  background: #f8fafc;
-  border-left: 4px solid #94a3b8;
-  border-radius: 8px;
+  background: var(--surface-2);
 
-  font-size: 0.92rem;
-  color: #475569;
+  font-size: var(--fs-s);
+  color: var(--ink);
 }
 
 /* 公開後に誤りが見つかった箇所。もとの文は取り消し線で残し、
    訂正はこの赤い箱に書く。読者がどちらを読んだかで話が食い違わないようにするため */
 .tool-article s,
 .tool-article del {
-  color: #8a8a8a;
+  color: var(--ink);
   text-decoration-color: #d64545;
 }
 
@@ -198,7 +302,6 @@ footer {
   background: #fff1f1;
   border: 1px solid #f3bcbc;
   border-left: 5px solid #d64545;
-  border-radius: 8px;
 
   font-size: 0.95rem;
   line-height: 1.75;
@@ -220,6 +323,10 @@ footer {
 .tool-article .correction__title {
   font-weight: 700;
   color: #b02525;
+}
+
+@media (max-width: 600px) {
+  .tool-article { padding: 22px 18px; }
 }
 
 /* .breadcrumb 系のスタイルは js/head.js が注入する */
