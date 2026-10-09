@@ -21,7 +21,7 @@
 <style>
     body {
         font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-        background: #f4f6f9;
+        background: var(--bg);
         margin: 0;
         padding: 20px;
         color: #222;
@@ -32,9 +32,9 @@
         max-width: 1000px;
         margin: 0 auto 24px;
         background: white;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        --pad: 30px;
+        padding: var(--pad);
+        border: 1px solid var(--line);
     }
 
     h1 {
@@ -45,8 +45,10 @@
     h2 {
         margin-top: 32px;
         font-size: 1.3rem;
-        border-left: 5px solid #2563eb;
-        padding-left: 12px;
+        border-left: 0;
+        padding-left: 0;
+        border-bottom: 2px solid var(--c);
+        padding-bottom: 8px;
     }
 
     h3 {
@@ -55,7 +57,7 @@
     }
 
     p.description {
-        color: #555;
+        color: var(--ink);
     }
 
     textarea {
@@ -65,7 +67,7 @@
         font-size: 1.05rem;
         line-height: 1.8;
         border: 2px solid #cbd5e1;
-        border-radius: 12px;
+        border-radius: var(--r-ctl);
         box-sizing: border-box;
         resize: vertical;
     }
@@ -80,7 +82,6 @@
     .settings {
         margin-top: 16px;
         border: 1px solid #e2e8f0;
-        border-radius: 12px;
         background: #f8fafc;
         padding: 0 18px;
     }
@@ -89,7 +90,7 @@
         cursor: pointer;
         padding: 14px 0;
         font-weight: bold;
-        color: #334155;
+        color: var(--ink);
         user-select: none;
     }
 
@@ -108,7 +109,7 @@
     .setting-group > .group-title {
         font-size: 0.9rem;
         font-weight: bold;
-        color: #64748b;
+        color: var(--ink);
         margin-bottom: 8px;
     }
 
@@ -142,7 +143,7 @@
         padding: 8px;
         font-size: 1rem;
         border: 2px solid #cbd5e1;
-        border-radius: 8px;
+        border-radius: var(--r-ctl);
     }
 
     .buttons {
@@ -155,15 +156,15 @@
     button.action {
         padding: 10px 18px;
         border: none;
-        border-radius: 999px;
-        background: #2563eb;
+        border-radius: var(--r-ctl);
+        background: var(--c);
         color: white;
         font-size: 0.95rem;
         cursor: pointer;
     }
 
     button.action:hover {
-        background: #1d4ed8;
+        background: color-mix(in srgb, var(--c) 82%, #000);
     }
 
     button.action.sub {
@@ -179,7 +180,6 @@
     .primary-count {
         margin-top: 24px;
         padding: 20px;
-        border-radius: 14px;
         background: #eff6ff;
         border: 2px solid #bfdbfe;
         text-align: center;
@@ -193,7 +193,7 @@
     }
 
     .primary-count .label {
-        color: #475569;
+        color: var(--ink);
         font-size: 0.95rem;
     }
 
@@ -203,7 +203,6 @@
 
     .progress-bar {
         height: 10px;
-        border-radius: 999px;
         background: #dbeafe;
         overflow: hidden;
     }
@@ -211,7 +210,7 @@
     .progress-bar span {
         display: block;
         height: 100%;
-        background: #2563eb;
+        background: var(--c);
         width: 0;
         transition: width 0.15s;
     }
@@ -223,7 +222,7 @@
     .progress-text {
         margin-top: 6px;
         font-size: 0.9rem;
-        color: #475569;
+        color: var(--ink);
     }
 
     .stat-grid {
@@ -235,14 +234,13 @@
 
     .stat {
         border: 1px solid #e2e8f0;
-        border-radius: 12px;
         padding: 14px;
         background: white;
     }
 
     .stat .stat-label {
         font-size: 0.85rem;
-        color: #64748b;
+        color: var(--ink);
     }
 
     .stat .stat-value {
@@ -253,7 +251,7 @@
 
     .stat .stat-note {
         font-size: 0.8rem;
-        color: #94a3b8;
+        color: var(--ink);
         margin-top: 2px;
     }
 
@@ -295,7 +293,6 @@
         background: #1f2937;
         color: white;
         padding: 12px 20px;
-        border-radius: 999px;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.25s, transform 0.25s;
@@ -308,12 +305,13 @@
     }
 
     footer {
-        color: #666;
+        color: var(--ink);
         font-size: 0.9rem;
     }
 
     @media (max-width: 600px) {
-        .container { padding: 20px; }
+        .container { --pad: 20px;
+padding: var(--pad); }
         .primary-count .value { font-size: 2.4rem; }
     }
 </style>
@@ -323,14 +321,16 @@
 
 <div class="container">
 
-    <h1>文字数カウント</h1>
+    <div class="td-banner">
+      <h1>文字数カウント</h1>
 
-    <p class="description">
-        入力した文章の文字数をリアルタイムで数える無料ツールです。
-        改行やスペースを数えるかどうかを設定でき、原稿用紙の枚数、全角・半角の内訳、
-        バイト数、行数、X（旧Twitter）の文字数なども同時に確認できます。
-        入力した文章がサーバーに送信されることはありません。
-    </p>
+      <p class="description">
+          入力した文章の文字数をリアルタイムで数える無料ツールです。
+          改行やスペースを数えるかどうかを設定でき、原稿用紙の枚数、全角・半角の内訳、
+          バイト数、行数、X（旧Twitter）の文字数なども同時に確認できます。
+          入力した文章がサーバーに送信されることはありません。
+      </p>
+    </div>
 
     <textarea id="input" placeholder="ここに文章を入力・貼り付けしてください"></textarea>
 

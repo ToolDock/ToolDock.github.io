@@ -7,21 +7,20 @@
  */
 
 :root {
-  --bg: #f5f5f5;         /* サイト共通の地の色 */
-  --surface: #ffffff;
-  --border: #d6dbe2;
-  --text: #222222;
-  --text-muted: #555555;
-  --text-faint: #777777;
+  /* 地・面・文字の色はサイト共通（style.css）の値を使う。灰色の文字は使わない */
+  --border: var(--line);
+  --text: var(--ink);
+  --text-muted: var(--ink);
+  --text-faint: var(--ink);
 
   /* 意味のある色。ここだけは data の色分けなので残す */
   --up: #15803d;
   --down: #b91c1c;
   --flat: #78909c;
 
-  --chart-font-color: #555555;
+  --chart-font-color: #1c1d1f;
 
-  --radius: 14px;
+  --radius: 0;
   --gap: 16px;
   --section-gap: 34px;
   --max-width: 1240px;
@@ -47,7 +46,7 @@ body {
 }
 
 /* ── ヘッダー ───────────────────────────── */
-.board__header { margin-bottom: var(--section-gap); }
+.board__header { margin: 0 0 var(--section-gap); }
 .board__title { margin: 0; font-size: 2rem; font-weight: 700; letter-spacing: .01em; }
 /* このページがどの取引日のものかは、いちばん先に伝わってほしい情報なので
    「最終更新」より大きく、本文寄りの濃さで出す */
@@ -68,7 +67,6 @@ body {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 14px 16px;
 }
 
@@ -98,7 +96,6 @@ body {
 .range {
   padding: 7px 18px;
   border: 1px solid var(--border);
-  border-radius: 999px;
   background: var(--surface);
   color: var(--text-muted);
   font: inherit;
@@ -129,7 +126,6 @@ body {
 .tile {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 12px 14px 8px;
 }
 
@@ -251,7 +247,6 @@ body {
   margin-top: 20px;
   padding: 12px 14px;
   border: 1px solid var(--down);
-  border-radius: var(--radius);
   color: var(--down);
   font-size: .85rem;
 }

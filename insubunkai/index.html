@@ -21,7 +21,7 @@
 <style>
     body {
         font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-        background: #f4f6f9;
+        background: var(--bg);
         margin: 0;
         padding: 20px;
         color: #222;
@@ -32,9 +32,9 @@
         max-width: 900px;
         margin: 0 auto 24px;
         background: white;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        --pad: 30px;
+        padding: var(--pad);
+        border: 1px solid var(--line);
     }
 
     h1 { margin-top: 0; font-size: 1.9rem; }
@@ -42,13 +42,15 @@
     h2 {
         margin-top: 32px;
         font-size: 1.3rem;
-        border-left: 5px solid #2563eb;
-        padding-left: 12px;
+        border-left: 0;
+        padding-left: 0;
+        border-bottom: 2px solid var(--c);
+        padding-bottom: 8px;
     }
 
     h3 { margin-top: 24px; font-size: 1.05rem; }
 
-    p.description { color: #555; }
+    p.description { color: var(--ink); }
 
     .var { font-style: italic; }
 
@@ -69,7 +71,7 @@
         text-align: center;
         font-size: 1.05rem;
         border: 2px solid #cbd5e1;
-        border-radius: 8px;
+        border-radius: var(--r-ctl);
     }
 
     .poly-input input:focus { outline: none; border-color: #2563eb; }
@@ -84,9 +86,9 @@
     .presets button {
         padding: 7px 14px;
         border: 2px solid #cbd5e1;
-        border-radius: 999px;
+        border-radius: var(--r-ctl);
         background: white;
-        color: #334155;
+        color: var(--ink);
         font-size: 0.88rem;
         cursor: pointer;
     }
@@ -96,16 +98,16 @@
     button.action {
         padding: 11px 24px;
         border: none;
-        border-radius: 999px;
-        background: #2563eb;
+        border-radius: var(--r-ctl);
+        background: var(--c);
         color: white;
         font-size: 1rem;
         cursor: pointer;
     }
 
-    button.action:hover { background: #1d4ed8; }
+    button.action:hover { background: color-mix(in srgb, var(--c) 82%, #000); }
 
-    .hint { color: #666; font-size: 0.9rem; }
+    .hint { color: var(--ink); font-size: 0.9rem; }
 
     /* 途中式 */
 
@@ -114,7 +116,6 @@
         border-left: 5px solid #2563eb;
         padding: 14px 18px;
         margin: 16px 0;
-        border-radius: 10px;
     }
 
     .step-title {
@@ -147,7 +148,7 @@
     .tasuki .lead { border-right: 2px solid #94a3b8; }
 
     .tasuki .cross {
-        color: #64748b;
+        color: var(--ink);
         font-size: 0.95rem;
         border-left: 2px solid #94a3b8;
     }
@@ -161,7 +162,6 @@
     .answer {
         margin-top: 24px;
         padding: 20px;
-        border-radius: 14px;
         background: #eff6ff;
         border: 2px solid #bfdbfe;
     }
@@ -177,7 +177,6 @@
     .verdict {
         margin-top: 24px;
         padding: 18px;
-        border-radius: 12px;
         background: #fffbeb;
         border-left: 5px solid #d97706;
         color: #92400e;
@@ -186,7 +185,6 @@
     .error {
         margin-top: 16px;
         padding: 12px 14px;
-        border-radius: 10px;
         background: #fef2f2;
         border-left: 5px solid #dc2626;
         color: #991b1b;
@@ -194,7 +192,7 @@
 
     .check {
         margin-top: 14px;
-        color: #475569;
+        color: var(--ink);
         font-size: 0.95rem;
     }
 
@@ -214,10 +212,11 @@
 
     .table-scroll { overflow-x: auto; }
 
-    footer { color: #666; font-size: 0.9rem; }
+    footer { color: var(--ink); font-size: 0.9rem; }
 
     @media (max-width: 600px) {
-        .container { padding: 20px; }
+        .container { --pad: 20px;
+padding: var(--pad); }
         .poly-input input { width: 62px; }
         .tasuki td { padding: 6px 10px; }
     }
@@ -228,14 +227,16 @@
 
 <div class="container">
 
-    <h1>因数分解の計算（たすき掛けの途中式つき）</h1>
+    <div class="td-banner">
+      <h1>因数分解の計算（たすき掛けの途中式つき）</h1>
 
-    <p class="description">
-        2次式 <span class="var">ax</span>² + <span class="var">bx</span> + <span class="var">c</span> の因数分解を、
-        <strong>たすき掛けの過程つき</strong>で表示する無料ツールです。
-        共通因数のくくり出し、公式にあてはまるかの判定、展開による検算まで自動で行います。
-        因数分解できない場合は、その理由も示します。
-    </p>
+      <p class="description">
+          2次式 <span class="var">ax</span>² + <span class="var">bx</span> + <span class="var">c</span> の因数分解を、
+          <strong>たすき掛けの過程つき</strong>で表示する無料ツールです。
+          共通因数のくくり出し、公式にあてはまるかの判定、展開による検算まで自動で行います。
+          因数分解できない場合は、その理由も示します。
+      </p>
+    </div>
 
     <div class="poly-input">
         <input type="text" id="coefA" value="1" autocomplete="off">

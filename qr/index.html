@@ -26,7 +26,7 @@
     body {
       margin: 0;
       padding: 20px;
-      background: #f5f7fb;
+      background: var(--bg);
       font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
       color: #222;
     }
@@ -45,15 +45,14 @@
     .description {
       text-align: center;
       margin-bottom: 30px;
-      color: #555;
+      color: var(--ink);
     }
 
     .card {
       background: white;
-      border-radius: 16px;
       padding: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       margin-bottom: 24px;
+      border: 1px solid var(--line);
     }
 
     label {
@@ -70,7 +69,7 @@
       padding: 12px;
       margin-bottom: 20px;
       border: 1px solid #ccc;
-      border-radius: 10px;
+      border-radius: var(--r-ctl);
       font-size: 1rem;
     }
 
@@ -78,8 +77,8 @@
       width: 100%;
       padding: 14px;
       border: none;
-      border-radius: 12px;
-      background: #2563eb;
+      border-radius: var(--r-ctl);
+      background: var(--c);
       color: white;
       font-size: 1rem;
       cursor: pointer;
@@ -87,7 +86,7 @@
     }
 
     button:hover {
-      background: #1d4ed8;
+      background: color-mix(in srgb, var(--c) 82%, #000);
     }
 
     #qrcode-container {
@@ -97,7 +96,6 @@
 
     canvas {
       max-width: 100%;
-      border-radius: 12px;
     }
 
     .save-button {
@@ -142,7 +140,7 @@
 
     button.ghost {
       background: #eef2f7;
-      color: #334155;
+      color: var(--ink);
     }
 
     button.ghost:hover {
@@ -163,7 +161,6 @@
 
     .qr-error {
       padding: 14px;
-      border-radius: 10px;
       background: #fef2f2;
       border-left: 5px solid #dc2626;
       color: #991b1b;
@@ -173,20 +170,20 @@
     .qr-meta {
       margin-top: 12px;
       font-size: 0.88rem;
-      color: #64748b;
+      color: var(--ink);
     }
 
     .note {
       margin-top: 15px;
       font-size: 0.9rem;
-      color: #666;
+      color: var(--ink);
       text-align: center;
     }
 
     footer {
       text-align: center;
       margin-top: 50px;
-      color: #666;
+      color: var(--ink);
       font-size: 0.9rem;
     }
 
@@ -210,12 +207,14 @@
 
   <div class="container">
 
-    <h1>QRコード作成ツール</h1>
+    <div class="td-banner">
+      <h1>QRコード作成ツール</h1>
 
-    <p class="description">
-      URL・Wi-Fi・メール・電話・SMS・連絡先（vCard）・地図のQRコードを作成できます。<br>
-      入力するとその場で反映され、PNGとSVGで保存できます。
-    </p>
+      <p class="description">
+        URL・Wi-Fi・メール・電話・SMS・連絡先（vCard）・地図のQRコードを作成できます。<br>
+        入力するとその場で反映され、PNGとSVGで保存できます。
+      </p>
+    </div>
 
     <div class="card">
 

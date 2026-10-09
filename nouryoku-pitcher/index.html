@@ -27,15 +27,15 @@
 *{ box-sizing:border-box; }
 
 :root{
-    --ink:#222; --ink-strong:#111; --ink-deep:#0f172a; --ink-sub:#4a5568; --ink-mute:#5c6673;
-    --line:#c2cad6; --line-soft:#ccd3dd; --head-bg:#e6ebf1; --tint:#f2f6fb;
-    --dash:#9aa6b8; --accent:#2563eb;
+    --ink-strong:var(--ink); --ink-deep:var(--ink); --ink-sub:var(--ink); --ink-mute:var(--ink);
+    --head-bg:var(--surface-2); --tint:var(--surface-2);
+    --dash:var(--line-input);
 }
 
 body{
     margin:0; padding:0 0 48px;
     font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-    color:var(--ink); line-height:1.75; background:#f5f5f5;
+    color:var(--ink); line-height:1.75; background:var(--bg);
 }
 
 .page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
@@ -50,30 +50,29 @@ header a{ color:#93c5fd; }
 header a:hover{ color:#fff; }
 
 h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
-    border-bottom:2px solid var(--line); }
-h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
-    border-left:4px solid var(--accent); }
+    border-bottom:2px solid var(--c); }
+h3{ margin:22px 0 8px; font-size:1.02rem; color:var(--ink-strong); }
 p{ margin:0 0 12px; }
 
 /* ── カードプレビュー ─────────────────── */
-.card-wrap{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:20px; }
+.card-wrap{ background:#fff; border:1px solid var(--line); padding:16px; margin-bottom:20px; }
 .card-preview{ width:100%; display:block; overflow:visible; }
 .card-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
 .card-actions button{ font:inherit; font-size:0.92rem; font-weight:700; padding:9px 18px;
-    border:1px solid var(--accent); border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
+    border:1px solid var(--accent); border-radius:var(--r-ctl); background:var(--accent); color:#fff; cursor:pointer; }
 .card-actions button.secondary{ background:#fff; color:var(--accent); }
 
 /* ── 編集フォーム ─────────────────────── */
-.editor{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:20px; }
+.editor{ background:#fff; border:1px solid var(--line); padding:16px; margin-bottom:20px; }
 
 .field-grid{ display:grid; gap:10px 14px; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); margin-bottom:6px; }
 .field{ display:flex; flex-direction:column; gap:4px; }
 .field label{ font-size:0.85rem; font-weight:600; color:var(--ink-sub); }
 .field input[type="number"], .field input[type="text"], .field select{
     font:inherit; font-size:0.95rem; padding:7px 8px; border:1px solid var(--line);
-    border-radius:8px; background:#fff; color:var(--ink); width:100%;
+    border-radius:var(--r-ctl); background:#fff; color:var(--ink); width:100%;
 }
-.field input[type="color"]{ width:100%; height:36px; padding:2px; border:1px solid var(--line); border-radius:8px; }
+.field input[type="color"]{ width:100%; height:36px; padding:2px; border:1px solid var(--line); border-radius:var(--r-ctl); }
 .field.checkfield{ flex-direction:row; align-items:center; gap:6px; }
 .field.checkfield label{ font-weight:400; }
 .name-color-picks{ display:flex; flex-wrap:wrap; gap:4px 12px; padding-top:6px; }
@@ -83,18 +82,17 @@ p{ margin:0 0 12px; }
 .stat-row{ display:grid; grid-template-columns:100px 90px 1fr; gap:8px; align-items:center; }
 .stat-row label{ font-size:0.88rem; font-weight:600; color:var(--ink-sub); }
 .stat-row select, .stat-row input{ font:inherit; font-size:0.92rem; padding:6px 8px;
-    border:1px solid var(--line); border-radius:8px; }
+    border:1px solid var(--line); border-radius:var(--r-ctl); }
 
 /* ── 特殊能力ピッカー ─────────────────── */
-.ab-search{ width:100%; font:inherit; font-size:0.95rem; padding:9px 12px; border:1px solid var(--line);
-            border-radius:8px; margin-bottom:10px; }
+.ab-search{ width:100%; font:inherit; font-size:0.95rem; padding:9px 12px; border:1px solid var(--line); margin-bottom:10px; }
 .ab-toolbar{ display:flex; align-items:center; flex-wrap:wrap; gap:10px 16px; margin-bottom:14px; }
 .ab-toolbar__check{ font-size:0.88rem; color:var(--ink-sub); display:flex; align-items:center; gap:5px; cursor:pointer; }
 .ab-toolbar button{ font:inherit; font-size:0.82rem; padding:5px 12px; border:1px solid var(--line);
-                     border-radius:20px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+                     border-radius:var(--r-ctl); background:#fff; color:var(--ink-sub); cursor:pointer; }
 .ab-toolbar button:hover{ background:var(--tint); }
 
-.ab-cat{ margin-bottom:8px; border:1px solid var(--line-soft); border-radius:10px; padding:0 12px; background:#fff; }
+.ab-cat{ margin-bottom:8px; border:1px solid var(--line-soft); padding:0 12px; background:#fff; }
 .ab-cat[open]{ padding-bottom:12px; }
 .ab-cat.hidden{ display:none; }
 .ab-cat__title{ font-size:0.92rem; font-weight:700; color:var(--ink-deep); padding:10px 0;
@@ -108,7 +106,7 @@ p{ margin:0 0 12px; }
 .dot--midori{ background:#3a9a3a; }
 
 .ab-grid{ display:grid; gap:4px 10px; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); }
-.ab-item{ display:flex; align-items:flex-start; gap:6px; font-size:0.86rem; padding:4px 6px; border-radius:6px; cursor:pointer; }
+.ab-item{ display:flex; align-items:flex-start; gap:6px; font-size:0.86rem; padding:4px 6px; cursor:pointer; }
 .ab-item:hover{ background:var(--tint); }
 .ab-item input{ flex:0 0 auto; margin-top:3px; }
 .ab-item span{ flex:1 1 auto; }
@@ -118,19 +116,19 @@ p{ margin:0 0 12px; }
 .sub-grid{ display:grid; gap:8px 14px; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); margin-bottom:6px; }
 .sub-field{ display:flex; flex-direction:column; gap:4px; }
 .sub-field .row{ display:flex; gap:6px; }
-.sub-field select{ font:inherit; font-size:0.92rem; padding:6px; border:1px solid var(--line); border-radius:8px; }
+.sub-field select{ font:inherit; font-size:0.92rem; padding:6px; border:1px solid var(--line); border-radius:var(--r-ctl); }
 .sub-field .note{ font-size:0.72rem; color:var(--ink-mute); margin:0; }
 .sub-label-input, .stat-label-input{
     font:inherit; font-size:0.85rem; font-weight:600; color:var(--ink-sub);
-    border:1px solid var(--line); border-radius:8px; padding:5px 7px; width:100%;
+    border:1px solid var(--line); border-radius:var(--r-ctl); padding:5px 7px; width:100%;
 }
 
 .custom-ab-form{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
 .custom-ab-form input[type="text"]{ font:inherit; font-size:0.92rem; padding:7px 10px;
-    border:1px solid var(--line); border-radius:8px; flex:1 1 180px; min-width:0; }
-.custom-ab-form select{ font:inherit; font-size:0.92rem; padding:7px 10px; border:1px solid var(--line); border-radius:8px; }
+    border:1px solid var(--line); border-radius:var(--r-ctl); flex:1 1 180px; min-width:0; }
+.custom-ab-form select{ font:inherit; font-size:0.92rem; padding:7px 10px; border:1px solid var(--line); border-radius:var(--r-ctl); }
 .custom-ab-form button{ font:inherit; font-size:0.88rem; font-weight:700; padding:7px 16px;
-    border:1px solid var(--accent); border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
+    border:1px solid var(--accent); border-radius:var(--r-ctl); background:var(--accent); color:#fff; cursor:pointer; }
 .ab-item--custom{ background:var(--tint); }
 .ab-item__del{ flex:0 0 auto; border:none; background:none; color:var(--ink-mute); font-size:0.9rem;
     cursor:pointer; line-height:1; padding:2px 4px; }
@@ -140,7 +138,7 @@ p{ margin:0 0 12px; }
 .pitch-row{ display:grid; grid-template-columns:90px minmax(0,1fr) 70px; gap:8px; align-items:center; }
 .pitch-row label{ font-size:0.88rem; font-weight:600; color:var(--ink-sub); }
 .pitch-row input, .pitch-row select{ font:inherit; font-size:0.92rem; padding:6px 8px;
-    border:1px solid var(--line); border-radius:8px; width:100%; min-width:0; box-sizing:border-box; }
+    border:1px solid var(--line); border-radius:var(--r-ctl); width:100%; min-width:0; box-sizing:border-box; }
 
 .note{ margin-top:10px; font-size:0.86rem; color:var(--ink-mute); }
 
@@ -153,11 +151,11 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 
 <div class="page-wrapper">
 
-<header>
+<div class="td-banner">
     <h1>パワプロ風 能力画像ジェネレーター（投手）</h1>
     <p>能力値・変化球と特殊能力を入力すると、パワプロ風の能力画像を作成できる能力メーカーです</p>
     <p><a href="/nouryoku/">野手版はこちら →</a></p>
-</header>
+</div>
 
 <div class="container">
 

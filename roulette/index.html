@@ -21,13 +21,10 @@ const CURRENT_TOOL = "roulette";
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
 
 <style>
-:root {
-  --ink: #1f2937;
-  --ink-soft: #64748b;
-  --line: #dde2e8;
-  --accent: #45b4ac;
-  --accent-dark: #2f8f88;
-  --bg: #f4f5f7;
+:root{
+  --ink-soft:var(--ink);
+  --accent:var(--c);
+  --accent-dark:color-mix(in srgb, var(--c) 80%, #000);
 }
 
 * { box-sizing: border-box; }
@@ -57,13 +54,11 @@ h1 {
   min-height: 24px;
   margin: 0 auto 18px;
   padding: 11px 24px;
-  border-radius: 999px;
   background: #fff;
   border: 2px solid var(--accent);
   font-size: 19px;
   font-weight: 700;
   color: var(--ink);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
   opacity: 0;
   transform: translateY(4px) scale(0.9);
   transition: opacity 0.4s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1), box-shadow 0.4s ease;
@@ -156,7 +151,7 @@ textarea#itemInput {
   resize: vertical;
   line-height: 1.6;
   border: 1.5px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--r-ctl);
   background: #fff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -164,7 +159,6 @@ textarea#itemInput {
 textarea#itemInput:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59, 110, 113, 0.15);
 }
 
 .input-actions {
@@ -177,7 +171,7 @@ textarea#itemInput:focus {
 button {
   padding: 10px 22px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-ctl);
   font: inherit;
   font-size: 15px;
   font-weight: 600;
@@ -201,11 +195,9 @@ button:active { transform: translateY(1px); }
 .input-actions button:last-child {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: #fff;
-  box-shadow: 0 4px 14px rgba(59, 110, 113, 0.35);
 }
 
 .input-actions button:last-child:hover {
-  box-shadow: 0 6px 18px rgba(59, 110, 113, 0.42);
 }
 
 .lead {
@@ -220,12 +212,14 @@ button:active { transform: translateY(1px); }
 
 <body>
 
-<h1>🎯 ルーレットツール</h1>
+<div class="td-banner">
+  <h1>🎯 ルーレットツール</h1>
 
-<p class="lead">
-選択肢を入力して回すだけ。抽選・順番決め・席替え・献立決め・罰ゲームなど、
-決められないときのランダム選択に使えます。
-</p>
+  <p class="lead">
+  選択肢を入力して回すだけ。抽選・順番決め・席替え・献立決め・罰ゲームなど、
+  決められないときのランダム選択に使えます。
+  </p>
+</div>
 
 <div id="result" class="result-badge">
   <span class="result-badge__icon">🎉</span>

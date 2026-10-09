@@ -29,17 +29,13 @@
 ========================= */
 
 :root{
-    --ink:#222;          /* 本文と帯の地色 */
-    --ink-strong:#111;   /* 見出し */
-    --ink-deep:#0f172a;  /* 一覧の項目名 */
-    --ink-sub:#555;
-    --ink-mute:#777;
-    --line:#d6dbe2;      /* 枠線 */
-    --line-soft:#dfe4ea;
-    --head-bg:#eceff3;   /* 表のヘッダー */
-    --tint:#fafcff;      /* ごく薄い下地 */
-    --dash:#b8c2d1;      /* 破線 */
-    --accent:#2563eb;    /* 差し色。解説の見出しの左罫だけに使う */
+    --ink-strong:var(--ink);   /* 見出し */
+    --ink-deep:var(--ink);  /* 一覧の項目名 */
+    --ink-sub:var(--ink);
+    --ink-mute:var(--ink);
+    --head-bg:var(--surface-2);   /* 表のヘッダー */
+    --tint:var(--surface-2);      /* ごく薄い下地 */
+    --dash:var(--line-input);      /* 破線 */
 
     /* ここから下は「意味のある色」。
        枠や見出しは無彩色のままにして、
@@ -58,7 +54,7 @@
 
 body{
     margin:0;
-    background:#f5f5f5;
+    background:var(--bg);
     color:var(--ink);
     font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
     line-height:1.75;
@@ -109,10 +105,9 @@ main{
 
 .filter-panel{
     background:#fff;
-    border-radius:14px;
-    box-shadow:0 3px 12px rgba(0,0,0,.1);
     padding:16px 20px;
     margin-bottom:18px;
+    border: 1px solid var(--line);
 }
 
 .filter-row{
@@ -134,7 +129,7 @@ main{
 .seg button{
     padding:9px 20px;
     border:1px solid var(--line);
-    border-radius:999px;
+    border-radius:var(--r-ctl);
     background:#fff;
     color:var(--ink);
     font-size:15px;
@@ -174,7 +169,7 @@ main{
 .reset{
     padding:9px 18px;
     border:1px solid var(--line);
-    border-radius:999px;
+    border-radius:var(--r-ctl);
     background:#fff;
     color:var(--ink);
     font-size:14px;
@@ -193,9 +188,8 @@ main{
 
 .list{
     background:#fff;
-    border-radius:18px;
-    box-shadow:0 3px 12px rgba(0,0,0,.08);
     overflow:hidden;
+    border: 1px solid var(--line);
 }
 
 .item{
@@ -237,7 +231,7 @@ main{
     font-size:15px;
 }
 
-.item.done .item-how{ color:#9aa2ab; }
+.item.done .item-how{ color:var(--ink); }
 
 /* 先に満たしておく前提。取得方法とは別の行にする */
 .cond{
@@ -247,7 +241,7 @@ main{
     color:var(--c-cond);
 }
 
-.item.done .cond{ color:#b3b9c0; }
+.item.done .cond{ color:var(--ink); }
 
 
 .how{
@@ -257,7 +251,7 @@ main{
     white-space:nowrap;
 }
 
-.item.done .how{ color:#9aa2ab; }
+.item.done .how{ color:var(--ink); }
 
 .note{
     margin-top:3px;
@@ -265,7 +259,7 @@ main{
     color:var(--ink-mute);
 }
 
-.item.done .note{ color:#b3b9c0; }
+.item.done .note{ color:var(--ink); }
 
 .empty{
     padding:28px 18px;
@@ -280,8 +274,10 @@ main{
 ========================= */
 
 .tool-article h2{
-    border-left:5px solid var(--accent);
+    border-left: 0;
     color:var(--ink);
+    border-bottom: 2px solid var(--c);
+    padding-bottom: 8px;
 }
 
 .tool-article h3{
@@ -317,7 +313,7 @@ main{
 
 .progress .cleared{
     padding:2px 12px;
-    border-radius:999px;
+    border-radius:var(--r-ctl);
     background:var(--c-done);
     color:#fff;
     font-weight:700;
@@ -329,7 +325,6 @@ main{
     display:inline-block;
     margin-left:8px;
     padding:2px 11px;
-    border-radius:999px;
     font-size:12px;
     font-weight:700;
     white-space:nowrap;
@@ -370,10 +365,10 @@ main{
 
 <div class="page-wrapper">
 
-<header>
+<div class="td-banner">
     <h1>パワプロ2026-2027 マイライフ 尻尾の入手方法一覧（全12種）</h1>
     <p>9個集めると晩成化がMAXになります。チェックは自動で保存されます</p>
-</header>
+</div>
 
 <main>
 

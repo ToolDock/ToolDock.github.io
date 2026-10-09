@@ -21,7 +21,7 @@
 <style>
     body {
         font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-        background: #f4f6f9;
+        background: var(--bg);
         margin: 0;
         padding: 20px;
         color: #222;
@@ -32,9 +32,9 @@
         max-width: 900px;
         margin: 0 auto 24px;
         background: white;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        --pad: 30px;
+        padding: var(--pad);
+        border: 1px solid var(--line);
     }
 
     h1 {
@@ -45,8 +45,10 @@
     h2 {
         margin-top: 32px;
         font-size: 1.3rem;
-        border-left: 5px solid #2563eb;
-        padding-left: 12px;
+        border-left: 0;
+        padding-left: 0;
+        border-bottom: 2px solid var(--c);
+        padding-bottom: 8px;
     }
 
     h3 {
@@ -55,7 +57,7 @@
     }
 
     p.description {
-        color: #555;
+        color: var(--ink);
     }
 
     /* ===== 入力 ===== */
@@ -71,7 +73,7 @@
         padding: 14px;
         font-size: 1.05rem;
         border: 2px solid #cbd5e1;
-        border-radius: 10px;
+        border-radius: var(--r-ctl);
         grid-column: 1 / -1;
     }
 
@@ -93,21 +95,21 @@
         padding: 10px;
         font-size: 0.95rem;
         border: 2px solid #cbd5e1;
-        border-radius: 10px;
+        border-radius: var(--r-ctl);
     }
 
     button.action {
         padding: 11px 22px;
         border: none;
-        border-radius: 999px;
-        background: #2563eb;
+        border-radius: var(--r-ctl);
+        background: var(--c);
         color: white;
         font-size: 0.95rem;
         cursor: pointer;
     }
 
     button.action:hover {
-        background: #1d4ed8;
+        background: color-mix(in srgb, var(--c) 82%, #000);
     }
 
     button.action.sub {
@@ -129,10 +131,10 @@
 
     .summary .chip {
         padding: 8px 14px;
-        border-radius: 999px;
+        border-radius: var(--r-ctl);
         background: #f1f5f9;
         font-size: 0.9rem;
-        color: #475569;
+        color: var(--ink);
     }
 
     .summary .chip strong {
@@ -168,9 +170,9 @@
     .filters button {
         padding: 7px 14px;
         border: 2px solid #cbd5e1;
-        border-radius: 999px;
+        border-radius: var(--r-ctl);
         background: white;
-        color: #334155;
+        color: var(--ink);
         font-size: 0.9rem;
         cursor: pointer;
     }
@@ -180,7 +182,7 @@
     }
 
     .filters button.active {
-        background: #2563eb;
+        background: var(--c);
         border-color: #2563eb;
         color: white;
         font-weight: bold;
@@ -193,7 +195,7 @@
     .toolbar select {
         padding: 8px;
         border: 2px solid #cbd5e1;
-        border-radius: 8px;
+        border-radius: var(--r-ctl);
         font-size: 0.9rem;
     }
 
@@ -213,7 +215,6 @@
         margin-bottom: 10px;
         border: 1px solid #e2e8f0;
         border-left: 5px solid #cbd5e1;
-        border-radius: 12px;
         background: white;
     }
 
@@ -228,7 +229,7 @@
 
     li.todo.done .todo-text {
         text-decoration: line-through;
-        color: #94a3b8;
+        color: var(--ink);
     }
 
     li.todo input[type="checkbox"] {
@@ -254,7 +255,6 @@
         padding: 8px;
         font-size: 1rem;
         border: 2px solid #2563eb;
-        border-radius: 8px;
         box-sizing: border-box;
     }
 
@@ -268,9 +268,8 @@
     .badge {
         font-size: 0.8rem;
         padding: 3px 10px;
-        border-radius: 999px;
         background: #f1f5f9;
-        color: #475569;
+        color: var(--ink);
     }
 
     .badge.overdue {
@@ -297,13 +296,13 @@
 
     .badge.low {
         background: #f1f5f9;
-        color: #64748b;
+        color: var(--ink);
     }
 
     .todo-delete {
         border: none;
         background: transparent;
-        color: #94a3b8;
+        color: var(--ink);
         font-size: 1.3rem;
         line-height: 1;
         cursor: pointer;
@@ -318,9 +317,8 @@
     .empty {
         padding: 40px 20px;
         text-align: center;
-        color: #94a3b8;
+        color: var(--ink);
         border: 2px dashed #e2e8f0;
-        border-radius: 12px;
     }
 
     .backup {
@@ -340,7 +338,6 @@
         background: #1f2937;
         color: white;
         padding: 12px 20px;
-        border-radius: 999px;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.25s, transform 0.25s;
@@ -353,12 +350,13 @@
     }
 
     footer {
-        color: #666;
+        color: var(--ink);
         font-size: 0.9rem;
     }
 
     @media (max-width: 600px) {
-        .container { padding: 20px; }
+        .container { --pad: 20px;
+padding: var(--pad); }
         .toolbar .spacer { display: none; }
     }
 </style>
@@ -368,13 +366,15 @@
 
 <div class="container">
 
-    <h1>Todoリスト</h1>
+    <div class="td-banner">
+      <h1>Todoリスト</h1>
 
-    <p class="description">
-        やることに<strong>期限と優先度</strong>をつけて管理できる無料のTodoリストです。
-        期限が過ぎたものや今日が期限のものを色分けして表示し、並べ替えや絞り込みもできます。
-        会員登録は不要で、入力した内容はブラウザの中だけに保存されます。
-    </p>
+      <p class="description">
+          やることに<strong>期限と優先度</strong>をつけて管理できる無料のTodoリストです。
+          期限が過ぎたものや今日が期限のものを色分けして表示し、並べ替えや絞り込みもできます。
+          会員登録は不要で、入力した内容はブラウザの中だけに保存されます。
+      </p>
+    </div>
 
     <div class="add-form">
         <input type="text" id="todoInput" placeholder="やることを入力（例：レポートを提出する）" autocomplete="off">

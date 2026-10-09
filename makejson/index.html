@@ -25,7 +25,7 @@
             margin: 0;
             padding: 30px 15px;
             font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-            background: #f5f7fb;
+            background: var(--bg);
             color: #222;
         }
 
@@ -41,16 +41,15 @@
 
         .description {
             margin-bottom: 30px;
-            color: #555;
+            color: var(--ink);
             line-height: 1.7;
         }
 
         .card {
             background: white;
-            border-radius: 14px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border: 1px solid var(--line);
         }
 
         label {
@@ -65,7 +64,7 @@
             resize: vertical;
             padding: 14px;
             border: 1px solid #ccc;
-            border-radius: 10px;
+            border-radius: var(--r-ctl);
             font-size: 1rem;
             font-family: Consolas, monospace;
             line-height: 1.6;
@@ -80,7 +79,7 @@
 
         button {
             border: none;
-            border-radius: 10px;
+            border-radius: var(--r-ctl);
             padding: 12px 18px;
             font-size: 1rem;
             cursor: pointer;
@@ -88,11 +87,10 @@
         }
 
         button:hover {
-            transform: translateY(-1px);
         }
 
         .format-btn {
-            background: #2563eb;
+            background: var(--c);
             color: white;
         }
 
@@ -133,13 +131,12 @@
 
         .info-box {
             background: #eef3ff;
-            border-radius: 10px;
             padding: 15px;
         }
 
         .info-title {
             font-size: 0.9rem;
-            color: #555;
+            color: var(--ink);
         }
 
         .info-value {
@@ -151,7 +148,7 @@
         footer {
             margin-top: 40px;
             text-align: center;
-            color: #777;
+            color: var(--ink);
             font-size: 0.9rem;
         }
 
@@ -174,12 +171,14 @@
 
 <div class="container">
 
-    <h1>JSON整形ツール</h1>
+    <div class="td-banner">
+      <h1>JSON整形ツール</h1>
 
-    <p class="description">
-        JSONをリアルタイムで整形・圧縮・検証できる無料ツールです。
-        Pretty PrintやMinifyに対応し、エラー位置も確認できます。
-    </p>
+      <p class="description">
+          JSONをリアルタイムで整形・圧縮・検証できる無料ツールです。
+          Pretty PrintやMinifyに対応し、エラー位置も確認できます。
+      </p>
+    </div>
 
     <div class="card">
 

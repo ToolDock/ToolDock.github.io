@@ -50,7 +50,6 @@ body{
     background:rgba(255,255,255,0.06);
     color:#e2e8f0;
     border:1px solid rgba(255,255,255,0.12);
-    box-shadow:none;
 }
 
 .tool-article h2{
@@ -82,15 +81,11 @@ body{
 
     height:220px;
 
-    border-radius:26px;
-
     margin-bottom:24px;
 
     display:flex;
     align-items:center;
     justify-content:center;
-
-    box-shadow:0 10px 30px rgba(0,0,0,0.35);
 }
 
 .hero-image{
@@ -147,7 +142,7 @@ select{
     flex:1;
     padding:14px;
     border:none;
-    border-radius:14px;
+    border-radius:var(--r-ctl);
     background:#1e293b;
     color:white;
     font-size:1rem;
@@ -156,7 +151,7 @@ select{
 button{
     border:none;
     padding:14px 18px;
-    border-radius:14px;
+    border-radius:var(--r-ctl);
     background:#6366f1;
     color:white;
     font-weight:bold;
@@ -165,14 +160,12 @@ button{
 }
 
 button:hover{
-    transform:translateY(-1px);
 }
 
 .card{
     background:rgba(255,255,255,0.08);
     backdrop-filter:blur(10px);
     border:1px solid rgba(255,255,255,0.08);
-    border-radius:20px;
     padding:18px;
     margin-bottom:14px;
     animation:fade 0.45s ease;
@@ -218,7 +211,6 @@ button:hover{
 
 .me{
     border:2px solid #facc15;
-    box-shadow:0 0 18px rgba(250,204,21,0.25);
 }
 
 footer{

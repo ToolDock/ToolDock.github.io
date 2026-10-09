@@ -21,7 +21,7 @@
 <style>
     body {
         font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-        background: #f4f6f9;
+        background: var(--bg);
         margin: 0;
         padding: 20px;
         color: #222;
@@ -32,9 +32,9 @@
         max-width: 1000px;
         margin: 0 auto 24px;
         background: white;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        --pad: 30px;
+        padding: var(--pad);
+        border: 1px solid var(--line);
     }
 
     h1 { margin-top: 0; font-size: 1.9rem; }
@@ -42,13 +42,15 @@
     h2 {
         margin-top: 32px;
         font-size: 1.3rem;
-        border-left: 5px solid #2563eb;
-        padding-left: 12px;
+        border-left: 0;
+        padding-left: 0;
+        border-bottom: 2px solid var(--c);
+        padding-bottom: 8px;
     }
 
     h3 { margin-top: 24px; font-size: 1.05rem; }
 
-    p.description { color: #555; }
+    p.description { color: var(--ink); }
 
     .controls {
         display: flex;
@@ -63,20 +65,20 @@
         padding: 9px;
         font-size: 1rem;
         border: 2px solid #cbd5e1;
-        border-radius: 8px;
+        border-radius: var(--r-ctl);
     }
 
     button.action {
         padding: 11px 22px;
         border: none;
-        border-radius: 999px;
-        background: #2563eb;
+        border-radius: var(--r-ctl);
+        background: var(--c);
         color: white;
         font-size: 0.95rem;
         cursor: pointer;
     }
 
-    button.action:hover { background: #1d4ed8; }
+    button.action:hover { background: color-mix(in srgb, var(--c) 82%, #000); }
 
     button.action.sub { background: #64748b; }
     button.action.sub:hover { background: #475569; }
@@ -105,16 +107,16 @@
         text-align: center;
         font-size: 1rem;
         border: 2px solid #cbd5e1;
-        border-radius: 8px;
+        border-radius: var(--r-ctl);
     }
 
     .eq-row input:focus { outline: none; border-color: #2563eb; }
 
     .var { margin: 0 6px 0 2px; font-style: italic; }
 
-    .plus, .equals { margin: 0 4px; color: #64748b; }
+    .plus, .equals { margin: 0 4px; color: var(--ink); }
 
-    .hint { color: #666; font-size: 0.9rem; }
+    .hint { color: var(--ink); font-size: 0.9rem; }
 
     /* 途中式 */
 
@@ -123,7 +125,6 @@
         border-left: 5px solid #2563eb;
         padding: 14px 18px;
         margin: 16px 0;
-        border-radius: 10px;
     }
 
     .step-title {
@@ -151,7 +152,6 @@
     .answer {
         margin-top: 26px;
         padding: 20px;
-        border-radius: 14px;
         background: #eff6ff;
         border: 2px solid #bfdbfe;
     }
@@ -170,7 +170,6 @@
     .verdict {
         margin-top: 26px;
         padding: 18px;
-        border-radius: 12px;
         font-size: 1.05rem;
     }
 
@@ -189,7 +188,6 @@
     .error {
         margin-top: 16px;
         padding: 12px 14px;
-        border-radius: 10px;
         background: #fef2f2;
         border-left: 5px solid #dc2626;
         color: #991b1b;
@@ -227,10 +225,11 @@
 
     table.guide th { background: #f8fafc; white-space: nowrap; }
 
-    footer { color: #666; font-size: 0.9rem; }
+    footer { color: var(--ink); font-size: 0.9rem; }
 
     @media (max-width: 600px) {
-        .container { padding: 20px; }
+        .container { --pad: 20px;
+padding: var(--pad); }
         .eq-row input { width: 52px; }
     }
 </style>
@@ -240,13 +239,15 @@
 
 <div class="container">
 
-    <h1>連立方程式の計算（途中式つき）</h1>
+    <div class="td-banner">
+      <h1>連立方程式の計算（途中式つき）</h1>
 
-    <p class="description">
-        連立方程式を<strong>加減法の途中式つき</strong>で解く無料ツールです。
-        2元から5元まで対応し、計算は分数のまま正確に行うため、割り切れない係数も丸めずに表示します。
-        解が存在しない場合（不能）や、解が無数にある場合（不定）も判定します。
-    </p>
+      <p class="description">
+          連立方程式を<strong>加減法の途中式つき</strong>で解く無料ツールです。
+          2元から5元まで対応し、計算は分数のまま正確に行うため、割り切れない係数も丸めずに表示します。
+          解が存在しない場合（不能）や、解が無数にある場合（不定）も判定します。
+      </p>
+    </div>
 
     <div class="controls">
         <label>
