@@ -21,7 +21,7 @@
 <style>
     body {
         font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-        background: #f4f6f9;
+        background: var(--bg);
         margin: 0;
         padding: 20px;
         color: #222;
@@ -32,9 +32,9 @@
         max-width: 1000px;
         margin: 0 auto 24px;
         background: white;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        --pad: 30px;
+        padding: var(--pad);
+        border: 1px solid var(--line);
     }
 
     h1 { margin-top: 0; font-size: 1.9rem; }
@@ -42,13 +42,15 @@
     h2 {
         margin-top: 32px;
         font-size: 1.3rem;
-        border-left: 5px solid #2563eb;
-        padding-left: 12px;
+        border-left: 0;
+        padding-left: 0;
+        border-bottom: 2px solid var(--c);
+        padding-bottom: 8px;
     }
 
     h3 { margin-top: 24px; font-size: 1.05rem; }
 
-    p.description { color: #555; }
+    p.description { color: var(--ink); }
 
     .controls {
         display: flex;
@@ -63,20 +65,20 @@
         padding: 8px;
         font-size: 1rem;
         border: 2px solid #cbd5e1;
-        border-radius: 8px;
+        border-radius: var(--r-ctl);
     }
 
     button.action {
         padding: 10px 20px;
         border: none;
-        border-radius: 999px;
-        background: #2563eb;
+        border-radius: var(--r-ctl);
+        background: var(--c);
         color: white;
         font-size: 0.95rem;
         cursor: pointer;
     }
 
-    button.action:hover { background: #1d4ed8; }
+    button.action:hover { background: color-mix(in srgb, var(--c) 82%, #000); }
 
     button.action.sub { background: #64748b; }
     button.action.sub:hover { background: #475569; }
@@ -91,16 +93,16 @@
     .samples button {
         padding: 7px 14px;
         border: 2px solid #cbd5e1;
-        border-radius: 999px;
+        border-radius: var(--r-ctl);
         background: white;
-        color: #334155;
+        color: var(--ink);
         font-size: 0.88rem;
         cursor: pointer;
     }
 
     .samples button:hover { border-color: #2563eb; color: #2563eb; }
 
-    .hint { color: #666; font-size: 0.9rem; margin: 4px 0 0; }
+    .hint { color: var(--ink); font-size: 0.9rem; margin: 4px 0 0; }
 
     .matrix-grid {
         display: grid;
@@ -116,7 +118,7 @@
         text-align: center;
         font-size: 1rem;
         border: 2px solid #cbd5e1;
-        border-radius: 8px;
+        border-radius: var(--r-ctl);
     }
 
     .matrix-grid input:focus { outline: none; border-color: #2563eb; }
@@ -126,14 +128,12 @@
         border-left: 5px solid #2563eb;
         padding: 15px 18px;
         margin: 18px 0;
-        border-radius: 10px;
     }
 
     .step-title { font-weight: bold; margin-bottom: 10px; }
 
     .eigen-block {
         border: 1px solid #e2e8f0;
-        border-radius: 14px;
         padding: 20px;
         margin: 22px 0;
     }
@@ -150,9 +150,8 @@
     .badge {
         font-size: 0.82rem;
         padding: 3px 10px;
-        border-radius: 999px;
         background: #f1f5f9;
-        color: #475569;
+        color: var(--ink);
     }
 
     table.matrix { border-collapse: collapse; margin: 10px 0; }
@@ -183,7 +182,6 @@
         display: inline-block;
         border-left: 2px solid #334155;
         border-right: 2px solid #334155;
-        border-radius: 4px;
         padding: 6px 12px;
         margin: 0 6px;
         text-align: center;
@@ -201,7 +199,6 @@
     .verdict {
         margin-top: 24px;
         padding: 16px 18px;
-        border-radius: 12px;
         font-weight: bold;
     }
 
@@ -211,7 +208,6 @@
     .error {
         margin-top: 18px;
         padding: 14px;
-        border-radius: 10px;
         background: #fef2f2;
         border-left: 5px solid #dc2626;
         color: #991b1b;
@@ -222,9 +218,8 @@
         padding: 12px 14px;
         background: #f8fafc;
         border-left: 4px solid #94a3b8;
-        border-radius: 8px;
         font-size: 0.92rem;
-        color: #475569;
+        color: var(--ink);
     }
 
     table.guide { width: 100%; border-collapse: collapse; margin-top: 12px; }
@@ -240,10 +235,11 @@
 
     .table-scroll { overflow-x: auto; }
 
-    footer { color: #666; font-size: 0.9rem; }
+    footer { color: var(--ink); font-size: 0.9rem; }
 
     @media (max-width: 600px) {
-        .container { padding: 20px; }
+        .container { --pad: 20px;
+padding: var(--pad); }
         .matrix-grid input { width: 60px; padding: 7px; }
         table.matrix td { padding: 6px 8px; }
     }
@@ -254,14 +250,16 @@
 
 <div class="container">
 
-    <h1>固有値・固有ベクトルの計算</h1>
+    <div class="td-banner">
+      <h1>固有値・固有ベクトルの計算</h1>
 
-    <p class="description">
-        正方行列の<strong>固有値</strong>と<strong>固有ベクトル</strong>を、途中式つきで求める無料ツールです。
-        特性方程式 <em>det(A − λE) = 0</em> の展開から、因数分解、
-        掃き出し法による固有ベクトルの導出までを1手ずつ表示します。
-        計算はすべて分数のまま行うため、丸め誤差は発生しません。
-    </p>
+      <p class="description">
+          正方行列の<strong>固有値</strong>と<strong>固有ベクトル</strong>を、途中式つきで求める無料ツールです。
+          特性方程式 <em>det(A − λE) = 0</em> の展開から、因数分解、
+          掃き出し法による固有ベクトルの導出までを1手ずつ表示します。
+          計算はすべて分数のまま行うため、丸め誤差は発生しません。
+      </p>
+    </div>
 
     <div class="samples" id="samples">
         <button type="button" data-m="2|4,1,2,3">2次・相異なる固有値</button>

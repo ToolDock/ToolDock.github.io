@@ -34,16 +34,12 @@
 ========================= */
 
 :root{
-    --ink:#222;          /* 本文と帯の地色 */
-    --ink-strong:#111;   /* 見出し */
-    --ink-deep:#0f172a;  /* 一覧の項目名 */
-    --ink-sub:#555;
-    --ink-mute:#777;
-    --line:#d6dbe2;      /* 枠線 */
-    --line-soft:#dfe4ea;
-    --head-bg:#eceff3;   /* 表のヘッダー */
-    --tint:#fafcff;      /* ごく薄い下地 */
-    --accent:#2563eb;    /* 差し色。解説の見出しの左罫だけに使う */
+    --ink-strong:var(--ink);   /* 見出し */
+    --ink-deep:var(--ink);  /* 一覧の項目名 */
+    --ink-sub:var(--ink);
+    --ink-mute:var(--ink);
+    --head-bg:var(--surface-2);   /* 表のヘッダー */
+    --tint:var(--surface-2);      /* ごく薄い下地 */
 
     /* 意味のある色 */
     --c-pitcher:#1d4ed8; /* 投手 */
@@ -61,7 +57,7 @@
 
 body{
     margin:0;
-    background:#f5f5f5;
+    background:var(--bg);
     color:var(--ink);
     font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
     line-height:1.75;
@@ -111,11 +107,10 @@ main{
 
 .card{
     background:#fff;
-    border-radius:18px;
-    box-shadow:0 3px 12px rgba(0,0,0,.08);
     margin-bottom:22px;
     padding:0 0 6px;
     overflow:hidden;
+    border: 1px solid var(--line);
 }
 
 .card h2{
@@ -184,9 +179,8 @@ main{
 
 .way{
     background:#fff;
-    border-radius:14px;
-    box-shadow:0 3px 12px rgba(0,0,0,.08);
     padding:16px 18px;
+    border: 1px solid var(--line);
 }
 
 .way .num{
@@ -194,7 +188,6 @@ main{
     min-width:26px;
     height:26px;
     margin-bottom:8px;
-    border-radius:999px;
     background:var(--ink);
     color:#fff;
     font-size:14px;
@@ -228,10 +221,9 @@ main{
 
 .filter-panel{
     background:#fff;
-    border-radius:14px;
-    box-shadow:0 3px 12px rgba(0,0,0,.1);
     padding:16px 20px;
     margin-bottom:18px;
+    border: 1px solid var(--line);
 }
 
 .filter-row{
@@ -252,7 +244,7 @@ main{
 .seg button{
     padding:9px 20px;
     border:1px solid var(--line);
-    border-radius:999px;
+    border-radius:var(--r-ctl);
     background:#fff;
     color:var(--ink);
     font-size:15px;
@@ -293,7 +285,6 @@ main{
 .badge{
     display:inline-block;
     padding:2px 11px;
-    border-radius:999px;
     font-size:12px;
     font-weight:700;
     white-space:nowrap;
@@ -325,7 +316,6 @@ main{
     display:inline-block;
     margin-left:6px;
     padding:1px 7px;
-    border-radius:999px;
     background:var(--c-kin);
     color:#fff;
     font-size:11px;
@@ -364,8 +354,10 @@ main{
 ========================= */
 
 .tool-article h2{
-    border-left:5px solid var(--accent);
+    border-left: 0;
     color:var(--ink);
+    border-bottom: 2px solid var(--c);
+    padding-bottom: 8px;
 }
 
 .tool-article h3{
@@ -382,7 +374,6 @@ figure.shot img{
     width:100%;
     height:auto;
     border:1px solid var(--line);
-    border-radius:12px;
 }
 
 figure.shot figcaption{
@@ -398,7 +389,6 @@ figure.shot figcaption{
     padding:14px 18px;
     border:1px solid var(--line);
     border-left:5px solid var(--c-kin);
-    border-radius:10px;
     background:#fffaf5;
     font-size:15px;
     line-height:1.75;
@@ -426,10 +416,10 @@ figure.shot figcaption{
 
 <div class="page-wrapper">
 
-<header>
+<div class="td-banner">
     <h1>パワプロ2026-2027 栄冠ナイン 金特の入手方法まとめ</h1>
     <p>金特本・国際大会・特訓の3つ。国際大会は評価ごとに覚える特殊能力が決まっています</p>
-</header>
+</div>
 
 <main>
 

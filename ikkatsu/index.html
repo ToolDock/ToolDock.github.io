@@ -28,7 +28,7 @@ const CURRENT_TOOL = "ikkatsu";
 body{
     margin:0;
     font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-    background:#f4f6fb;
+    background:var(--bg);
     color:#222;
 }
 
@@ -65,9 +65,8 @@ header .lead{
 .card{
     background:white;
     padding:20px;
-    border-radius:14px;
     margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid var(--line);
 }
 
 .card h2{
@@ -91,35 +90,34 @@ select{
     width:100%;
     padding:10px;
     border:1px solid #ccc;
-    border-radius:8px;
+    border-radius:var(--r-ctl);
     box-sizing:border-box;
     font-size:1rem;
 }
 
 button{
-    background:#2563eb;
+    background:var(--c);
     color:white;
     border:none;
     padding:12px 20px;
-    border-radius:10px;
+    border-radius:var(--r-ctl);
     cursor:pointer;
     font-size:1rem;
 }
 
 button:hover{
-    background:#1d4ed8;
+    background:color-mix(in srgb, var(--c) 82%, #000);
 }
 
 .small{
     font-size:13px;
-    color:#666;
+    color:var(--ink);
     line-height:1.7;
 }
 
 .reference-box{
     background:#f8fafc;
     padding:12px;
-    border-radius:10px;
     margin-top:10px;
     line-height:1.8;
     font-size:14px;
@@ -127,7 +125,6 @@ button:hover{
 
 .reference-item{
     padding:5px;
-    border-radius:6px;
     cursor:pointer;
 }
 
@@ -145,7 +142,6 @@ summary{
     padding:12px 14px;
     background:#fff7ed;
     border-left:4px solid #f59e0b;
-    border-radius:8px;
     font-size:14px;
     line-height:1.8;
     color:#7c2d12;
@@ -160,7 +156,7 @@ summary{
 
 .headline .label{
     font-size:15px;
-    color:#475569;
+    color:var(--ink);
 }
 
 .headline .value{
@@ -172,7 +168,7 @@ summary{
 
 .headline .sub{
     font-size:14px;
-    color:#64748b;
+    color:var(--ink);
     max-width:640px;
     margin:6px auto 0;
     line-height:1.7;
@@ -188,7 +184,6 @@ summary{
 .duel-col{
     padding:16px;
     border:1px solid #e2e8f0;
-    border-radius:12px;
     background:#f8fafc;
 }
 
@@ -208,7 +203,7 @@ summary{
     font-size:14px;
 }
 
-.duel-col dt{ color:#64748b; }
+.duel-col dt{ color:var(--ink); }
 .duel-col dd{ margin:0; text-align:right; font-weight:bold; }
 
 .chart-wrapper{
@@ -274,7 +269,7 @@ table.compare tr.is-current{
 
 <body>
 
-<header>
+<div class="td-banner">
     <h1>一括投資と積立投資の比較</h1>
     <div class="lead">
         まとまった資金を、一度に投資するか、何回かに分けて投資するか。
@@ -285,7 +280,7 @@ table.compare tr.is-current{
     <div class="save-notice">
         ※設定内容はブラウザにのみ保存されます。サーバーに送られることはありません。
     </div>
-</header>
+</div>
 
 <div class="container">
 

@@ -21,7 +21,7 @@
 <style>
     body {
         font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-        background: #f2ede3;
+        background: var(--bg);
         margin: 0;
         padding: 20px;
         color: #222;
@@ -32,9 +32,9 @@
         max-width: 900px;
         margin: 0 auto 24px;
         background: white;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        --pad: 30px;
+        padding: var(--pad);
+        border: 1px solid var(--line);
     }
 
     h1 {
@@ -45,12 +45,14 @@
     h2 {
         margin-top: 32px;
         font-size: 1.3rem;
-        border-left: 5px solid #b3232c;
-        padding-left: 12px;
+        border-left: 0;
+        padding-left: 0;
+        border-bottom: 2px solid var(--c);
+        padding-bottom: 8px;
     }
 
     p.description {
-        color: #555;
+        color: var(--ink);
     }
 
     .stage {
@@ -65,8 +67,6 @@
         max-width: 100%;
         width: 340px;
         height: auto;
-        border-radius: 4px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
         display: none;
     }
 
@@ -84,10 +84,8 @@
         width: 200px;
         height: 240px;
         margin: 0 auto;
-        border-radius: 12px 12px 6px 6px;
         background:
             linear-gradient(#c62b33 0 46%, #a81f27 46% 100%);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         color: #f7e9c8;
         display: flex;
         align-items: center;
@@ -102,7 +100,6 @@
     }
 
     .box:hover {
-        transform: translateY(-4px);
     }
 
     .box:active {
@@ -120,7 +117,7 @@
     button.action {
         padding: 12px 22px;
         border: none;
-        border-radius: 999px;
+        border-radius: var(--r-ctl);
         background: #b3232c;
         color: white;
         font-size: 1rem;
@@ -144,7 +141,6 @@
         margin: 18px auto 0;
         padding: 14px;
         max-width: 420px;
-        border-radius: 12px;
         background: linear-gradient(135deg, #fff6d5, #f7e2a1);
         border: 2px solid #c9a227;
         color: #7a5c0d;
@@ -157,7 +153,7 @@
 
     .stats {
         margin-top: 18px;
-        color: #64748b;
+        color: var(--ink);
         font-size: 0.9rem;
     }
 
@@ -169,7 +165,6 @@
         background: #1f2937;
         color: white;
         padding: 12px 20px;
-        border-radius: 999px;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.25s, transform 0.25s;
@@ -204,12 +199,13 @@
     }
 
     footer {
-        color: #666;
+        color: var(--ink);
         font-size: 0.9rem;
     }
 
     @media (max-width: 600px) {
-        .container { padding: 20px; }
+        .container { --pad: 20px;
+padding: var(--pad); }
         #paper { width: 100%; }
     }
 </style>
@@ -219,12 +215,14 @@
 
 <div class="container stage">
 
-    <h1>おみくじ｜大凶から超大吉まで引ける無料オンラインおみくじ</h1>
+    <div class="td-banner">
+      <h1>おみくじ｜大凶から超大吉まで引ける無料オンラインおみくじ</h1>
 
-    <p class="description">
-        大凶から大吉まで、そして <strong>0.1%でしか出ない「超大吉」</strong> を含む無料のおみくじです。
-        結果はおみくじ風の紙の画像になるので、そのまま保存・共有できます。
-    </p>
+      <p class="description">
+          大凶から大吉まで、そして <strong>0.1%でしか出ない「超大吉」</strong> を含む無料のおみくじです。
+          結果はおみくじ風の紙の画像になるので、そのまま保存・共有できます。
+      </p>
+    </div>
 
     <div class="draw-area">
         <div class="box" id="box" role="button" tabindex="0">おみくじ</div>

@@ -28,7 +28,7 @@
     body {
       margin: 0;
       padding: 20px;
-      background: #f3f5fb;
+      background: var(--bg);
       color: #222;
       font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
     }
@@ -45,18 +45,16 @@
 
     .desc {
       text-align: center;
-      color: #555;
+      color: var(--ink);
       line-height: 1.7;
       margin-bottom: 30px;
     }
 
     .card {
       background: white;
-      border-radius: 18px;
       padding: 24px;
       margin-bottom: 24px;
-      box-shadow:
-        0 4px 14px rgba(0,0,0,0.08);
+      border: 1px solid var(--line);
     }
 
     h2 {
@@ -74,7 +72,7 @@
       width: 100%;
       box-sizing: border-box;
       padding: 12px;
-      border-radius: 10px;
+      border-radius: var(--r-ctl);
       border: 1px solid #ccc;
       font-size: 1rem;
       margin-bottom: 18px;
@@ -91,8 +89,8 @@
       width: 100%;
       padding: 14px;
       border: none;
-      border-radius: 12px;
-      background: #2563eb;
+      border-radius: var(--r-ctl);
+      background: var(--c);
       color: white;
       font-size: 1rem;
       cursor: pointer;
@@ -101,7 +99,7 @@
     }
 
     button:hover {
-      background: #1d4ed8;
+      background: color-mix(in srgb, var(--c) 82%, #000);
     }
 
     .copy-btn {
@@ -115,10 +113,9 @@
     .mode-info {
 
       background: #eef4ff;
-      border-radius: 12px;
       padding: 14px;
       line-height: 1.8;
-      color: #444;
+      color: var(--ink);
       margin-bottom: 20px;
       font-size: 0.95rem;
 
@@ -126,7 +123,7 @@
 
     footer {
       text-align: center;
-      color: #666;
+      color: var(--ink);
       margin-top: 40px;
       font-size: 0.9rem;
     }
@@ -138,14 +135,16 @@
 
   <div class="container">
 
-    <h1>
-      文字化け生成＆復元ツール
-    </h1>
+    <div class="td-banner">
+      <h1>
+        文字化け生成＆復元ツール
+      </h1>
 
-    <p class="desc">
-      UTF-8 / Shift_JIS / Latin1 の誤解釈を利用して、<br>
-      実際の文字化けを再現・復元します。
-    </p>
+      <p class="desc">
+        UTF-8 / Shift_JIS / Latin1 の誤解釈を利用して、<br>
+        実際の文字化けを再現・復元します。
+      </p>
+    </div>
 
     <!-- モード説明 -->
     <div class="card">

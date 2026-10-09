@@ -28,7 +28,7 @@ const CURRENT_TOOL = "fukuri";
 body{
     margin:0;
     font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-    background:#f4f6fb;
+    background:var(--bg);
     color:#222;
 }
 
@@ -48,9 +48,8 @@ header{
 .card{
     background:white;
     padding:20px;
-    border-radius:14px;
     margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid var(--line);
 }
 
 .grid{
@@ -70,28 +69,27 @@ select{
     width:100%;
     padding:10px;
     border:1px solid #ccc;
-    border-radius:8px;
+    border-radius:var(--r-ctl);
     box-sizing:border-box;
 }
 
 button{
-    background:#2563eb;
+    background:var(--c);
     color:white;
     border:none;
     padding:10px 16px;
-    border-radius:10px;
+    border-radius:var(--r-ctl);
     cursor:pointer;
 }
 
 button:hover{
-    background:#1d4ed8;
+    background:color-mix(in srgb, var(--c) 82%, #000);
 }
 
 .stock-row,
 .schedule-row{
     border:1px solid #ddd;
     padding:15px;
-    border-radius:12px;
     margin-bottom:15px;
     position:relative;
 }
@@ -117,7 +115,6 @@ button:hover{
 .reference-box{
     background:#f8fafc;
     padding:12px;
-    border-radius:10px;
     margin-top:10px;
     line-height:1.8;
     font-size:14px;
@@ -125,7 +122,6 @@ button:hover{
 
 .reference-item{
     padding:5px;
-    border-radius:6px;
     cursor:pointer;
 }
 
@@ -135,7 +131,7 @@ button:hover{
 
 .small{
     font-size:13px;
-    color:#666;
+    color:var(--ink);
     line-height:1.7;
 }
 
@@ -153,7 +149,7 @@ summary{
     margin-top:15px;
     padding:12px;
     background:#f8fafc;
-    border-radius:10px;
+    border-radius:var(--r-ctl);
 }
 
 .toggle-label{
@@ -204,7 +200,7 @@ summary{
 
 <body>
 
-<header>
+<div class="td-banner">
     <h1>積立シミュレーション｜リスク込みで資産のブレ幅を出す複利計算</h1>
     <div>
         期待リターンとリスク（標準偏差）から、モンテカルロ法で100通りの将来を計算します。
@@ -213,7 +209,7 @@ summary{
      <div class="save-notice">
         ※設定内容はブラウザにキャッシュとして保存されます。サーバーに送られたり他の人に公開されることはありません。
     </div>
-</header>
+</div>
 
 <div class="container">
 

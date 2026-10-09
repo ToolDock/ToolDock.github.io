@@ -98,7 +98,10 @@ table {
 
 .td-banner {
   box-sizing: border-box;
-  margin: 12px 0 24px;
+  /* ふだんは上に12px・下に24px。
+     ページ全体を白い箱（余白を --pad にしたもの）で包んでいるページでは、
+     帯を箱の上と左右の端まで広げ、箱の見出しにする */
+  margin: calc(var(--pad, -12px) * -1) calc(var(--pad, 0px) * -1) 24px;
   padding: 22px 24px 20px;
   background: var(--tm-bg, var(--c));
   color: var(--tm-fg, #fff);
@@ -106,27 +109,42 @@ table {
   text-align: left;
 }
 
-.td-banner h1 {
+/* 各ページのCSSが h1 や説明文に中央寄せ・大きさ・色を付けていても、
+   帯の中では同じ見た目になるよう、強めの指定（html body …）で言い切る */
+html body .td-banner h1 {
   margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
   color: inherit;
+  -webkit-text-fill-color: currentColor;
+  text-shadow: none;
+  text-align: left;
   font-size: var(--fs-h1);
+  font-weight: 700;
   line-height: 1.4;
+  letter-spacing: .02em;
 }
 
-.td-banner p {
+html body .td-banner > :not(h1) {
+  max-width: none;
   margin: 8px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
   color: inherit;
+  text-align: left;
   font-size: var(--fs-m);
   line-height: 1.8;
 }
 
-.td-banner a {
+html body .td-banner a {
   color: inherit;
 }
 
 @media (max-width: 600px) {
   .td-banner { padding: 18px 16px; }
-  .td-banner h1 { font-size: 23px; }
+  html body .td-banner h1 { font-size: 23px; }
 }
 
 textarea {

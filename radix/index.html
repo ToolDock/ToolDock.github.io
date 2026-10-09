@@ -21,7 +21,7 @@
 <style>
     body {
         font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-        background: #f4f6f9;
+        background: var(--bg);
         margin: 0;
         padding: 20px;
         color: #222;
@@ -32,9 +32,9 @@
         max-width: 1000px;
         margin: 0 auto 24px;
         background: white;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        --pad: 30px;
+        padding: var(--pad);
+        border: 1px solid var(--line);
     }
 
     h1 {
@@ -45,12 +45,14 @@
     h2 {
         margin-top: 32px;
         font-size: 1.3rem;
-        border-left: 5px solid #2563eb;
-        padding-left: 12px;
+        border-left: 0;
+        padding-left: 0;
+        border-bottom: 2px solid var(--c);
+        padding-bottom: 8px;
     }
 
     p.description {
-        color: #555;
+        color: var(--ink);
     }
 
     .field {
@@ -69,7 +71,6 @@
         font-size: 1.3rem;
         font-family: "Consolas", "Courier New", monospace;
         border: 2px solid #cbd5e1;
-        border-radius: 10px;
         box-sizing: border-box;
     }
 
@@ -88,9 +89,9 @@
     .base-buttons button {
         padding: 8px 16px;
         border: 2px solid #cbd5e1;
-        border-radius: 999px;
+        border-radius: var(--r-ctl);
         background: white;
-        color: #334155;
+        color: var(--ink);
         font-size: 0.95rem;
         cursor: pointer;
     }
@@ -100,7 +101,7 @@
     }
 
     .base-buttons button.active {
-        background: #2563eb;
+        background: var(--c);
         border-color: #2563eb;
         color: white;
         font-weight: bold;
@@ -110,13 +111,12 @@
         padding: 8px;
         font-size: 1rem;
         border: 2px solid #cbd5e1;
-        border-radius: 8px;
+        border-radius: var(--r-ctl);
     }
 
     .error {
         margin-top: 14px;
         padding: 12px 14px;
-        border-radius: 10px;
         background: #fef2f2;
         border-left: 5px solid #dc2626;
         color: #991b1b;
@@ -139,7 +139,7 @@
     table.result th {
         white-space: nowrap;
         width: 130px;
-        color: #475569;
+        color: var(--ink);
         font-size: 0.95rem;
     }
 
@@ -157,19 +157,19 @@
     .copy-btn {
         padding: 6px 12px;
         border: none;
-        border-radius: 8px;
-        background: #2563eb;
+        border-radius: var(--r-ctl);
+        background: var(--c);
         color: white;
         font-size: 0.85rem;
         cursor: pointer;
     }
 
     .copy-btn:hover {
-        background: #1d4ed8;
+        background: color-mix(in srgb, var(--c) 82%, #000);
     }
 
     .muted {
-        color: #94a3b8;
+        color: var(--ink);
     }
 
     table.chart {
@@ -195,18 +195,19 @@
     }
 
     .hint {
-        color: #666;
+        color: var(--ink);
         font-size: 0.9rem;
     }
 
     footer {
-        color: #666;
+        color: var(--ink);
         font-size: 0.9rem;
     }
 
     @media (max-width: 600px) {
         .container {
-            padding: 20px;
+            --pad: 20px;
+            padding: var(--pad);
         }
 
         table.result th {
@@ -221,13 +222,15 @@
 
 <div class="container">
 
-    <h1>n進数変換ツール｜2進数・8進数・10進数・16進数をまとめて変換</h1>
+    <div class="td-banner">
+      <h1>n進数変換ツール｜2進数・8進数・10進数・16進数をまとめて変換</h1>
 
-    <p class="description">
-        入力した数値を <strong>2進数・8進数・10進数・16進数</strong> をはじめとする
-        2〜36進法へ同時に変換する無料ツールです。
-        小数点以下やマイナスの値、桁数の大きな整数にも対応しています。
-    </p>
+      <p class="description">
+          入力した数値を <strong>2進数・8進数・10進数・16進数</strong> をはじめとする
+          2〜36進法へ同時に変換する無料ツールです。
+          小数点以下やマイナスの値、桁数の大きな整数にも対応しています。
+      </p>
+    </div>
 
     <div class="field">
         <label for="inputBase">入力する数値の基数（何進数で入力するか）</label>

@@ -22,7 +22,7 @@
 <style>
 body {
     font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-    background: #f4f6f9;
+    background: var(--bg);
     color: #222;
     margin: 0;
     padding: 20px;
@@ -33,9 +33,9 @@ body {
     max-width: 800px;
     margin: 0 auto 24px;
     background: white;
-    padding: 30px;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --pad: 30px;
+    padding: var(--pad);
+    border: 1px solid var(--line);
 }
 
 .container.tool {
@@ -50,9 +50,11 @@ h1 {
 h2 {
     margin-top: 32px;
     font-size: 1.3rem;
-    border-left: 5px solid #2563eb;
-    padding-left: 12px;
+    border-left: 0;
+    padding-left: 0;
     text-align: left;
+    border-bottom: 2px solid var(--c);
+    padding-bottom: 8px;
 }
 
 h3 {
@@ -61,7 +63,7 @@ h3 {
 }
 
 p.description {
-    color: #555;
+    color: var(--ink);
     text-align: left;
 }
 
@@ -75,9 +77,9 @@ p.description {
 .mode-buttons button {
     padding: 10px 24px;
     border: 2px solid #cbd5e1;
-    border-radius: 999px;
+    border-radius: var(--r-ctl);
     background: white;
-    color: #334155;
+    color: var(--ink);
     font-size: 1rem;
     cursor: pointer;
 }
@@ -87,7 +89,7 @@ p.description {
 }
 
 .mode-buttons button.active {
-    background: #2563eb;
+    background: var(--c);
     border-color: #2563eb;
     color: white;
     font-weight: bold;
@@ -117,9 +119,9 @@ p.description {
 .presets button {
     padding: 8px 16px;
     border: 2px solid #cbd5e1;
-    border-radius: 999px;
+    border-radius: var(--r-ctl);
     background: white;
-    color: #334155;
+    color: var(--ink);
     font-size: 0.9rem;
     cursor: pointer;
 }
@@ -139,7 +141,7 @@ p.description {
     font-size: 1rem;
     text-align: center;
     border: 2px solid #cbd5e1;
-    border-radius: 10px;
+    border-radius: var(--r-ctl);
 }
 
 .controls {
@@ -152,15 +154,15 @@ p.description {
 .controls button {
     padding: 12px 28px;
     border: none;
-    border-radius: 999px;
+    border-radius: var(--r-ctl);
     font-size: 1rem;
     cursor: pointer;
     color: white;
-    background: #2563eb;
+    background: var(--c);
 }
 
 .controls button:hover {
-    background: #1d4ed8;
+    background: color-mix(in srgb, var(--c) 82%, #000);
 }
 
 .controls button.sub {
@@ -173,7 +175,7 @@ p.description {
 
 .hint {
     margin-top: 16px;
-    color: #94a3b8;
+    color: var(--ink);
     font-size: 0.85rem;
 }
 
@@ -206,7 +208,7 @@ table.guide td.num {
 }
 
 footer {
-    color: #666;
+    color: var(--ink);
     font-size: 0.9rem;
 }
 
@@ -221,7 +223,8 @@ footer {
 }
 
 @media (max-width: 600px) {
-    .container { padding: 20px; }
+    .container { --pad: 20px;
+padding: var(--pad); }
     .time { font-size: 3.2rem; }
 }
 </style>
@@ -231,13 +234,15 @@ footer {
 
 <div class="container tool">
 
-<h1>Webタイマー・ストップウォッチ</h1>
+<div class="td-banner">
+  <h1>Webタイマー・ストップウォッチ</h1>
 
-<p class="description">
-    ブラウザだけで使える無料のタイマーとストップウォッチです。
-    よく使う時間はワンタッチで設定でき、時間になったら音・振動・画面の点滅でお知らせします。
-    インストールや会員登録は必要ありません。
-</p>
+  <p class="description">
+      ブラウザだけで使える無料のタイマーとストップウォッチです。
+      よく使う時間はワンタッチで設定でき、時間になったら音・振動・画面の点滅でお知らせします。
+      インストールや会員登録は必要ありません。
+  </p>
+</div>
 
 <div class="mode-buttons">
     <button type="button" id="stopwatchBtn" class="active">ストップウォッチ</button>

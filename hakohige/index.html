@@ -26,7 +26,7 @@
     font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
     margin: 20px;
     line-height: 1.7;
-    background: #f7f8fb;
+    background: var(--bg);
     color: #222;
   }
 
@@ -39,16 +39,15 @@
     max-width: 900px;
     margin: 0 auto 25px;
     text-align: center;
-    color: #555;
+    color: var(--ink);
   }
 
   .container{
     max-width: 950px;
     margin: auto;
     background: white;
-    border-radius: 18px;
     padding: 24px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    border: 1px solid var(--line);
   }
 
   .grid{
@@ -70,7 +69,7 @@
 
   input{
     padding: 10px;
-    border-radius: 10px;
+    border-radius: var(--r-ctl);
     border: 1px solid #ccc;
     font-size: 16px;
   }
@@ -82,7 +81,7 @@
   button{
     padding: 12px 18px;
     border: none;
-    border-radius: 12px;
+    border-radius: var(--r-ctl);
     cursor: pointer;
     font-size: 16px;
     margin-right: 10px;
@@ -91,11 +90,10 @@
   }
 
   button:hover{
-    transform: translateY(-1px);
   }
 
   .draw-btn{
-    background: #2563eb;
+    background: var(--c);
     color: white;
   }
 
@@ -113,7 +111,6 @@
     margin-top: 20px;
     overflow-x: auto;
     background: white;
-    border-radius: 16px;
     padding: 16px;
     border: 1px solid #ddd;
   }
@@ -135,7 +132,6 @@
     background: #eef4ff;
     border-left: 5px solid #2563eb;
     padding: 16px;
-    border-radius: 10px;
   }
 
   @media (max-width: 600px){
@@ -153,13 +149,15 @@
 
 <body>
 
-<h1>箱ひげ図 作成ツール</h1>
+<div class="td-banner">
+  <h1>箱ひげ図 作成ツール</h1>
 
-<p class="description">
-最大値・第三四分位数・中央値・第一四分位数・最小値から、
-きれいな箱ひげ図（ボックスプロット）を自動生成できます。
-平均値も任意で表示可能です。
-</p>
+  <p class="description">
+  最大値・第三四分位数・中央値・第一四分位数・最小値から、
+  きれいな箱ひげ図（ボックスプロット）を自動生成できます。
+  平均値も任意で表示可能です。
+  </p>
+</div>
 
 <div class="container">
 
