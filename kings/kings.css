@@ -1,7 +1,6 @@
 *{ box-sizing:border-box; }
-:root{
-    --ink-strong:var(--ink); --ink-sub:var(--ink); --ink-mute:var(--ink); --head-bg:var(--surface-2); --tint:var(--surface-2); --ce:#0f766e; --pa:#1d4ed8; --gold:#b45309;
-}
+:root{ --ink-strong:var(--ink); --ink-sub:var(--ink); --ink-mute:var(--ink);
+       --head-bg:var(--surface-2); --tint:var(--surface-2); --ce:#0f766e; --pa:#1d4ed8; --gold:#b45309;}
 body{ margin:0; padding:0 0 48px; font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
       color:var(--ink); line-height:1.7; background:var(--bg); }
 /* ほかのページ（金特ツールなど）と同じく左に寄せ、左右に20pxの余白を取る。

@@ -166,11 +166,10 @@ footer{
 
 .filter-panel{
     background:white;
-    border-radius:14px;
-    box-shadow:0 3px 12px rgba(0,0,0,0.1);
 
     padding:16px 20px;
     margin-bottom:28px;
+    border: 1px solid var(--line);
 }
 
 .filter-row{
@@ -190,7 +189,6 @@ footer{
     padding:11px 14px;
     font-size:1rem;
     border:2px solid #d6dbe2;
-    border-radius:10px;
 }
 
 #skillSearch:focus{
@@ -202,7 +200,7 @@ footer{
     padding:10px;
     font-size:0.95rem;
     border:2px solid #d6dbe2;
-    border-radius:10px;
+    border-radius:var(--r-ctl);
     background:white;
 }
 
@@ -214,9 +212,9 @@ footer{
 .type-buttons button{
     padding:9px 18px;
     border:2px solid #d6dbe2;
-    border-radius:999px;
+    border-radius:var(--r-ctl);
     background:white;
-    color:#444;
+    color:var(--ink);
     font-size:0.9rem;
     cursor:pointer;
 }
@@ -237,14 +235,14 @@ footer{
     align-items:center;
     gap:6px;
     font-size:0.9rem;
-    color:#555;
+    color:var(--ink);
     cursor:pointer;
 }
 
 .filter-count{
     margin-left:auto;
     font-size:0.9rem;
-    color:#666;
+    color:var(--ink);
 }
 
 .filter-count strong{
@@ -255,9 +253,9 @@ footer{
 .reset-btn{
     padding:9px 16px;
     border:none;
-    border-radius:999px;
+    border-radius:var(--r-ctl);
     background:#eceff3;
-    color:#444;
+    color:var(--ink);
     font-size:0.9rem;
     cursor:pointer;
 }
@@ -290,7 +288,7 @@ tr.acquired .skill{
 .no-result{
     padding:40px 20px;
     text-align:center;
-    color:#888;
+    color:var(--ink);
 }
 
 @media(max-width:700px){
@@ -331,7 +329,7 @@ tr.acquired .skill{
         display:block;
         font-weight:bold;
         margin-bottom:6px;
-        color:#444;
+        color:var(--ink);
     }
 
     /* 1列目は取得済みチェック欄なのでラベルを出さない */
@@ -360,12 +358,11 @@ figure.shot img{
     width:100%;
     height:auto;
     border:1px solid #e2e8f0;
-    border-radius:12px;
 }
 
 figure.shot figcaption{
     margin-top:8px;
-    color:#64748b;
+    color:var(--ink);
     font-size:14px;
     line-height:1.7;
 }

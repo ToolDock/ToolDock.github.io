@@ -1,4 +1,4 @@
-"""プロ野球 いろんな「王」ランキング（/kings/ と /kings/<年>/）を作る。
+"""プロ野球 裏タイトル・逆タイトル（/kings/ と /kings/<年>/）を作る。
 
 タイトルになる部門（首位打者・本塁打王…）だけでなく、得点・二塁打・三振・併殺打・犠打・死球・失策・
 守備機会など、ふだん順位が出ない部門も含めて、年ごと・リーグごとに上位5人を並べる。
@@ -16,6 +16,7 @@ import argparse
 import html
 import json
 import math
+import re
 import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -27,6 +28,10 @@ from people import People  # noqa: E402
 
 JST = timezone(timedelta(hours=9))
 SITE = "https://tooldock.github.io"
+NAME = "プロ野球 裏タイトル・逆タイトル"
+# ツールの名前（トップ・一覧のカードとパンくず）は js/tool-data.js にあり、名前に載せる年の範囲は
+# 新しいシーズンが始まったときに sync_tool_title が書き換える。カードは scripts/build_index.py が作り直す
+TOOL_DATA = Path(__file__).resolve().parent.parent / "js" / "tool-data.js"
 TOP = 5               # 各部門で出す人数（同じ値で並んだ人は含める）
 MAX_ROWS = 8          # 同じ値が多くても、ここまでで打ち切って「ほか○人」とする
 LEAGUES = [("central", "セ・リーグ"), ("pacific", "パ・リーグ")]
@@ -472,12 +477,12 @@ def year_page(y, st, groups, years, as_of_text, final):
               '・同じ数で並んだ選手は同じ順位です。5位までに同じ数の選手が多いときは、8人まで出して残りを「ほか○人」としています。<br>'
               '・シーズン途中で同じリーグの中で移籍した選手は、両球団の成績を足しています。<br>'
               '・規定打席は所属球団の試合数×3.1、規定投球回は試合数×1.0です。得点圏打率はNPB公式の個人成績に無いため載せていません。</p>')
-    title = f"{y}年 三振王・併殺打王・犠打王・死球王・失策王｜プロ野球 部門別ランキング（セ・パ全{n}部門）"
+    title = f"{y}年 {NAME}｜三振王・併殺打王・犠打王・死球王・失策王（セ・パ全{n}部門）"
     desc = (f"{y}年のプロ野球の" + ("、".join(hl) + "。" if hl else "") + f"セ・パの打撃・投手・守備{n}部門の上位5人を並べています。"
             + "得点・二塁打・三塁打・盗塁死・四球・故意四球・暴投・ボーク・守備機会・外野手の補殺・盗塁阻止率など、"
             "タイトルにならない部門の「王」や、小松式ドネーション・アダム・ダン率・赤星式盗塁もまとめています。")
-    return page(title, desc, f"/kings/{y}/", f"{y}年 プロ野球 三振王・併殺打王・犠打王ほか 部門別ランキング",
-                "いろんな「王」：タイトルにならない部門も含めた、打撃・投手・守備の部門別の上位5人", body, crumb=f"{y}年")
+    return page(title, desc, f"/kings/{y}/", f"{y}年 {NAME}",
+                "三振王・併殺打王・犠打王など、タイトルにならない部門も含めた打撃・投手・守備の部門別の上位5人", body, crumb=f"{y}年")
 
 
 def index_page(latest, groups, years, as_of_text, final, all_groups, has_page):
@@ -506,11 +511,11 @@ def index_page(latest, groups, years, as_of_text, final, all_groups, has_page):
             + '<p>タイトルにならない部門の、年ごとの1位です。年を押すと、その年の上位5人とほかの部門が見られます。</p>'
             + history_tables(all_groups, has_page))
     n = sum(len(c) for _, _, c in groups)
-    return page(f"プロ野球 歴代の三振王・併殺打王・犠打王・死球王・失策王｜部門別ランキング【{min(years)}〜{latest}年】",
+    return page(f"{site_name(min(years), latest)}｜三振王・併殺打王・犠打王・死球王・失策王の歴代ランキング",
                 f"プロ野球の歴代の三振王・併殺打王・犠打王・死球王・失策王・暴投王を、{min(years)}年から年ごとにセ・パ別で一覧。"
                 f"打撃・投手・守備{n}部門の上位5人や、小松式ドネーション・アダム・ダン率・赤星式盗塁のランキングもまとめています。",
-                "/kings/", "プロ野球 歴代の三振王・併殺打王・犠打王ほか 部門別ランキング",
-                "いろんな「王」：タイトルにならない部門も含めた、部門別の1位と上位5人", body)
+                "/kings/", site_name(min(years), latest),
+                "三振王・併殺打王・犠打王など、タイトルにならない部門も含めた部門別の1位と上位5人", body)
 
 
 def main(argv=None):
@@ -549,8 +554,25 @@ def main(argv=None):
     (out / "index.html").write_text(index_page(latest, latest_groups[0], years, latest_groups[1], latest_groups[2], all_groups,
                                                has_page),
                                     encoding="utf-8")
+    sync_tool_title(years[0], latest)
     print(f"kings: {years[0]}〜{latest}年")
     return 0
+
+
+def site_name(first, latest):
+    """ページとツールの名前。年は新しい順（「プロ野球 裏タイトル・逆タイトル 2026-2005」）"""
+    return f"{NAME} {latest}-{first}"
+
+
+def sync_tool_title(first, latest):
+    """js/tool-data.js のツール名の年を、データの範囲に合わせる"""
+    if not TOOL_DATA.exists():
+        return
+    text = TOOL_DATA.read_text(encoding="utf-8")
+    new = re.sub(re.escape(NAME) + r" \d{4}-\d{4}", site_name(first, latest), text)
+    if new != text:
+        TOOL_DATA.write_text(new, encoding="utf-8")
+        print(f"tool-data.js の名前を「{site_name(first, latest)}」に更新")
 
 
 if __name__ == "__main__":
