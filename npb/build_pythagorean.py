@@ -166,23 +166,52 @@ def scatter(teams, year):
     v = lo
     while v <= hi + 1e-9:
         lab = f"{v:.3f}".lstrip("0")
-        out.append(f'<line x1="{L}" x2="{W - R}" y1="{Y(v):.1f}" y2="{Y(v):.1f}" stroke="#e5e7eb"/>')
-        out.append(f'<line y1="{T}" y2="{H - B}" x1="{X(v):.1f}" x2="{X(v):.1f}" stroke="#e5e7eb"/>')
-        out.append(f'<text x="{L - 6}" y="{Y(v) + 4:.1f}" text-anchor="end" font-size="11" fill="#6b7280">{lab}</text>')
-        out.append(f'<text x="{X(v):.1f}" y="{H - B + 16}" text-anchor="middle" font-size="11" fill="#6b7280">{lab}</text>')
+        out.append(f'<line x1="{L}" x2="{W - R}" y1="{Y(v):.1f}" y2="{Y(v):.1f}" stroke="#e6e4de"/>')
+        out.append(f'<line y1="{T}" y2="{H - B}" x1="{X(v):.1f}" x2="{X(v):.1f}" stroke="#e6e4de"/>')
+        out.append(f'<text x="{L - 6}" y="{Y(v) + 4:.1f}" text-anchor="end" font-size="11" fill="#1c1d1f">{lab}</text>')
+        out.append(f'<text x="{X(v):.1f}" y="{H - B + 16}" text-anchor="middle" font-size="11" fill="#1c1d1f">{lab}</text>')
         v += 0.05
     out.append(f'<line x1="{X(lo):.1f}" y1="{Y(lo):.1f}" x2="{X(hi):.1f}" y2="{Y(hi):.1f}" stroke="#9ca3af" stroke-dasharray="5 4"/>')
     out.append(f'<text x="{X(lo) + 8:.1f}" y="{T + 16}" font-size="12" font-weight="700" fill="#2a78d6">↖ 運が良い</text>')
     out.append(f'<text x="{X(hi) - 8:.1f}" y="{H - B - 10}" text-anchor="end" font-size="12" font-weight="700" fill="#e34948">運が悪い ↘</text>')
-    out.append(f'<text x="{L + pw / 2:.1f}" y="{H - 6}" text-anchor="middle" font-size="11.5" fill="#4b5563">ピタゴラス勝率（得失点から見た実力）→</text>')
-    out.append(f'<text transform="translate(13,{T + ph / 2:.1f}) rotate(-90)" text-anchor="middle" font-size="11.5" fill="#4b5563">実際の勝率 →</text>')
+    out.append(f'<text x="{L + pw / 2:.1f}" y="{H - 6}" text-anchor="middle" font-size="11.5" fill="#1c1d1f">ピタゴラス勝率（得失点から見た実力）→</text>')
+    out.append(f'<text transform="translate(13,{T + ph / 2:.1f}) rotate(-90)" text-anchor="middle" font-size="11.5" fill="#1c1d1f">実際の勝率 →</text>')
     # 名前は点の右に。ほかの名前と重なるときは左、それでも重なるときは上下にずらす
     # 名前の文字の箱（左端, 下端の y, 幅）。点も同じ扱いで、名前を点に重ねない
     placed = [(X(t["pyth"]) - 6, Y(t["pct"]) + 6, 12) for t in teams]
 
+    leaders = []   # 引いた線（x1, y1, x2, y2）
+
     def free(x0, y0, w):
         return all(not (y0 - 12 < py and py - 12 < y0 and x0 < px + pw_ and px < x0 + w)
                    for px, py, pw_ in placed)
+
+    def crosses(a, b):
+        """線分どうしが交わるか"""
+        def ccw(p, q, r):
+            return (r[1] - p[1]) * (q[0] - p[0]) - (q[1] - p[1]) * (r[0] - p[0])
+        p1, p2, p3, p4 = (a[0], a[1]), (a[2], a[3]), (b[0], b[1]), (b[2], b[3])
+        return ccw(p1, p2, p3) * ccw(p1, p2, p4) < 0 and ccw(p3, p4, p1) * ccw(p3, p4, p2) < 0
+
+    dots = [(X(t["pyth"]), Y(t["pct"])) for t in teams]
+
+    def near_dot(seg, own):
+        """線分が、ほかの球団の点のそばを通るか"""
+        x1, y1, x2, y2 = seg
+        for px, py in dots:
+            if (px, py) == own:
+                continue
+            vx, vy = x2 - x1, y2 - y1
+            t_ = max(0.0, min(1.0, ((px - x1) * vx + (py - y1) * vy) / ((vx * vx + vy * vy) or 1)))
+            if (x1 + t_ * vx - px) ** 2 + (y1 + t_ * vy - py) ** 2 < 8 ** 2:
+                return True
+        return False
+
+    def hits_box(seg, x0, y0, w):
+        """線分が名前の箱を通るか（箱の4辺との交わりで見る）"""
+        top, bot = y0 - 12, y0 + 1
+        edges = ((x0, top, x0 + w, top), (x0, bot, x0 + w, bot), (x0, top, x0, bot), (x0 + w, top, x0 + w, bot))
+        return any(crosses(seg, e) for e in edges)
 
     for t in sorted(teams, key=lambda t: -t["pct"]):
         cx, cy = X(t["pyth"]), Y(t["pct"])
@@ -190,16 +219,47 @@ def scatter(teams, year):
         tip = f'{t["name"]}：勝率 {fmt_pct(t["pct"])} ／ ピタゴラス勝率 {fmt_pct(t["pyth"])} ／ 運 {signed(t["luck"])}勝'
         out.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="5.5" fill="{color}" stroke="#fff" stroke-width="1.5">'
                    f'<title>{esc(tip)}</title></circle>')
-    for t in sorted(teams, key=lambda t: -t["pct"]):
+    # 名前は、まわりに点が多い（置き場所の少ない）球団から先に置く
+    def crowd(t):
+        cx, cy = X(t["pyth"]), Y(t["pct"])
+        return sum(1 for px, py in dots if 0 < (px - cx) ** 2 + (py - cy) ** 2 < 40 ** 2)
+
+    for t in sorted(teams, key=lambda t: (-crowd(t), -t["pct"])):
         cx, cy = X(t["pyth"]), Y(t["pct"])
         color = "#0f766e" if t["lg"] == "central" else "#1d4ed8"
         w = sum(7.5 if c.isascii() else 12.5 for c in t["name"])
-        for dx, dy, anchor in ((8, 4, "start"), (-8, 4, "end"), (6, -8, "start"), (6, 17, "start"),
-                               (-6, -8, "end"), (-6, 17, "end"), (8, -18, "start"), (8, 27, "start")):
-            x0 = cx + dx if anchor == "start" else cx + dx - w
-            if free(x0, cy + dy, w) and x0 >= L and x0 + w <= W - R:
-                break
+        # 点のすぐ脇から順に、少しずつ遠くまで空きを探す。離れた所に置いたときは、点から細い線を引く。
+        # 見つからなければ、線がほかの点のそばを通ることだけは許して探し直す
+        def search(strict):
+            for ring in range(12):
+                d = ring * 13
+                for dx, dy, anchor in ((8 + d, 4, "start"), (-8 - d, 4, "end"), (6, -8 - d, "start"), (6, 17 + d, "start"),
+                                       (-6, -8 - d, "end"), (-6, 17 + d, "end"), (8 + d, -8 - d, "start"),
+                                       (8 + d, 17 + d, "start"), (-8 - d, -8 - d, "end"), (-8 - d, 17 + d, "end")):
+                    x0 = cx + dx if anchor == "start" else cx + dx - w
+                    if not (free(x0, cy + dy, w) and x0 >= L and x0 + w <= W - R and T + 12 <= cy + dy <= H - B):
+                        continue
+                    if any(hits_box(seg, x0, cy + dy, w) for seg in leaders):
+                        continue
+                    if ring:
+                        seg = (cx, cy, min(max(cx, x0), x0 + w), min(max(cy, cy + dy - 11), cy + dy + 1))
+                        if any(crosses(seg, o) for o in leaders):
+                            continue
+                        if any(hits_box(seg, px, py, pw_) for px, py, pw_ in placed[len(teams):]):
+                            continue
+                        if strict and near_dot(seg, (cx, cy)):
+                            continue
+                    return (dx, dy, anchor, x0, ring)
+            return None
+
+        found = search(True) or search(False) or (8, 4, "start", cx + 8, 0)
+        dx, dy, anchor, x0, ring = found
         placed.append((x0, cy + dy, w))
+        if ring:
+            lx = min(max(cx, x0), x0 + w)
+            ly = min(max(cy, cy + dy - 11), cy + dy + 1)
+            out.append(f'<line x1="{cx:.1f}" y1="{cy:.1f}" x2="{lx:.1f}" y2="{ly:.1f}" stroke="{color}" stroke-width="1"/>')
+            leaders.append((cx, cy, lx, ly))
         out.append(f'<text x="{cx + dx:.1f}" y="{cy + dy:.1f}" text-anchor="{anchor}" font-size="12" font-weight="700" fill="{color}">{esc(t["name"])}</text>')
     out.append("</svg>")
     return ('<figure class="scatter">' + "".join(out) +
