@@ -42,7 +42,7 @@
 :root[data-cat="finance"],  .c-finance  { --c: #15803d; }
 :root[data-cat="work"],     .c-work     { --c: #1d4ed8; }
 :root[data-cat="math"],     .c-math     { --c: #6d28d9; }
-:root[data-cat="game"],     .c-game     { --c: #be185d; }
+:root[data-cat="game"],     .c-game     { --c: #bf0000; }
 :root[data-cat="baseball"], .c-baseball { --c: #1c1d1f; }
 
 /* サイト共通のフォントは Noto Sans JP（head.js で Google Fonts から読み込む）。
