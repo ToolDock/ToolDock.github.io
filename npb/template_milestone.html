@@ -24,15 +24,15 @@
 *{ box-sizing:border-box; }
 
 :root{
-    --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280;
-    --line:#d1d5db; --line-soft:#e5e7eb; --head-bg:#f3f4f6; --tint:#f9fafb;
-    --accent:#2563eb; --gold:#b45309; --gold-bg:#fef3c7; --good:#15803d;
+    --ink-strong:var(--ink); --ink-sub:var(--ink); --ink-mute:var(--ink);
+    --head-bg:var(--surface-2); --tint:var(--surface-2);
+    --gold:#b45309; --gold-bg:#fef3c7; --good:#15803d;
 }
 
 body{
     margin:0; padding:0 0 48px;
     font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-    color:var(--ink); line-height:1.75; background:#f5f5f5;
+    color:var(--ink); line-height:1.75; background:var(--bg);
 }
 
 .page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
@@ -43,14 +43,9 @@ body{ max-width:none; }
 .page-wrapper{ margin:0; padding:0 20px; }
 body .td-rail-inline{ max-width:1000px; margin:40px 0 0; padding:0 20px; }
 
-header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:22px; }
-h1{ margin:0; font-size:1.35rem; line-height:1.5; }
-header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
-
 h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
-    border-bottom:2px solid var(--line); }
-h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
-    border-left:4px solid var(--accent); }
+    border-bottom:2px solid var(--c); }
+h3{ margin:22px 0 8px; font-size:1.02rem; color:var(--ink-strong); }
 p{ margin:0 0 12px; }
 a{ color:var(--accent); }
 
@@ -58,11 +53,11 @@ a{ color:var(--accent); }
 .stamp strong{ color:var(--ink-strong); }
 .lead{ font-size:0.95rem; }
 .jump{ display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 14px; }
-.jump a{ padding:4px 12px; border:1px solid var(--line); border-radius:999px; background:#fff; text-decoration:none; font-size:0.9rem; }
+.jump a{ padding:4px 12px; border:1px solid var(--line); background:var(--surface); text-decoration:none; font-size:0.9rem; }
 
-.rec{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 16px 14px; margin:0 0 20px; scroll-margin-top:12px; }
+.rec{ background:var(--surface); border:1px solid var(--line); padding:4px 16px 14px; margin:0 0 20px; scroll-margin-top:12px; }
 .rec h2{ margin-top:14px; border-bottom:none; padding-bottom:0; display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
-.badge{ font-size:0.76rem; font-weight:700; color:var(--gold); background:var(--gold-bg); border-radius:999px; padding:2px 10px; }
+.badge{ font-size:0.76rem; font-weight:700; color:var(--gold); background:var(--gold-bg); padding:2px 10px; }
 .marks{ font-size:0.82rem; color:var(--ink-mute); margin:0 0 8px; }
 
 .tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -79,13 +74,13 @@ td.need{ font-weight:800; font-size:1.05rem; color:var(--ink-strong); }
 td .sub{ display:block; font-size:0.72rem; color:var(--ink-mute); font-weight:400; }
 .m-only{ display:none !important; }
 /* 節目までの進み具合（0から節目までの割合。載せるのは88%を超えた選手だけ） */
-td.cur .prog{ display:block; width:100%; min-width:64px; height:6px; margin:4px 0 1px; background:var(--line-soft); border-radius:3px; overflow:hidden; }
-td.cur .prog i{ display:block; height:100%; background:linear-gradient(90deg, #93c5fd, #2563eb); border-radius:3px; }
+td.cur .prog{ display:block; width:100%; min-width:64px; height:6px; margin:4px 0 1px; background:var(--line-soft); overflow:hidden; }
+td.cur .prog i{ display:block; height:100%; background:var(--ink); }
 td.cur .pct{ display:block; font-size:0.7rem; color:var(--ink-mute); font-variant-numeric:tabular-nums; }
 td.when{ font-size:0.86rem; }
 td.when.w1{ color:var(--good); font-weight:700; }
 
-article{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px 18px; margin-top:26px; }
+article{ background:var(--surface); border:1px solid var(--line); padding:4px 20px 18px; margin-top:26px; }
 article h2:first-child{ margin-top:18px; }
 article ul{ margin:0 0 12px; padding-left:1.3em; }
 article li{ margin:4px 0; }
@@ -108,10 +103,10 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 
 <div class="page-wrapper">
 
-<header>
+<div class="td-banner">
     <h1>プロ野球 記録達成カウントダウン</h1>
     <p>2000本安打・200勝・250セーブ（名球会）など、現役選手の節目の記録まで「あと何本」かを毎日更新します</p>
-</header>
+</div>
 
 <div class="container">
 

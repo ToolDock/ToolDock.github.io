@@ -113,81 +113,72 @@
   </script>
 
   <style>
-    /* ほかのページと同じく、左に寄せて20pxあける（右側が空いても、左が見切れない） */
-    body{ max-width:none; margin:0; padding:0; background:#f5f7fa; color:#1f2937; }
+    /* ほかのページと同じく、左に寄せて20pxあける（右側が空いても、左が見切れない）。
+       色・文字の大きさ・分野の色は style.css の決まりを使う */
+    body{ max-width:none; margin:0; padding:0; }
     .top{ max-width:1080px; padding:0 20px 40px; }
-    .top a{ color:#2563eb; }
 
-    /* カテゴリの色 */
-    .c-life{ --c:#ea580c; } .c-finance{ --c:#16a34a; } .c-work{ --c:#2563eb; }
-    .c-math{ --c:#7c3aed; } .c-game{ --c:#db2777; } .c-baseball{ --c:#0f766e; }
+    /* 冒頭の帯（分野の無いページなので墨色） */
+    .hero{ margin:20px 0 0; padding:28px 28px 26px; }
+    .hero h1{ font-size:32px; line-height:1.3; letter-spacing:.01em; }
+    .hero h1 span{ display:block; margin-top:4px; font-size:var(--fs-m); font-weight:400; }
+    .hero p{ margin:14px 0 0; max-width:760px; line-height:1.9; }
 
-    .hero{ margin:28px 0 8px; }
-    .hero h1{ margin:0; font-size:2rem; line-height:1.3; letter-spacing:.01em; }
-    .hero h1 span{ display:block; margin-top:2px; font-size:1rem; font-weight:500; color:#64748b; }
-    .hero p{ margin:14px 0 0; max-width:760px; color:#475569; line-height:1.9; }
-
-    .cat-jump{ display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 4px; }
+    /* 分野への入口。分野の色で塗る */
+    .cat-jump{ display:flex; flex-wrap:wrap; gap:6px; margin:14px 0 4px; }
     .cat-jump a{
-      display:inline-flex; align-items:center; gap:6px; padding:6px 14px;
-      background:#fff; border:1px solid #e2e8f0;
-      border-radius:999px; color:#1f2937; text-decoration:none; font-weight:700; font-size:.92rem;
+      display:inline-flex; align-items:baseline; gap:6px; padding:6px 14px;
+      background:var(--c); color:#fff; text-decoration:none; font-weight:700; font-size:var(--fs-s);
     }
-    .cat-jump a::before{ content:""; width:8px; height:8px; border-radius:50%; background:var(--c); }
-    .cat-jump a:hover{ border-color:var(--c); }
-    .cat-jump a span{ font-weight:500; font-size:.8rem; color:#64748b; }
+    .cat-jump a:hover{ text-decoration:underline; text-underline-offset:3px; }
+    .cat-jump a span{ font-weight:400; font-variant-numeric:tabular-nums; }
 
-    .cat{ margin-top:36px; scroll-margin-top:72px; }
+    .cat{ margin-top:40px; scroll-margin-top:72px; }
     .cat h2{
-      display:flex; align-items:center; gap:10px; margin:0 0 14px; padding:0; border:0;
-      font-size:1.25rem;
+      display:flex; align-items:center; gap:10px; margin:0 0 14px; padding:0 0 8px;
+      border-bottom:2px solid var(--c); font-size:var(--fs-h2);
     }
-    .cat h2::before{ content:""; width:6px; height:1.2em; border-radius:3px; background:var(--c, #0ea5e9); }
-    .cat-n{ font-size:.85rem; font-weight:500; color:#64748b; }
+    .cat h2::before{ content:""; width:12px; height:12px; background:var(--c); }
+    .cat-n{ font-size:var(--fs-s); font-weight:400; font-variant-numeric:tabular-nums; }
 
     .tool-grid{
       list-style:none; margin:0; padding:0;
-      display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap:10px;
+      display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap:8px;
     }
+    /* ツールの札。上の辺だけ分野の色 */
     .top .tool-card{
-      position:relative; display:flex; flex-direction:column; gap:3px; height:100%; box-sizing:border-box;
-      padding:10px 12px 10px 15px; background:#fff; border:1px solid #e2e8f0; border-radius:12px;
-      color:inherit; text-decoration:none; transition:border-color .15s, box-shadow .15s, transform .15s;
+      display:flex; flex-direction:column; gap:4px; height:100%; box-sizing:border-box;
+      padding:12px 16px 14px; background:var(--surface);
+      border:1px solid var(--line); border-top:3px solid var(--c);
+      color:inherit; text-decoration:none;
     }
-    .tool-card::before{
-      content:""; position:absolute; left:0; top:10px; bottom:10px; width:4px;
-      border-radius:0 4px 4px 0; background:var(--c);
-    }
-    .tool-card:hover{ border-color:var(--c); box-shadow:0 4px 14px rgba(15,23,42,.08); transform:translateY(-1px); }
-    .tc-title{ font-weight:700; font-size:.93rem; line-height:1.45; color:#0f172a; }
+    .top .tool-card:hover{ border-color:var(--c); }
+    .top .tool-card:hover .tc-title{ text-decoration:underline; text-underline-offset:3px; }
+    .tc-title{ font-weight:800; font-size:var(--fs-m); line-height:1.45; word-break:auto-phrase; }
     /* カードの高さをそろえて低く保つため、説明は2行まで */
     .tc-desc{ display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden;
-              font-size:.8rem; line-height:1.6; color:#64748b; }
-    .tc-rank{
-      position:absolute; top:-8px; right:12px; min-width:24px; height:24px; padding:0 6px; box-sizing:border-box;
-      border-radius:12px; background:#0f172a; color:#fff; font-size:.78rem; font-weight:700;
-      display:flex; align-items:center; justify-content:center;
-    }
-    #popular .tool-grid{ margin-top:6px; }
-    #popular .tc-title{ padding-right:16px; }   /* 右上の順位の丸に重ねない */
+              font-size:var(--fs-s); line-height:1.65; }
+    /* よく使われている順。名前の上に小さく「No.1」 */
+    .tc-rank{ order:-1; color:var(--c); font-size:var(--fs-xs); font-weight:800; letter-spacing:.06em; font-variant-numeric:tabular-nums; }
+    .tc-rank::before{ content:"No."; }
 
     /* 特徴・このサイトについて */
     .about-site{ margin-top:48px; }
-    .about-site > h2{ margin:0 0 14px; font-size:1.25rem; }
-    .features{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap:12px; }
-    .features section{ background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 18px; }
-    .features h3{ margin:0 0 8px; font-size:1rem; }
-    .features p{ margin:0; font-size:.92rem; line-height:1.85; color:#475569; }
+    .about-site > h2{ margin:0 0 14px; padding:0 0 8px; border-bottom:2px solid var(--ink); font-size:var(--fs-h2); }
+    .features{ display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap:8px; }
+    .features section{ background:var(--surface); border:1px solid var(--line); padding:16px 18px; }
+    .features h3{ margin:0 0 8px; font-size:var(--fs-b); }
+    .features p{ margin:0; font-size:var(--fs-m); line-height:1.85; }
     .site-links{ list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; gap:8px 20px; }
     .site-links a{ font-weight:700; }
-    .site-links span{ color:#64748b; font-size:.88rem; }
+    .site-links span{ font-size:var(--fs-s); }
 
     @media (max-width:600px){
       .top{ padding:0 16px 32px; }
-      .hero h1{ font-size:1.6rem; }
-      .cat{ margin-top:28px; }
-      .tool-grid{ gap:8px; }
-      .top .tool-card{ padding:12px 14px 12px 16px; gap:4px; }
+      .hero{ padding:22px 18px; }
+      .hero h1{ font-size:26px; }
+      .cat{ margin-top:32px; }
+      .top .tool-card{ padding:12px 14px; }
     }
   </style>
 
@@ -197,7 +188,7 @@
 
 <main class="top">
 
-<div class="hero">
+<div class="hero td-banner">
 <h1>ToolDock <span>無料Webツール集</span></h1>
 
 <p>

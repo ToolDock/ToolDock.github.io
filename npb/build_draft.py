@@ -26,6 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_magic import JST  # noqa: E402
 from build_saber import compute_season, season_rows  # noqa: E402
 from people import People, franchise, key  # noqa: E402
+from team_colors import team_style  # noqa: E402
 
 TEAM_ORDER = ["阪神", "巨人", "DeNA", "横浜", "ヤクルト", "広島", "中日",
               "ソフトバンク", "西武", "日本ハム", "オリックス", "ロッテ", "楽天"]
@@ -324,12 +325,12 @@ def career(p):
 CSS = """
 *{ box-sizing:border-box; }
 :root{
-    --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280;
-    --line:#d1d5db; --line-soft:#e5e7eb; --head-bg:#f3f4f6; --tint:#f9fafb;
-    --accent:#2563eb; --good:#15803d; --gold:#b45309;
+    --ink-strong:var(--ink); --ink-sub:var(--ink); --ink-mute:var(--ink);
+    --head-bg:var(--surface-2); --tint:var(--surface-2);
+    --good:#15803d; --gold:#b45309;
 }
 body{ margin:0; padding:0 0 48px; font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-      color:var(--ink); line-height:1.75; background:#f5f5f5; }
+      color:var(--ink); line-height:1.75; background:var(--bg); }
 .page-wrapper{ max-width:1100px; margin:0 auto; padding:0 16px; }
 /* ほかのページ（金特ツールなど）と同じく左に寄せ、左右に20pxの余白を取る。
    サイト共通の style.css は body を幅900pxに絞るので外し、表の広さに合わせた幅にする。
@@ -337,27 +338,23 @@ body{ margin:0; padding:0 0 48px; font-family:"Noto Sans JP","Hiragino Kaku Goth
 body{ max-width:none; }
 .page-wrapper{ margin:0; padding:0 20px; }
 body .td-rail-inline{ max-width:1100px; margin:40px 0 0; padding:0 20px; }
-header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:18px; }
-header .page-wrapper{ padding:0; }
-h1{ margin:0; font-size:1.35rem; line-height:1.5; }
-header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
-h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong); border-bottom:2px solid var(--line); }
-h3{ margin:20px 0 8px; padding-left:10px; font-size:1rem; color:var(--ink-strong); border-left:4px solid var(--accent); }
+h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong); border-bottom:2px solid var(--c); }
+h3{ margin:20px 0 8px; font-size:1rem; color:var(--ink-strong); }
 p{ margin:0 0 12px; }
 .lead{ font-size:0.95rem; }
 ul.points{ margin:0 0 8px; padding-left:1.3em; }
 ul.points li{ margin:4px 0; }
 .note{ font-size:0.84rem; color:var(--ink-mute); }
 .years{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px; padding:0; list-style:none; }
-.years a, .years span{ display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:16px; background:#fff;
+.years a, .years span{ display:inline-block; padding:4px 10px; border:1px solid var(--line); background:var(--surface);
                        font-size:0.86rem; color:var(--ink-sub); text-decoration:none; }
 .years span{ background:var(--ink-strong); color:#fff; border-color:var(--ink-strong); }
 .cards{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); margin:0 0 16px; }
-.card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+.card{ background:var(--surface); border:1px solid var(--line); padding:10px 12px; }
 .card .k{ font-size:0.78rem; color:var(--ink-sub); }
 .card .v{ font-size:1.35rem; font-weight:800; color:var(--ink-strong); line-height:1.3; }
 .card .s{ font-size:0.8rem; color:var(--ink-mute); }
-.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; background:#fff; border:1px solid var(--line); border-radius:12px; margin:0 0 14px; }
+.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; background:var(--surface); border:1px solid var(--line); margin:0 0 14px; }
 table{ border-collapse:collapse; width:100%; font-size:0.86rem; font-variant-numeric:tabular-nums; }
 th, td{ padding:7px 8px; border-bottom:1px solid var(--line-soft); text-align:left; white-space:nowrap; }
 thead th{ background:var(--head-bg); font-size:0.78rem; color:var(--ink-sub); }
@@ -369,12 +366,12 @@ td.sub{ font-size:0.78rem; color:var(--ink-mute); }
 td.war{ font-weight:800; text-align:right; }
 tr.none td{ color:var(--ink-mute); }
 tr.none td.nm{ font-weight:400; }
-.tag{ display:inline-block; font-size:0.7rem; padding:0 6px; border-radius:8px; background:#fef3c7; color:var(--gold); margin-left:4px; font-weight:700; }
+.tag{ display:inline-block; font-size:0.7rem; padding:0 6px; background:#fef3c7; color:var(--gold); margin-left:4px; font-weight:700; }
 .tag.ik{ background:#e0e7ff; color:#3730a3; }
 .filter{ display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin:0 0 10px; font-size:0.86rem; color:var(--ink-sub); }
-.filter select{ font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+.filter select{ font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:var(--r-ctl); background:var(--surface); }
 table.sortable th[data-k]{ cursor:pointer; }
-article{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px 18px; margin-top:26px; }
+article{ background:var(--surface); border:1px solid var(--line); padding:4px 20px 18px; margin-top:26px; }
 footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 @media (max-width:600px){
     th, td{ padding:6px 6px; font-size:0.8rem; }
@@ -417,8 +414,9 @@ SORT_JS = """
 """
 
 
-def shell(title, desc, canonical, h1, sub, body, tool_id, crumb=None):
-    """crumb: パンくずの最後に足す段の名前（年別ページの「2018年」）"""
+def shell(title, desc, canonical, h1, sub, body, tool_id, crumb=None, banner_attr=""):
+    """crumb: パンくずの最後に足す段の名前（年別ページの「2018年」）
+    banner_attr: 見出しの帯の style 属性（球団のページは球団の色。team_colors.team_style）"""
     extra = (f'<script> const BREADCRUMB_EXTRA = {{ name: "{esc(crumb)}", url: "{canonical}" }}; </script>\n'
              if crumb else "")
     return f"""<!DOCTYPE html>
@@ -445,10 +443,10 @@ def shell(title, desc, canonical, h1, sub, body, tool_id, crumb=None):
 
 <body>
 <div class="page-wrapper">
-<header>
+<div class="td-banner"{banner_attr}>
     <h1>{esc(h1)}</h1>
     <p>{esc(sub)}</p>
-</header>
+</div>
 <div class="container">
 {body}
 <footer class="disclaimer">
@@ -1011,7 +1009,8 @@ def team_page(team, drafts, last_season):
             + (f"通算WARトップは{top_txt}。" if top_txt else "")
             + f"年別の採点（12球団中の順位）と指名順位ごとの当たりの割合もまとめています。")
     return shell(title, desc, f"/draft/team/{TEAM_SLUG[team]}/", f"{team}のドラフト答え合わせ",
-                 "指名選手のその後を、一軍の通算成績と簡易WARで振り返ります", body, "draft", crumb=team)
+                 "指名選手のその後を、一軍の通算成績と簡易WARで振り返ります", body, "draft", crumb=team,
+                 banner_attr=team_style(team))
 
 
 def main(argv=None):

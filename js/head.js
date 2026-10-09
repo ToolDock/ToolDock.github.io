@@ -14,6 +14,12 @@ if (!tool) {
   console.error("Tool not found:", CURRENT_TOOL);
 }
 
+/* 分野の色（style.css の --c）を切り替える。
+   <head> の中で付けるので、色が後から変わって見えることはない */
+if (tool && tool.category && !tool.hidden) {
+  document.documentElement.dataset.cat = tool.category;
+}
+
 function escapeAttr(str){
   return String(str)
     .replace(/&/g, "&amp;")
@@ -151,8 +157,8 @@ const style = document.createElement("style");
 style.textContent = `
 
   .breadcrumb{
-    font-size:14px;
-    color:#666;
+    font-size:13.5px;
+    color:#1c1d1f;
     padding:12px 20px;
     margin-bottom:10px;
     line-height:1.6;
@@ -160,7 +166,7 @@ style.textContent = `
   }
 
   .breadcrumb a{
-    color:#2563eb;
+    color:#1d4fbf;
     text-decoration:none;
   }
 
@@ -170,7 +176,7 @@ style.textContent = `
 
   .bc-sep{
     margin:0 6px;
-    color:#999;
+    color:#1c1d1f;
   }
 
 `;

@@ -93,9 +93,8 @@
         box-sizing: border-box;
         padding: 24px 20px 40px;
         overflow-y: auto;
-        border-left: 1px solid ${dark ? "rgba(255,255,255,0.14)" : "#e2e8f0"};
-        background: ${dark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.75)"};
-        backdrop-filter: blur(6px);
+        border-left: 1px solid ${dark ? "rgba(255,255,255,0.14)" : "#d8d6cf"};
+        background: ${dark ? "rgba(255,255,255,0.04)" : "#ffffff"};
         z-index: 5;
       }
 
@@ -114,8 +113,8 @@
         font-size: 0.95rem;
         font-weight: bold;
         border: 0;
-        border-bottom: 2px solid ${dark ? "rgba(255,255,255,0.2)" : "#e2e8f0"};
-        color: ${dark ? "#e2e8f0" : "#334155"};
+        border-bottom: 2px solid ${dark ? "rgba(255,255,255,0.2)" : "var(--c, #1c1d1f)"};
+        color: ${dark ? "#e2e8f0" : "#1c1d1f"};
         letter-spacing: 0.02em;
       }
 
@@ -133,29 +132,29 @@
       .td-box a {
         display: block;
         padding: 8px 10px;
-        border-radius: 8px;
         text-decoration: none;
         font-size: 0.9rem;
         line-height: 1.5;
-        color: ${dark ? "#cbd5e1" : "#334155"};
+        color: ${dark ? "#e2e8f0" : "#1c1d1f"};
       }
 
       .td-box a:hover {
-        background: ${dark ? "rgba(255,255,255,0.08)" : "#eff6ff"};
-        color: ${dark ? "#ffffff" : "#1d4ed8"};
+        background: ${dark ? "rgba(255,255,255,0.08)" : "#f4f3ef"};
+        color: ${dark ? "#ffffff" : "#1d4fbf"};
       }
 
       .td-box a.current {
-        background: ${dark ? "rgba(255,255,255,0.1)" : "#eff6ff"};
-        color: ${dark ? "#ffffff" : "#1d4ed8"};
+        background: ${dark ? "rgba(255,255,255,0.1)" : "#f4f3ef"};
+        color: ${dark ? "#ffffff" : "#1c1d1f"};
         font-weight: bold;
       }
 
       .td-rank {
         display: inline-block;
         width: 1.4em;
-        color: ${dark ? "#94a3b8" : "#94a3b8"};
+        color: ${dark ? "#e2e8f0" : "#1c1d1f"};
         font-size: 0.85em;
+        font-weight: bold;
       }
 
       .td-cats {
@@ -167,8 +166,7 @@
       .td-cats a {
         display: inline-block;
         padding: 6px 14px;
-        border-radius: 999px;
-        border: 1px solid ${dark ? "rgba(255,255,255,0.2)" : "#cbd5e1"};
+        border: 1px solid ${dark ? "rgba(255,255,255,0.2)" : "#d8d6cf"};
         font-size: 0.85rem;
       }
 

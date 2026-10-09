@@ -107,13 +107,7 @@
       .td-footer {
         margin-top: 60px;
         padding: 0;
-        background:
-          repeating-linear-gradient(
-            -45deg,
-            rgba(255, 255, 255, 0.06) 0 6px,
-            rgba(255, 255, 255, 0) 6px 12px
-          ),
-          linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%);
+        background: #1c1d1f;
         color: #ffffff;
         font-size: 15px;
         line-height: 1.9;
@@ -127,7 +121,7 @@
       .td-view {
         padding: 12px 20px;
         background: #ffffff;
-        color: #334155;
+        color: #1c1d1f;
         text-align: center;
         font-size: 15px;
       }
@@ -137,9 +131,9 @@
         margin: 0 4px;
         padding: 2px 8px;
         border: 0;
-        border-radius: 6px;
+        border-radius: 3px;
         background: none;
-        color: #0284c7;
+        color: #1d4fbf;
         font-size: 15px;
         font-family: inherit;
         cursor: pointer;
@@ -147,18 +141,18 @@
       }
 
       .td-view button:hover {
-        background: #e0f2fe;
+        background: #edece8;
       }
 
       .td-view button[aria-current="true"] {
-        color: #0f172a;
+        color: #1c1d1f;
         font-weight: bold;
         text-decoration: none;
         cursor: default;
       }
 
       .td-view .td-view-sep {
-        color: #cbd5e1;
+        color: #1c1d1f;
       }
 
       .td-footer-inner {
@@ -188,10 +182,10 @@
       .td-copyright {
         margin: 22px 0 0;
         padding-top: 16px;
-        border-top: 1px solid rgba(255, 255, 255, 0.3);
+        border-top: 1px solid rgba(255, 255, 255, 0.25);
         text-align: center;
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.9);
+        color: #ffffff;
       }
 
       /* ページ先頭へ戻る */
@@ -206,9 +200,8 @@
         padding: 0;
 
         border: 0;
-        border-radius: 50%;
 
-        background: #0284c7;
+        background: #1c1d1f;
         color: #ffffff;
 
         font-size: 11px;
@@ -216,7 +209,6 @@
         line-height: 1.2;
 
         cursor: pointer;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
 
         opacity: 0;
         visibility: hidden;
@@ -229,7 +221,7 @@
       }
 
       .td-pagetop:hover {
-        background: #0369a1;
+        background: #000000;
       }
 
       .td-pagetop span {

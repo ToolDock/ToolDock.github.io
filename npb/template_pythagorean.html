@@ -24,9 +24,8 @@
 *{ box-sizing:border-box; }
 
 :root{
-    --ink:#1f2937; --ink-strong:#111827; --ink-sub:#4b5563; --ink-mute:#6b7280;
-    --line:#d1d5db; --line-soft:#e5e7eb; --head-bg:#f3f4f6; --tint:#f9fafb;
-    --accent:#2563eb;
+    --ink-strong:var(--ink); --ink-sub:var(--ink); --ink-mute:var(--ink);
+    --head-bg:var(--surface-2); --tint:var(--surface-2);
     --ce:#0f766e; --pa:#1d4ed8;
     /* 運の棒：プラス（運が良い）は青、マイナス（運が悪い）は赤。色覚の違いでも見分けられることを確認済み */
     --pos:#2a78d6; --neg:#e34948; --mid:#f0efec;
@@ -35,7 +34,7 @@
 body{
     margin:0; padding:0 0 48px;
     font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-    color:var(--ink); line-height:1.75; background:#f5f5f5;
+    color:var(--ink); line-height:1.75; background:var(--bg);
 }
 
 .page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
@@ -46,15 +45,9 @@ body{ max-width:none; }
 .page-wrapper{ margin:0; padding:0 20px; }
 body .td-rail-inline{ max-width:1000px; margin:40px 0 0; padding:0 20px; }
 
-header{ background:var(--ink-strong); color:#fff; padding:20px 16px; margin-bottom:22px; }
-header .page-wrapper{ padding:0; }
-h1{ margin:0; font-size:1.35rem; line-height:1.5; }
-header p{ margin:6px 0 0; font-size:0.9rem; color:#cbd5e1; }
-
 h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
-    border-bottom:2px solid var(--line); }
-h3{ margin:22px 0 8px; padding-left:10px; font-size:1.02rem; color:var(--ink-strong);
-    border-left:4px solid var(--accent); }
+    border-bottom:2px solid var(--c); }
+h3{ margin:22px 0 8px; font-size:1.02rem; color:var(--ink-strong); }
 p{ margin:0 0 12px; }
 
 .stamp{ display:flex; flex-wrap:wrap; gap:4px 16px; font-size:0.88rem; color:var(--ink-sub); margin:0 0 6px; }
@@ -63,12 +56,12 @@ p{ margin:0 0 12px; }
 
 .bar-ctl{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin:10px 0 16px; font-size:0.9rem; color:var(--ink-sub); }
 .bar-ctl label{ display:flex; align-items:center; gap:6px; font-weight:700; }
-.bar-ctl select{ font:inherit; font-size:0.95rem; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); }
+.bar-ctl select{ font:inherit; font-size:0.95rem; padding:6px 10px; border:1px solid var(--line); border-radius:var(--r-ctl); background:var(--surface); color:var(--ink); }
 
 /* ── リーグ ───────────────────────────── */
-.league{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 16px 18px; margin:0 0 22px; }
+.league{ background:var(--surface); border:1px solid var(--line); padding:4px 16px 18px; margin:0 0 22px; }
 .league h2{ margin-top:14px; border-bottom:none; padding-bottom:0; display:flex; align-items:center; gap:8px; }
-.league h2::before{ content:""; width:10px; height:22px; border-radius:3px; background:var(--lg); }
+.league h2::before{ content:""; width:10px; height:22px; background:var(--lg); }
 .scatter{ margin:0; }
 .league-all{ --lg:var(--ink-strong); }
 .scatter svg{ display:block; width:100%; max-width:560px; height:auto; font-family:inherit; }
@@ -77,7 +70,7 @@ p{ margin:0 0 12px; }
 .league-central{ --lg:var(--ce); }
 .league-pacific{ --lg:var(--pa); }
 .hl{ font-size:0.95rem; margin:0 0 10px; }
-.box{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:6px 16px 10px; margin:0 0 22px; }
+.box{ background:var(--surface); border:1px solid var(--line); padding:6px 16px 10px; margin:0 0 22px; }
 .hl strong{ color:var(--ink-strong); }
 
 /* ── 運の横棒グラフ ───────────────────── */
@@ -89,17 +82,17 @@ p{ margin:0 0 12px; }
 .chart-axis > span:nth-child(1){ justify-self:start; }
 .chart-axis > span:nth-child(2){ justify-self:center; }
 .chart-axis > span:nth-child(3){ justify-self:end; }
-.bar-row{ height:26px; border-radius:6px; outline:none; }
+.bar-row{ height:26px; outline:none; }
 .bar-row:hover, .bar-row:focus-visible{ background:var(--tint); }
 .bar-name{ font-size:0.86rem; font-weight:700; color:var(--ink-strong); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .bar-track{ position:relative; height:14px; background:linear-gradient(to right, transparent calc(50% - 1px), var(--line) calc(50% - 1px), var(--line) calc(50% + 1px), transparent calc(50% + 1px)); }
 .bar{ position:absolute; top:0; height:14px; }
-.bar.pos{ left:50%; background:var(--pos); border-radius:0 4px 4px 0; }
-.bar.neg{ right:50%; background:var(--neg); border-radius:4px 0 0 4px; }
+.bar.pos{ left:50%; background:var(--pos); }
+.bar.neg{ right:50%; background:var(--neg); }
 .bar-val{ font-size:0.84rem; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; text-align:right; }
 .chart figcaption{ font-size:0.78rem; color:var(--ink-mute); margin-top:4px; }
 .tip{ position:fixed; z-index:50; pointer-events:none; background:var(--ink-strong); color:#fff; font-size:0.82rem;
-      padding:6px 10px; border-radius:8px; max-width:280px; line-height:1.5; box-shadow:0 4px 14px rgba(0,0,0,.18); }
+      padding:6px 10px; max-width:280px; line-height:1.5; }
 .tip[hidden]{ display:none; }
 
 .tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -112,17 +105,17 @@ td.rk{ font-weight:700; color:var(--ink-sub); width:2.6em; }
 td.pct, td.luck{ font-weight:700; }
 
 /* ── 計算機 ───────────────────────────── */
-.calc{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:0 0 22px; }
+.calc{ background:var(--surface); border:1px solid var(--line); padding:14px 16px; margin:0 0 22px; }
 .calc-in{ display:flex; flex-wrap:wrap; gap:10px 14px; align-items:flex-end; }
 .calc-in label{ display:flex; flex-direction:column; gap:3px; font-size:0.8rem; font-weight:700; color:var(--ink-sub); }
-.calc-in input{ font:inherit; font-size:1rem; padding:7px 10px; border:1px solid var(--line); border-radius:8px; width:8em; }
+.calc-in input{ font:inherit; font-size:1rem; padding:7px 10px; border:1px solid var(--line); border-radius:var(--r-ctl); width:8em; }
 .calc-out{ margin:12px 0 0; font-size:0.95rem; }
 .calc-out strong{ font-size:1.4rem; color:var(--ink-strong); font-variant-numeric:tabular-nums; }
 
 /* ── 解説 ───────────────────────────── */
-article{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:4px 20px 18px; margin-top:26px; }
+article{ background:var(--surface); border:1px solid var(--line); padding:4px 20px 18px; margin-top:26px; }
 article h2:first-child{ margin-top:18px; }
-.formula{ background:var(--tint); border:1px solid var(--line-soft); border-radius:10px; padding:10px 14px; margin:0 0 12px; font-size:0.93rem; }
+.formula{ background:var(--tint); border:1px solid var(--line-soft); padding:10px 14px; margin:0 0 12px; font-size:0.93rem; }
 .note{ font-size:0.86rem; color:var(--ink-mute); }
 article ul{ margin:0 0 12px; padding-left:1.3em; }
 article li{ margin:4px 0; }
@@ -143,10 +136,10 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 
 <div class="page-wrapper">
 
-<header>
+<div class="td-banner">
     <h1>プロ野球 運ランキング（ピタゴラス勝率）</h1>
     <p>得点と失点から「実力どおりなら何勝か」を計算し、実際の勝ち数との差で、どの球団が運で勝っているかを並べます</p>
-</header>
+</div>
 
 <div class="container">
 
