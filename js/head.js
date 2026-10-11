@@ -321,21 +321,22 @@ function addJsonLd(data){
    番号を変えるとブラウザは別のURLとして扱うので、
    期限を待たずに新しい版を取りに行く。
 
-   番号が効くのは、下の5本だけ。
+   番号が効くのは、下の6本だけ。
    HTMLから直に読んでいる analytics.js / tool-data.js / related.js と、
    head.js 自身には効かない。そちらは従来どおり最大10分かかる
    （全HTMLを書き換えることになるので、割に合わない）
 ========================= */
 
 {
-  const PARTS_VERSION = 4;
+  const PARTS_VERSION = 5;
 
   const parts = [
     "/js/sidebar.js",
     "/js/ads.js",
     "/js/affiliate.js",
     "/js/header.js",
-    "/js/footer.js"
+    "/js/footer.js",
+    "/js/share.js"
   ];
 
   for (const src of parts) {

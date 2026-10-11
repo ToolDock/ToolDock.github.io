@@ -610,7 +610,38 @@ function showResult(index) {
   void resultEl.offsetWidth;
 
   resultEl.classList.add("show");
+  updateShare(index);
 }
+
+// ======================
+// 結果の共有
+// ======================
+
+// 結果が出たら、回すボタンの下に「結果をコピー・X・LINE」を出す。
+// 共有の部品（/js/share.js）は head.js があとから読み込むので、使うときに確かめる
+let shareBox = null;
+
+function resultText(index) {
+  const MAX = 15;
+  const list = items.length > MAX
+    ? items.slice(0, MAX).join("・") + `ほか${items.length - MAX}件`
+    : items.join("・");
+  return `🎯 ルーレットの結果は「${items[index]}」でした！\n候補：${list}`;
+}
+
+function updateShare(index) {
+  if (!window.TDShare) return;
+  if (!shareBox) {
+    const anchor = document.getElementById("itemInput").parentElement;
+    shareBox = TDShare.attach(anchor, () => lastText);
+  }
+  // 回したときの候補で文章を作っておく（あとで候補を書き換えても、共有するのはこの結果）
+  lastText = resultText(index);
+  shareBox.update();
+}
+
+let lastText = "";
+
 
 // ======================
 // スピン
