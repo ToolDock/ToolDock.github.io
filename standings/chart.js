@@ -204,12 +204,12 @@
   var bar = document.querySelector(".player");
   var playBtn = bar.querySelector(".play"), dayOut = bar.querySelector(".day"), seek = bar.querySelector(".seek");
   var speed = 1, k = D - 1, playing = false, last = 0;
-  var SECONDS = 120;    // ×1 で開幕から最終日まで2分（×4 で30秒）
+  var DAYS_PER_SECOND = 1;    // ×1 で1日を1秒（試合のあった日を1日と数える。1シーズンでおよそ3分）
 
   function tick(ts) {
     if (!playing) return;
     var dt = last ? (ts - last) / 1000 : 0;
-    k = Math.min(D - 1, k + dt * (D - 1) / SECONDS * speed);
+    k = Math.min(D - 1, k + dt * DAYS_PER_SECOND * speed);
     last = ts;
     draw(k, dt || 0.016);
     if (k >= D - 1) { stop(); return; }
