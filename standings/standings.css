@@ -53,6 +53,8 @@ footer.disclaimer{ margin-top:22px; font-size:var(--fs-s); }
     ol.board{ display:grid; grid-template-columns:1fr 1fr; }
     ol.board li{ border-right:1px solid var(--line-soft); grid-template-areas:"rk nm sv" "rk rec rec" "rk st st"; }
     ol.board .rec{ white-space:nowrap; }
+    ol.board .nm{ white-space:nowrap; font-size:14px; min-width:0; }
+    ol.board .sv{ padding-left:6px; }
     ol.board .st{ justify-self:start; text-align:left; }
     .player{ gap:8px; }
     .player .seek{ order:5; flex-basis:100%; }

@@ -64,22 +64,17 @@
         teams.forEach(function (t) { if (d >= t.start) { var x = t.v[d][0] - t.v[d][1]; mn = Math.min(mn, x); mx = Math.max(mx, x); } });
         pmin.push(mn); pmax.push(mx);
       }
-      var c = { lo: 0, hi: 1, pmin: pmin, pmax: pmax, L: L, R: R, T: T, B: B, W: W, H: H, fs: fs };
-      function X(i) { return L + (D > 1 ? i / (D - 1) : 0) * (W - L - R); }
+      var c = { lo: 0, hi: 1, xmax: D - 1, pmin: pmin, pmax: pmax, L: L, R: R, T: T, B: B, W: W, H: H, fs: fs, narrow: narrow };
+      // 横は、開幕からその日までを枠いっぱいに使う（試合が進むほど、前の日は横に縮んでいく）
+      function X(i) { return L + (c.xmax > 0 ? i / c.xmax : 0) * (W - L - R); }
       function Y(v) { return T + (c.hi - v) / (c.hi - c.lo) * (H - T - B); }
 
       var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: W, height: H, role: "img", "aria-label": fig.getAttribute("aria-label") });
-      // 貯金の目盛りは描くたびに作り直す。月の頭の線は動かない（月の名前は、次の月と近すぎるときは出さない）
+      // 目盛り（貯金と月の頭）は、縦横の範囲が変わるので描くたびに作り直す
       c.grid = el("g", {});
       svg.appendChild(c.grid);
-      var months = [];
-      days.forEach(function (d, i) { var m = d.slice(5, 7); if (!months.length || months[months.length - 1].m !== m) months.push({ m: m, i: i }); });
-      months.forEach(function (mo, n) {
-        svg.appendChild(el("line", { x1: X(mo.i), x2: X(mo.i), y1: T, y2: H - B, stroke: "#e6e4de" }));
-        var next = months[n + 1];
-        if (next && X(next.i) - X(mo.i) < (narrow ? 26 : 30)) return;
-        svg.appendChild(el("text", { x: X(mo.i) + 3, y: H - B + 16, "font-size": fs - 1, fill: "#1c1d1f" }, (+mo.m) + "月"));
-      });
+      c.months = [];
+      days.forEach(function (d, i) { var m = d.slice(5, 7); if (!c.months.length || c.months[c.months.length - 1].m !== m) c.months.push({ m: m, i: i }); });
       // 線はグラフの枠の中だけに描く（名前は枠の右にはみ出してよい）
       var clipId = "clip-" + key;
       var defs = el("defs", {}), clip = el("clipPath", { id: clipId });
@@ -116,6 +111,16 @@
 
   function drawGrid(c) {
     c.grid.textContent = "";
+    // 月の頭の線と名前。その日までに来た月だけ。名前は、次の月と近すぎるときは出さない
+    var shown = c.months.filter(function (mo) { return mo.i <= c.xmax; });
+    shown.forEach(function (mo, n) {
+      var x = c.X(mo.i);
+      c.grid.appendChild(el("line", { x1: x, x2: x, y1: c.T, y2: c.H - c.B, stroke: "#e6e4de" }));
+      var next = shown[n + 1];
+      var room = (next ? c.X(next.i) : c.W - c.R) - x;
+      if (room < (c.narrow ? 26 : 30)) return;
+      c.grid.appendChild(el("text", { x: x + 3, y: c.H - c.B + 16, "font-size": c.fs - 1, fill: "#1c1d1f" }, (+mo.m) + "月"));
+    });
     var span = c.hi - c.lo, step = [1, 2, 5, 10, 20, 50].find(function (s) { return span / s <= 8; }) || 50;
     for (var v = Math.ceil(c.lo / step) * step; v <= c.hi; v += step) {
       var y = c.Y(v);
@@ -125,9 +130,12 @@
   }
 
   // dt（秒）があるときは、縦の範囲をなめらかに追いかける。無いとき（最初・つまみを動かしたとき）はすぐ合わせる
+  var MIN_DAYS = 7;    // 開幕直後に1日が横いっぱいに広がりすぎないよう、横は最低でも1週間ぶん見せる
+
   function draw(k, dt) {
     var i = Math.floor(k), f = k - i;
     charts.forEach(function (c) {
+      c.xmax = Math.min(D - 1, Math.max(k, MIN_DAYS));
       var tg = target(c, Math.min(D - 1, f > 0 ? i + 1 : i));
       if (dt) {
         var a = Math.min(1, dt * 5);
@@ -196,7 +204,7 @@
   var bar = document.querySelector(".player");
   var playBtn = bar.querySelector(".play"), dayOut = bar.querySelector(".day"), seek = bar.querySelector(".seek");
   var speed = 1, k = D - 1, playing = false, last = 0;
-  var SECONDS = 30;     // ×1 で開幕から最終日まで30秒
+  var SECONDS = 120;    // ×1 で開幕から最終日まで2分（×4 で30秒）
 
   function tick(ts) {
     if (!playing) return;
