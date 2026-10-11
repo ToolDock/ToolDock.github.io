@@ -1,0 +1,57 @@
+*{ box-sizing:border-box; }
+/* 色・文字の大きさは style.css の決まりを使う */
+body{ max-width:none; margin:0; padding:0 0 48px; background:var(--bg); color:var(--ink); line-height:1.7;
+      font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif; }
+.page-wrapper{ max-width:1100px; margin:0; padding:0 20px; }
+body .td-rail-inline{ max-width:1100px; margin:40px 0 0; padding:0 20px; }
+h2{ margin:34px 0 12px; padding-bottom:8px; font-size:var(--fs-h2); border-bottom:2px solid var(--c); }
+h3{ margin:20px 0 8px; font-size:var(--fs-h3); }
+ul.years{ list-style:none; display:flex; flex-wrap:wrap; gap:6px; margin:0 0 14px; padding:0; }
+ul.years a, ul.years span{ display:inline-block; padding:4px 12px; border:1px solid var(--line); background:var(--surface);
+    text-decoration:none; font-size:var(--fs-m); color:var(--ink); font-variant-numeric:tabular-nums; }
+ul.years span{ background:var(--ink); color:#fff; border-color:var(--ink); }
+
+/* 再生の操作。動かしている間も手が届くよう、画面の上に貼りつける */
+.player{ position:sticky; top:0; z-index:3; display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    padding:10px 12px; background:var(--surface); border:1px solid var(--line); margin:0 0 4px; }
+.player .play{ width:44px; height:44px; border:0; border-radius:var(--r-ctl); background:var(--ink); color:#fff;
+    font-size:18px; line-height:1; cursor:pointer; }
+.player .play:hover{ background:#000; }
+.player .day{ min-width:6.5em; font-size:var(--fs-h3); font-weight:800; font-variant-numeric:tabular-nums; }
+.player .seek{ flex:1 1 200px; accent-color:var(--ink); }
+.player .speed{ display:flex; gap:4px; }
+.player .speed button{ padding:4px 9px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:var(--surface);
+    color:var(--ink); font:inherit; font-size:var(--fs-s); font-weight:700; cursor:pointer; }
+.player .speed button[aria-pressed="true"]{ background:var(--ink); border-color:var(--ink); color:#fff; }
+
+/* グラフと、右の順位表 */
+.lg-body{ display:grid; grid-template-columns:minmax(0, 1fr) 260px; gap:8px; align-items:start; }
+.chart{ margin:0; background:var(--surface); border:1px solid var(--line); aspect-ratio:5 / 3; overflow:hidden; }
+.chart svg{ display:block; width:100%; height:auto; font-family:inherit; }
+ol.board{ list-style:none; margin:0; padding:0; background:var(--surface); border:1px solid var(--line); }
+ol.board li{ display:grid; grid-template-columns:1.4em 1fr auto; grid-template-areas:"rk nm sv" "rk rec st";
+    column-gap:6px; padding:8px 10px; border-bottom:1px solid var(--line-soft); font-variant-numeric:tabular-nums; }
+ol.board li:last-child{ border-bottom:0; }
+ol.board .rk{ grid-area:rk; font-weight:800; font-size:var(--fs-b); }
+ol.board .nm{ grid-area:nm; font-weight:800; display:flex; align-items:center; gap:6px; }
+ol.board .nm i{ width:10px; height:10px; flex:none; }
+ol.board .rec{ grid-area:rec; font-size:var(--fs-s); }
+ol.board .sv{ grid-area:sv; font-weight:800; text-align:right; }
+ol.board .st{ grid-area:st; font-size:var(--fs-s); font-weight:700; text-align:right; }
+ol.board .st.hot{ color:#fff; background:var(--hot, var(--ink)); padding:0 6px; }
+
+.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; background:var(--surface); border:1px solid var(--line); }
+table.final{ border-collapse:collapse; width:100%; font-size:var(--fs-s); font-variant-numeric:tabular-nums; }
+table.final th, table.final td{ padding:7px 8px; border-bottom:1px solid var(--line-soft); text-align:right; white-space:nowrap; }
+table.final thead th{ background:var(--surface-2); font-size:var(--fs-xs); }
+table.final .tm{ text-align:left; font-weight:700; }
+.note{ margin-top:18px; font-size:var(--fs-s); }
+footer.disclaimer{ margin-top:22px; font-size:var(--fs-s); }
+@media (max-width:760px){
+    .lg-body{ grid-template-columns:1fr; }
+    .chart{ aspect-ratio:1 / 0.95; }
+    ol.board{ display:grid; grid-template-columns:1fr 1fr; }
+    ol.board li{ border-right:1px solid var(--line-soft); }
+    .player{ gap:8px; }
+    .player .seek{ order:5; flex-basis:100%; }
+}
