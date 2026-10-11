@@ -57,20 +57,21 @@
       var H = Math.round(W * (narrow ? 0.95 : 0.6));
       var fs = narrow ? 11 : 12;
       var L = 36, R = narrow ? 92 : 118, T = 12, B = 26;
-      var lo = 0, hi = 0;
-      teams.forEach(function (t) { t.v.forEach(function (x) { lo = Math.min(lo, x[0] - x[1]); hi = Math.max(hi, x[0] - x[1]); }); });
-      var step = (hi - lo) > 40 ? 10 : 5;
-      lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
-      if (hi === lo) hi = lo + step;
+      // 縦の目盛りは、その日までに出た貯金の幅に合わせて動かす（開幕のころは差が小さいので拡大して見せる）。
+      // pmin・pmax は、その日までの全球団の貯金の最小・最大
+      var pmin = [], pmax = [], mn = 0, mx = 0;
+      for (var d = 0; d < D; d++) {
+        teams.forEach(function (t) { if (d >= t.start) { var x = t.v[d][0] - t.v[d][1]; mn = Math.min(mn, x); mx = Math.max(mx, x); } });
+        pmin.push(mn); pmax.push(mx);
+      }
+      var c = { lo: 0, hi: 1, pmin: pmin, pmax: pmax, L: L, R: R, T: T, B: B, W: W, H: H, fs: fs };
       function X(i) { return L + (D > 1 ? i / (D - 1) : 0) * (W - L - R); }
-      function Y(v) { return T + (hi - v) / (hi - lo) * (H - T - B); }
+      function Y(v) { return T + (c.hi - v) / (c.hi - c.lo) * (H - T - B); }
 
       var svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: W, height: H, role: "img", "aria-label": fig.getAttribute("aria-label") });
-      // 目盛り：貯金と、月の頭（月の名前は、次の月と近すぎるときは出さない）
-      for (var v = lo; v <= hi; v += step) {
-        svg.appendChild(el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: v === 0 ? "#1c1d1f" : "#e6e4de", "stroke-width": v === 0 ? 1.2 : 1 }));
-        svg.appendChild(el("text", { x: L - 5, y: Y(v) + 4, "text-anchor": "end", "font-size": fs - 1, fill: "#1c1d1f" }, v > 0 ? "+" + v : String(v)));
-      }
+      // 貯金の目盛りは描くたびに作り直す。月の頭の線は動かない（月の名前は、次の月と近すぎるときは出さない）
+      c.grid = el("g", {});
+      svg.appendChild(c.grid);
       var months = [];
       days.forEach(function (d, i) { var m = d.slice(5, 7); if (!months.length || months[months.length - 1].m !== m) months.push({ m: m, i: i }); });
       months.forEach(function (mo, n) {
@@ -79,7 +80,12 @@
         if (next && X(next.i) - X(mo.i) < (narrow ? 26 : 30)) return;
         svg.appendChild(el("text", { x: X(mo.i) + 3, y: H - B + 16, "font-size": fs - 1, fill: "#1c1d1f" }, (+mo.m) + "月"));
       });
-      var lines = el("g", {}), labels = el("g", {});
+      // 線はグラフの枠の中だけに描く（名前は枠の右にはみ出してよい）
+      var clipId = "clip-" + key;
+      var defs = el("defs", {}), clip = el("clipPath", { id: clipId });
+      clip.appendChild(el("rect", { x: L - 6, y: T - 6, width: W - L - R + 12, height: H - T - B + 12 }));
+      defs.appendChild(clip); svg.appendChild(defs);
+      var lines = el("g", { "clip-path": "url(#" + clipId + ")" }), labels = el("g", {});
       svg.appendChild(lines); svg.appendChild(labels);
       var parts = teams.map(function (t) {
         var p = { t: t };
@@ -93,14 +99,47 @@
       });
       fig.textContent = "";
       fig.appendChild(svg);
-      charts.push({ parts: parts, teams: teams, board: board, X: X, Y: Y, gap: fs + 1 });
+      c.parts = parts; c.teams = teams; c.board = board; c.X = X; c.Y = Y; c.gap = fs + 1;
+      charts.push(c);
     });
   }
 
   // k（0〜D-1、小数もあり）の日までを描く
-  function draw(k) {
+  // その日までの貯金の幅 → 見せる縦の範囲。0 は必ず入れ、上下に少し余白をとる。最低でも ±4 は見せる
+  function target(c, i) {
+    var lo = Math.min(0, c.pmin[i]), hi = Math.max(0, c.pmax[i]);
+    var pad = Math.max(1, (hi - lo) * 0.08);
+    lo -= pad; hi += pad;
+    if (hi - lo < 8) { var mid = (hi + lo) / 2; lo = mid - 4; hi = mid + 4; }
+    return [lo, hi];
+  }
+
+  function drawGrid(c) {
+    c.grid.textContent = "";
+    var span = c.hi - c.lo, step = [1, 2, 5, 10, 20, 50].find(function (s) { return span / s <= 8; }) || 50;
+    for (var v = Math.ceil(c.lo / step) * step; v <= c.hi; v += step) {
+      var y = c.Y(v);
+      c.grid.appendChild(el("line", { x1: c.L, x2: c.W - c.R, y1: y, y2: y, stroke: v === 0 ? "#1c1d1f" : "#e6e4de", "stroke-width": v === 0 ? 1.2 : 1 }));
+      c.grid.appendChild(el("text", { x: c.L - 5, y: y + 4, "text-anchor": "end", "font-size": c.fs - 1, fill: "#1c1d1f" }, v > 0 ? "+" + v : String(v)));
+    }
+  }
+
+  // dt（秒）があるときは、縦の範囲をなめらかに追いかける。無いとき（最初・つまみを動かしたとき）はすぐ合わせる
+  function draw(k, dt) {
     var i = Math.floor(k), f = k - i;
     charts.forEach(function (c) {
+      var tg = target(c, Math.min(D - 1, f > 0 ? i + 1 : i));
+      if (dt) {
+        var a = Math.min(1, dt * 5);
+        c.lo += (tg[0] - c.lo) * a; c.hi += (tg[1] - c.hi) * a;
+        // なめらかに追いかけても、描いた線がはみ出すことはないようにする
+        var j = Math.min(D - 1, i + 1);
+        var visLo = Math.min(0, c.pmin[i] + (c.pmin[j] - c.pmin[i]) * f), visHi = Math.max(0, c.pmax[i] + (c.pmax[j] - c.pmax[i]) * f);
+        c.lo = Math.min(c.lo, visLo - 0.5); c.hi = Math.max(c.hi, visHi + 0.5);
+      } else {
+        c.lo = tg[0]; c.hi = tg[1];
+      }
+      drawGrid(c);
       var ends = [];
       c.parts.forEach(function (p) {
         var t = p.t, pts = [];
@@ -161,14 +200,15 @@
 
   function tick(ts) {
     if (!playing) return;
-    if (last) k = Math.min(D - 1, k + (ts - last) / 1000 * (D - 1) / SECONDS * speed);
+    var dt = last ? (ts - last) / 1000 : 0;
+    k = Math.min(D - 1, k + dt * (D - 1) / SECONDS * speed);
     last = ts;
-    draw(k);
+    draw(k, dt || 0.016);
     if (k >= D - 1) { stop(); return; }
     requestAnimationFrame(tick);
   }
   function play() {
-    if (k >= D - 1) k = 0;
+    if (k >= D - 1) { k = 0; draw(k); }   // 最初からのときは、縦の範囲も開幕の幅にすぐ戻す
     playing = true; last = 0;
     playBtn.textContent = "❚❚"; playBtn.setAttribute("aria-label", "一時停止");
     requestAnimationFrame(tick);
