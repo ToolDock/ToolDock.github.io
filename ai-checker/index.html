@@ -141,6 +141,7 @@
     .c5 { --mk: #1e8a3c; --mk-bg: #dcf2e2; }
     .c6 { --mk: #0f7f7f; --mk-bg: #d6f1f1; }
     .c7 { --mk: #5b5b5b; --mk-bg: #e6e4de; }
+    .c8 { --mk: #b4531f; --mk-bg: #fbe3d3; }
 
     mark.is-active {
         outline: 2px solid var(--mk);
@@ -149,7 +150,7 @@
     /* 種類を非表示にしたとき */
     .preview.hide-1 mark.c1, .preview.hide-2 mark.c2, .preview.hide-3 mark.c3,
     .preview.hide-4 mark.c4, .preview.hide-5 mark.c5, .preview.hide-6 mark.c6,
-    .preview.hide-7 mark.c7 {
+    .preview.hide-7 mark.c7, .preview.hide-8 mark.c8 {
         background: none;
         border-bottom-color: transparent;
         cursor: text;
@@ -447,13 +448,20 @@
                 <tr><td><span class="c5"></span>文頭の接続詞</td><td>「また、」「さらに、」「一方で、」「このように、」</td><td>前後の流れで伝わるなら削る。文の順番を入れ替える</td></tr>
                 <tr><td><span class="c6"></span>文末の繰り返し</td><td>「〜です。〜です。〜です。」と同じ終わり方が3文以上続く</td><td>体言止め、「〜だ」、問いかけ、短い一文などを混ぜる</td></tr>
                 <tr><td><span class="c7"></span>記号・構成の型</td><td>「##」「**太字**」「✅」などの記号、行末の「：」</td><td>貼り付け先で見出しや太字を付け直し、記号は消す</td></tr>
+                <tr><td><span class="c8"></span>読点の多さ</td><td>1文に読点が3つ以上ある文。「〜は、〜ので、〜すると、」と細かく区切る文</td><td>文を2つに分ける。「〜は、」「〜ので、」などの無くても読める読点を削る</td></tr>
             </tbody>
         </table>
     </div>
 
     <p>
-        このほか、文の長さがそろいすぎているとき（AIの文章は1文の長さが似通いやすい）と、
-        箇条書きの行が多すぎるときは、上のまとめに書き添えます。
+        このほか、次のような全体の傾向は、上のまとめに書き添えます。
+    </p>
+    <ul>
+        <li>文の長さがそろいすぎている（AIの文章は1文の長さが似通いやすい）</li>
+        <li>読点が多い。多くの文が、前半で読点を打つ同じ形になっている（「〜は、」「〜ので、」）</li>
+        <li>箇条書きの行や、接続詞で始まる文が多い</li>
+    </ul>
+    <p>
     </p>
 
     <h2>注意</h2>
@@ -475,7 +483,7 @@
 
     <p><strong>Q. 「AIっぽい表現：多い」の基準は？</strong><br>
     A. 指摘の数を400字（原稿用紙1枚）あたりに直して決めています。400字あたり2か所未満なら「少ない」、4か所未満なら「やや多い」、それ以上を「多い」としています。
-    文頭の接続詞と記号・構成の型は、1か所を0.5として数えています。</p>
+    文頭の接続詞・記号と構成の型・読点の多さは、1か所を0.5として数えています（読点は1文を1か所とします）。</p>
 
 </div>
 
@@ -501,11 +509,12 @@ const CATS = {
     4: "回りくどい",
     5: "文頭の接続詞",
     6: "文末の繰り返し",
-    7: "記号・構成の型"
+    7: "記号・構成の型",
+    8: "読点の多さ"
 };
 
 /* 数えるときの重み。目立ちやすさの違い */
-const WEIGHT = { 1: 1, 2: 1, 3: 1, 4: 1, 5: 0.5, 6: 1, 7: 0.5 };
+const WEIGHT = { 1: 1, 2: 1, 3: 1, 4: 1, 5: 0.5, 6: 1, 7: 0.5, 8: 0.5 };
 
 const RULES = [
     [1, /について(?:詳しく|くわしく|わかりやすく|分かりやすく|徹底的に)?(?:解説|説明|紹介|ご紹介)(?:します|していきます|しました|いたします)/g,
@@ -567,6 +576,9 @@ const RULES = [
 
 /* 文頭に来ると、AIの文章でつなぎすぎになりやすい接続詞 */
 const CONJ = /^(?:さらに|また|加えて|一方で|一方|そのため|このため|このように|つまり|したがって|具体的には|例えば|たとえば|まず|次に|最後に|なお|ちなみに|結果として|その結果|それにより|これにより)(?=、|,|，)/;
+
+/* これより短い間隔（字数）で読点を打っていたら、まとめで「読点が多め」と知らせる */
+const COMMA_EVERY = 30;
 
 /* 文末の終わり方（同じものが3文以上続くと指摘する） */
 const ENDINGS = /(でしょう|ません|ました|ています|てください|です|ます|である|だ)[。！!]$/;
@@ -675,6 +687,27 @@ function check(text) {
         add(7, me.index, me.index + me[0].length, "見出しや箇条書きの絵文字", "目印の絵文字は消す");
     }
 
+    // 8：読点の多さ。1文に3つ以上、または読点で細かく区切りすぎている文の読点に印を付ける。
+    // 1文を1か所と数え（2つ目からの読点は sub）、押したときは文全体を選ぶ
+    let commaTotal = 0, longSents = 0, frontComma = 0;
+    for (const s of sents) {
+        if (s.text.includes("|")) continue;     // 表の行（| 区切り）は文として見ない
+        const idx = [...s.text.matchAll(/[、，,]/g)].map(m => m.index);
+        commaTotal += idx.length;
+        if (s.text.length >= 15) {
+            longSents++;
+            if (idx.length && idx[0] < s.text.length / 2) frontComma++;
+        }
+        if (idx.length >= 3 || (idx.length >= 2 && s.text.length / (idx.length + 1) < 12)) {
+            idx.forEach((k, n) => hits.push({
+                cat: 8, start: s.start + k, end: s.start + k + 1, sub: n > 0,
+                selStart: s.start, selEnd: s.end,
+                why: `1文に読点が${idx.length}つ`,
+                fix: "文を2つに分けるか、無くても読める読点を削る（「〜は、」「〜ので、」の読点は省けることが多い）"
+            }));
+        }
+    }
+
     hits.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
 
     // 全体の傾向
@@ -694,7 +727,15 @@ function check(text) {
         notes.push(`接続詞で始まる文が${Math.round(conjCount / sents.length * 100)}%あります。つなぎの言葉を減らすと読みやすくなります。`);
     }
 
-    return { hits, notes, chars: text.replace(/\s/g, "").length };
+    const chars = text.replace(/\s/g, "").length;
+    if (commaTotal >= 5 && chars / commaTotal < COMMA_EVERY) {
+        notes.push(`読点が多めです（${Math.round(chars / commaTotal)}字に1つ、1文に平均${(commaTotal / Math.max(1, sents.length)).toFixed(1)}個）。無くても読める読点を削ると、どの文も同じ区切り方になるのを防げます。`);
+    }
+    if (longSents >= 6 && frontComma / longSents >= 0.6) {
+        notes.push(`${Math.round(frontComma / longSents * 100)}%の文が、前半で読点を打つ同じ形です（「〜は、」「〜ので、」「〜すると、」など）。読点を省く、語順を変える、短い文に分けるなどで形を変えると単調さが消えます。`);
+    }
+
+    return { hits, notes, chars };
 }
 
 /* =========================
@@ -742,7 +783,8 @@ function render() {
     // まとめ
     const counts = {};
     let score = 0;
-    for (const h of result.hits) {
+    const main = result.hits.map((h, i) => [h, i]).filter(([h]) => !h.sub);
+    for (const [h] of main) {
         counts[h.cat] = (counts[h.cat] || 0) + 1;
         score += WEIGHT[h.cat];
     }
@@ -753,7 +795,7 @@ function render() {
         meterBar.style.left = "0%";
     } else {
         levelValue.textContent = per400 < 2 ? "少ない" : per400 < 4 ? "やや多い" : "多い";
-        levelCount.textContent = `指摘 ${result.hits.length}か所（${result.chars}字・400字あたり ${per400.toFixed(1)}）`;
+        levelCount.textContent = `指摘 ${main.length}か所（${result.chars}字・400字あたり ${per400.toFixed(1)}）`;
         meterBar.style.left = Math.min(100, per400 / 6 * 100) + "%";
     }
 
@@ -764,13 +806,13 @@ function render() {
     notesEl.innerHTML = result.notes.map(n => `<li>${esc(n)}</li>`).join("");
 
     // 指摘の一覧
-    hitsEl.innerHTML = result.hits.slice(0, MAX_LIST).map((h, i) =>
+    hitsEl.innerHTML = main.slice(0, MAX_LIST).map(([h, i]) =>
         `<li data-i="${i}" class="c${h.cat}"${hidden.has(String(h.cat)) ? " hidden" : ""}>` +
         `<span class="tag">${CATS[h.cat]}</span>` +
-        `<span class="what"><q>${esc(text.slice(h.start, h.end).trim())}</q> ${esc(h.why)}</span>` +
+        `<span class="what"><q>${esc(text.slice(h.selStart ?? h.start, h.selEnd ?? h.end).trim())}</q> ${esc(h.why)}</span>` +
         `<span class="fix">${esc(h.fix)}</span></li>`).join("");
-    hitsMore.hidden = result.hits.length <= MAX_LIST;
-    hitsMore.textContent = `ほか${result.hits.length - MAX_LIST}か所は、上の印で確認できます。`;
+    hitsMore.hidden = main.length <= MAX_LIST;
+    hitsMore.textContent = `ほか${main.length - MAX_LIST}か所は、上の印で確認できます。`;
 
     applyHidden();
 }
@@ -784,7 +826,7 @@ function select(i) {
     const h = current.hits[i];
     if (!h) return;
     input.focus({ preventScroll: true });
-    input.setSelectionRange(h.start, h.end);
+    input.setSelectionRange(h.selStart ?? h.start, h.selEnd ?? h.end);
     // 選んだ所が入力欄の中で見えるよう、行の位置からおおよそ合わせる
     const before = input.value.slice(0, h.start);
     const lineH = parseFloat(getComputedStyle(input).lineHeight) || 28;
