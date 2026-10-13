@@ -180,6 +180,13 @@
     .level .value {
         font-size: 26px;
         font-weight: 800;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .level .value small {
+        margin-left: 4px;
+        font-size: var(--fs-b);
+        font-weight: 700;
     }
 
     .level .count {
@@ -403,8 +410,8 @@
 
     <div class="summary" id="summary">
         <div class="level">
-            <span class="label">AIっぽい表現</span>
-            <span class="value" id="levelValue">―</span>
+            <span class="label">AIっぽさ</span>
+            <span class="value"><span id="levelPct">―</span> <small id="levelValue"></small></span>
             <span class="count" id="levelCount"></span>
         </div>
         <div class="meter" aria-hidden="true"><i id="meterBar" style="left:0%"></i></div>
@@ -481,8 +488,10 @@
     <p><strong>Q. 英語の文章もチェックできますか？</strong><br>
     A. 日本語の文章だけに対応しています。</p>
 
-    <p><strong>Q. 「AIっぽい表現：多い」の基準は？</strong><br>
-    A. 指摘の数を400字（原稿用紙1枚）あたりに直して決めています。400字あたり2か所未満なら「少ない」、4か所未満なら「やや多い」、それ以上を「多い」としています。
+    <p><strong>Q. 「AIっぽさ」の％はどう決めていますか？</strong><br>
+    A. 指摘の数を400字（原稿用紙1枚）あたりに直して決めています。400字あたり4か所未満なら0%、14か所で100%になり、その間は指摘の数に比例します。
+    0〜29%を「少ない」、30〜69%を「やや多い」、70%以上を「多い」としています。
+    人が手を入れて提出できるくらいの文章が0%になるように合わせています。「AIが書いた確率」ではありません。
     文頭の接続詞・記号と構成の型・読点の多さは、1か所を0.5として数えています（読点は1文を1か所とします）。</p>
 
 </div>
@@ -758,6 +767,14 @@ const notesEl = document.getElementById("notes");
 const hitsEl = document.getElementById("hits");
 const hitsMore = document.getElementById("hitsMore");
 const levelValue = document.getElementById("levelValue");
+const levelPct = document.getElementById("levelPct");
+
+/* AIっぽさ（%）。400字あたりの指摘が PCT_FROM 未満なら0%、PCT_TO で100%。
+   人が手を入れた、提出して通るくらいの文章（400字あたり4未満）が0%になるようにしている */
+const PCT_FROM = 4, PCT_TO = 14;
+function aiPercent(per400) {
+    return Math.round(Math.max(0, Math.min(1, (per400 - PCT_FROM) / (PCT_TO - PCT_FROM))) * 100);
+}
 const levelCount = document.getElementById("levelCount");
 const meterBar = document.getElementById("meterBar");
 
@@ -799,13 +816,16 @@ function render() {
     }
     const per400 = result.chars ? score / (result.chars / 400) : 0;
     if (!result.chars) {
-        levelValue.textContent = "―";
+        levelPct.textContent = "―";
+        levelValue.textContent = "";
         levelCount.textContent = "";
         meterBar.style.left = "0%";
     } else {
-        levelValue.textContent = per400 < 2 ? "少ない" : per400 < 4 ? "やや多い" : "多い";
+        const pct = aiPercent(per400);
+        levelPct.textContent = pct + "%";
+        levelValue.textContent = pct < 30 ? "少ない" : pct < 70 ? "やや多い" : "多い";
         levelCount.textContent = `指摘 ${main.length}か所（${result.chars}字・400字あたり ${per400.toFixed(1)}）`;
-        meterBar.style.left = Math.min(100, per400 / 6 * 100) + "%";
+        meterBar.style.left = pct + "%";
     }
 
     chipsEl.innerHTML = Object.keys(CATS).map(c =>
