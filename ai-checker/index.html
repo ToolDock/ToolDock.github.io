@@ -601,6 +601,11 @@ function sentences(text) {
     return out;
 }
 
+/* かっこの中を同じ長さの別の文字で埋める（位置はそのまま） */
+function maskQuotes(t) {
+    return t.replace(/「[^」]*」|『[^』]*』|（[^）]*）|\([^)]*\)/g, m => m[0] + "□".repeat(Math.max(0, m.length - 2)) + m[m.length - 1]);
+}
+
 /* =========================
    チェック本体
 ========================= */
@@ -634,14 +639,17 @@ function check(text) {
     }
 
     // 6：同じ文末が3文以上続く
+    // 続いた所を1か所と数え（2文目からは sub）、押したときは続いた文をまとめて選ぶ
     let run = [];
     const flush = () => {
         if (run.length >= 3) {
             const key = run[0].key;
-            for (const r of run) {
-                add(6, r.end - r.len, r.end, `「〜${key}。」で終わる文が${run.length}つ続いています`,
-                    "体言止め、「〜だ」、問いかけ、短い一文などを混ぜる");
-            }
+            run.forEach((r, n) => hits.push({
+                cat: 6, start: r.end - r.len, end: r.end, sub: n > 0, quote: `〜${key}。（${run.length}文）`,
+                selStart: run[0].start, selEnd: run[run.length - 1].end,
+                why: `「〜${key}。」で終わる文が${run.length}つ続いています`,
+                fix: "体言止め、「〜だ」、問いかけ、短い一文などを混ぜる"
+            }));
         }
         run = [];
     };
@@ -650,7 +658,7 @@ function check(text) {
         if (!m) { flush(); continue; }
         const key = m[1];
         if (run.length && run[0].key !== key) flush();
-        run.push({ key, end: s.end, len: m[0].length });
+        run.push({ key, start: s.start, end: s.end, len: m[0].length });
     }
     flush();
 
@@ -692,7 +700,8 @@ function check(text) {
     let commaTotal = 0, longSents = 0, frontComma = 0;
     for (const s of sents) {
         if (s.text.includes("|")) continue;     // 表の行（| 区切り）は文として見ない
-        const idx = [...s.text.matchAll(/[、，,]/g)].map(m => m.index);
+        // かぎかっこの中（引用・例）の読点は、書き手の打ち方ではないので数えない
+        const idx = [...maskQuotes(s.text).matchAll(/[、，,]/g)].map(m => m.index);
         commaTotal += idx.length;
         if (s.text.length >= 15) {
             longSents++;
@@ -809,7 +818,7 @@ function render() {
     hitsEl.innerHTML = main.slice(0, MAX_LIST).map(([h, i]) =>
         `<li data-i="${i}" class="c${h.cat}"${hidden.has(String(h.cat)) ? " hidden" : ""}>` +
         `<span class="tag">${CATS[h.cat]}</span>` +
-        `<span class="what"><q>${esc(text.slice(h.selStart ?? h.start, h.selEnd ?? h.end).trim())}</q> ${esc(h.why)}</span>` +
+        `<span class="what"><q>${esc(h.quote ?? text.slice(h.selStart ?? h.start, h.selEnd ?? h.end).trim())}</q> ${esc(h.why)}</span>` +
         `<span class="fix">${esc(h.fix)}</span></li>`).join("");
     hitsMore.hidden = main.length <= MAX_LIST;
     hitsMore.textContent = `ほか${main.length - MAX_LIST}か所は、上の印で確認できます。`;
