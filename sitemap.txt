@@ -1,5 +1,6 @@
 https://tooldock.github.io/
 https://tooldock.github.io/about/
+https://tooldock.github.io/ai-checker/
 https://tooldock.github.io/category/
 https://tooldock.github.io/circuit/
 https://tooldock.github.io/contact/
