@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI文章チェッカー｜AIっぽい言い回しを見つけて自然な文章に直す無料ツール</title>
+<meta name="description" content="AIで書いた文章を貼り付けると、「〜と言えるでしょう」「いかがでしたか」などの決まり文句、同じ文末の繰り返し、接続詞の多用、Markdownの記号など、AIっぽく見える箇所に印を付けて直し方を示します。文章は外部に送信されません。">
+<link rel="canonical" href="https://tooldock.github.io/ai-checker/">
+
+<script> const CURRENT_TOOL = "ai-checker"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="AIチェッカー,AI文章チェッカー,AIっぽい,AI文章,リライト,ChatGPT,文章チェック,言い換え">
+
+<style>
+    body {
+        font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+        background: var(--bg);
+        margin: 0;
+        padding: 20px;
+        color: var(--ink);
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 0 auto 24px;
+        background: var(--surface);
+        --pad: 30px;
+        padding: var(--pad);
+        border: 1px solid var(--line);
+        box-sizing: border-box;
+    }
+
+    h2 {
+        margin-top: 32px;
+        font-size: var(--fs-h2);
+        border-bottom: 2px solid var(--c);
+        padding-bottom: 8px;
+    }
+
+    h3 {
+        margin: 24px 0 8px;
+        font-size: var(--fs-h3);
+    }
+
+    /* ===== 入力と、印を付けた文章 ===== */
+
+    .panes {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .pane-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 0 0 6px;
+        font-size: var(--fs-s);
+        font-weight: 700;
+    }
+
+    .pane-head .actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .pane-head button {
+        padding: 4px 10px;
+        border: 1px solid var(--line-input);
+        border-radius: var(--r-ctl);
+        background: var(--surface);
+        color: var(--ink);
+        font: inherit;
+        font-size: var(--fs-xs);
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .pane-head button:hover {
+        border-color: var(--ink);
+    }
+
+    textarea#input,
+    .preview {
+        box-sizing: border-box;
+        width: 100%;
+        height: 440px;
+        margin: 0;
+        padding: 14px 16px;
+        border: 1px solid var(--line-input);
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 1.9;
+        color: var(--ink);
+        background: var(--surface);
+    }
+
+    textarea#input {
+        border-radius: var(--r-ctl);
+        resize: vertical;
+    }
+
+    textarea#input:focus {
+        outline: 2px solid var(--c);
+        outline-offset: 0;
+    }
+
+    .preview {
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: var(--surface-2);
+    }
+
+    .preview .empty {
+        margin: 0;
+    }
+
+    /* 印の色。種類ごとに地の色と下線を変える（文字は黒のまま） */
+    mark {
+        color: inherit;
+        padding: 0 1px;
+        cursor: pointer;
+        border-bottom: 2px solid var(--mk);
+        background: var(--mk-bg);
+    }
+
+    .c1 { --mk: #d32f2f; --mk-bg: #fde2e1; }
+    .c2 { --mk: #e08a00; --mk-bg: #fff0d1; }
+    .c3 { --mk: #7b3fc4; --mk-bg: #efe4fb; }
+    .c4 { --mk: #1d4fbf; --mk-bg: #dde8fb; }
+    .c5 { --mk: #1e8a3c; --mk-bg: #dcf2e2; }
+    .c6 { --mk: #0f7f7f; --mk-bg: #d6f1f1; }
+    .c7 { --mk: #5b5b5b; --mk-bg: #e6e4de; }
+
+    mark.is-active {
+        outline: 2px solid var(--mk);
+    }
+
+    /* 種類を非表示にしたとき */
+    .preview.hide-1 mark.c1, .preview.hide-2 mark.c2, .preview.hide-3 mark.c3,
+    .preview.hide-4 mark.c4, .preview.hide-5 mark.c5, .preview.hide-6 mark.c6,
+    .preview.hide-7 mark.c7 {
+        background: none;
+        border-bottom-color: transparent;
+        cursor: text;
+    }
+
+    /* ===== まとめ ===== */
+
+    .summary {
+        margin: 16px 0 0;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+    }
+
+    .level {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 4px 14px;
+    }
+
+    .level .label {
+        font-size: var(--fs-s);
+        font-weight: 700;
+    }
+
+    .level .value {
+        font-size: 26px;
+        font-weight: 800;
+    }
+
+    .level .count {
+        font-size: var(--fs-m);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .meter {
+        position: relative;
+        height: 8px;
+        margin: 8px 0 12px;
+        background: linear-gradient(to right, #dcf2e2 0 33%, #fff0d1 33% 66%, #fde2e1 66% 100%);
+    }
+
+    .meter i {
+        position: absolute;
+        top: -4px;
+        width: 4px;
+        height: 16px;
+        margin-left: -2px;
+        background: var(--ink);
+        transition: left .25s;
+    }
+
+    .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .chips button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border: 1px solid var(--mk);
+        border-radius: var(--r-ctl);
+        background: var(--mk-bg);
+        color: var(--ink);
+        font: inherit;
+        font-size: var(--fs-s);
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .chips button b {
+        font-variant-numeric: tabular-nums;
+    }
+
+    .chips button[aria-pressed="false"] {
+        background: var(--surface);
+        text-decoration: line-through;
+    }
+
+    .chips button:disabled {
+        opacity: .45;
+        cursor: default;
+    }
+
+    .notes {
+        margin: 12px 0 0;
+        padding-left: 1.3em;
+        font-size: var(--fs-m);
+    }
+
+    .notes li {
+        margin: 2px 0;
+    }
+
+    .stamp {
+        margin: 10px 0 0;
+        font-size: var(--fs-s);
+    }
+
+    /* ===== 指摘の一覧 ===== */
+
+    .hits {
+        margin: 16px 0 0;
+        padding: 0;
+        list-style: none;
+        border-top: 1px solid var(--line);
+    }
+
+    .hits li {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 2px 10px;
+        padding: 10px 4px;
+        border-bottom: 1px solid var(--line-soft);
+        cursor: pointer;
+    }
+
+    .hits li:hover,
+    .hits li.is-active {
+        background: var(--surface-2);
+    }
+
+    .hits li[hidden] {
+        display: none;
+    }
+
+    .hits .tag {
+        grid-row: span 2;
+        align-self: start;
+        padding: 1px 7px;
+        border: 1px solid var(--mk);
+        background: var(--mk-bg);
+        font-size: var(--fs-xs);
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .hits .what {
+        font-size: var(--fs-m);
+    }
+
+    .hits .what q {
+        font-weight: 700;
+        quotes: "「" "」";
+    }
+
+    .hits .fix {
+        font-size: var(--fs-s);
+    }
+
+    .hits .fix::before {
+        content: "→ ";
+        font-weight: 700;
+    }
+
+    .hits-more {
+        margin: 10px 0 0;
+        font-size: var(--fs-s);
+    }
+
+    /* ===== 解説 ===== */
+
+    .table-scroll {
+        overflow-x: auto;
+    }
+
+    table.guide {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--fs-m);
+    }
+
+    table.guide th,
+    table.guide td {
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--line-soft);
+        text-align: left;
+        vertical-align: top;
+    }
+
+    table.guide thead th {
+        background: var(--surface-2);
+        font-size: var(--fs-s);
+        white-space: nowrap;
+    }
+
+    table.guide td:first-child {
+        white-space: nowrap;
+        font-weight: 700;
+    }
+
+    table.guide td:first-child span {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 6px;
+        background: var(--mk);
+    }
+
+    footer.container {
+        font-size: var(--fs-s);
+    }
+
+    @media (max-width: 760px) {
+        body { padding: 12px; }
+        .container { --pad: 18px; }
+        .panes { grid-template-columns: 1fr; }
+        textarea#input { height: 300px; }
+        .preview { height: auto; max-height: 360px; }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="td-banner">
+      <h1>AI文章チェッカー</h1>
+
+      <p class="description">
+          AIで書いた文章を貼り付けると、AIっぽく見える言い回しに印を付け、直し方を示します。
+          直しながら指摘の数が減っていくのを確かめられます。文章は外部に送信されません。
+      </p>
+    </div>
+
+    <div class="panes">
+        <div>
+            <div class="pane-head">
+                <label for="input">文章</label>
+                <span class="actions">
+                    <button type="button" id="sample">例文を入れる</button>
+                    <button type="button" id="clear">消す</button>
+                </span>
+            </div>
+            <textarea id="input" placeholder="ここに文章を貼り付けてください" spellcheck="false"></textarea>
+        </div>
+        <div>
+            <div class="pane-head"><span>チェック結果（印を押すと、左の文章のその箇所を選びます）</span></div>
+            <div class="preview" id="preview" aria-live="polite"><p class="empty">左に文章を入れると、ここに印を付けて表示します。</p></div>
+        </div>
+    </div>
+
+    <div class="summary" id="summary">
+        <div class="level">
+            <span class="label">AIっぽい表現</span>
+            <span class="value" id="levelValue">―</span>
+            <span class="count" id="levelCount"></span>
+        </div>
+        <div class="meter" aria-hidden="true"><i id="meterBar" style="left:0%"></i></div>
+        <ul class="chips" id="chips" aria-label="指摘の種類（押すと印の表示を切り替え）"></ul>
+        <ul class="notes" id="notes"></ul>
+        <p class="stamp">これは「AIが書いたかどうか」の判定ではありません。AIの文章に出やすい特徴を数えて、直す場所の目安を示すものです。</p>
+    </div>
+
+    <ol class="hits" id="hits"></ol>
+    <p class="hits-more" id="hitsMore" hidden></p>
+
+</div>
+
+<div class="container">
+
+    <h2>使い方</h2>
+
+    <ol>
+        <li>AIで書いた下書きを、上の欄に貼り付けます。その場でチェックされ、右に印の付いた文章が出ます。</li>
+        <li>印や下の一覧を押すと、左の文章のその箇所が選ばれます。示された直し方を参考に、その場で書き換えます。</li>
+        <li>書き換えるたびにチェックし直すので、指摘が減っていくのを確かめながら仕上げられます。</li>
+    </ol>
+
+    <p>
+        入力した文章は、次に開いたときのためにこのブラウザの中にだけ残します。外部には送信しません。
+        「消す」を押すと、残した文章も消えます。
+    </p>
+
+    <h2>チェックする項目</h2>
+
+    <div class="table-scroll">
+        <table class="guide">
+            <thead>
+                <tr><th>種類</th><th>例</th><th>直し方</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><span class="c1"></span>決まり文句</td><td>「〜について解説します」「いかがでしたか」「参考になれば幸いです」「以下のとおりです」</td><td>前置きと締めの挨拶は削り、本題から書き始める。箇条書きへのつなぎは文章で書けないか考える</td></tr>
+                <tr><td><span class="c2"></span>ぼかし</td><td>「〜と言えるでしょう」「〜が期待されます」「〜と考えられます」</td><td>根拠を添えて「〜だ」「〜です」と言い切る</td></tr>
+                <tr><td><span class="c3"></span>大げさ・抽象的</td><td>「様々な」「非常に」「効果的」「不可欠」「重要な役割を果たす」</td><td>何がどう良いのか、数字や具体例に置き換える。言えないなら削る</td></tr>
+                <tr><td><span class="c4"></span>回りくどい</td><td>「〜することができます」「〜において」「確認を行う」「〜となっています」</td><td>「〜できます」「〜で」「確認する」「〜です」と短くする</td></tr>
+                <tr><td><span class="c5"></span>文頭の接続詞</td><td>「また、」「さらに、」「一方で、」「このように、」</td><td>前後の流れで伝わるなら削る。文の順番を入れ替える</td></tr>
+                <tr><td><span class="c6"></span>文末の繰り返し</td><td>「〜です。〜です。〜です。」と同じ終わり方が3文以上続く</td><td>体言止め、「〜だ」、問いかけ、短い一文などを混ぜる</td></tr>
+                <tr><td><span class="c7"></span>記号・構成の型</td><td>「##」「**太字**」「✅」などの記号、行末の「：」</td><td>貼り付け先で見出しや太字を付け直し、記号は消す</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        このほか、文の長さがそろいすぎているとき（AIの文章は1文の長さが似通いやすい）と、
+        箇条書きの行が多すぎるときは、上のまとめに書き添えます。
+    </p>
+
+    <h2>注意</h2>
+
+    <ul>
+        <li>このツールは、AIが書いた文章かどうかを判定するものではありません。人が書いた文章でも、同じ表現は出てきます。</li>
+        <li>指摘を全部なくす必要はありません。文章の目的に合っている表現は、そのまま残してかまいません。</li>
+        <li>他人の文章を「AIで書いた」と疑うための証拠には使わないでください。</li>
+    </ul>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. 指摘が0になれば、AIで書いたと分からなくなりますか？</strong><br>
+    A. 言い回しの癖は減りますが、内容が一般論ばかりだと、やはり読み手には伝わります。
+    自分の体験や具体的な数字、固有の事例を足すのが、いちばん効く直し方です。</p>
+
+    <p><strong>Q. 英語の文章もチェックできますか？</strong><br>
+    A. 日本語の文章だけに対応しています。</p>
+
+    <p><strong>Q. 「AIっぽい表現：多い」の基準は？</strong><br>
+    A. 指摘の数を400字（原稿用紙1枚）あたりに直して決めています。400字あたり2か所未満なら「少ない」、4か所未満なら「やや多い」、それ以上を「多い」としています。
+    文頭の接続詞と記号・構成の型は、1か所を0.5として数えています。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。入力した文章が外部に送信されることはありません。
+</footer>
+
+<script>
+"use strict";
+
+/* =========================
+   チェックの決まり
+
+   [種類, 正規表現, 何が問題か, 直し方]
+   種類：1 決まり文句 / 2 ぼかし / 3 大げさ・抽象的 / 4 回りくどい
+   （5 文頭の接続詞・6 文末の繰り返し・7 記号は、下で別に数える）
+========================= */
+
+const CATS = {
+    1: "決まり文句",
+    2: "ぼかし",
+    3: "大げさ・抽象的",
+    4: "回りくどい",
+    5: "文頭の接続詞",
+    6: "文末の繰り返し",
+    7: "記号・構成の型"
+};
+
+/* 数えるときの重み。目立ちやすさの違い */
+const WEIGHT = { 1: 1, 2: 1, 3: 1, 4: 1, 5: 0.5, 6: 1, 7: 0.5 };
+
+const RULES = [
+    [1, /について(?:詳しく|くわしく|わかりやすく|分かりやすく|徹底的に)?(?:解説|説明|紹介|ご紹介)(?:します|していきます|しました|いたします)/g,
+        "記事の前置きの決まり文句", "前置きを削り、本題から書き始める"],
+    [1, /をご紹介(?:します|していきます|いたします)/g,
+        "紹介の前置き", "紹介すると言わずに、いきなり中身を書く"],
+    [1, /(?:見て|確認して|解説して)いきましょう|(?:見て|確認して)いきます/g,
+        "読者を案内する決まり文句", "削っても話はつながる"],
+    [1, /いかがでしたか|いかがでしたでしょうか/g,
+        "記事の締めの定番", "自分の感想や次にすることを書くか、無くす"],
+    [1, /(?:参考になれば|お役に立てれば|一助となれば|参考になりましたら)幸いです/g,
+        "締めの挨拶の決まり文句", "無くしても困らない。書くなら自分の言葉で"],
+    [1, /ぜひ(?:参考に|試して|活用して|チェックして|取り入れて|実践して)(?:みて)?ください/g,
+        "締めの呼びかけの決まり文句", "具体的に何をすればいいかを書くか、削る"],
+    [1, /結論から(?:言う|いう|言え|いえ|申し上げる)(?:と|ば)/g,
+        "結論を予告する決まり文句", "予告せず、最初の一文で結論を書く"],
+    [1, /(?:以下|下記)の(?:とおり|通り|ポイント|点)|以下にまとめ/g,
+        "箇条書きへのつなぎの型", "箇条書きにせず、文章で書けないか考える"],
+    [1, /重要な(?:ポイント|点)|押さえておき(?:たい|ましょう)|覚えておき(?:たい|ましょう)/g,
+        "要点を予告する決まり文句", "「重要」と言わずに、その中身を書く"],
+    [1, /本記事では|この記事では|本稿では/g,
+        "記事の案内の決まり文句", "何の記事かは見出しで伝わる。削る"],
+
+    [2, /と(?:言|い)えるでしょう|と(?:言|い)えます/g,
+        "言い切らずにぼかす表現", "根拠を添えて「〜だ」「〜です」と言い切る"],
+    [2, /と考えられます/g,
+        "誰の考えか分からないぼかし", "自分の考えなら「〜と思う」、根拠があるなら言い切る"],
+    [2, /(?:が|も)期待(?:され|でき)ます/g,
+        "効果をぼかす表現", "どれくらい・何が良くなるのかを具体的に書く"],
+    [2, /のではないでしょうか/g,
+        "遠回しな問いかけ", "「〜だ」と言い切るか、本当に問いかけたいときだけ使う"],
+    [2, /可能性があります/g,
+        "ぼかしの決まり文句", "どんなときにそうなるのか、条件を書く"],
+
+    [3, /非常に|極めて|大変重要/g,
+        "強調語の多用", "数字や具体例で示す。言えないなら削る"],
+    [3, /(?:様々|さまざま)な|多岐にわた(?:る|り|って)|幅広い/g,
+        "中身のない広がり", "何があるのかを具体的に挙げる"],
+    [3, /包括的|網羅的|効果的|効率的|最適(?:な|化)|シームレス|画期的|革新的|飛躍的/g,
+        "抽象的なほめ言葉", "何がどう良いのかに置き換える"],
+    [3, /重要な役割を果たし|(?:が|は)鍵(?:となり|を握り|となる)|欠かせません|不可欠(?:です|な|と)/g,
+        "大げさな重要さの表現", "なぜ必要なのかを一言で書く"],
+    [3, /理解を深め|深く理解|寄与し|貢献し/g,
+        "抽象的な効用", "具体的に何が分かる・何が良くなるのかを書く"],
+
+    [4, /することができ(?:ます|る|ません|た)/g,
+        "回りくどい言い方", "「〜できます」で足りる"],
+    [4, /において/g,
+        "硬い言い方", "「〜で」「〜では」に"],
+    [4, /を行(?:い|う|います|いました|って|える)/g,
+        "「〜を行う」の言い方", "「〜する」に（例：確認を行う → 確認する）"],
+    [4, /となっています|となっております/g,
+        "回りくどい文末", "「〜です」で足りることが多い"],
+    [4, /ことが(?:重要|大切|必要|求められ)(?:です|ます|になります|となります|でしょう)?/g,
+        "抽象的な「〜ことが大切」", "なぜ大切か、具体的にどうするのかを書く"],
+    [4, /という(?:観点|点)(?:から|で|では)|の観点から/g,
+        "硬い言い方", "「〜から見ると」「〜では」などに"]
+];
+
+/* 文頭に来ると、AIの文章でつなぎすぎになりやすい接続詞 */
+const CONJ = /^(?:さらに|また|加えて|一方で|一方|そのため|このため|このように|つまり|したがって|具体的には|例えば|たとえば|まず|次に|最後に|なお|ちなみに|結果として|その結果|それにより|これにより)(?=、|,|，)/;
+
+/* 文末の終わり方（同じものが3文以上続くと指摘する） */
+const ENDINGS = /(でしょう|ません|ました|ています|てください|です|ます|である|だ)[。！!]$/;
+
+/* =========================
+   文を切り出す
+========================= */
+
+function sentences(text) {
+    const out = [];
+    const re = /[^。！？!?\n]+[。！？!?]?/g;
+    let m;
+    while ((m = re.exec(text))) {
+        const raw = m[0];
+        const lead = raw.length - raw.replace(/^[\s　]+/, "").length;
+        const body = raw.trim();
+        if (!body) continue;
+        out.push({ start: m.index + lead, end: m.index + lead + body.length, text: body });
+    }
+    return out;
+}
+
+/* =========================
+   チェック本体
+========================= */
+
+function check(text) {
+    const hits = [];
+    const add = (cat, start, end, why, fix) => hits.push({ cat, start, end, why, fix });
+
+    // 1〜4：言い回し
+    for (const [cat, re, why, fix] of RULES) {
+        re.lastIndex = 0;
+        let m;
+        while ((m = re.exec(text))) {
+            add(cat, m.index, m.index + m[0].length, why, fix);
+            if (m[0].length === 0) re.lastIndex++;
+        }
+    }
+
+    const sents = sentences(text);
+
+    // 5：文頭の接続詞（箇条書きの記号・見出し記号は飛ばして見る）
+    let conjCount = 0;
+    for (const s of sents) {
+        const skip = (s.text.match(/^(?:#{1,6}\s*|[-*・●■◆]\s*|\d+[.)．]\s*)/) || [""])[0].length;
+        const m = s.text.slice(skip).match(CONJ);
+        if (m) {
+            conjCount++;
+            const st = s.start + skip;
+            add(5, st, st + m[0].length, "文頭の接続詞", "前後の流れで伝わるなら削る。文の順番を入れ替える");
+        }
+    }
+
+    // 6：同じ文末が3文以上続く
+    let run = [];
+    const flush = () => {
+        if (run.length >= 3) {
+            const key = run[0].key;
+            for (const r of run) {
+                add(6, r.end - r.len, r.end, `「〜${key}。」で終わる文が${run.length}つ続いています`,
+                    "体言止め、「〜だ」、問いかけ、短い一文などを混ぜる");
+            }
+        }
+        run = [];
+    };
+    for (const s of sents) {
+        const m = s.text.match(ENDINGS);
+        if (!m) { flush(); continue; }
+        const key = m[1];
+        if (run.length && run[0].key !== key) flush();
+        run.push({ key, end: s.end, len: m[0].length });
+    }
+    flush();
+
+    // 7：記号・構成の型（行ごと）
+    let lineStart = 0, lines = 0, bulletLines = 0;
+    for (const line of text.split("\n")) {
+        const st = lineStart;
+        lineStart += line.length + 1;
+        if (!line.trim()) continue;
+        lines++;
+        let m;
+        if ((m = line.match(/^#{1,6}\s/))) {
+            add(7, st, st + m[0].length, "Markdownの見出し記号", "貼り付け先で見出しを付け直し、記号は消す");
+        } else if ((m = line.match(/^【[^】]+】/))) {
+            add(7, st, st + m[0].length, "【】で囲んだ見出し", "見出しにするか、文章に組み込む");
+        }
+        if ((m = line.match(/^\s*(?:[-*・●■◆▪]|\d+[.)．])\s?/))) {
+            bulletLines++;
+            add(7, st, st + m[0].length, "箇条書き", "文章で書けるところは文章にする");
+        }
+        const colon = line.match(/[：:]\s*$/);
+        if (colon) {
+            add(7, st + colon.index, st + line.length, "行末の「：」で箇条書きにつなぐ型", "「：」をやめて、文として書く");
+        }
+    }
+    const reBold = /\*\*[^*\n]+\*\*/g;
+    let mb;
+    while ((mb = reBold.exec(text))) {
+        add(7, mb.index, mb.index + mb[0].length, "Markdownの太字（**）", "貼り付け先で太字を付け直し、** は消す");
+    }
+    const reEmoji = /[\u{2705}\u{2714}\u{2611}\u{2728}\u{2B50}\u{1F300}-\u{1FAFF}]/gu;
+    let me;
+    while ((me = reEmoji.exec(text))) {
+        add(7, me.index, me.index + me[0].length, "見出しや箇条書きの絵文字", "目印の絵文字は消す");
+    }
+
+    hits.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
+
+    // 全体の傾向
+    const notes = [];
+    const lens = sents.map(s => s.text.length).filter(n => n >= 5);
+    if (lens.length >= 8) {
+        const mean = lens.reduce((a, b) => a + b, 0) / lens.length;
+        const sd = Math.sqrt(lens.reduce((a, b) => a + (b - mean) ** 2, 0) / lens.length);
+        if (sd / mean < 0.3) {
+            notes.push(`文の長さがそろいすぎています（${lens.length}文の平均${Math.round(mean)}字、ばらつきが小さい）。短い一文や長めの文を混ぜると自然になります。`);
+        }
+    }
+    if (lines >= 6 && bulletLines / lines >= 0.4) {
+        notes.push(`箇条書きの行が${Math.round(bulletLines / lines * 100)}%あります。AIの文章は箇条書きに頼りがちです。文章にできる所は文章に。`);
+    }
+    if (sents.length >= 6 && conjCount / sents.length >= 0.3) {
+        notes.push(`接続詞で始まる文が${Math.round(conjCount / sents.length * 100)}%あります。つなぎの言葉を減らすと読みやすくなります。`);
+    }
+
+    return { hits, notes, chars: text.replace(/\s/g, "").length };
+}
+
+/* =========================
+   表示
+========================= */
+
+const input = document.getElementById("input");
+const preview = document.getElementById("preview");
+const chipsEl = document.getElementById("chips");
+const notesEl = document.getElementById("notes");
+const hitsEl = document.getElementById("hits");
+const hitsMore = document.getElementById("hitsMore");
+const levelValue = document.getElementById("levelValue");
+const levelCount = document.getElementById("levelCount");
+const meterBar = document.getElementById("meterBar");
+
+const MAX_LIST = 200;   // 一覧に出す数の上限（印は全部付ける）
+const hidden = new Set();
+let current = { hits: [] };
+
+function esc(s) {
+    return s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function render() {
+    const text = input.value;
+    const result = check(text);
+    current = result;
+
+    // 印を付けた文章。重なる印は、先に始まる（長い）ほうを付ける
+    if (!text.trim()) {
+        preview.innerHTML = '<p class="empty">左に文章を入れると、ここに印を付けて表示します。</p>';
+    } else {
+        let html = "", pos = 0;
+        result.hits.forEach((h, i) => {
+            if (h.start < pos) return;
+            html += esc(text.slice(pos, h.start));
+            html += `<mark class="c${h.cat}" data-i="${i}" title="${esc(CATS[h.cat] + "：" + h.why + "\n→ " + h.fix)}">${esc(text.slice(h.start, h.end))}</mark>`;
+            pos = h.end;
+        });
+        html += esc(text.slice(pos));
+        preview.innerHTML = html + "\n";
+    }
+
+    // まとめ
+    const counts = {};
+    let score = 0;
+    for (const h of result.hits) {
+        counts[h.cat] = (counts[h.cat] || 0) + 1;
+        score += WEIGHT[h.cat];
+    }
+    const per400 = result.chars ? score / (result.chars / 400) : 0;
+    if (!result.chars) {
+        levelValue.textContent = "―";
+        levelCount.textContent = "";
+        meterBar.style.left = "0%";
+    } else {
+        levelValue.textContent = per400 < 2 ? "少ない" : per400 < 4 ? "やや多い" : "多い";
+        levelCount.textContent = `指摘 ${result.hits.length}か所（${result.chars}字・400字あたり ${per400.toFixed(1)}）`;
+        meterBar.style.left = Math.min(100, per400 / 6 * 100) + "%";
+    }
+
+    chipsEl.innerHTML = Object.keys(CATS).map(c =>
+        `<li><button type="button" class="c${c}" data-cat="${c}" aria-pressed="${hidden.has(c) ? "false" : "true"}"${counts[c] ? "" : " disabled"}>` +
+        `${CATS[c]} <b>${counts[c] || 0}</b></button></li>`).join("");
+
+    notesEl.innerHTML = result.notes.map(n => `<li>${esc(n)}</li>`).join("");
+
+    // 指摘の一覧
+    hitsEl.innerHTML = result.hits.slice(0, MAX_LIST).map((h, i) =>
+        `<li data-i="${i}" class="c${h.cat}"${hidden.has(String(h.cat)) ? " hidden" : ""}>` +
+        `<span class="tag">${CATS[h.cat]}</span>` +
+        `<span class="what"><q>${esc(text.slice(h.start, h.end).trim())}</q> ${esc(h.why)}</span>` +
+        `<span class="fix">${esc(h.fix)}</span></li>`).join("");
+    hitsMore.hidden = result.hits.length <= MAX_LIST;
+    hitsMore.textContent = `ほか${result.hits.length - MAX_LIST}か所は、上の印で確認できます。`;
+
+    applyHidden();
+}
+
+function applyHidden() {
+    for (const c of Object.keys(CATS)) preview.classList.toggle("hide-" + c, hidden.has(c));
+}
+
+/* 指摘の箇所を、入力欄で選ぶ */
+function select(i) {
+    const h = current.hits[i];
+    if (!h) return;
+    input.focus({ preventScroll: true });
+    input.setSelectionRange(h.start, h.end);
+    // 選んだ所が入力欄の中で見えるよう、行の位置からおおよそ合わせる
+    const before = input.value.slice(0, h.start);
+    const lineH = parseFloat(getComputedStyle(input).lineHeight) || 28;
+    const approxLines = before.split("\n").reduce((n, l) => n + Math.max(1, Math.ceil(l.length / Math.max(10, input.clientWidth / 15))), 0);
+    input.scrollTop = Math.max(0, (approxLines - 3) * lineH);
+    if (input.getBoundingClientRect().top < 0 || input.getBoundingClientRect().top > innerHeight) {
+        input.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+    document.querySelectorAll(".is-active").forEach(el => el.classList.remove("is-active"));
+    document.querySelectorAll(`[data-i="${i}"]`).forEach(el => el.classList.add("is-active"));
+}
+
+preview.addEventListener("click", e => {
+    const m = e.target.closest("mark");
+    if (m && !hidden.has(m.className.match(/c(\d)/)[1])) select(+m.dataset.i);
+});
+
+hitsEl.addEventListener("click", e => {
+    const li = e.target.closest("li");
+    if (li) select(+li.dataset.i);
+});
+
+chipsEl.addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b || b.disabled) return;
+    const c = b.dataset.cat;
+    hidden.has(c) ? hidden.delete(c) : hidden.add(c);
+    b.setAttribute("aria-pressed", hidden.has(c) ? "false" : "true");
+    hitsEl.querySelectorAll(`li.c${c}`).forEach(li => { li.hidden = hidden.has(c); });
+    applyHidden();
+});
+
+/* =========================
+   入力・保存
+========================= */
+
+const STORE = "tooldock-ai-checker";
+let timer = null;
+
+input.addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+        render();
+        try { localStorage.setItem(STORE, input.value); } catch (e) { /* 保存できない環境では何もしない */ }
+    }, 250);
+});
+
+/* 入力欄と結果のスクロールをおおよそ合わせる（PCで左右に並んでいるとき） */
+input.addEventListener("scroll", () => {
+    const r = input.scrollTop / Math.max(1, input.scrollHeight - input.clientHeight);
+    preview.scrollTop = r * (preview.scrollHeight - preview.clientHeight);
+});
+
+const SAMPLE = `## テレワークを成功させるためのポイント
+
+近年、テレワークは多くの企業において重要な働き方の一つとなっています。本記事では、テレワークを成功させるための重要なポイントについて詳しく解説します。
+
+まず、コミュニケーションの方法を見直すことが重要です。チャットツールやビデオ会議を効果的に活用することで、チーム内の情報共有をシームレスに行うことができます。また、定期的なミーティングを行うことで、メンバー間の信頼関係を深めることができます。
+
+さらに、作業環境を整えることも欠かせません。快適な椅子やデスクを用意することで、生産性の向上が期待されます。照明や室温にも気を配ります。休憩の時間もあらかじめ決めておきます。
+
+**主なポイントは以下の通りです：**
+- ✅ コミュニケーションの方法を見直す
+- ✅ 作業環境を整える
+- ✅ 勤務時間のメリハリをつける
+
+## まとめ
+
+このように、テレワークを成功させるためには様々な工夫が不可欠と言えるでしょう。ぜひ参考にしてみてください。`;
+
+document.getElementById("sample").addEventListener("click", () => {
+    input.value = SAMPLE;
+    input.dispatchEvent(new Event("input"));
+    clearTimeout(timer);
+    render();
+});
+
+document.getElementById("clear").addEventListener("click", () => {
+    input.value = "";
+    try { localStorage.removeItem(STORE); } catch (e) { /* 何もしない */ }
+    render();
+    input.focus();
+});
+
+try {
+    const saved = localStorage.getItem(STORE);
+    if (saved) input.value = saved;
+} catch (e) { /* 何もしない */ }
+
+render();
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
