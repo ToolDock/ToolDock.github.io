@@ -1,4 +1,4 @@
-"""プロ野球 順位推移グラフ（/standings/ と /standings/<年>/）を作る。
+"""動くプロ野球順位推移グラフ（/standings/ と /standings/<年>/）を作る。
 
 セ・パそれぞれ、6球団の貯金（勝ち数−負け数）の推移を日付ごとに線で描く。
 ページを開いたときは最終日（今季は最新の日）までを描いた静止画で、▶を押すと開幕から動き出し、
@@ -189,12 +189,13 @@ def year_page(year, games, years, latest, final):
             + f'<script type="application/json" id="standings-data">{json.dumps(data, ensure_ascii=False, separators=(",", ":"))}</script>'
             + '<script src="/standings/chart.js" defer></script>')
     canonical = "/standings/" if year == latest else f"/standings/{year}/"
-    title = f"{year}年 プロ野球 順位推移グラフ｜セ・パ12球団の貯金の推移と連勝・連敗"
-    desc = (f"{year}年のプロ野球の順位の推移を、セ・パ12球団の貯金（勝ち数−負け数）のグラフで（{state}）。"
-            + "、".join(summary) + f"{lead}。▶で開幕からの順位の入れ替わりを動かして見られ、"
-            "その日の順位と連勝・連敗も出します。最大連勝・最大連敗・首位にいた日数も球団ごとにまとめています。")
-    return page(title, desc, canonical, f"プロ野球 順位推移グラフ {year}",
-                f"セ・パ12球団の貯金の推移（{state}）。▶を押すと開幕から動きます", body,
+    # 静止画の順位推移グラフはほかのサイトにも多いので、「動く」ことを名前の頭に出す
+    title = f"{year}年 動くプロ野球順位推移グラフ｜開幕から最終戦まで▶で再生、連勝・連敗も"
+    desc = (f"{year}年のプロ野球の順位の推移が、▶を押すと開幕から最終戦まで1日ずつ動くグラフ（{state}）。"
+            + "、".join(summary) + f"{lead}。セ・パ12球団の貯金の線が伸びていき、"
+            "その日の順位と「〇連勝」「〇連敗」も一緒に動きます。最大連勝・最大連敗・首位にいた日数も球団ごとにまとめています。")
+    return page(title, desc, canonical, f"動くプロ野球順位推移グラフ {year}",
+                f"▶を押すと、開幕から最終戦まで順位の移り変わりが動きます（{state}）", body,
                 crumb=None if year == latest else f"{year}年")
 
 
