@@ -576,9 +576,18 @@ def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_
         names = [t["title"] for t in titles[y]]
         triple = [n for n in names if n in ("三冠王", "投手四冠", "投手三冠")]
         title_txt = f"{y}年{titles[y][0]['league'][0]}・リーグ" + ("・".join(triple) if triple else "・".join(names[:3]))
-    title = (f"{name}の成績・WAR｜{title_txt}・年度別成績と通算（{team_now}）" if title_txt
-             else f"{name}の成績・WAR｜年度別成績と通算（{team_now}）")
-    desc = (f"{title_txt}。" if title_txt else "") + (f"{name}（{team_now}）の{first}〜{last}年の年度別成績と通算成績。{summary}。"
+    # 「〇〇 war」「〇〇 wrc+」で探されるので、タイトルに指標の名前を、説明文の頭に最新の年の数字を出す
+    metric = "FIP" if kind == "p" else "wRC+"
+    recent = ""
+    calc = [r for r in (pit if kind == "p" else bat) if r["src"] == "calc" and r.get("war") is not None]
+    if calc:
+        r = max(calc, key=lambda r: r["y"])
+        val = (f"FIP {f2(r['fip'])}" if kind == "p" and r.get("fip") is not None
+               else f"wRC+ {round(r['wrcp'])}" if kind != "p" and r.get("wrcp") is not None else "")
+        recent = f"{r['y']}年はWAR {f1(r['war'])}" + (f"・{val}" if val else "") + "。"
+    title = (f"{name}の成績・WAR・{metric}｜{title_txt}・年度別と通算（{team_now}）" if title_txt
+             else f"{name}の成績・WAR・{metric}｜年度別成績と通算（{team_now}）")
+    desc = (f"{title_txt}。" if title_txt else "") + recent + (f"{name}（{team_now}）の{first}〜{last}年の年度別成績と通算成績。{summary}。"
             f"wOBA・wRC+・FIPなどのセイバー指標と簡易WAR（{war_note or '通算'}{f1(war)}）も年ごとに掲載。")
     status = f"成績は{as_of_text}{'' if final else '時点'}までの一軍公式戦です。"
     body = [f'<p class="stamp">{esc(status)}</p>',
