@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>宝くじシミュレーター｜ジャンボ・ロト・ナンバーズを何枚買ったら当たる？収支と当せん枚数を計算</title>
+<meta name="description" content="年末ジャンボ・ドリームジャンボ・サマージャンボ・ハロウィンジャンボ、ロト6・ロト7・ミニロト・ナンバーズ・ビンゴ5を、実際の当せん金と本数（確率）のとおりに買ったつもりで抽せんします。10枚・100枚・1万枚買ったときの当せん枚数と収支、1万回くり返したときに黒字になる割合、理論上の回収率が分かります。">
+<link rel="canonical" href="https://tooldock.github.io/takarakuji/">
+
+<script> const CURRENT_TOOL = "takarakuji"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="宝くじシミュレーター,宝くじ シミュレーション,年末ジャンボ,ドリームジャンボ,サマージャンボ,ハロウィンジャンボ,ロト6,ロト7,ミニロト,ナンバーズ,ビンゴ5,当選確率,何枚買えば当たる,回収率,期待値,連番,バラ">
+
+<style>
+    body {
+        font-family: "Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+        background: var(--bg);
+        margin: 0;
+        padding: 20px;
+        color: var(--ink);
+        line-height: 1.7;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 0 auto 24px;
+        background: var(--surface);
+        --pad: 30px;
+        padding: var(--pad);
+        border: 1px solid var(--line);
+        box-sizing: border-box;
+    }
+
+    h2 {
+        margin-top: 32px;
+        font-size: var(--fs-h2);
+        border-bottom: 2px solid var(--c);
+        padding-bottom: 8px;
+    }
+
+    h3 {
+        margin: 24px 0 8px;
+        font-size: var(--fs-h3);
+    }
+
+    /* ===== 入力 ===== */
+
+    .form {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 14px 18px;
+        align-items: center;
+        margin: 0 0 20px;
+    }
+
+    .form > label,
+    .form > .label {
+        font-weight: 700;
+        font-size: var(--fs-m);
+    }
+
+    select,
+    input[type="number"],
+    input[type="text"] {
+        box-sizing: border-box;
+        padding: 8px 10px;
+        border: 1px solid var(--line-input);
+        border-radius: var(--r-ctl);
+        background: var(--surface);
+        color: var(--ink);
+        font: inherit;
+        font-size: var(--fs-b);
+    }
+
+    #lottery { width: 100%; max-width: 460px; }
+
+    .count-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #count { width: 150px; text-align: right; }
+
+    .count-row .unit { font-weight: 700; }
+
+    .count-row .cost {
+        margin-left: 4px;
+        font-weight: 700;
+    }
+
+    .quick {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+    }
+
+    .quick button,
+    .seg label,
+    .tiers-edit button,
+    .sub-btn {
+        padding: 5px 12px;
+        border: 1px solid var(--line-input);
+        border-radius: var(--r-ctl);
+        background: var(--surface);
+        color: var(--ink);
+        font: inherit;
+        font-size: var(--fs-s);
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .quick button:hover,
+    .sub-btn:hover { border-color: var(--c); }
+
+    .seg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .seg input { position: absolute; opacity: 0; pointer-events: none; }
+
+    .seg input:checked + span {
+        color: #fff;
+    }
+
+    .seg label:has(input:checked) {
+        background: var(--c);
+        border-color: var(--c);
+        color: #fff;
+    }
+
+    .seg-note {
+        margin: 6px 0 0;
+        font-size: var(--fs-s);
+    }
+
+    .run {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .run button {
+        padding: 12px 28px;
+        border: 0;
+        border-radius: var(--r-ctl);
+        background: var(--c);
+        color: #fff;
+        font: inherit;
+        font-size: var(--fs-b);
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .run button:hover { filter: brightness(0.92); }
+
+    .lottery-meta {
+        margin: 0;
+        font-size: var(--fs-s);
+    }
+
+    /* ===== 結果 ===== */
+
+    .result[hidden] { display: none; }
+
+    .result-title {
+        margin: 28px 0 10px;
+        font-size: var(--fs-h3);
+        font-weight: 700;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border-top: 2px solid var(--ink);
+        border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+        padding: 12px 14px;
+        border-left: 1px solid var(--line-soft);
+    }
+
+    .stat:first-child { border-left: 0; }
+
+    .stat .k {
+        display: block;
+        font-size: var(--fs-s);
+        font-weight: 700;
+    }
+
+    .stat .v {
+        display: block;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1.35;
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+    }
+
+    .stat .v small {
+        font-size: var(--fs-s);
+        font-weight: 700;
+    }
+
+    .plus { color: #15803d; }
+    .minus { color: #b91c1c; }
+
+    .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table.tiers {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0 0;
+        font-size: var(--fs-m);
+        font-variant-numeric: tabular-nums;
+    }
+
+    table.tiers th,
+    table.tiers td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line-soft);
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    table.tiers th:first-child,
+    table.tiers td:first-child { text-align: left; }
+
+    table.tiers thead th {
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--line);
+        font-size: var(--fs-s);
+    }
+
+    table.tiers tr.hit td {
+        background: var(--gold-soft);
+        font-weight: 700;
+    }
+
+    table.tiers tr.hit td:nth-child(4) { color: var(--gold); }
+
+    table.tiers tfoot td {
+        border-top: 2px solid var(--ink);
+        border-bottom: 0;
+        font-weight: 700;
+    }
+
+    .note {
+        margin: 8px 0 0;
+        font-size: var(--fs-s);
+    }
+
+    /* 1万回くり返したとき */
+    .many {
+        margin: 28px 0 0;
+    }
+
+    .many-lead {
+        margin: 0 0 10px;
+        font-size: var(--fs-m);
+    }
+
+    .dist {
+        margin: 14px 0 0;
+        padding: 0;
+        list-style: none;
+        font-size: var(--fs-s);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .dist li {
+        display: grid;
+        grid-template-columns: 210px 1fr 64px;
+        gap: 10px;
+        align-items: center;
+        padding: 3px 0;
+    }
+
+    .dist .bar {
+        position: relative;
+        height: 14px;
+        background: var(--surface-2);
+    }
+
+    .dist .bar i {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        background: var(--c);
+    }
+
+    .dist li.gain .bar i { background: #15803d; }
+
+    .dist .pct { text-align: right; font-weight: 700; }
+
+    /* 自分で入力 */
+    .tiers-edit[hidden] { display: none; }
+
+    .tiers-edit {
+        margin: 0 0 20px;
+        padding: 14px 0 0;
+        border-top: 1px solid var(--line);
+    }
+
+    .tiers-edit table {
+        border-collapse: collapse;
+        font-size: var(--fs-m);
+    }
+
+    .tiers-edit th,
+    .tiers-edit td {
+        padding: 4px 6px 4px 0;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .tiers-edit th { font-size: var(--fs-s); }
+
+    .tiers-edit input.name { width: 110px; }
+    .tiers-edit input.prize { width: 150px; text-align: right; }
+    .tiers-edit input.odds { width: 150px; text-align: right; }
+
+    .tiers-edit .row-del {
+        padding: 4px 10px;
+    }
+
+    .tiers-edit .edit-foot {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        align-items: center;
+        margin-top: 10px;
+    }
+
+    .tiers-edit .edit-foot label { font-weight: 700; }
+
+    #customPrice { width: 100px; text-align: right; }
+
+    #copySource { max-width: 100%; }
+
+    .guide-table {
+        border-collapse: collapse;
+        font-size: var(--fs-m);
+    }
+
+    .guide-table th,
+    .guide-table td {
+        padding: 6px 12px 6px 0;
+        border-bottom: 1px solid var(--line-soft);
+        text-align: left;
+    }
+
+    .guide-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    footer.container {
+        font-size: var(--fs-s);
+    }
+
+    @media (max-width: 760px) {
+        body { padding: 12px; }
+        .container { --pad: 18px; }
+        .form { grid-template-columns: 1fr; gap: 6px; }
+        .form > label, .form > .label { margin-top: 10px; }
+        .stats { grid-template-columns: 1fr 1fr; }
+        .stat:nth-child(3) { border-left: 0; }
+        .stat:nth-child(n+3) { border-top: 1px solid var(--line-soft); }
+        .stat .v { font-size: 20px; }
+        table.tiers { font-size: var(--fs-s); }
+        table.tiers th, table.tiers td { padding: 7px 6px; }
+        .dist li { grid-template-columns: 1fr 64px; }
+        .dist .bar { grid-column: 1 / -1; grid-row: 2; }
+        .tiers-edit input { font-size: var(--fs-m); padding: 6px; }
+        .tiers-edit input.prize { width: 104px; }
+        .tiers-edit input.odds { width: 92px; }
+        .tiers-edit input.name { width: 62px; }
+        .tiers-edit .row-del { padding: 4px 6px; }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="td-banner">
+      <h1>宝くじシミュレーター</h1>
+
+      <p class="description">
+          ジャンボ宝くじ・ロト・ナンバーズ・ビンゴ5を、実際の当せん金と本数のとおりに買ったつもりで抽せんします。
+          何枚買うと何がいくつ当たり、収支はどうなるのかを、1回分と1万回分で確かめられます。
+      </p>
+    </div>
+
+    <div class="form">
+        <label for="lottery">宝くじ</label>
+        <div>
+            <select id="lottery"></select>
+            <p class="lottery-meta" id="lotteryMeta"></p>
+        </div>
+
+        <label for="count">買う数</label>
+        <div>
+            <div class="count-row">
+                <input type="number" id="count" min="1" max="10000000" step="1" value="30" inputmode="numeric">
+                <span class="unit" id="countUnit">枚</span>
+                <span class="cost" id="cost"></span>
+            </div>
+            <div class="quick" id="quick"></div>
+        </div>
+
+        <span class="label" id="howLabel">買い方</span>
+        <div id="howBox">
+            <div class="seg" role="radiogroup" aria-labelledby="howLabel">
+                <label><input type="radio" name="how" value="renban" checked><span>連番</span></label>
+                <label><input type="radio" name="how" value="bara"><span>バラ</span></label>
+            </div>
+            <p class="seg-note" id="howNote"></p>
+        </div>
+    </div>
+
+    <div class="tiers-edit" id="tiersEdit" hidden>
+        <p class="note" style="margin:0 0 8px">当せん金と確率を自分で入れられます。確率は「◯分の1」の◯を入れてください。</p>
+        <div class="table-scroll"><table>
+            <thead><tr><th>等級</th><th>当せん金（円）</th><th>確率（◯分の1）</th><th></th></tr></thead>
+            <tbody id="editRows"></tbody>
+        </table></div>
+        <div class="edit-foot">
+            <button type="button" class="sub-btn" id="addRow">等級を足す</button>
+            <label for="customPrice">1枚の値段</label>
+            <span><input type="number" id="customPrice" min="1" step="1" value="300"> 円</span>
+            <button type="button" class="sub-btn" id="copyFrom">ほかの宝くじの数字を読み込む</button>
+            <select id="copySource" aria-label="読み込む宝くじ"></select>
+        </div>
+    </div>
+
+    <div class="run">
+        <button type="button" id="draw">抽せんする</button>
+        <span class="note" id="theory" style="margin:0"></span>
+    </div>
+
+    <div class="result" id="result" hidden>
+
+        <p class="result-title" id="resultTitle"></p>
+
+        <div class="stats">
+            <div class="stat"><span class="k">買った金額</span><span class="v" id="sCost"></span></div>
+            <div class="stat"><span class="k">当せん金</span><span class="v" id="sWin"></span></div>
+            <div class="stat"><span class="k">収支</span><span class="v" id="sNet"></span></div>
+            <div class="stat"><span class="k">回収率</span><span class="v" id="sRate"></span></div>
+        </div>
+
+        <div class="table-scroll">
+            <table class="tiers">
+                <thead>
+                    <tr>
+                        <th>等級</th>
+                        <th>当せん金</th>
+                        <th>確率</th>
+                        <th>当たった数</th>
+                        <th>当せん金の計</th>
+                        <th>1つ以上当たる確率</th>
+                    </tr>
+                </thead>
+                <tbody id="tierRows"></tbody>
+                <tfoot><tr><td>合計</td><td></td><td></td><td id="totalHits"></td><td id="totalWin"></td><td id="anyHit"></td></tr></tfoot>
+            </table>
+        </div>
+        <p class="note" id="tierNote"></p>
+
+        <div class="many" id="many">
+            <p class="result-title" id="manyTitle"></p>
+            <p class="many-lead" id="manyLead"></p>
+
+            <div class="stats">
+                <div class="stat"><span class="k">黒字になった割合</span><span class="v" id="mPlus"></span></div>
+                <div class="stat"><span class="k">収支の真ん中</span><span class="v" id="mMedian"></span></div>
+                <div class="stat"><span class="k">回収率の平均</span><span class="v" id="mMean"></span></div>
+                <div class="stat"><span class="k">いちばん良かった回</span><span class="v" id="mBest"></span></div>
+            </div>
+
+            <ul class="dist" id="dist" aria-label="回収率の分かれ方"></ul>
+            <p class="note" id="manyNote"></p>
+        </div>
+    </div>
+
+</div>
+
+<div class="container">
+
+    <h2>使い方</h2>
+
+    <ol>
+        <li>宝くじを選び、買う枚数（ロト・ナンバーズ・ビンゴ5は口数）を入れます。</li>
+        <li>ジャンボ宝くじは、連番かバラかを選びます。</li>
+        <li>「抽せんする」を押すと、実際の当せん確率のとおりに1回分を抽せんし、当たった数と収支を出します。
+            あわせて、同じ買い方を1万回くり返したときに、黒字になった割合と回収率の分かれ方を出します。</li>
+    </ol>
+
+    <p>
+        当せん金と確率を変えたいときは、「自分で入力」を選びます。ほかの宝くじの数字を読み込んでから、書き換えることもできます。
+    </p>
+
+    <h2>収録している宝くじ</h2>
+
+    <div class="table-scroll">
+        <table class="guide-table" id="guideTable">
+            <thead><tr><th>宝くじ</th><th>1等</th><th>1等の確率</th><th>1枚の値段</th><th>理論上の回収率</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <p>
+        ジャンボ宝くじは、1ユニット（ジャンボは1,000万枚、年末ジャンボは2,000万枚）あたりの本数から確率を出しています。
+        ユニットの数が変わっても、1枚あたりの確率は変わりません。
+    </p>
+    <p>
+        ロト・ナンバーズ・ビンゴ5の当せん金は、販売元が示している理論値です。実際の当せん金は、その回の売り上げと当せんした口数で毎回変わります。
+        キャリーオーバーは入れていません。
+    </p>
+
+    <h2>計算のしかた</h2>
+
+    <h3>連番とバラ</h3>
+    <p>
+        ジャンボ宝くじは、10枚続きの番号のどれか1枚が、下1桁の等級（いちばん安い300円の等級）に必ず当たります。連番でもバラでも同じです。
+        このツールでも、10枚ごとに1枚は必ず当たるようにしています。
+    </p>
+    <p>
+        違いが出るのは前後賞です。連番で1等が当たると、前後の番号も手元にあるので、前後賞もいっしょに当たります
+        （1等の番号の下1桁が0か9のときは、前後賞のうち1枚だけ）。バラでは、前後賞は1等と別々に当たるかどうかが決まります。
+        1枚あたりの当せん金の期待値は、連番でもバラでも変わりません。
+    </p>
+
+    <h3>1万回くり返したとき</h3>
+    <p>
+        1回の抽せんの結果は、運でいくらでも変わります。そこで、同じ枚数を1万回買ったことにして、黒字になった回の割合、
+        収支の真ん中（1万回を収支の順に並べたときの、ちょうど真ん中）、回収率の分かれ方を出しています。
+    </p>
+
+    <h3>理論上の回収率</h3>
+    <p>
+        「当せん金 × 確率」を全等級で足したものが、1枚あたりに戻ってくる金額の平均（期待値）です。これを1枚の値段で割ったものを、理論上の回収率としています。
+        宝くじは法律で、当せん金の総額が売り上げの5割を超えないように決められていて、どの宝くじも45〜50%ほどです。
+    </p>
+
+    <h2>注意</h2>
+
+    <ul>
+        <li>結果は確率どおりに作った架空の抽せんです。実際の当せん番号とは関係ありません。</li>
+        <li>買う枚数を増やしても、理論上の回収率は変わりません。多く買うほど、収支は「買った金額の約半分が戻る」に近づきます。</li>
+        <li>当せん金と本数は、それぞれの回の発表をもとにしています。次の回で変わることがあります。</li>
+    </ul>
+
+    <h2>よくある質問</h2>
+
+    <p><strong>Q. ジャンボ宝くじは何枚買えば1等が当たりますか？</strong><br>
+    A. 1等の確率は、年末ジャンボで2,000万分の1、ほかのジャンボで1,000万分の1です。
+    1,000万分の1のくじを1,000万枚（30億円）買っても、1等が1枚以上当たる確率は約63%です。
+    「1つ以上当たる確率」の欄で、枚数ごとの確率を確かめられます。</p>
+
+    <p><strong>Q. 連番とバラは、どちらが得ですか？</strong><br>
+    A. 期待値は同じです。連番は1等と前後賞がまとめて当たる夢があり、バラは前後賞だけが当たることもある、という違いです。</p>
+
+    <p><strong>Q. 1万回くり返すと、黒字になる割合が0%になります。</strong><br>
+    A. 枚数が多いと、当せん金の大部分は下の等級からになり、回収率は理論値の近くに集まります。
+    1等のような大きな当せんがない限り、黒字にはなりません。</p>
+
+</div>
+
+<footer class="container">
+    このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+</footer>
+
+<script>
+"use strict";
+
+/* ======================================================
+   宝くじのデータ
+   ジャンボ：unit は1ユニットの枚数、per は1ユニットあたりの本数
+     kind: first（1等）/ zenko（1等の前後賞）/ last1（下1桁。10枚に1枚必ず当たる）
+   数字選択式：total は組み合わせの数、per はそのうち当たる組み合わせの数
+   ====================================================== */
+
+const LOTTERIES = [
+    {
+        id: "nenmatsu", group: "ジャンボ宝くじ", type: "jumbo",
+        name: "年末ジャンボ宝くじ", note: "2025年・第1082回の当せん金と本数",
+        price: 300, unit: 20000000,
+        tiers: [
+            ["1等", 700000000, 1, "first"],
+            ["1等の前後賞", 150000000, 2, "zenko"],
+            ["1等の組違い賞", 100000, 199],
+            ["2等", 100000000, 1],
+            ["3等", 10000000, 4],
+            ["4等", 1000000, 40],
+            ["5等", 10000, 60000],
+            ["6等", 3000, 200000],
+            ["7等", 300, 2000000, "last1"]
+        ]
+    },
+    {
+        id: "halloween", group: "ジャンボ宝くじ", type: "jumbo",
+        name: "ハロウィンジャンボ宝くじ", note: "2026年・第1126回の当せん金と本数",
+        price: 300, unit: 10000000,
+        tiers: [
+            ["1等", 200000000, 1, "first"],
+            ["1等の前後賞", 100000000, 2, "zenko"],
+            ["1等の組違い賞", 100000, 99],
+            ["2等", 100000000, 2],
+            ["3等", 1000000, 10],
+            ["4等", 10000, 20000],
+            ["5等", 3000, 100000],
+            ["6等", 300, 1000000, "last1"]
+        ]
+    },
+    {
+        id: "halloween-mini", group: "ジャンボ宝くじ", type: "jumbo",
+        name: "ハロウィンジャンボミニ", note: "2026年・第1127回の当せん金と本数",
+        price: 300, unit: 10000000,
+        tiers: [
+            ["1等", 20000000, 10, "first"],
+            ["1等の前後賞", 10000000, 20, "zenko"],
+            ["2等", 1000000, 20],
+            ["3等", 10000, 40000],
+            ["4等", 3000, 100000],
+            ["5等", 300, 1000000, "last1"]
+        ]
+    },
+    {
+        id: "summer", group: "ジャンボ宝くじ", type: "jumbo",
+        name: "サマージャンボ宝くじ", note: "2026年・第1115回の当せん金と本数",
+        price: 300, unit: 10000000,
+        tiers: [
+            ["1等", 500000000, 1, "first"],
+            ["1等の前後賞", 100000000, 2, "zenko"],
+            ["1等の組違い賞", 100000, 99],
+            ["2等", 1000000, 10],
+            ["3等", 10000, 10000],
+            ["4等", 3000, 100000],
+            ["5等", 300, 1000000, "last1"]
+        ]
+    },
+    {
+        id: "dream", group: "ジャンボ宝くじ", type: "jumbo",
+        name: "ドリームジャンボ宝くじ", note: "2026年・第1106回の当せん金と本数",
+        price: 300, unit: 10000000,
+        tiers: [
+            ["1等", 300000000, 1, "first"],
+            ["1等の前後賞", 100000000, 2, "zenko"],
+            ["1等の組違い賞", 100000, 99],
+            ["2等", 100000000, 1],
+            ["3等", 1000000, 40],
+            ["4等", 50000, 1000],
+            ["5等", 10000, 20000],
+            ["6等", 3000, 100000],
+            ["7等", 300, 1000000, "last1"]
+        ]
+    },
+    {
+        id: "loto7", group: "数字選択式", type: "pick",
+        name: "ロト7", note: "1〜37から7個。当せん金は理論値",
+        price: 300, total: 10295472,
+        tiers: [
+            ["1等", 700000000, 1],
+            ["2等", 6077700, 14],
+            ["3等", 500000, 196],
+            ["4等", 6500, 9135],
+            ["5等", 1400, 142100],
+            ["6等", 1000, 242550]
+        ]
+    },
+    {
+        id: "loto6", group: "数字選択式", type: "pick",
+        name: "ロト6", note: "1〜43から6個。当せん金は理論値",
+        price: 200, total: 6096454,
+        tiers: [
+            ["1等", 200000000, 1],
+            ["2等", 10000000, 6],
+            ["3等", 300000, 216],
+            ["4等", 6800, 9990],
+            ["5等", 1000, 155400]
+        ]
+    },
+    {
+        id: "miniloto", group: "数字選択式", type: "pick",
+        name: "ミニロト", note: "1〜31から5個。当せん金は理論値",
+        price: 200, total: 169911,
+        tiers: [
+            ["1等", 10000000, 1],
+            ["2等", 150000, 5],
+            ["3等", 10000, 125],
+            ["4等", 1000, 3250]
+        ]
+    },
+    {
+        id: "bingo5", group: "数字選択式", type: "pick",
+        name: "ビンゴ5", note: "8マスに数字が出てそろったライン数で当せん。当せん金は理論値",
+        price: 200, total: 390625,
+        tiers: [
+            ["1等（8ライン）", 5556200, 1],
+            ["2等（6ライン）", 300000, 16],
+            ["3等（5ライン）", 45000, 48],
+            ["4等（4ライン）", 18200, 192],
+            ["5等（3ライン）", 2500, 1248],
+            ["6等（2ライン）", 700, 6656],
+            ["7等（1ライン）", 200, 56832]
+        ]
+    },
+    {
+        id: "numbers4-st", group: "数字選択式", type: "pick",
+        name: "ナンバーズ4（ストレート）", note: "4桁の数字を並びどおりに当てる。当せん金は理論値",
+        price: 200, total: 10000,
+        tiers: [["ストレート", 900000, 1]]
+    },
+    {
+        id: "numbers4-box", group: "数字選択式", type: "pick",
+        name: "ナンバーズ4（ボックス・4つとも違う数字）", note: "並びは問わない。4つとも違う数字（24通り）のとき。当せん金は理論値",
+        price: 200, total: 10000,
+        tiers: [["ボックス", 37500, 24]]
+    },
+    {
+        id: "numbers3-st", group: "数字選択式", type: "pick",
+        name: "ナンバーズ3（ストレート）", note: "3桁の数字を並びどおりに当てる。当せん金は理論値",
+        price: 200, total: 1000,
+        tiers: [["ストレート", 90000, 1]]
+    },
+    {
+        id: "numbers3-box", group: "数字選択式", type: "pick",
+        name: "ナンバーズ3（ボックス・3つとも違う数字）", note: "並びは問わない。3つとも違う数字（6通り）のとき。当せん金は理論値",
+        price: 200, total: 1000,
+        tiers: [["ボックス", 15000, 6]]
+    }
+];
+
+const CUSTOM_ID = "custom";
+const STORE = "td-takarakuji";
+const RUNS = 10000;
+
+/* 等級ごとの確率に直したもの */
+function tiersOf(lot) {
+    if (lot.id === CUSTOM_ID) return lot.tiers;
+    const all = lot.type === "jumbo" ? lot.unit : lot.total;
+    return lot.tiers.map(([name, prize, per, kind]) => ({ name, prize, p: per / all, kind: kind || "" }));
+}
+
+/* ======================================================
+   数字の書き方
+   ====================================================== */
+
+const comma = (n) => Math.round(n).toLocaleString("ja-JP");
+
+/* 7億円 / 1億5,000万円 / 3万6,300円 / 300円 */
+function yen(n) {
+    const sign = n < 0 ? "−" : "";
+    let v = Math.round(Math.abs(n));
+    if (v < 10000) return sign + comma(v) + "円";
+    let s = "";
+    if (v >= 1e8) {
+        s += comma(Math.floor(v / 1e8)) + "億";
+        v %= 1e8;
+    }
+    if (v >= 1e4) {
+        s += comma(Math.floor(v / 1e4)) + "万";
+        v %= 1e4;
+    }
+    if (v) s += comma(v);
+    return sign + s + "円";
+}
+
+/* 収支は「＋」を付ける */
+const signedYen = (n) => (n > 0 ? "＋" : "") + yen(n);
+
+/* 2,000万分の1 / 6.9分の1 */
+function odds(p) {
+    if (!(p > 0)) return "―";
+    const x = 1 / p;
+    if (x < 100) return (Math.round(x * 10) / 10).toString() + "分の1";
+    return bigNum(x) + "分の1";
+}
+
+function bigNum(x) {
+    x = Math.round(x);
+    if (x >= 1e8 && x % 1e4 === 0) return comma(Math.floor(x / 1e8)) + "億" + (x % 1e8 ? comma((x % 1e8) / 1e4) + "万" : "");
+    if (x >= 1e4 && x % 1e4 === 0) return comma(x / 1e4) + "万";
+    return comma(x);
+}
+
+/* 確率を％で。小さいものは桁を足して、0%に見えないようにする */
+function pct(p) {
+    if (p >= 0.9995) return "100%";
+    if (p <= 0) return "0%";
+    const v = p * 100;
+    if (v >= 10) return v.toFixed(1).replace(/\.0$/, "") + "%";
+    if (v >= 0.1) return v.toFixed(2).replace(/\.?0+$/, "") + "%";
+    const digits = Math.min(10, 1 - Math.floor(Math.log10(v)));
+    return v.toFixed(digits).replace(/\.?0+$/, "") + "%";
+}
+
+function rateText(r) {
+    return (Math.round(r * 1000) / 10).toFixed(1) + "%";
+}
+
+/* ======================================================
+   乱数
+   ====================================================== */
+
+function uniform() {
+    const a = new Uint32Array(1);
+    crypto.getRandomValues(a);
+    return (a[0] + 0.5) / 4294967296;
+}
+
+/* 速さが要る1万回のほうは Math.random を使う */
+let rand = Math.random;
+
+function gauss() {
+    const u = rand() || 1e-12;
+    const v = rand();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+/* n 枚のうち確率 p で当たる枚数。
+   当たりが少ないときは「次に当たるまでの枚数」を飛ばしながら数え、多いときは正規分布で近づける */
+function binom(n, p) {
+    if (n <= 0 || p <= 0) return 0;
+    if (p >= 1) return n;
+    if (p > 0.5) return n - binom(n, 1 - p);
+    const mean = n * p;
+    if (mean < 40) {
+        const lq = Math.log1p(-p);
+        let pos = 0;
+        let k = 0;
+        for (;;) {
+            pos += Math.floor(Math.log(rand() || 1e-300) / lq) + 1;
+            if (pos > n) return k;
+            k++;
+        }
+    }
+    const k = Math.round(mean + Math.sqrt(mean * (1 - p)) * gauss());
+    return Math.max(0, Math.min(n, k));
+}
+
+/* 1回分の抽せん。等級ごとの当たった数を返す */
+function drawOnce(lot, tiers, n, renban) {
+    const hits = tiers.map(() => 0);
+
+    if (lot.type === "jumbo") {
+        const first = tiers.findIndex((t) => t.kind === "first");
+        tiers.forEach((t, i) => {
+            if (t.kind === "last1") {
+                /* 10枚ごとに1枚は必ず当たる。端数の分だけ運 */
+                hits[i] = Math.floor(n / 10) + binom(n % 10, 0.1);
+            } else if (t.kind === "zenko" && renban && first >= 0) {
+                hits[i] = -1;       // 1等が決まってから
+            } else {
+                hits[i] = binom(n, t.p);
+            }
+        });
+        const z = hits.indexOf(-1);
+        if (z >= 0) {
+            /* 連番：1等が当たれば前後賞も手元にある（下1桁が0か9なら片方だけ）。
+               1等が隣の10枚にあって、前後賞だけ当たることもある。期待値はバラと同じになる */
+            let k = 0;
+            for (let j = 0; j < hits[first]; j++) k += rand() < 0.8 ? 2 : 1;
+            k += binom(n, tiers[first].p * 0.2);
+            hits[z] = k;
+        }
+        return hits;
+    }
+
+    /* 数字選択式：1口が当たるのは1つの等級だけ */
+    let rest = n;
+    let pRest = 1;
+    tiers.forEach((t, i) => {
+        if (rest <= 0 || pRest <= 0) return;
+        const k = binom(rest, Math.min(1, t.p / pRest));
+        hits[i] = k;
+        rest -= k;
+        pRest -= t.p;
+    });
+    return hits;
+}
+
+/* n 枚で、その等級が1つ以上当たる確率 */
+function atLeastOne(t, n) {
+    if (t.kind === "last1") return n >= 10 ? 1 : -Math.expm1(n * Math.log1p(-0.1));
+    return -Math.expm1(n * Math.log1p(-Math.min(t.p, 1 - 1e-15)));
+}
+
+/* ======================================================
+   画面
+   ====================================================== */
+
+const $ = (id) => document.getElementById(id);
+const sel = $("lottery");
+const countEl = $("count");
+
+let custom = {
+    id: CUSTOM_ID, type: "pick", name: "自分で入力", note: "当せん金と確率を自分で入力",
+    price: 300,
+    tiers: tiersOf(LOTTERIES[0]).map((t) => ({ name: t.name, prize: t.prize, p: t.p, kind: "" }))
+};
+
+function current() {
+    return sel.value === CUSTOM_ID ? custom : LOTTERIES.find((l) => l.id === sel.value) || LOTTERIES[0];
+}
+
+function unitWord(lot) {
+    return lot.type === "jumbo" || lot.id === CUSTOM_ID ? "枚" : "口";
+}
+
+function buildSelect() {
+    const groups = {};
+    for (const l of LOTTERIES) {
+        if (!groups[l.group]) {
+            groups[l.group] = document.createElement("optgroup");
+            groups[l.group].label = l.group;
+            sel.appendChild(groups[l.group]);
+        }
+        groups[l.group].appendChild(new Option(l.name, l.id));
+    }
+    const og = document.createElement("optgroup");
+    og.label = "そのほか";
+    og.appendChild(new Option("自分で入力", CUSTOM_ID));
+    sel.appendChild(og);
+
+    const src = $("copySource");
+    for (const l of LOTTERIES) src.appendChild(new Option(l.name, l.id));
+}
+
+function count() {
+    const v = Math.floor(Number(countEl.value));
+    return Math.max(1, Math.min(10000000, Number.isFinite(v) ? v : 1));
+}
+
+function theoryRate(lot) {
+    return tiersOf(lot).reduce((s, t) => s + t.prize * t.p, 0) / lot.price;
+}
+
+function syncForm() {
+    const lot = current();
+    const word = unitWord(lot);
+    $("countUnit").textContent = word;
+    $("cost").textContent = "＝ " + yen(count() * lot.price);
+    $("lotteryMeta").textContent = `${lot.note}・1${word} ${comma(lot.price)}円`;
+
+    const jumbo = lot.type === "jumbo";
+    $("howLabel").hidden = !jumbo;
+    $("howBox").hidden = !jumbo;
+    const renban = document.querySelector('input[name="how"]:checked').value === "renban";
+    $("howNote").textContent = renban
+        ? "10枚続きの番号。1等が当たると前後賞もいっしょに当たります。"
+        : "番号が続かない10枚。前後賞は1等と別々に当たるかどうかが決まります。";
+
+    $("tiersEdit").hidden = lot.id !== CUSTOM_ID;
+
+    const quick = $("quick");
+    quick.innerHTML = "";
+    const steps = jumbo ? [10, 30, 100, 300, 1000, 10000, 100000] : [1, 5, 10, 100, 1000, 10000, 100000];
+    for (const s of steps) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = `${comma(s)}${word}（${yen(s * lot.price)}）`;
+        b.addEventListener("click", () => {
+            countEl.value = s;
+            syncForm();
+            run();
+        });
+        quick.appendChild(b);
+    }
+
+    $("theory").textContent = `理論上の回収率 ${rateText(theoryRate(lot))}`;
+}
+
+/* ---------- 自分で入力 ---------- */
+
+function renderEdit() {
+    const body = $("editRows");
+    body.innerHTML = "";
+    custom.tiers.forEach((t, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td><input type="text" class="name" aria-label="等級"></td>
+            <td><input type="number" class="prize" min="0" step="1" aria-label="当せん金"></td>
+            <td><input type="number" class="odds" min="1" step="any" aria-label="確率（◯分の1）"></td>
+            <td><button type="button" class="row-del" aria-label="この等級を消す">消す</button></td>`;
+        const [nm, pz, od] = tr.querySelectorAll("input");
+        nm.value = t.name;
+        pz.value = t.prize;
+        od.value = t.p > 0 ? +(1 / t.p).toPrecision(10) : "";
+        nm.addEventListener("input", () => { t.name = nm.value; saveCustom(); });
+        pz.addEventListener("input", () => { t.prize = Math.max(0, Number(pz.value) || 0); saveCustom(); syncForm(); });
+        od.addEventListener("input", () => {
+            const x = Number(od.value);
+            t.p = x >= 1 ? 1 / x : 0;
+            saveCustom();
+            syncForm();
+        });
+        tr.querySelector(".row-del").addEventListener("click", () => {
+            custom.tiers.splice(i, 1);
+            saveCustom();
+            renderEdit();
+            syncForm();
+        });
+        body.appendChild(tr);
+    });
+    $("customPrice").value = custom.price;
+}
+
+function saveCustom() {
+    try {
+        localStorage.setItem(STORE, JSON.stringify({ price: custom.price, tiers: custom.tiers }));
+    } catch (e) { /* 何もしない */ }
+}
+
+function loadCustom() {
+    try {
+        const s = JSON.parse(localStorage.getItem(STORE) || "null");
+        if (s && Array.isArray(s.tiers)) {
+            custom.price = Math.max(1, Number(s.price) || 300);
+            custom.tiers = s.tiers.map((t) => ({ name: String(t.name || ""), prize: Number(t.prize) || 0, p: Number(t.p) || 0, kind: "" }));
+        }
+    } catch (e) { /* 何もしない */ }
+}
+
+$("addRow").addEventListener("click", () => {
+    custom.tiers.push({ name: `${custom.tiers.length + 1}等`, prize: 1000, p: 0.01, kind: "" });
+    saveCustom();
+    renderEdit();
+    syncForm();
+});
+
+$("customPrice").addEventListener("input", () => {
+    custom.price = Math.max(1, Math.floor(Number($("customPrice").value)) || 1);
+    saveCustom();
+    syncForm();
+});
+
+/* ほかの宝くじの数字を読み込む。自分で入力は等級ごとに別々の確率で扱うので、
+   前後賞は1等と同じ確率の2倍、下1桁の等級は10分の1にする */
+$("copyFrom").addEventListener("click", () => {
+    const lot = LOTTERIES.find((l) => l.id === $("copySource").value);
+    if (!lot) return;
+    custom.price = lot.price;
+    custom.tiers = tiersOf(lot).map((t) => ({ name: t.name, prize: t.prize, p: t.p, kind: "" }));
+    saveCustom();
+    renderEdit();
+    syncForm();
+});
+
+/* ---------- 抽せん ---------- */
+
+let shareBox = null;
+let shareText = "";
+
+function run() {
+    const lot = current();
+    const tiers = tiersOf(lot).filter((t) => t.p > 0);
+    if (!tiers.length) return;
+
+    const n = count();
+    countEl.value = n;
+    const word = unitWord(lot);
+    const renban = lot.type === "jumbo" && document.querySelector('input[name="how"]:checked').value === "renban";
+    const cost = n * lot.price;
+
+    /* 1回分は暗号の乱数で */
+    rand = uniform;
+    const hits = drawOnce(lot, tiers, n, renban);
+    rand = Math.random;
+
+    const win = hits.reduce((s, k, i) => s + k * tiers[i].prize, 0);
+    const net = win - cost;
+    const how = lot.type === "jumbo" ? (renban ? "連番で" : "バラで") : "";
+
+    $("resultTitle").textContent = `${lot.name}を${how}${comma(n)}${word}買った結果`;
+    $("sCost").textContent = yen(cost);
+    $("sWin").textContent = yen(win);
+    const netEl = $("sNet");
+    netEl.textContent = signedYen(net);
+    netEl.className = "v " + (net > 0 ? "plus" : net < 0 ? "minus" : "");
+    $("sRate").textContent = rateText(win / cost);
+
+    const rows = $("tierRows");
+    rows.innerHTML = "";
+    let none = 1;
+    tiers.forEach((t, i) => {
+        const tr = document.createElement("tr");
+        if (hits[i] > 0) tr.className = "hit";
+        const one = atLeastOne(t, n);
+        if (t.kind !== "zenko") none *= 1 - one;
+        const cells = [t.name, yen(t.prize), t.kind === "last1" ? "10分の1" : odds(t.p), comma(hits[i]) + word, yen(hits[i] * t.prize), pct(one)];
+        for (const c of cells) {
+            const td = document.createElement("td");
+            td.textContent = c;
+            tr.appendChild(td);
+        }
+        rows.appendChild(tr);
+    });
+    $("totalHits").textContent = comma(hits.reduce((s, k) => s + k, 0)) + word;
+    $("totalWin").textContent = yen(win);
+    $("anyHit").textContent = pct(1 - none);
+
+    const notes = [];
+    if (lot.type === "jumbo") notes.push("下1桁の等級は、10枚ごとに1枚必ず当たります。");
+    notes.push("「1つ以上当たる確率」は、" + comma(n) + word + "買ったときに、その等級が1つ以上当たる確率です。");
+    $("tierNote").textContent = notes.join("");
+
+    runMany(lot, tiers, n, renban, cost);
+
+    $("result").hidden = false;
+
+    /* 共有の文章 */
+    const won = tiers.map((t, i) => (hits[i] > 0 ? `${t.name}×${comma(hits[i])}` : "")).filter(Boolean);
+    shareText = `🎫 ${lot.name}を${how}${comma(n)}${word}（${yen(cost)}）買ってみた結果\n`
+        + `当せん：${won.length ? won.join("、") : "なし"}\n`
+        + `当せん金 ${yen(win)}／収支 ${signedYen(net)}（回収率 ${rateText(win / cost)}）`;
+    if (window.TDShare) {
+        if (!shareBox) shareBox = TDShare.attach($("tierNote"), () => shareText);
+        shareBox.update();
+    }
+}
+
+/* 同じ買い方を1万回くり返す */
+function runMany(lot, tiers, n, renban, cost) {
+    const rates = new Float64Array(RUNS);
+    let plus = 0;
+    let sum = 0;
+    let best = -Infinity;
+    let firstRuns = 0;
+    const firstIdx = 0;
+
+    for (let r = 0; r < RUNS; r++) {
+        const h = drawOnce(lot, tiers, n, renban);
+        let w = 0;
+        for (let i = 0; i < h.length; i++) w += h[i] * tiers[i].prize;
+        rates[r] = w / cost;
+        sum += w;
+        if (w > cost) plus++;
+        if (w > best) best = w;
+        if (h[firstIdx] > 0) firstRuns++;
+    }
+
+    const sorted = Array.from(rates).sort((a, b) => a - b);
+    const median = sorted[Math.floor(RUNS / 2)] * cost - cost;
+    const word = unitWord(lot);
+
+    $("manyTitle").textContent = `同じ買い方を${comma(RUNS)}回くり返したら`;
+    $("manyLead").textContent = `${comma(n)}${word}（${yen(cost)}）を${comma(RUNS)}回買ったことにして数えました。`
+        + `${tiers[firstIdx].name}が当たったのは${comma(firstRuns)}回です。`;
+
+    const plusEl = $("mPlus");
+    plusEl.textContent = pct(plus / RUNS);
+    const medEl = $("mMedian");
+    medEl.textContent = signedYen(median);
+    medEl.className = "v " + (median > 0 ? "plus" : median < 0 ? "minus" : "");
+    $("mMean").textContent = rateText(sum / RUNS / cost);
+    const bestNet = best - cost;
+    const bestEl = $("mBest");
+    bestEl.textContent = signedYen(bestNet);
+    bestEl.className = "v " + (bestNet > 0 ? "plus" : bestNet < 0 ? "minus" : "");
+
+    /* 回収率の分かれ方 */
+    const bins = [
+        [0, 0.2, "回収率 0〜20%"],
+        [0.2, 0.4, "20〜40%"],
+        [0.4, 0.6, "40〜60%"],
+        [0.6, 0.8, "60〜80%"],
+        [0.8, 1, "80〜100%"],
+        [1, 2, "100〜200%（黒字）"],
+        [2, 10, "200〜1000%（黒字）"],
+        [10, Infinity, "1000%以上（黒字）"]
+    ];
+    const dist = $("dist");
+    dist.innerHTML = "";
+    for (const [lo, hi, label] of bins) {
+        let c = 0;
+        for (const v of sorted) {
+            /* 黒字は「当せん金が買った金額より多い」。ちょうど100%は「80〜100%」に入れる */
+            if (lo === 1 ? v > 1 && v < hi : hi === 1 ? v >= lo && v <= 1 : v >= lo && v < hi) c++;
+        }
+        const li = document.createElement("li");
+        if (lo >= 1) li.className = "gain";
+        const share = c / RUNS;
+        li.innerHTML = `<span></span><span class="bar"><i></i></span><span class="pct"></span>`;
+        li.children[0].textContent = label;
+        li.querySelector("i").style.width = (share * 100).toFixed(2) + "%";
+        li.children[2].textContent = pct(share);
+        dist.appendChild(li);
+    }
+
+    $("manyNote").textContent = `「収支の真ん中」は、${comma(RUNS)}回を収支の順に並べたときの、ちょうど真ん中の回の収支です。`
+        + `理論上の回収率は${rateText(theoryRate(lot))}です。`;
+}
+
+/* ---------- はじめ ---------- */
+
+buildSelect();
+loadCustom();
+renderEdit();
+
+sel.addEventListener("change", () => {
+    syncForm();
+    if (!$("result").hidden) run();
+});
+countEl.addEventListener("input", syncForm);
+countEl.addEventListener("keydown", (e) => { if (e.key === "Enter") run(); });
+document.querySelectorAll('input[name="how"]').forEach((r) => r.addEventListener("change", () => {
+    syncForm();
+    if (!$("result").hidden) run();
+}));
+$("draw").addEventListener("click", run);
+
+/* 収録している宝くじの表 */
+(() => {
+    const body = document.querySelector("#guideTable tbody");
+    for (const l of LOTTERIES) {
+        const t = tiersOf(l)[0];
+        const tr = document.createElement("tr");
+        const cells = [l.name, yen(t.prize), odds(t.p), yen(l.price), rateText(theoryRate(l))];
+        cells.forEach((c, i) => {
+            const td = document.createElement("td");
+            td.textContent = c;
+            if (i) td.className = "num";
+            tr.appendChild(td);
+        });
+        body.appendChild(tr);
+    }
+})();
+
+syncForm();
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
