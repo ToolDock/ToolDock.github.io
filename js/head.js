@@ -53,6 +53,10 @@ if (tool) {
   const hasDesc = !!document.querySelector('meta[name="description"]');
   const hasCanonical = !!document.querySelector('link[rel="canonical"]');
 
+  /* SNSはJavaScriptを動かさずに読むので、OGPをHTMLに直接書いたページもある。
+     そのページでは二重に出さない */
+  const hasOgp = !!document.querySelector('meta[property="og:image"]');
+
   /* 1つのツールが複数のページを持つとき（ドラフト答え合わせの /draft/2018/ など）は、
      canonical がツールのURLと違う。そのページはSNS共有（OGP）でも
      ページ自身のタイトル・説明・URLを使う。ツールの本体ページはこれまでどおり */
@@ -109,7 +113,7 @@ if (tool) {
     <meta name="robots"
           content="max-image-preview:large">
 
-    <meta property="og:type"
+    ${hasOgp ? "" : `<meta property="og:type"
           content="website">
 
     <meta property="og:site_name"
@@ -137,7 +141,7 @@ if (tool) {
           content="ja_JP">
 
     <meta name="twitter:card"
-          content="summary_large_image">
+          content="summary_large_image">`}
 
     <meta name="theme-color"
           content="${tool.themeColor || "#ffffff"}">
