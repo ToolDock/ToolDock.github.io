@@ -19,7 +19,7 @@
 <!-- カード内のランク文字・数字に使うフォント（元デザインの ADLaM Display / Source Sans Pro を使用） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Source+Sans+3:wght@700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&family=M+PLUS+1p:wght@500;700;800&family=Rubik:wght@800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Source+Sans+3:wght@700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&family=M+PLUS+1p:wght@400;500;700;800&family=Rubik:wght@800&display=swap" rel="stylesheet">
 
 <meta name="keywords" content="パワプロ,パワプロ風,能力画像,能力メーカー,能力作成ツール,画像作成,ジェネレーター,自己紹介,選手カード,特殊能力,野手,画像生成,無料">
 
@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=8" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=9" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -723,14 +723,14 @@ function rankLetter(cx, baseline, rank, size) {
            '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="url(#' + gid + ')" stroke="#FFFFFF" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke fill">' + rank + '</text>';
 }
 
-/* ---- 数字は大きく、単位（率・本・点・盗）は少し小さく ----
-   pre（「率」）のあとだけ少し空け、あとは続けて書く（「44本110点」）。 */
-function unitTspans(pre, str, big) {
-    var small = Math.round(big * 0.78);
-    var out = pre ? '<tspan font-size="' + small + '">' + esc(pre) + '</tspan>' : "";
+/* ---- 成績欄の単位（率・本・点・盗） ----
+   実機は数字と同じ高さで、字だけ細い。pre（「率」）のあとだけ少し空け、
+   あとは続けて書く（「44本110点」）。 */
+function unitTspans(pre, str) {
+    var out = pre ? '<tspan font-weight="400">' + esc(pre) + '</tspan>' : "";
     String(str).split(/([0-9０-９.．\-]+)/).filter(function (part) { return part !== ""; }).forEach(function (part, i) {
         var isNum = /^[0-9０-９.．\-]+$/.test(part);
-        out += '<tspan' + (pre && i === 0 ? ' dx="8"' : '') + ' font-size="' + (isNum ? big : small) + '">' + esc(part) + '</tspan>';
+        out += '<tspan' + (pre && i === 0 ? ' dx="8"' : '') + ' font-weight="' + (isNum ? 700 : 400) + '">' + esc(part) + '</tspan>';
     });
     return out;
 }
@@ -874,7 +874,7 @@ function buildCatBadges() {
    赤特は純粋な赤色の単色。赤青特（☆がプラスの赤特）だけ左赤・右青のツートンにする。 */
 var CAT_STYLE = {
     kintoku: { bg: ["#FFF3D0", "#F5DFA8"], border: "#E0B03C", text: "#7A4520" },
-    aoto:    { bg: ["#E8FAFE", "#B4E8F5"], border: "#45B3D8", text: "#173B5C" },
+    aoto:    { bg: ["#E8FAFE", "#B4E8F5"], border: "#45B3D8", text: "#204C74" },
     midori:  { bg: ["#EAFCE6", "#B4EBAE"], border: "#4FAE5C", text: "#1E5E27" },
     aka:     { bg: ["#FFE0E0", "#F5A3A5"], border: "#D9534F", text: "#B3141B" }
 };
@@ -891,19 +891,28 @@ var TRAJ_ARROW = {
     4: { angle: -75, color: "#D2349E", light: "#FFA6DC" }
 };
 /* 選手名プレートの背景。色を1つなら単色、複数なら左から順に並べ、
-   実機と同じく色の境目をなめらかに混ぜる。上半分には白いつやを重ねる */
+   実機と同じく色の境目を縦の波模様にする。上半分には白いつやを重ねる */
 function nameplateStripes(x, y, w, h, colors) {
     if (!colors.length) colors = [NAME_PLATE_COLORS.yellow];
     var n = colors.length;
-    var stops = "";
-    colors.forEach(function (c, i) {
-        var from = i / n, to = (i + 1) / n, blend = 0.1;
-        stops += '<stop offset="' + (i ? from + blend : 0) + '" stop-color="' + c + '"/>' +
-                 '<stop offset="' + (i < n - 1 ? to - blend : 1) + '" stop-color="' + c + '"/>';
-    });
-    var html = '<defs><linearGradient id="gName" x1="0" y1="0" x2="1" y2="0">' + stops + '</linearGradient>' +
-        '<linearGradient id="gNameGloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.55"/><stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>' +
-        '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="url(#gName)"/>' +
+    var amp = 4, waves = 1.5;
+    var html = '<defs><clipPath id="clipName"><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7"/></clipPath>' +
+        '<linearGradient id="gNameGloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.45"/><stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>' +
+        '<g clip-path="url(#clipName)">' +
+        '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + colors[0] + '"/>';
+    /* 2色目からは、波打つ境目から右端までを塗る */
+    for (var c = 1; c < n; c++) {
+        var bx = x + w * c / n;
+        var d = "M" + (x + w + 2) + "," + (y - 2);
+        for (var k = 0; k <= 24; k++) {
+            var yy = y - 2 + (h + 4) * k / 24;
+            var xx = bx + amp * Math.sin(2 * Math.PI * waves * k / 24);
+            d += " L" + xx.toFixed(1) + "," + yy.toFixed(1);
+        }
+        d += " L" + (x + w + 2) + "," + (y + h + 2) + " Z";
+        html += '<path d="' + d + '" fill="' + colors[c] + '"/>';
+    }
+    html += '</g>' +
         '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="url(#gNameGloss)"/>';
     /* 実機の、白い内側の縁と細い灰色の外側の縁 */
     html +=
@@ -1001,7 +1010,7 @@ function renderCard() {
                はっきり分かるようにする */
             var isHigh = b.rank === "A" || b.rank === "B";
             var isPaleText = b.rank === "C" || b.rank === "D" || b.rank === "E";
-            var textColor = tier === "bad" ? "#7A2020" : (isPaleText ? "#A3C4D3" : "#173B5C");
+            var textColor = tier === "bad" ? "#7A2020" : (isPaleText ? "#A3C4D3" : "#204C74");
             /* 実機：B以上は青い四角に白い字、C〜Eは四角無しで白抜きの字（薄い灰青の縁）だけ、F・Gは赤 */
             var tagFill = tier === "bad" ? BADGE_RANK_TAG[b.rank] : "#1E9BD0";
             var tagStroke = tier === "bad" ? "#7A1F1A" : (isPaleText ? "#8DB3C5" : "#0E5F85");
@@ -1058,7 +1067,7 @@ function renderCard() {
         return '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="7" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                labelPill(L.statColX + 5, y + 5, L.statLabelW - 6, h - 10, labelVal("statlabel-" + s.id, s.label), 19) +
                rankText +
-               '<text data-squeeze="0.84" data-max="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 28) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="35" font-weight="800" fill="#1D3F7C" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(v) + '</text>';
+               '<text data-squeeze="0.84" data-max="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 28) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="35" font-weight="800" fill="#25589C" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(v) + '</text>';
     }).join("");
 
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
@@ -1068,7 +1077,7 @@ function renderCard() {
 
     var bio1 = L.bio1Vals.map(function (b) {
         var val = b.keys.map(function (k) { return document.getElementById("p-" + k).value.trim(); }).join("");
-        return '<text data-squeeze="0.8" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 32) + '"' + (b.anchor ? ' text-anchor="' + b.anchor + '"' : '') + ' font-size="37" font-weight="700" fill="#1E3A66" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + unitTspans(b.pre, val, 37) + '</text>';
+        return '<text data-squeeze="0.8" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 32) + '"' + (b.anchor ? ' text-anchor="' + b.anchor + '"' : '') + ' font-size="37" font-weight="700" fill="#2B5590" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + unitTspans(b.pre, val) + '</text>';
     }).join("");
 
     var svg = '' +
@@ -1093,7 +1102,7 @@ function renderCard() {
 
         /* 背番号 */
         numTab(L.numBox.x, L.numBox.y, L.numBox.w, L.numBox.h) +
-        (number ? '<text data-squeeze="0.9" data-max="' + (L.numBox.w - 14) + '" x="' + (L.numBox.x + 7 + L.numBox.w / 2) + '" y="' + (L.numBox.y + L.numBox.h / 2 + 12) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#1E3A66" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(number) + '</text>' : '') +
+        (number ? '<text data-squeeze="0.9" data-max="' + (L.numBox.w - 14) + '" x="' + (L.numBox.x + 7 + L.numBox.w / 2) + '" y="' + (L.numBox.y + L.numBox.h / 2 + 12) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#2B5590" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(number) + '</text>' : '') +
 
         /* 顔写真枠（アップロードした画像があればそれを表示、無ければプレースホルダー） */
         (playerPhotoImg
@@ -1104,7 +1113,7 @@ function renderCard() {
 
         /* 守備位置 */
         labelPill(L.posLabel.x, L.posLabel.y, L.posLabel.w, L.posLabel.h, labelVal("label-pos", "守備位置"), 17) +
-        '<text data-fit="' + (L.posValue.w - 10) + '" x="' + L.posValue.x + '" y="' + (L.posValue.y + L.posValue.h / 2 + 9) + '" font-size="27" font-weight="800" fill="#1E3A66" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(pos) +
+        '<text data-fit="' + (L.posValue.w - 10) + '" x="' + L.posValue.x + '" y="' + (L.posValue.y + L.posValue.h / 2 + 9) + '" font-size="27" font-weight="800" fill="#2B5590" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(pos) +
             (subClean ? '<tspan dx="8" font-size="21" font-weight="700" fill="#5A7598">ー</tspan><tspan dx="7" font-size="21" font-weight="700" fill="#5A7598">' + esc(subClean) + '</tspan>' : '') + '</text>' +
 
         /* 成績・フォーム・投打（2段のパネル） */
@@ -1114,9 +1123,9 @@ function renderCard() {
 
         '<rect x="' + L.bioRow2.x + '" y="' + L.bioRow2.y + '" width="' + L.bioRow2.w + '" height="' + L.bioRow2.h + '" rx="14" fill="#ffffff" stroke="#BCE3F1" stroke-width="4"/>' +
         labelPill(L.bio2Label1.x, L.bio2Label1.y, L.bio2Label1.w, L.bio2Label1.h, labelVal("label-form", "フォーム"), 17) +
-        '<text data-squeeze="0.92" data-max="' + (L.bio2Val1.w - 6) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 9) + '" font-size="26" font-weight="500" fill="#1E3A66" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(form) + '</text>' +
+        '<text data-squeeze="0.92" data-max="' + (L.bio2Val1.w - 6) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 9) + '" font-size="26" font-weight="500" fill="#2B5590" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(form) + '</text>' +
         labelPill(L.bio2Label2.x, L.bio2Label2.y, L.bio2Label2.w, L.bio2Label2.h, labelVal("label-throwbat", "投打"), 17) +
-        '<text data-squeeze="0.92" data-max="' + (L.bio2Val2.w - 6) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 9) + '" font-size="26" font-weight="500" fill="#1E3A66" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
+        '<text data-squeeze="0.92" data-max="' + (L.bio2Val2.w - 6) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 9) + '" font-size="26" font-weight="500" fill="#2B5590" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
 
         /* 能力値テーブル */
         statHTML +
@@ -1258,7 +1267,7 @@ bindImageUpload("p-flagimg", function (v) { teamFlagImg = v; });
    代替フォントで描かれてしまうことがある。これを避けるため、書き出す
    直前にWebフォントをbase64で埋め込んだ<style>をSVGへ差し込む。
    フォントデータは初回のみ取得してキャッシュする。 */
-var FONT_CSS_URL = "https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Source+Sans+3:wght@700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&family=M+PLUS+1p:wght@500;700;800&family=Rubik:wght@800&display=swap";
+var FONT_CSS_URL = "https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Source+Sans+3:wght@700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&family=M+PLUS+1p:wght@400;500;700;800&family=Rubik:wght@800&display=swap";
 var embeddedFontCssPromise = null;
 function getEmbeddedFontCss() {
     if (embeddedFontCssPromise) return embeddedFontCssPromise;
