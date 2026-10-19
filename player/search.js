@@ -128,13 +128,22 @@
         return { label: o.name, keys: [o.kana].concat(o.names),
                  sub: (o.cur || o.teams[o.teams.length - 1] || "") + (o.cur ? "" : "（" + o.last + "年まで）") };
       });
-    // 出身校も候補に出す（「大阪」で「大阪桐蔭高」）。経歴の最初（高校）と「〜大」（大学）。出身選手の多い順
+    // 経歴（出身校・社会人・独立リーグ）も候補に出す（「大阪」で「大阪桐蔭高」、「トヨタ」で「トヨタ自動車」）。
+    // 経歴の最初は高校、「〜大」は大学、「四国・」「BC・」などは独立リーグ、そのほかは社会人。
+    // 海外の球団（MLB・米マイナー・韓国や台湾など）は出さない。出身選手の多い順
+    var MLB = "パドレス パイレーツ レンジャーズ ヤンキース ブルージェイズ ダイヤモンドバックス ロイヤルズ アスレチックス ジャイアンツ オリオールズ マーリンズ メッツ マリナーズ タイガース ドジャース カブス レッズ レッドソックス ブルワーズ ツインズ ナショナルズ ロッキーズ ブレーブス エンゼルス ホワイトソックス アストロズ インディアンス フィリーズ レイズ カージナルス デビルレイズ エクスポズ ガーディアンズ".split(" ");
+    function careerKind(seg, i){
+      if (MLB.indexOf(seg) >= 0 || /^(米|韓国|台湾|キューバ|豪州|ドミニカ|ベネズエラ|メキシコ|中国|プエルトリコ|イタリア|イスラエル|オランダ|アムウェイ)/.test(seg) || /リーグ$/.test(seg)) return "";
+      if (/^(四国|BC|関西|ベイサイド)・/.test(seg) || /琉球ブルーオーシャンズ/.test(seg)) return "独立リーグ";
+      if (/大$|大(学)?.*(学部|キャンパス|中退)$|大北海道/.test(seg)) return "大学";
+      return i === 0 ? "高校" : "社会人";
+    }
     var schools = {};
     data.forEach(function(o){
       String(o.school || "").split(" - ").forEach(function(seg, i){
         seg = seg.trim();
         if (!seg) return;
-        var kind = /大$/.test(seg) ? "大学" : i === 0 ? "高校" : "";
+        var kind = careerKind(seg, i);
         if (!kind) return;
         var k = schools[seg] || (schools[seg] = { label: seg, kind: kind, n: 0 });
         k.n++;
