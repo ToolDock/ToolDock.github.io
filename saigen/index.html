@@ -305,6 +305,17 @@
 
     .guide thead th { background: var(--surface-2); }
 
+    details.more {
+        margin: 14px 0 0;
+    }
+
+    details.more summary {
+        cursor: pointer;
+        font-weight: 700;
+        font-size: var(--fs-m);
+        margin: 0 0 10px;
+    }
+
     footer.container {
         font-size: var(--fs-s);
     }
@@ -380,6 +391,11 @@
             <p class="group-title">対左投手・得点圏（任意）</p>
             <div class="fields" id="bsplit-grid"></div>
             <p class="hint">チャンスと対左投手は、ここに入れた打率と全体の打率の差で決めます。空欄ならDです。</p>
+            <details class="more">
+                <summary>詳しい成績（分かれば・特殊能力用）</summary>
+                <div class="fields" id="bmore-grid"></div>
+                <p class="hint">初球〇・満塁男・サヨナラ男・代打〇・固め打ち・内野安打〇・広角打法・プルヒッター・流し打ち・決勝打を決めます。空欄の項目は使いません。</p>
+            </details>
         </div>
 
         <div id="pit-fields" hidden>
@@ -394,9 +410,11 @@
             <p class="group-title">球速・変化球（任意）</p>
             <div class="fields">
                 <label>球速（km/h）<input type="number" id="f-velo" min="80" max="175" placeholder="空欄可"></label>
+                <label>ストレートの割合（%）<input type="number" id="f-fbpct" min="0" max="100" placeholder="空欄可"></label>
             </div>
             <div class="pitch-rows" id="pitch-rows" style="margin-top:10px"></div>
-            <p class="hint">成績からは決められないので、分かれば入れてください。空欄のままだと、能力画像ジェネレーターで空欄のまま開きます。</p>
+            <p class="hint">成績からは決められないので、分かれば入れてください。空欄のままだと、能力画像ジェネレーターで空欄のまま開きます。
+                ストレートの割合は速球中心・変化球中心に、球速はキレ〇（球速のわりに三振が多い）に使います。</p>
         </div>
     </div>
 
@@ -465,8 +483,10 @@
 
     <h3>特殊能力</h3>
     <ul>
-        <li>野手：安打製造機・アベレージヒッター・アーチスト・パワーヒッター・粘り打ち・三振・扇風機・選球眼・併殺・エラー・バント職人・バント〇・フル出場・盗塁・走塁</li>
-        <li>投手：勝利の星・ドクターＫ・奪三振・四球・精密機械・本塁打厳禁・重い球・一発</li>
+        <li>野手（成績表から）：安打製造機・アベレージヒッター・アーチスト・パワーヒッター・粘り打ち・ラインドライブ・レーザービーム・守備職人・バント職人・バント〇・三振・扇風機・併殺・エラー・選球眼・強振多用・ミート多用・積極打法・積極盗塁・フル出場・盗塁・走塁・ケガしにくさ</li>
+        <li>野手（詳しい成績を入れたとき）：チャンス・対左投手・初球〇・満塁男・サヨナラ男・代打〇・固め打ち・内野安打〇・プルヒッター・流し打ち・広角打法・決勝打</li>
+        <li>投手（成績表から）：勝利の星・ドクターＫ・精密機械・本塁打厳禁・奪三振・重い球・ストライク先行・回またぎ〇・勝ち運・四球・一発・荒れ球・負け運・対ピンチ・回復</li>
+        <li>投手（詳しい成績を入れたとき）：対左打者・キレ〇・速球中心・変化球中心</li>
     </ul>
     <p>
         金特は、50本塁打・200安打・20勝のような歴史に残る記録のときだけ付けます。赤特（三振・併殺・エラーなど）は付きやすくしています。
@@ -497,7 +517,7 @@
    ====================================================== */
 
 /* 2005〜2026年の平均的な環境。補正後の成績はこの環境での値になる */
-const REF = { avg: 0.2536, iso: 0.1237, k: 0.1869, bb: 0.0842, hr: 0.0212 };
+const REF = { avg: 0.2536, iso: 0.1237, k: 0.1869, bb: 0.0842, hr: 0.0212, ra9: 3.913, hbp: 0.0096 };
 
 /* 少ない打席・打者を平均に寄せるために足す量 */
 const REG_AB = 150, REG_PA = 60, REG_BF = 80, REG_LOB_BF = 150;
@@ -585,6 +605,9 @@ function buildFields(gridId, list) {
 buildFields("bat-grid", BAT_FIELDS);
 buildFields("pit-grid", PIT_FIELDS);
 buildFields("bsplit-grid", [["対左 打数", "lab"], ["対左 安打", "lh"], ["得点圏 打数", "rab"], ["得点圏 安打", "rh"]]);
+buildFields("bmore-grid", [["初球 打数", "x1ab"], ["初球 安打", "x1h"], ["満塁 打数", "xmab"], ["満塁 安打", "xmh"],
+    ["満塁本塁打", "xgs"], ["サヨナラ打", "xso"], ["代打 打数", "xpab"], ["代打 安打", "xph"], ["猛打賞", "x3h"],
+    ["内野安打", "xinf"], ["引っ張りの割合（%）", "xpull"], ["流しの割合（%）", "xoppo"], ["勝利打点（決勝打）", "xgw"]]);
 buildFields("psplit-grid", [["対左 打数", "plab"], ["対左 被安打", "plh"], ["得点圏 打数", "prab"], ["得点圏 被安打", "prh"]]);
 
 (() => {
@@ -648,7 +671,9 @@ function leagueRates(s, lg) {
         iso: (tb - t["安打"]) / t["打数"],
         k: t["三振"] / t["打席"],
         bb: (t["四球"] - t["故意四"] + t["死球"]) / t["打席"],
-        hr: t["本塁打"] / t["打席"]
+        hr: t["本塁打"] / t["打席"],
+        ra9: s.totals[lg].pit.ra * 9 / s.totals[lg].pit.ip,
+        hbp: t["死球"] / t["打席"]
     };
 }
 
@@ -741,6 +766,9 @@ function computeBatter() {
         const ca = Math.round(clamp(62 - (er / P.e - 1) * 25, 25, 90));
         /* エラー：失策8以上で、失策率が同じ位置の平均の1.3倍以上 */
         out.errorProne = e >= 8 && e / Math.max(1, po + a + e) >= P.e * 1.3;
+        /* レーザービーム：外野で補殺7以上。守備職人：守備力B後半・捕球C以上で、100試合以上守った */
+        out.laser = pos === "外野手" && a >= 7;
+        out.glove = fg >= 100 && field >= 75 && ca >= 60;
         out.stats.ca = { v: ca, why: `失策率 ${pct(er)}（平均 ${pct(P.e)}）` };
         let arm = P.arm;
         let armWhy = `${pos}の基準値`;
@@ -769,6 +797,33 @@ function computeBatter() {
     if (sh >= 30) sp.push(["aoto", "バント職人"]);
     else if (sh >= 15) sp.push(["aoto", "バント〇"]);
     if (g && g >= tg) sp.push(["midori", "フル出場"]);
+    if (pa >= 400 && d2 >= 30) sp.push(["aoto", "ラインドライブ"]);
+    if (out.laser) sp.push(["aoto", "レーザービーム"]);
+    if (out.glove) sp.push(["aoto", "守備職人"]);
+    /* 打ち方・走り方の傾向（緑特） */
+    if (pa >= 300 && aHr >= .04 && aK >= .20) sp.push(["midori", "強振多用"]);
+    if (pa >= 300 && aK <= .12 && aIso <= .120) sp.push(["midori", "ミート多用"]);
+    if (pa >= 300 && (bb - ibb) / pa <= .05) sp.push(["midori", "積極打法"]);
+    if (sb + cs >= 25) sp.push(["midori", "積極盗塁"]);
+
+    /* 詳しい成績を入れたときだけ付くもの */
+    const avgAll0 = h / ab;
+    const x1ab = num("f-x1ab"), x1h = num("f-x1h");
+    if (x1ab >= 30 && x1h / x1ab >= Math.max(.330, avgAll0 + .040)) sp.push(["aoto", "初球〇"]);
+    const xmab = num("f-xmab"), xmh = num("f-xmh");
+    if (num("f-xgs") >= 2 || (xmab >= 10 && xmh / xmab >= .400)) sp.push(["aoto", "満塁男"]);
+    if (num("f-xso") >= 2) sp.push(["aoto", "サヨナラ男"]);
+    const xpab = num("f-xpab"), xph = num("f-xph");
+    if (xpab >= 15 && xph / xpab >= .300) sp.push(["aoto", "代打〇"]);
+    if (num("f-x3h") >= 12) sp.push(["aoto", "固め打ち"]);
+    if (num("f-xinf") >= 15) sp.push(["aoto", "内野安打〇"]);
+    const pull = num("f-xpull"), oppo = num("f-xoppo");
+    if (pull || oppo) {
+        if (pull >= 48) sp.push(["aoto", "プルヒッター"]);
+        else if (oppo >= 35) sp.push(["aoto", "流し打ち"]);
+        else if (pull && pull <= 40 && oppo >= 28 && hr >= 15) sp.push(["aoto", "広角打法"]);
+    }
+    if (num("f-xgw") >= 12) sp.push(["aoto", "決勝打"]);
 
     const att = sb + cs, rate = att ? sb / att : 0;
     let steal = "D";
@@ -780,6 +835,8 @@ function computeBatter() {
     const run = (parts[2] + parts[3]) / 2;
     const runR = run >= 7 ? "A" : run >= 6 ? "B" : run >= 5 ? "C" : run <= 2.5 ? "E" : "D";
     out.subs = { "sub-steal": steal, "sub-run": runR };
+    /* ケガしにくさ：チームの試合にどれだけ出たか */
+    if (g && tg) out.subs["sub-injury"] = g >= tg ? "B" : g / tg >= .95 ? "C" : "D";
     out.splitWhy = [];
     const avgAll = h / ab;
     for (const [id, abId, hId, label] of [["sub-vsleft", "f-lab", "f-lh", "対左"], ["sub-chance", "f-rab", "f-rh", "得点圏"]]) {
@@ -848,6 +905,27 @@ function computePitcher() {
     else if (bf >= 250 && aHr <= .012) sp.push(["aoto", "重い球"]);
     else if (bf >= 150 && aHr >= .035) sp.push(["aka", "一発"]);
     if (ip >= 143 && aBb <= .025) sp.push(["kintoku", "精密機械"]);
+    else if (bf >= 300 && aBb <= .05) sp.push(["aoto", "ストライク先行"]);
+    if (bf >= 200 && adj(hbp / bf, "hbp") >= .015) sp.push(["aka", "荒れ球"]);
+    if (!starter && app >= 20 && ipa >= 1.3) sp.push(["aoto", "回またぎ〇"]);
+
+    /* 勝ち運・負け運：失点から見込まれる勝率と、実際の勝率の差（10勝敗以上） */
+    const w = num("f-w"), l = num("f-l");
+    if (w + l >= 10) {
+        const ra9 = runs * 27 / outs;
+        const exp = 1 / (1 + Math.pow(ra9 / league.ra9, 1.83));
+        const diff = w / (w + l) - exp;
+        if (diff >= .12) sp.push(["aoto", "勝ち運"]);
+        else if (diff <= -.12) sp.push(["aka", "負け運"]);
+    }
+
+    /* 球速・ストレートの割合を入れたときだけ付くもの */
+    const velo = num("f-velo"), fb = num("f-fbpct");
+    if (velo && velo <= 146 && bf >= 150 && aK >= .24) sp.push(["aoto", "キレ〇"]);
+    if (fb) {
+        if (fb >= 60) sp.push(["midori", "速球中心"]);
+        else if (fb <= 35) sp.push(["midori", "変化球中心"]);
+    }
     out.why = `奪三振率 ${pct(aK)}・被本塁打率 ${pct(aHr)}・` + (num("f-prab") ? "" : `残塁率 ${pct(lobR)}`);
 
     out.card = {
@@ -861,8 +939,8 @@ function computePitcher() {
    表示
    ====================================================== */
 
-const SUB_LABEL = { "sub-steal": "盗塁", "sub-run": "走塁", "sub-pinch": "対ピンチ", "sub-recover": "回復", "sub-chance": "チャンス", "sub-vsleft": "対左" };
-const SUB_S_NAME = { "sub-steal": "電光石火", "sub-run": "高速ベースラン", "sub-pinch": "強心臓", "sub-recover": "ガソリンタンク", "sub-chance": "勝負師" };
+const SUB_LABEL = { "sub-injury": "ケガしにくさ", "sub-steal": "盗塁", "sub-run": "走塁", "sub-pinch": "対ピンチ", "sub-recover": "回復", "sub-chance": "チャンス", "sub-vsleft": "対左" };
+const SUB_S_NAME = { "sub-injury": "鉄人", "sub-steal": "電光石火", "sub-run": "高速ベースラン", "sub-pinch": "強心臓", "sub-recover": "ガソリンタンク", "sub-chance": "勝負師" };
 const CAT_CLASS = { kintoku: "kin", aoto: "ao", aka: "aka", midori: "mido" };
 const CAT_NAME = { kintoku: "金特", aoto: "青特", aka: "赤特", midori: "緑特" };
 
@@ -1149,7 +1227,8 @@ $("pload").addEventListener("click", async () => {
             ["f-fg", "f-po", "f-a", "f-e"].forEach((id) => setVal(id, ""));
         }
     }
-    ["f-lab", "f-lh", "f-rab", "f-rh", "f-plab", "f-plh", "f-prab", "f-prh"].forEach((id) => setVal(id, ""));
+    ["f-lab", "f-lh", "f-rab", "f-rh", "f-plab", "f-plh", "f-prab", "f-prh", "f-fbpct",
+        ...[...document.querySelectorAll("#bmore-grid input")].map((el) => el.id)].forEach((id) => setVal(id, ""));
     setStatus(`${picked.name}の${year}年の成績を入れました。対左・得点圏${pit ? "・球速・変化球" : ""}は、分かれば入れてください。`);
     await refreshLeague();
 });
