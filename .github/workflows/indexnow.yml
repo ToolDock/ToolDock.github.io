@@ -1,0 +1,52 @@
+# 変わったページのURLを IndexNow で検索エンジン（Bing など。Google は非対応）に知らせる。
+#   - main に入った変更（ツールの追加・修正）
+#   - 毎日のプロ野球データの更新（ボットのコミットは push では動かないので、更新が終わったときに動かす）
+#   - 手動で動かすと、サイトマップのURLを全部送る
+# 送る中身は scripts/indexnow.py を参照。
+
+name: IndexNowで更新を知らせる
+
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: ["プロ野球データを更新"]
+    types: [completed]
+  workflow_dispatch: {}
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: GitHub Pages に反映されるのを待つ
+        # 反映前に知らせると、古いページを読みに来てしまう
+        if: github.event_name != 'workflow_dispatch'
+        run: sleep 120
+
+      - name: 送る
+        run: |
+          case "${{ github.event_name }}" in
+            workflow_dispatch)
+              python3 scripts/indexnow.py --all ;;
+            push)
+              before="${{ github.event.before }}"
+              if [ -z "${before//0/}" ]; then echo "比べる前のコミットがない"; exit 0; fi
+              python3 scripts/indexnow.py --range "$before..${{ github.event.after }}" ;;
+            workflow_run)
+              # 更新を始めたときの main から、いまの main までに変わったページ
+              python3 scripts/indexnow.py --range "${{ github.event.workflow_run.head_sha }}..HEAD" ;;
+          esac
