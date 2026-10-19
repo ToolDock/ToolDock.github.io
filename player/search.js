@@ -128,6 +128,21 @@
         return { label: o.name, keys: [o.kana].concat(o.names),
                  sub: (o.cur || o.teams[o.teams.length - 1] || "") + (o.cur ? "" : "（" + o.last + "年まで）") };
       });
+    // 出身校も候補に出す（「大阪」で「大阪桐蔭高」）。経歴の最初（高校）と「〜大」（大学）。出身選手の多い順
+    var schools = {};
+    data.forEach(function(o){
+      String(o.school || "").split(" - ").forEach(function(seg, i){
+        seg = seg.trim();
+        if (!seg) return;
+        var kind = /大$/.test(seg) ? "大学" : i === 0 ? "高校" : "";
+        if (!kind) return;
+        var k = schools[seg] || (schools[seg] = { label: seg, kind: kind, n: 0 });
+        k.n++;
+      });
+    });
+    Object.keys(schools).map(function(k){ return schools[k]; })
+      .sort(function(a, b){ return b.n - a.n; })
+      .forEach(function(sc){ sugg.push({ label: sc.label, sub: sc.kind + "・" + sc.n + "人" }); });
     (window.tdSuggest = window.tdSuggest || []).push(function(S){
       S.attach($("q"), { items: function(){ return sugg; }, limit: 15 });
     });
