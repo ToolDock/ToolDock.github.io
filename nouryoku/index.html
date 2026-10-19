@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=20" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=21" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -417,20 +417,6 @@ var STAT_RANK_COLOR = {
 
 /* 特殊能力バッジのランクタグ色（能力値とは別の配色に戻した）。
    良ランク(S〜C)=ティール、D=薄いティール、悪ランク(E〜G)=赤。 */
-var BADGE_RANK_TAG = {
-    S: "#0F8FB5", A: "#0F8FB5", B: "#0F8FB5",
-    C: "#7FB8CC", D: "#7FB8CC", E: "#7FB8CC",
-    F: "#C0392B", G: "#962D22"
-};
-function pillTier(rank) {
-    return (rank === "F" || rank === "G") ? "bad" : "good";
-}
-/* ランク付きバッジの土台（縦グラデーション）。実機の水色パイルを基準にした。 */
-var RANK_PILL_BG = {
-    good: ["#EAFBFF", "#B7ECF7"],
-    neutral: ["#F3FAFC", "#DCEAEF"],
-    bad: ["#FDEBE9", "#F6C2BE"]
-};
 
 /* ---- 能力値行の描画 ---- */
 function renderStatRows() {
@@ -665,6 +651,14 @@ function justifyTexts(svgRoot) {
                     t.setAttribute("textLength", target);
                     t.setAttribute("lengthAdjust", "spacing");
                 }
+            } else if (t.hasAttribute("data-condense")) {
+                /* 実機と同じく、長い名前は字形ごと横に詰める（詰めすぎるときは字も小さくする） */
+                if (maxW / natural < 0.62) {
+                    var fs = parseFloat(t.getAttribute("font-size"));
+                    t.setAttribute("font-size", fs * (maxW / natural) / 0.62);
+                }
+                t.setAttribute("textLength", maxW);
+                t.setAttribute("lengthAdjust", "spacingAndGlyphs");
             } else {
                 var size = parseFloat(t.getAttribute("font-size"));
                 t.setAttribute("font-size", Math.max(9, size * (maxW / natural)));
@@ -708,7 +702,7 @@ function labelPill(x, y, w, h, text, size) {
     return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
            '<stop offset="0" stop-color="#FFFFFF"/><stop offset="0.6" stop-color="#F6F8FA"/><stop offset="1" stop-color="#E3E8EC"/></linearGradient></defs>' +
            '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + Math.min(10, h / 2) + '" fill="url(#' + gid + ')" stroke="#B9C4CD" stroke-width="1.5"/>' +
-           '<text ' + fitAttr + ' x="' + (x + w / 2) + '" y="' + (y + h / 2 + fs * 0.36) + '" text-anchor="middle" font-size="' + fs + '" font-weight="500" fill="#56677D" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(text) + '</text>';
+           '<text ' + fitAttr + ' x="' + (x + w / 2) + '" y="' + (y + h / 2 + fs * 0.36) + '" text-anchor="middle" font-size="' + fs + '" font-weight="500" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(text) + '</text>';
 }
 
 /* ---- 能力値のランク文字 ----
@@ -771,11 +765,8 @@ function nameFitAttr(name, maxW) {
 /* 特殊能力バッジの名前。中央揃えにし、描画後にjustifyTexts()で
    短い名前は文字間隔を広げて均等配置、長い名前は縮小して収める
    （data-justifyで対象幅を持たせておく）。 */
-var BADGE_CONDENSE = 0.86;   /* 実機の特殊能力の字は縦長。字の幅をこの比率に詰める */
 function badgeLabel(cx, cy, maxW, text, color) {
-    /* 横だけ縮めるので、枠の幅は縮める前の字の幅に直して渡す */
-    return '<g transform="translate(' + cx + ' ' + (cy + 1) + ') scale(' + BADGE_CONDENSE + ' 1)">' +
-           '<text data-justify="' + (maxW / BADGE_CONDENSE) + '" x="0" y="0" text-anchor="middle" font-size="31" font-weight="500" fill="' + color + '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(text) + '</text></g>';
+    return '<text data-justify="' + maxW + '" data-condense="1" x="' + cx + '" y="' + (cy + 1) + '" text-anchor="middle" font-size="31" font-weight="500" fill="' + color + '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(text) + '</text>';
 }
 
 /* =====================================================================
@@ -886,19 +877,58 @@ function buildCatBadges() {
     return badges;
 }
 
-/* カテゴリ別バッジの土台色（縦グラデーション）・枠線・文字色。
-   金特は実機スクリーンショットの配色。青特は実機の水色、緑特は指定により緑にした。
-   赤特は純粋な赤色の単色。赤青特（☆がプラスの赤特）だけ左赤・右青のツートンにする。 */
-var CAT_STYLE = {
-    kintoku: { bg: ["#FFF3D0", "#F5DFA8"], border: "#E0B03C", text: "#7A4520" },
-    aoto:    { bg: ["#E8FAFE", "#B4E8F5"], border: "#45B3D8", text: "#3370C0" },
-    midori:  { bg: ["#EAFCE6", "#B4EBAE"], border: "#4FAE5C", text: "#1E5E27" },
-    aka:     { bg: ["#FFE0E0", "#F5A3A5"], border: "#D9534F", text: "#B3141B" }
+/* ---- 特殊能力の札の色 ----
+   実機の札は、上半分が明るく下半分が一段濃い2段の色で、下端がさらに濃い。 */
+var BADGE_PAL = {
+    aoto:    { border: "#00CBD2", top: ["#C4F5FD", "#DDFBFC"], bottom: ["#A8FFFC", "#48FFFC"], text: "#3370C0" },
+    aka:     { border: "#ED4A5E", top: ["#FDD3D4", "#FDE6E5"], bottom: ["#FFC5C8", "#FF97A1"], text: "#D20001" },
+    midori:  { border: "#3DBE4C", top: ["#D9F7D2", "#ECFCE8"], bottom: ["#BFF0B2", "#86DE74"], text: "#1E6E28" },
+    kintoku: { border: "#E2A400", top: ["#FFEDB8", "#FFF7DC"], bottom: ["#FFE07A", "#FFC62E"], text: "#8A4B00" },
+    pad:     { border: "#97EEFD", top: ["#D8FAFD", "#F1FDFC"], bottom: ["#D8FAFD", "#E8FEFC"] }
 };
-/* 赤青特: 名前とは逆に左が青、右が赤 */
-var AKA_LEFT = { bg: ["#EAFBFF", "#B7ECF7"], border: "#5FC1DE" };
-var AKA_RIGHT = { bg: ["#FFE0E0", "#F5A3A5"], border: "#D9534F" };
-
+/* ランク付きの札：外側をランクの色で塗り、左に名前の札、右端に白抜きのランクの字。
+   B以上は青緑、C〜Eは薄い水色（名前も薄く）、F以下は赤 */
+var RANK_BADGE = {
+    high: { outer: "#00CBD2", inner: BADGE_PAL.aoto, text: "#3370C0", letterStroke: "#0384C5" },
+    pale: { outer: "#97EEFD", inner: BADGE_PAL.pad,  text: "#6ED6EC", letterStroke: "#349BAA" },
+    bad:  { outer: "#ED4A5E", inner: BADGE_PAL.aka,  text: "#D20001", letterStroke: "#9F0019" }
+};
+function rankBadgeTier(rank) {
+    if (rank === "F" || rank === "G" || rank === "H") return "bad";
+    return (rank === "S" || rank === "A" || rank === "B") ? "high" : "pale";
+}
+var badgeGradSeq = 0;
+function badgeGrad(pal) {
+    var id = "gBadge" + (badgeGradSeq++);
+    return {
+        id: id,
+        def: '<linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1">' +
+             '<stop offset="0" stop-color="' + pal.top[0] + '"/><stop offset="0.5" stop-color="' + pal.top[1] + '"/>' +
+             '<stop offset="0.5" stop-color="' + pal.bottom[0] + '"/><stop offset="0.82" stop-color="' + pal.bottom[0] + '"/>' +
+             '<stop offset="1" stop-color="' + pal.bottom[1] + '"/></linearGradient>'
+    };
+}
+/* 2段の色に枠の付いた札 */
+function badgeBox(x, y, w, h, pal) {
+    var g = badgeGrad(pal);
+    return '<defs>' + g.def + '</defs>' +
+           '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="url(#' + g.id + ')" stroke="' + pal.border + '" stroke-width="2"/>';
+}
+/* ランク付きの札（name が無ければ、名前もランクも書かない空欄） */
+function rankBadge(x, y, w, h, name, rank) {
+    var t = RANK_BADGE[rank ? rankBadgeTier(rank) : "pale"];
+    var g = badgeGrad(t.inner);
+    var tagW = 32, innerW = w - tagW - 3;
+    var html = '<defs>' + g.def + '</defs>' +
+        '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="' + t.outer + '"/>' +
+        '<rect x="' + (x + 2.5) + '" y="' + (y + 2.5) + '" width="' + innerW + '" height="' + (h - 5) + '" rx="5" fill="url(#' + g.id + ')"/>';
+    if (!name) return html;
+    var labelW = innerW - 8;
+    return html +
+        '<text ' + (Array.from(name).length <= 2 ? 'data-justify="' + labelW + '" data-gap="1"' : 'data-justify="' + labelW + '" data-condense="1"') +
+        ' x="' + (x + 2.5 + innerW / 2) + '" y="' + (y + h / 2 + 11) + '" text-anchor="middle" font-size="31" font-weight="500" fill="' + t.text + '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(name) + '</text>' +
+        '<text x="' + (x + w - tagW / 2 - 1) + '" y="' + (y + h / 2 + 11) + '" text-anchor="middle" font-size="30" font-weight="800" fill="#fff" stroke="' + t.letterStroke + '" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke fill" font-family="\'ADLaM Display\',sans-serif">' + rank + '</text>';
+}
 /* 弾道の矢印アイコン。実機の4種類（1:黄・水平／2:橙・浅い角度／
    3:赤・急な角度／4:紫がかったピンク・垂直）を再現する。 */
 var TRAJ_ARROW = {
@@ -1003,76 +1033,26 @@ function renderCard() {
         var x = L.gridColX[col];
         var y = L.gridRowY0 + row * L.gridRowH;
         var w = L.gridColW, h = L.gridRowH - 3;
-        if (b.type === "pad") {
-            /* 行の余ったマスは、実機と同じく枠だけの空セルで埋める */
-            return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="#E4F5FB" stroke="#C6E6F1" stroke-width="1.5"/>';
-        }
-        if (b.type === "blank") {
-            /* 対象外のランク付き特殊能力（例: 捕手以外のキャッチャー適性）は
-               背景だけの空欄にする */
-            var bgN = RANK_PILL_BG.good;
-            var gidN = "gBlank" + i;
-            return '<defs><linearGradient id="' + gidN + '" x1="0" y1="0" x2="0" y2="1">' +
-                   '<stop offset="0" stop-color="' + bgN[0] + '"/><stop offset="1" stop-color="' + bgN[1] + '"/></linearGradient></defs>' +
-                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="url(#' + gidN + ')"/>';
-        }
-        if (b.type === "promoted") {
-            /* Sランクで専用名が付く特殊能力は、金特と同じ配色（タグ無し）で表示する */
-            var stP = CAT_STYLE.kintoku;
-            var gidP = "gProm" + i;
-            return '<defs><linearGradient id="' + gidP + '" x1="0" y1="0" x2="0" y2="1">' +
-                   '<stop offset="0" stop-color="' + stP.bg[0] + '"/><stop offset="1" stop-color="' + stP.bg[1] + '"/></linearGradient></defs>' +
-                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="url(#' + gidP + ')" stroke="' + stP.border + '" stroke-width="2"/>' +
-                   badgeLabel(x + w / 2, y + h / 2 + 10, w - 14, b.name, stP.text);
-        }
-        if (b.type === "ranked") {
-            var tier = pillTier(b.rank);
-            var bg = RANK_PILL_BG[tier];
-            /* A・Bは枠をつけて強調し、C・D・Eは文字を薄くして、B/Aとの違いが
-               はっきり分かるようにする */
-            var isHigh = b.rank === "A" || b.rank === "B";
-            var isPaleText = b.rank === "C" || b.rank === "D" || b.rank === "E";
-            var textColor = tier === "bad" ? "#7A2020" : (isPaleText ? "#A3C4D3" : "#3370C0");
-            /* 実機：B以上は青い四角に白い字、C〜Eは四角無しで白抜きの字（薄い灰青の縁）だけ、F・Gは赤 */
-            var tagFill = tier === "bad" ? BADGE_RANK_TAG[b.rank] : "#1E9BD0";
-            var tagStroke = tier === "bad" ? "#7A1F1A" : (isPaleText ? "#8DB3C5" : "#0E5F85");
-            var gid = "gRank" + i;
-            /* 実機は項目名を太く大きく、枠いっぱいに入れる（1字ずつ散らさない）。
-               ランクの四角は札の高さいっぱいで、右端に寄せる */
-            var tagW = 36;
-            var labelW = w - tagW - 14;
-            var border = isHigh ? ' stroke="#5FC1DE" stroke-width="2.5"' : "";
-            return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
-                   '<stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient></defs>' +
-                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="url(#' + gid + ')"' + border + '/>' +
-                   '<text ' + (Array.from(b.name).length <= 2 ? 'data-justify="' + (labelW - 12) + '" data-gap="1"' : 'data-fit="' + labelW + '"') + ' x="' + (x + 8 + labelW / 2) + '" y="' + (y + h / 2 + 8) + '" text-anchor="middle" font-size="26" font-weight="500" fill="' + textColor + '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>' +
-                   (isPaleText ? '' : '<rect x="' + (x + w - tagW - 3) + '" y="' + (y + 3) + '" width="' + tagW + '" height="' + (h - 6) + '" rx="6" fill="' + tagFill + '"/>') +
-                   '<text x="' + (x + w - 3 - tagW / 2) + '" y="' + (y + h / 2 + 9) + '" text-anchor="middle" font-size="25" font-weight="800" fill="#fff" stroke="' + tagStroke + '" stroke-width="' + (isPaleText ? 3 : 1.6) + '" stroke-linejoin="round" paint-order="stroke fill" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
+        if (b.type === "pad") return badgeBox(x, y, w, h, BADGE_PAL.pad);
+        /* 対象外のランク付き特殊能力（例: 捕手以外のキャッチャー適性）は、名前の無い札にする */
+        if (b.type === "blank") return rankBadge(x, y, w, h, "", "");
+        if (b.type === "ranked") return rankBadge(x, y, w, h, b.name, b.rank);
+        if (b.type === "promoted" || b.type === "promotedBad") {
+            /* Sランクで専用名が付く特殊能力は、金特（悪いほうは赤特）と同じ札 */
+            var stP = b.type === "promoted" ? BADGE_PAL.kintoku : BADGE_PAL.aka;
+            return badgeBox(x, y, w, h, stP) + badgeLabel(x + w / 2, y + h / 2 + 10, w - 14, b.name, stP.text);
         }
         if (b.type === "aka2tone") {
-            /* 赤青特（☆がプラスの赤特）: 左半分を赤、右半分を青のツートンにする */
-            var gidL = "gAkaL" + i, gidR = "gAkaR" + i;
+            /* 赤青特: 名前とは逆に左が青、右が赤 */
             var half = w * 0.55;
-            return '<defs>' +
-                   '<linearGradient id="' + gidL + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + AKA_LEFT.bg[0] + '"/><stop offset="1" stop-color="' + AKA_LEFT.bg[1] + '"/></linearGradient>' +
-                   '<linearGradient id="' + gidR + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + AKA_RIGHT.bg[0] + '"/><stop offset="1" stop-color="' + AKA_RIGHT.bg[1] + '"/></linearGradient>' +
-                   '<clipPath id="clip' + i + '"><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7"/></clipPath>' +
-                   '</defs>' +
-                   '<g clip-path="url(#clip' + i + ')">' +
-                   '<rect x="' + x + '" y="' + y + '" width="' + half + '" height="' + h + '" fill="url(#' + gidL + ')"/>' +
-                   '<rect x="' + (x + half) + '" y="' + y + '" width="' + (w - half) + '" height="' + h + '" fill="url(#' + gidR + ')"/>' +
-                   '</g>' +
-                   '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="none" stroke="' + AKA_LEFT.border + '" stroke-width="2"/>' +
-                   badgeLabel(x + w / 2, y + h / 2 + 10, w - 14, b.name, "#7A2020");
+            return '<defs><clipPath id="clipL' + i + '"><rect x="' + x + '" y="' + (y - 2) + '" width="' + half + '" height="' + (h + 4) + '"/></clipPath>' +
+                   '<clipPath id="clipR' + i + '"><rect x="' + (x + half) + '" y="' + (y - 2) + '" width="' + (w - half + 2) + '" height="' + (h + 4) + '"/></clipPath></defs>' +
+                   '<g clip-path="url(#clipL' + i + ')">' + badgeBox(x, y, w, h, BADGE_PAL.aoto) + '</g>' +
+                   '<g clip-path="url(#clipR' + i + ')">' + badgeBox(x, y, w, h, BADGE_PAL.aka) + '</g>' +
+                   badgeLabel(x + w / 2, y + h / 2 + 10, w - 14, b.name, BADGE_PAL.aka.text);
         }
-        var st = CAT_STYLE[b.type];
-        var gid2 = "gCat" + i;
-        return '<defs><linearGradient id="' + gid2 + '" x1="0" y1="0" x2="0" y2="1">' +
-               '<stop offset="0" stop-color="' + st.bg[0] + '"/><stop offset="1" stop-color="' + st.bg[1] + '"/></linearGradient></defs>' +
-               '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="url(#' + gid2 + ')" stroke="' + st.border + '" stroke-width="2"/>' +
-               /* 実機の札のつや：上半分を少し明るく */
-               '<rect x="' + (x + 3) + '" y="' + (y + 2.5) + '" width="' + (w - 6) + '" height="' + (h * 0.42) + '" rx="5" fill="#FFFFFF" fill-opacity="0.35"/>' +
-               badgeLabel(x + w / 2, y + h / 2 + 10, w - 14, b.name, st.text);
+        var st = BADGE_PAL[b.type];
+        return badgeBox(x, y, w, h, st) + badgeLabel(x + w / 2, y + h / 2 + 10, w - 14, b.name, st.text);
     }).join("");
 
     /* 能力値テーブル。水色パネルの上に行ごとの白いカードを敷き、
