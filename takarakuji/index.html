@@ -97,6 +97,16 @@
         font-weight: 700;
     }
 
+    .count-limit {
+        margin: 6px 0 0;
+        font-size: var(--fs-s);
+    }
+
+    .count-limit.over {
+        color: #b91c1c;
+        font-weight: 700;
+    }
+
     .quick {
         display: flex;
         flex-wrap: wrap;
@@ -422,6 +432,7 @@
                 <span class="unit" id="countUnit">枚</span>
                 <span class="cost" id="cost"></span>
             </div>
+            <p class="count-limit" id="countLimit"></p>
             <div class="quick" id="quick"></div>
         </div>
 
@@ -507,7 +518,7 @@
     <h2>使い方</h2>
 
     <ol>
-        <li>宝くじを選び、買う枚数（ロト・ナンバーズ・ビンゴ5は口数）を入れます。</li>
+        <li>宝くじを選び、買う枚数（ロト・ナンバーズ・ビンゴ5は口数）を入れます。1〜1,000万枚（口）まで入れられます。</li>
         <li>ジャンボ宝くじは、連番かバラかを選びます。</li>
         <li>「抽せんする」を押すと、実際の当せん確率のとおりに1回分を抽せんし、当たった数と収支を出します。
             あわせて、同じ買い方を1万回くり返したときに、黒字になった割合と回収率の分かれ方を出します。</li>
@@ -752,6 +763,7 @@ const LOTTERIES = [
 const CUSTOM_ID = "custom";
 const STORE = "td-takarakuji";
 const RUNS = 10000;
+const MAX = 10000000;      // 買える数の上限（1,000万枚・口）
 
 /* 等級ごとの確率に直したもの */
 function tiersOf(lot) {
@@ -947,7 +959,7 @@ function buildSelect() {
 
 function count() {
     const v = Math.floor(Number(countEl.value));
-    return Math.max(1, Math.min(10000000, Number.isFinite(v) ? v : 1));
+    return Math.max(1, Math.min(MAX, Number.isFinite(v) ? v : 1));
 }
 
 function theoryRate(lot) {
@@ -959,6 +971,12 @@ function syncForm() {
     const word = unitWord(lot);
     $("countUnit").textContent = word;
     $("cost").textContent = "＝ " + yen(count() * lot.price);
+    const limit = $("countLimit");
+    const over = Number(countEl.value) > MAX;
+    limit.textContent = over
+        ? `${bigNum(MAX)}${word}より多くは買えません。${bigNum(MAX)}${word}（${yen(MAX * lot.price)}）で計算します。`
+        : `1〜${bigNum(MAX)}${word}（最大${yen(MAX * lot.price)}）まで買えます。`;
+    limit.classList.toggle("over", over);
     $("lotteryMeta").textContent = `${lot.note}・1${word} ${comma(lot.price)}円`;
 
     const jumbo = lot.type === "jumbo";
@@ -973,11 +991,11 @@ function syncForm() {
 
     const quick = $("quick");
     quick.innerHTML = "";
-    const steps = jumbo ? [10, 30, 100, 300, 1000, 10000, 100000] : [1, 5, 10, 100, 1000, 10000, 100000];
+    const steps = jumbo ? [10, 30, 100, 300, 1000, 10000, 100000, 1000000, MAX] : [1, 5, 10, 100, 1000, 10000, 100000, 1000000, MAX];
     for (const s of steps) {
         const b = document.createElement("button");
         b.type = "button";
-        b.textContent = `${comma(s)}${word}（${yen(s * lot.price)}）`;
+        b.textContent = `${s === MAX ? "最大 " : ""}${bigNum(s)}${word}（${yen(s * lot.price)}）`;
         b.addEventListener("click", () => {
             countEl.value = s;
             syncForm();
