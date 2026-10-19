@@ -396,7 +396,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku-pitcher/example-sugano.png?v=5" alt="パワプロ風 能力画像ジェネレーター（投手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku-pitcher/example-sugano.png?v=6" alt="パワプロ風 能力画像ジェネレーター（投手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -901,11 +901,11 @@ var L = {
     posValue:    { x: 164, y: 99,  w: 188, h: 42 },
     bioRow1:     { x: 501, y: 25,  w: 546, h: 62 },
     bio1Label:   { x: 513, y: 38,  w: 92,  h: 36 },
-    /* 野手版と同じ並べ方：「防 1.59」「17勝5敗」「0HP 0S」（勝敗は続けて、HPとセーブは少し空ける） */
+    /* 実機の並べ方：「防 3.19」「6勝 7敗」「0HP  0S」。gap は2つ目の数字の前の空き（縮める前の幅） */
     bio1Vals:    [
-        { x: 624, y: 36, w: 125, keys: ["era"], pre: "防" },
-        { x: 763, y: 36, w: 130, keys: ["win", "lose"], pre: "" },
-        { x: 912, y: 36, w: 123, keys: ["hp", "sv"], pre: "", sep: " " }
+        { x: 628, y: 36, w: 135, keys: ["era"], pre: "防" },
+        { x: 775, y: 36, w: 150, keys: ["win", "lose"], pre: "", gap: 9 },
+        { x: 934, y: 36, w: 108, keys: ["hp", "sv"], pre: "", gap: 34 }
     ],
     bioRow2:     { x: 501, y: 93,  w: 546, h: 62 },
     bio2Label1:  { x: 513, y: 106, w: 92,  h: 36 },
@@ -1100,7 +1100,7 @@ function numTab(x, y, w, h) {
    ===================================================================== */
 /* 実機の変化球の欄：青い帯の中に四角が7つ並び、先端はとがった形。
    変化量の分だけ、中心側から橙・黄・金・濃い橙の四角になる（ほかは水色）。 */
-var PD_LINE_BLUE = "#2C64A8";          /* 球種名の文字 */
+var PD_LINE_BLUE = "#3370C0";          /* 球種名の文字（能力値の数字と同じ色） */
 var PD_FRAME = "#0A9BEA";              /* 帯の色 */
 var PD_FRAME_LIGHT = "#5FD3FF";        /* 帯の上側の明るい縁 */
 var PD_HALO = "#B4E2F6";               /* 帯のまわりの薄い影 */
@@ -1177,7 +1177,7 @@ function pdBarShape(len, halfW, tip) {
 }
 
 function pdDrawBar(cx, cy, deg, value, label, offsetPerp, thin) {
-    var innerR = 30, n = 7, sq = 18, gap = 3, pad = 3.5;
+    var innerR = 38, n = 7, sq = 18, gap = 3, pad = 3.5;
     var halfW = thin ? 8.5 : 13, sqW = thin ? 12 : 19;
     var tip = thin ? 10 : 14;
     var len = pad + n * (sq + gap) - gap + pad;
@@ -1205,16 +1205,26 @@ function pdDrawBar(cx, cy, deg, value, label, offsetPerp, thin) {
     if (label) {
         var tipEnd = innerR + len + tip;
         var lp, anchor;
+        var tipPt = pdPolar(ocx, ocy, tipEnd, deg);
         if (Math.abs(dy) < 0.35) {
-            /* シュート・スライダー（真横向き）は、実機同様バーの真上に
-               バーに被らないよう寄せて中央揃えで表示する。第二球種で
-               2本並ぶときは、下側にずれたバーの方は下に置き、上のバーと
-               ぶつからないようにする。 */
-            var midPt = pdPolar(ocx, ocy, (innerR + tipEnd) / 2, deg);
-            var lgap = halfW + 9;
+            /* シュート・スライダー（真横向き）は、実機同様バーの上の、先端寄りに
+               中央揃えで表示する。第二球種で2本並ぶときは、下側にずれたバーの
+               方は下に置き、上のバーとぶつからないようにする。 */
+            var midPt = pdPolar(ocx, ocy, tipEnd - 48, deg);
             lp = (offsetPerp || 0) > 0
-                ? [midPt[0], midPt[1] + lgap + 14]
-                : [midPt[0], midPt[1] - lgap];
+                ? [midPt[0], midPt[1] + halfW + 20]
+                : [midPt[0], midPt[1] - halfW - 20];
+            anchor = "middle";
+        } else if (!offsetPerp) {
+            /* 下向き・斜め下向きは、実機と同じく先端のすぐ下に置く
+               （斜めのものは、先端より少し外側に寄せる） */
+            lp = [tipPt[0] + (Math.abs(dx) < 0.35 ? 0 : (dx > 0 ? 16 : -16)),
+                  tipPt[1] + (Math.abs(dx) < 0.35 ? 18 : 40)];
+            anchor = "middle";
+        } else if (Math.abs(dx) >= 0.35) {
+            /* 斜めに2本並ぶときも先端の下に置き、下側の帯の名前を1行下げ、外側へ寄せて重ならないようにする */
+            var lower = py * offsetPerp > 0;
+            lp = [tipPt[0] + (dx > 0 ? 1 : -1) * (lower ? 34 : 16), tipPt[1] + 44 + (lower ? 28 : 0)];
             anchor = "middle";
         } else {
             /* それ以外（上下・斜め方向）は、バー自身の延長線上、先端のすぐ外側に寄せる */
@@ -1222,14 +1232,14 @@ function pdDrawBar(cx, cy, deg, value, label, offsetPerp, thin) {
             anchor = pdLabelAnchor(dx, px * (offsetPerp || 0));
         }
         html += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 6).toFixed(1) + '" text-anchor="' + anchor +
-                '" font-size="23" font-weight="500" fill="' + PD_LINE_BLUE +
+                '" font-size="27" font-weight="500" fill="' + PD_LINE_BLUE +
                 '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(label) + '</text>';
     }
     return html;
 }
 
 function pdDrawStraightMark(cx, cy, deg, label, offsetPerp, thin) {
-    var innerR = 30, sq = 15, pad = 3;
+    var innerR = 27, sq = 15, pad = 3;
     var halfW = thin ? 7.5 : 10, sqW = thin ? 10 : 14;
     var tip = thin ? 7 : 9;
     var len = pad + sq + pad;
@@ -1250,10 +1260,10 @@ function pdDrawStraightMark(cx, cy, deg, label, offsetPerp, thin) {
         /* 第二ストレートがある場合はストレートが左・第二ストレートが右に
            なるよう、offsetPerpで既にずれたその軸のまま、先端のすぐ外側に
            ラベルを置く。 */
-        var lp = pdPolar(ocx, ocy, innerR + len + tip + 10, deg);
+        var lp = pdPolar(ocx, ocy, innerR + len + tip + 12, deg);
         var anchor = pdLabelAnchor(dx, px * (offsetPerp || 0));
         html += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 4).toFixed(1) + '" text-anchor="' + anchor +
-                '" font-size="23" font-weight="500" fill="' + PD_LINE_BLUE +
+                '" font-size="27" font-weight="500" fill="' + PD_LINE_BLUE +
                 '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(label) + '</text>';
     }
     return html;
@@ -1296,8 +1306,8 @@ function collectPitchData() {
    常にy=115〜398に収まることをピクセル計測で確認済み）まで詰めて
    PD_H・中心(PD_CX,PD_CY)を再定義した。これにより、同じ表示枠でも
    拡大して見せられる。 */
-var PD_W = 579, PD_H = 335;
-var PD_CX = 291, PD_CY = 113;
+var PD_W = 579, PD_H = 338;
+var PD_CX = 291, PD_CY = 100;
 
 function buildPitchDiagram(x, y, w, h) {
     var data = collectPitchData();
@@ -1453,16 +1463,10 @@ function renderCard() {
         var base = '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="7" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                labelPill(L.statColX + 5, y + 5, L.statLabelW - 6, h - 10, labelVal("statlabel-" + s.id, s.label), 18);
         if (!s.hasRank) {
-            /* 球速のようにランクを持たない行は、数字の十の位がコントロール行の
-               ランク文字とだいたい同じx位置に来るよう、数字だけをランク欄の
-               中央に置く。単位(km/h)は数字の後ろに半角スペースを挟んで
-               小さく添える。 */
-            var numX = L.statRankX + L.statRankW / 2;
-            var numText = '<text data-squeeze="0.84" data-max="' + (L.statRankW + 40) + '" x="' + numX + '" y="' + (y + h / 2 + 12) + '" text-anchor="middle" font-size="37" font-weight="800" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(v) + '</text>';
-            var unitText = s.unit
-                ? '<text x="' + (numX + 36) + '" y="' + (y + h / 2 + 12) + '" text-anchor="start" font-size="20" font-weight="500" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(s.unit) + '</text>'
-                : "";
-            return base + numText + unitText;
+            /* 球速のようにランクを持たない行は、実機と同じく札のすぐ右から
+               数字を大きく書き、単位(km/h)は太字で数字の7割ほどの高さに添える */
+            var unitSpan = s.unit ? '<tspan dx="9" font-size="27" font-weight="700">' + esc(s.unit) + '</tspan>' : "";
+            return base + '<text data-squeeze="0.84" data-max="' + (statCardW - L.statLabelW - 30) + '" x="' + (L.statLabelX + L.statLabelW + 9) + '" y="' + (y + h / 2 + 13) + '" font-size="39" font-weight="800" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(v) + unitSpan + '</text>';
         }
         var rankText = rankLetter(L.statRankX + L.statRankW / 2, y + h / 2 + 13, rank, 36);
         return base + rankText +
@@ -1492,12 +1496,15 @@ function renderCard() {
         var contentBottom = pitchDiagramContentBottom(diagramY, diagramW, diagramH);
         var origAreaTop = contentBottom, origAreaBottom = diagramY + diagramH - 10;
         var origY = (origAreaTop + origAreaBottom) / 2 + 7;
-        origHTML = '<text data-fit="' + (diagramW - 24) + '" x="' + (diagramX + diagramW / 2) + '" y="' + origY + '" text-anchor="middle" font-size="19" font-weight="500" fill="#2C64A8" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">オリジナル変化球名　' + esc(origName) + '</text>';
+        origHTML = '<text data-fit="' + (diagramW - 24) + '" x="' + (diagramX + diagramW / 2) + '" y="' + origY + '" text-anchor="middle" font-size="19" font-weight="500" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">オリジナル変化球名　' + esc(origName) + '</text>';
     }
 
     var bio1 = L.bio1Vals.map(function (b) {
-        var val = b.keys.map(function (k) { return document.getElementById("p-" + k).value.trim(); }).join(b.sep || "");
-        return '<text data-squeeze="0.8" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 32) + '" font-size="37" font-weight="700" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + unitTspans(b.pre, val) + '</text>';
+        var spans = b.keys.map(function (k, i) {
+            var t = unitTspans(i === 0 ? b.pre : "", document.getElementById("p-" + k).value.trim());
+            return i === 0 ? t : t.replace("<tspan", '<tspan dx="' + b.gap + '"');
+        }).join("");
+        return '<text data-squeeze="0.8" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 32) + '" font-size="37" font-weight="700" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + spans + '</text>';
     }).join("");
 
     var svg = '' +
@@ -1513,10 +1520,10 @@ function renderCard() {
         '<text ' + nameFitAttr(name, L.namePlate.w - 20) + ' x="' + (L.namePlate.x + L.namePlate.w / 2) + '" y="' + (L.namePlate.y + L.namePlate.h / 2 + 10) + '" text-anchor="middle" font-size="30" font-weight="700" fill="#111" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(name) + '</text>' +
 
         (teamFlagImg
-            ? '<defs><clipPath id="clipFlag"><rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" rx="10"/></clipPath></defs>' +
+            ? '<defs><clipPath id="clipFlag"><rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '"/></clipPath></defs>' +
               '<image href="' + teamFlagImg + '" x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" preserveAspectRatio="xMidYMid slice" clip-path="url(#clipFlag)"/>'
-            : '<rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" rx="10" fill="' + teamColor + '"/>') +
-        '<rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" rx="10" fill="none" stroke="#CFE8F2" stroke-width="2"/>' +
+            : '<rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" fill="' + teamColor + '"/>') +
+        '<rect x="' + L.flagBox.x + '" y="' + L.flagBox.y + '" width="' + L.flagBox.w + '" height="' + L.flagBox.h + '" fill="none" stroke="#737D78" stroke-width="1.5"/>' +
 
         /* 背番号 */
         numTab(L.numBox.x, L.numBox.y, L.numBox.w, L.numBox.h) +
