@@ -675,15 +675,21 @@ function justifyTexts(svgRoot) {
 
 /* ---- 数字・成績の字を少し細くする ----
    実機の数字は横幅の狭い太い書体なので、data-squeeze の比率だけ
-   字形ごと横に縮める。data-max より広ければ、そこまで縮める。 */
+   字形ごと横に縮める。data-max より広ければ、字を小さくして収める。 */
 function squeezeTexts(svgRoot) {
     svgRoot.querySelectorAll("text[data-squeeze]").forEach(function (t) {
         try {
             var natural = t.getComputedTextLength();
             if (natural <= 0) return;
-            var target = natural * parseFloat(t.getAttribute("data-squeeze"));
+            var ratio = parseFloat(t.getAttribute("data-squeeze"));
+            var target = natural * ratio;
             var maxW = parseFloat(t.getAttribute("data-max"));
-            if (maxW && target > maxW) target = maxW;
+            if (maxW && target > maxW) {
+                /* 長い文字（長いフォーム名など）は横に潰さず、字を小さくして収める */
+                var size = parseFloat(t.getAttribute("font-size"));
+                t.setAttribute("font-size", size * maxW / target);
+                target = t.getComputedTextLength() * ratio;
+            }
             t.setAttribute("textLength", target);
             t.setAttribute("lengthAdjust", "spacingAndGlyphs");
         } catch (e) { /* 非表示要素などでは無視 */ }
