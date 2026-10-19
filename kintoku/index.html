@@ -1250,6 +1250,11 @@ function apply() {
 /* ---- イベント ---- */
 
 searchInput.addEventListener("input", apply);
+
+/* 金特名の入力候補（「ちゃ」で「チャンスメーカー」など） */
+const skillNames = [...new Set([...document.querySelectorAll(".skill-name")].map(el => el.textContent.trim()))]
+    .map(name => ({ label: name }));
+(window.tdSuggest = window.tdSuggest || []).push(S => S.attach(searchInput, { items: () => skillNames }));
 regionSelect.addEventListener("change", apply);
 hideAcquiredEl.addEventListener("change", apply);
 
