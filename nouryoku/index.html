@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=15" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=16" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -896,10 +896,10 @@ var AKA_RIGHT = { bg: ["#FFE0E0", "#F5A3A5"], border: "#D9534F" };
 /* 弾道の矢印アイコン。実機の4種類（1:黄・水平／2:橙・浅い角度／
    3:赤・急な角度／4:紫がかったピンク・垂直）を再現する。 */
 var TRAJ_ARROW = {
-    1: { angle: 0, color: "#FFD400", light: "#FFF3A0" },
-    2: { angle: -25, color: "#F5941C", light: "#FFD29A" },
-    3: { angle: -50, color: "#E5352E", light: "#FF9C94" },
-    4: { angle: -75, color: "#D2349E", light: "#FFA6DC" }
+    1: { angle: 0, color: "#FFD400", light: "#FFF3A0", dark: "#9C7F00" },
+    2: { angle: -25, color: "#F5941C", light: "#FFD29A", dark: "#A85A00" },
+    3: { angle: -50, color: "#E5352E", light: "#FF9C94", dark: "#8E1A15" },
+    4: { angle: -75, color: "#D2349E", light: "#FFA6DC", dark: "#8E1060" }
 };
 /* 選手名プレートの背景。色を1つなら単色、複数なら左から順に並べ、
    実機と同じく色の境目を縦の波模様にする。上半分には白いつやを重ねる */
@@ -944,16 +944,21 @@ function numTab(x, y, w, h) {
 
 function trajArrow(cx, cy, value) {
     var spec = TRAJ_ARROW[value] || TRAJ_ARROW[1];
-    /* 実機の太い矢印。右向きの矢を基準に、値に応じて回転させる
-       （弾道4はほぼ真上）。軸に沿って明るい色から濃い色へのグラデーション */
+    /* 実機の、軸の短いずんぐりした矢印。右向きの矢を基準に、値に応じて回転させる
+       （弾道4はほぼ真上）。軸に沿って明るい色から濃い色へのグラデーションで、
+       ランク文字と同じく右下に少しずらした濃い影を付ける */
     var k = 1.3;
     var pts = [
-        [19, 0], [1, -16], [1, -7], [-19, -7], [-19, 7], [1, 7], [1, 16]
+        [15, 0], [0, -15], [0, -7], [-11, -7], [-11, 7], [0, 7], [0, 15]
     ].map(function (p) { return (cx + p[0] * k) + "," + (cy + p[1] * k); }).join(" ");
     var gid = "gTraj" + value;
-    return '<defs><linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + (cx - 19 * k) + '" y1="' + cy + '" x2="' + (cx + 19 * k) + '" y2="' + cy + '">' +
+    var rot = 'rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')';
+    return '<defs><linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + (cx - 11 * k) + '" y1="' + cy + '" x2="' + (cx + 15 * k) + '" y2="' + cy + '">' +
            '<stop offset="0" stop-color="' + spec.light + '"/><stop offset="1" stop-color="' + spec.color + '"/></linearGradient></defs>' +
-           '<g transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')">' +
+           '<g transform="translate(1.5 1.5)"><g transform="' + rot + '">' +
+           '<polygon points="' + pts + '" fill="' + spec.dark + '" fill-opacity="0.75" stroke="' + spec.dark + '" stroke-opacity="0.75" stroke-width="3.5" stroke-linejoin="round"/>' +
+           '</g></g>' +
+           '<g transform="' + rot + '">' +
            '<polygon points="' + pts + '" fill="url(#' + gid + ')" stroke="#FFFFFF" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke fill"/>' +
            '</g>';
 }
