@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--
+  画像を主役にしたOGP画像（1200x630）のテンプレート。
+  能力画像ジェネレーターのように、作れる画像そのものを見せたいツール用。
+  URLクエリ ?img=<画像のパス>&title=<タイトル> を読んで差し込む。
+
+  使い方（リポジトリの直下で、Chromium が入った playwright-core を使う）:
+    node -e '
+      const { chromium } = require("playwright-core");
+      (async () => {
+        const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1200, height: 630 } });
+        await p.goto("file://" + process.cwd() + "/scripts/ogp/card.html?img=../../nouryoku/example-tsutsugo.png&title=" + encodeURIComponent("パワプロ風 能力画像ジェネレーター（野手）"));
+        await p.waitForTimeout(1500); await p.screenshot({ path: "ogp/nouryoku.png" }); await b.close();
+      })();'
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1200px; height: 630px; overflow: hidden;
+    font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+  }
+  .stage {
+    position: relative; width: 1200px; height: 630px;
+    background: linear-gradient(180deg, #EAF6FC 0%, #D6EEF8 100%);
+  }
+  /* 上の帯：ゲーム分野の赤（style.css の --c） */
+  .band {
+    position: absolute; left: 0; top: 0; right: 0; height: 92px;
+    background: #BF0000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 36px;
+    color: #ffffff;
+  }
+  .band .title { font-size: 40px; font-weight: 900; letter-spacing: 0.01em; }
+  .band .site { font-size: 24px; font-weight: 700; opacity: 0.9; }
+  .card {
+    position: absolute; left: 50%; top: 106px; transform: translateX(-50%);
+    height: 510px; border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(20, 70, 110, 0.25);
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="band"><div class="title" id="title"></div><div class="site">ToolDock</div></div>
+  <img class="card" id="card" alt="">
+</div>
+<script>
+  var params = new URLSearchParams(location.search);
+  document.getElementById("title").textContent = params.get("title") || "";
+  document.getElementById("card").src = params.get("img") || "";
+</script>
+</body>
+</html>
