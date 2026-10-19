@@ -19,7 +19,7 @@
 <!-- カード内のランク文字・数字に使うフォント（元デザインの ADLaM Display / Source Sans Pro を使用） -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Source+Sans+3:wght@700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&family=M+PLUS+1p:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Source+Sans+3:wght@700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&family=M+PLUS+1p:wght@500;700;800&family=Rubik:wght@800&display=swap" rel="stylesheet">
 
 <meta name="keywords" content="パワプロ,パワプロ風,能力画像,能力メーカー,能力作成ツール,画像作成,ジェネレーター,自己紹介,選手カード,特殊能力,野手,画像生成,無料">
 
@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=4" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=5" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -703,26 +703,34 @@ function labelPill(x, y, w, h, text, size) {
 }
 
 /* ---- 能力値のランク文字 ----
-   実機は、文字の外側に同じ色の濃い縁、その内側に白い縁があり、
-   文字は上が明るく下が濃いグラデーション。 */
+   実機は角ばった極太の字で、上が明るいグラデーション。縁取りは細い
+   （外側に同じ色の濃い縁、その内側に白い縁）。 */
 var RANK_DARK = {
     S: "#C9578F", A: "#A0105E", B: "#A31A16", C: "#A85200",
     D: "#9C7300", E: "#6E8A12", F: "#1F7FA3", G: "#5E5E5E"
 };
 var RANK_LIGHT = {
-    S: "#FFE0EF", A: "#FF7FC0", B: "#FF7A70", C: "#FFC070",
-    D: "#FFE680", E: "#DCEB8C", F: "#A8E6F8", G: "#D0D0D0"
+    S: "#FBCDE3", A: "#F65DAA", B: "#F2635E", C: "#FA9B3C",
+    D: "#F9D850", E: "#C6DB62", F: "#7FD4F0", G: "#B8B8B8"
 };
 var rankLetterSeq = 0;
 function rankLetter(cx, baseline, rank, size) {
     var gid = "gRankL" + (rankLetterSeq++);
-    var font = 'font-family="\'ADLaM Display\',sans-serif" font-size="' + size + '" font-weight="800" text-anchor="middle"';
+    var font = 'font-family="Rubik,&quot;Arial Black&quot;,sans-serif" font-size="' + size + '" font-weight="800" text-anchor="middle"';
     return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
-           '<stop offset="0" stop-color="' + RANK_LIGHT[rank] + '"/><stop offset="0.4" stop-color="' + STAT_RANK_COLOR[rank] + '"/><stop offset="1" stop-color="' + STAT_RANK_COLOR[rank] + '"/></linearGradient></defs>' +
-           '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="' + RANK_DARK[rank] + '" stroke="' + RANK_DARK[rank] + '" stroke-width="9" stroke-linejoin="round">' + rank + '</text>' +
-           '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="#FFFFFF" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round">' + rank + '</text>' +
-           /* 字そのものも少し太らせる（同じグラデーションの細い縁） */
-           '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="url(#' + gid + ')" stroke="url(#' + gid + ')" stroke-width="2" stroke-linejoin="round">' + rank + '</text>';
+           '<stop offset="0" stop-color="' + RANK_LIGHT[rank] + '"/><stop offset="0.5" stop-color="' + STAT_RANK_COLOR[rank] + '"/><stop offset="1" stop-color="' + STAT_RANK_COLOR[rank] + '"/></linearGradient></defs>' +
+           '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="' + RANK_DARK[rank] + '" stroke="' + RANK_DARK[rank] + '" stroke-width="4.5" stroke-linejoin="round">' + rank + '</text>' +
+           '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round">' + rank + '</text>' +
+           '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="url(#' + gid + ')">' + rank + '</text>';
+}
+
+/* ---- 数字は大きく、単位（率・本・点・盗）は小さく ----
+   実機の成績欄は、数字に比べて漢字の単位がひと回り小さい。 */
+function unitTspans(str, big) {
+    return String(str).split(/([0-9０-９.．\-]+)/).filter(function (part) { return part !== ""; }).map(function (part) {
+        var isNum = /^[0-9０-９.．\-]+$/.test(part);
+        return '<tspan font-size="' + (isNum ? big : Math.round(big * 0.74)) + '">' + esc(part) + '</tspan>';
+    }).join("");
 }
 
 function esc(s) {
@@ -770,11 +778,11 @@ var L = {
     posValue:    { x: 164, y: 99,  w: 188, h: 42 },
     bioRow1:     { x: 501, y: 25,  w: 546, h: 62 },
     bio1Label:   { x: 513, y: 38,  w: 92,  h: 36 },
+    /* 実機の並べ方：「率 .322」は左、「44本110点」は続けて中央、「0盗」は右端にそろえる */
     bio1Vals:    [
-        { x: 620, y: 36, w: 132, key: "avg", pre: "率 " },
-        { x: 763, y: 36, w: 66, key: "hr", pre: "" },
-        { x: 826, y: 36, w: 96, key: "rbi", pre: "" },
-        { x: 965, y: 36, w: 70, key: "sb", pre: "" }
+        { x: 620, y: 36, w: 135, keys: ["avg"], pre: "率 " },
+        { x: 772, y: 36, w: 170, keys: ["hr", "rbi"], pre: "" },
+        { x: 1027, y: 36, w: 80, keys: ["sb"], pre: "", anchor: "end" }
     ],
     bioRow2:     { x: 501, y: 93,  w: 546, h: 62 },
     bio2Label1:  { x: 513, y: 106, w: 92,  h: 36 },
@@ -1041,7 +1049,7 @@ function renderCard() {
         var rank = s.hasRank ? document.getElementById("stat-rank-" + s.id).value : null;
         var v = document.getElementById("stat-val-" + s.id).value;
         var rankText = rank
-            ? rankLetter(L.statRankX + L.statRankW / 2, y + h / 2 + 14, rank, 39)
+            ? rankLetter(L.statRankX + L.statRankW / 2, y + h / 2 + 14, rank, 40)
             : (s.id === "traj" ? trajArrow(L.statRankX + L.statRankW / 2, y + h / 2, parseInt(v, 10)) : "");
         return '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="7" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                labelPill(L.statColX + 5, y + 5, L.statLabelW - 6, h - 10, labelVal("statlabel-" + s.id, s.label), 19) +
@@ -1055,8 +1063,8 @@ function renderCard() {
     var H = bodyBottom + 10;
 
     var bio1 = L.bio1Vals.map(function (b) {
-        var val = document.getElementById("p-" + b.key).value;
-        return '<text data-squeeze="0.88" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 30) + '" font-size="31" font-weight="700" fill="#1E3A66" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.pre) + esc(val) + '</text>';
+        var val = b.keys.map(function (k) { return document.getElementById("p-" + k).value.trim(); }).join("");
+        return '<text data-squeeze="0.9" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 31) + '"' + (b.anchor ? ' text-anchor="' + b.anchor + '"' : '') + ' font-size="33" font-weight="700" fill="#1E3A66" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + unitTspans(b.pre + val, 33) + '</text>';
     }).join("");
 
     var svg = '' +
@@ -1246,7 +1254,7 @@ bindImageUpload("p-flagimg", function (v) { teamFlagImg = v; });
    代替フォントで描かれてしまうことがある。これを避けるため、書き出す
    直前にWebフォントをbase64で埋め込んだ<style>をSVGへ差し込む。
    フォントデータは初回のみ取得してキャッシュする。 */
-var FONT_CSS_URL = "https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Source+Sans+3:wght@700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&family=M+PLUS+1p:wght@500;700;800&display=swap";
+var FONT_CSS_URL = "https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Source+Sans+3:wght@700;900&family=M+PLUS+Rounded+1c:wght@700;800;900&family=M+PLUS+1p:wght@500;700;800&family=Rubik:wght@800&display=swap";
 var embeddedFontCssPromise = null;
 function getEmbeddedFontCss() {
     if (embeddedFontCssPromise) return embeddedFontCssPromise;
