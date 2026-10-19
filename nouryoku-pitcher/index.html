@@ -396,7 +396,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku-pitcher/example-sugano.png?v=8" alt="パワプロ風 能力画像ジェネレーター（投手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku-pitcher/example-sugano.png?v=9" alt="パワプロ風 能力画像ジェネレーター（投手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -954,7 +954,8 @@ var L = {
     statRankX: 185, statRankW: 60,
     statNumX: 257, statNumW: 91,
     statRows: [
-        { y: 181, h: 56 }, { y: 243, h: 51 }, { y: 300, h: 46 }
+        /* 実機と同じく、球速・コントロール・スタミナの3行は同じ高さ */
+        { y: 181, h: 51 }, { y: 238, h: 51 }, { y: 295, h: 51 }
     ],
     gridColX: [372, 541, 710, 879], /* 実機と同じく、札どうしの隙間はごく狭く */
     gridColW: 166,
@@ -1459,12 +1460,12 @@ function renderCard() {
         if (!s.hasRank) {
             /* 球速のようにランクを持たない行は、実機と同じく札のすぐ右から
                数字を大きく書き、単位(km/h)は太字で数字の7割ほどの高さに添える */
-            var unitSpan = s.unit ? '<tspan dx="9" font-size="27" font-weight="800">' + esc(s.unit) + '</tspan>' : "";
-            return base + '<text data-squeeze="0.84" data-max="' + (statCardW - L.statLabelW - 30) + '" x="' + (L.statLabelX + L.statLabelW + 9) + '" y="' + (y + h / 2 + 13) + '" font-size="39" font-weight="800" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(v) + unitSpan + '</text>';
+            var unitSpan = s.unit ? '<tspan dx="8" font-size="25" font-weight="800">' + esc(s.unit) + '</tspan>' : "";
+            return base + '<text data-squeeze="0.84" data-max="' + (statCardW - L.statLabelW - 30) + '" x="' + (L.statLabelX + L.statLabelW + 9) + '" y="' + (y + h / 2 + 12) + '" font-size="36" font-weight="800" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(v) + unitSpan + '</text>';
         }
         var rankText = rankLetter(L.statRankX + L.statRankW / 2, y + h / 2 + 13, rank, 36);
         return base + rankText +
-               '<text data-squeeze="0.84" data-max="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 28) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="35" font-weight="800" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(v) + '</text>';
+               '<text data-squeeze="0.84" data-max="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 28) + '" y="' + (y + h / 2 + 13) + '" text-anchor="end" font-size="39" font-weight="800" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(v) + '</text>';
     }).join("");
 
     /* 変化球の枠は、能力値3行のすぐ下から、特殊能力バッジ8行目の下端と
