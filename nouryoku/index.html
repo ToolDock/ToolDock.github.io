@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=24" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=25" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -671,26 +671,26 @@ function justifyTexts(svgRoot) {
    実機の数字は横幅の狭い太い書体なので、data-squeeze の比率だけ
    字形ごと横に縮める。data-max より広ければ、字を小さくして収める。 */
 /* ---- 成績欄の並べ方 ----
-   値（「率 .322」「44本 110点」「0盗」など）を横に0.8倍に細くし、最初を左端、最後を右端に
-   揃えて、間を等しく空ける。入りきらないときは、全部を同じ割合でさらに細くする。 */
-var BIO_SQUEEZE = 0.8, BIO_MIN_GAP = 14;
+   値（「率 .322」「44本」「110点」「0盗」など）を横に0.8倍に細くし、bio1Vals の位置に置く。
+   start は左端、end は右端（単位の位置）。前の値とぶつかるときだけ、その値をさらに細くする。 */
+var BIO_SQUEEZE = 0.8, BIO_MIN_GAP = 10;
 function layoutBioRow(svgRoot) {
     var texts = Array.prototype.slice.call(svgRoot.querySelectorAll("text[data-bio]"));
-    if (!texts.length) return;
-    try {
-        var boxes = texts.map(function (t) { return t.getBBox(); });
-        var natural = boxes.reduce(function (sum, bb) { return sum + bb.width; }, 0);
-        var avail = L.bio1Row.x1 - L.bio1Row.x0;
-        var gaps = texts.length - 1;
-        var ratio = Math.min(BIO_SQUEEZE, (avail - BIO_MIN_GAP * gaps) / natural);
-        var gap = gaps ? (avail - natural * ratio) / gaps : 0;
-        var left = L.bio1Row.x0;
-        texts.forEach(function (t, i) {
-            var bb = boxes[i];
-            t.setAttribute("transform", "matrix(" + ratio.toFixed(4) + " 0 0 1 " + (left - bb.x * ratio).toFixed(2) + " 0)");
-            left += bb.width * ratio + gap;
-        });
-    } catch (e) { /* 非表示要素などでは無視 */ }
+    var prevEnd = -Infinity;
+    texts.forEach(function (t, i) {
+        try {
+            var v = L.bio1Vals[i], bb = t.getBBox();
+            if (bb.width <= 0) return;
+            var ratio = BIO_SQUEEZE;
+            var start = v.start !== undefined ? v.start : v.end - bb.width * ratio;
+            if (v.start === undefined && start < prevEnd + BIO_MIN_GAP) {
+                ratio = Math.max(0.5, (v.end - prevEnd - BIO_MIN_GAP) / bb.width);
+                start = v.end - bb.width * ratio;
+            }
+            t.setAttribute("transform", "matrix(" + ratio.toFixed(4) + " 0 0 1 " + (start - bb.x * ratio).toFixed(2) + " 0)");
+            prevEnd = start + bb.width * ratio;
+        } catch (e) { /* 非表示要素などでは無視 */ }
+    });
 }
 
 function squeezeTexts(svgRoot) {
@@ -815,13 +815,14 @@ var L = {
     bioRow1:     { x: 501, y: 25,  w: 546, h: 62 },
     bio1Label:   { x: 513, y: 38,  w: 92,  h: 36 },
     /* 実機の画面で測った書き始めの位置：「率 .322」「44本110点」（続けて書く）「0盗」 */
-    /* 成績欄の値は左端(x0)から右端(x1)までに、間を等しく空けて並べる（桁数が変わっても釣り合う）。
-       gap は2つ目の数字の前の空き（縮める前の幅） */
-    bio1Row:     { x0: 624, x1: 1018, y: 36 },
+    /* 成績欄：打率は左端(start)を、本・点・盗は単位の右端(end)の位置を固定する。
+       数字の桁が増えたら左へ伸びる（本塁打2桁・打点3桁・盗塁3桁まで収まる） */
+    bio1Row:     { y: 36 },
     bio1Vals:    [
-        { keys: ["avg"], pre: "率" },
-        { keys: ["hr", "rbi"], pre: "", gap: 9 },  /* 実機の「6勝 7敗」と同じく、本と点の間を少し空ける */
-        { keys: ["sb"], pre: "" }
+        { keys: ["avg"], pre: "率", start: 624 },
+        { keys: ["hr"], end: 816 },
+        { keys: ["rbi"], end: 903 },
+        { keys: ["sb"], end: 1018 }
     ],
     bioRow2:     { x: 501, y: 93,  w: 546, h: 62 },
     bio2Label1:  { x: 513, y: 106, w: 92,  h: 36 },
