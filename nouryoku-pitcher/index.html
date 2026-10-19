@@ -1619,10 +1619,39 @@ document.getElementById("btnShare").addEventListener("click", function () {
     });
 });
 
+/* ---- 再現選手メーカー（/saigen/）から渡された能力を入れる ----
+   メーカーが localStorage に置いた能力（フォームの id → 値）と特殊能力を、
+   保存してあった入力の上から入れる。渡されたものは1回使ったら消す。 */
+function applySaigenPrefill() {
+    var KEY = "tooldock:saigen:prefill";
+    var raw = null;
+    try {
+        raw = localStorage.getItem(KEY);
+        localStorage.removeItem(KEY);
+    } catch (e) { return; }
+    if (!raw) return;
+    var d;
+    try { d = JSON.parse(raw); } catch (e) { return; }
+    if (!d || d.tool !== CURRENT_TOOL || Date.now() - d.at > 10 * 60 * 1000) return;
+    document.querySelectorAll('#abilityArea input[type="checkbox"]').forEach(function (el) { el.checked = false; });
+    Object.keys(d.fields || {}).forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (el.type === "checkbox") el.checked = !!d.fields[id];
+        else el.value = d.fields[id];
+    });
+    (d.abilities || []).forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.checked = true;
+    });
+    saveFormState();
+}
+
 loadCustomAbilities();
 renderAbilityArea();
 captureDefaultFormState();
 loadFormState();
+applySaigenPrefill();
 loadImageState();
 filterAbilities();
 updateCheckedCounts();
