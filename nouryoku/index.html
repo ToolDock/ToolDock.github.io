@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=22" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=23" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -795,7 +795,7 @@ var L = {
     bio1Vals:    [
         { x: 624, y: 36, w: 120, keys: ["avg"], pre: "率" },
         { x: 763, y: 36, w: 190, keys: ["hr", "rbi"], pre: "", gap: 9 },  /* 実機の「6勝 7敗」と同じく、本と点の間を少し空ける */
-        { x: 969, y: 36, w: 66, keys: ["sb"], pre: "" }
+        { x: 1018, y: 36, w: 90, keys: ["sb"], pre: "", anchor: "end" }  /* 盗塁は右端を揃える（2桁でも枠からはみ出さない） */
     ],
     bioRow2:     { x: 501, y: 93,  w: 546, h: 62 },
     bio2Label1:  { x: 513, y: 106, w: 92,  h: 36 },
