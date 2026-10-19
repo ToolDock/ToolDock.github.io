@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=23" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=24" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -670,6 +670,29 @@ function justifyTexts(svgRoot) {
 /* ---- 数字・成績の字を少し細くする ----
    実機の数字は横幅の狭い太い書体なので、data-squeeze の比率だけ
    字形ごと横に縮める。data-max より広ければ、字を小さくして収める。 */
+/* ---- 成績欄の並べ方 ----
+   値（「率 .322」「44本 110点」「0盗」など）を横に0.8倍に細くし、最初を左端、最後を右端に
+   揃えて、間を等しく空ける。入りきらないときは、全部を同じ割合でさらに細くする。 */
+var BIO_SQUEEZE = 0.8, BIO_MIN_GAP = 14;
+function layoutBioRow(svgRoot) {
+    var texts = Array.prototype.slice.call(svgRoot.querySelectorAll("text[data-bio]"));
+    if (!texts.length) return;
+    try {
+        var boxes = texts.map(function (t) { return t.getBBox(); });
+        var natural = boxes.reduce(function (sum, bb) { return sum + bb.width; }, 0);
+        var avail = L.bio1Row.x1 - L.bio1Row.x0;
+        var gaps = texts.length - 1;
+        var ratio = Math.min(BIO_SQUEEZE, (avail - BIO_MIN_GAP * gaps) / natural);
+        var gap = gaps ? (avail - natural * ratio) / gaps : 0;
+        var left = L.bio1Row.x0;
+        texts.forEach(function (t, i) {
+            var bb = boxes[i];
+            t.setAttribute("transform", "matrix(" + ratio.toFixed(4) + " 0 0 1 " + (left - bb.x * ratio).toFixed(2) + " 0)");
+            left += bb.width * ratio + gap;
+        });
+    } catch (e) { /* 非表示要素などでは無視 */ }
+}
+
 function squeezeTexts(svgRoot) {
     svgRoot.querySelectorAll("text[data-squeeze]").forEach(function (t) {
         try {
@@ -792,10 +815,13 @@ var L = {
     bioRow1:     { x: 501, y: 25,  w: 546, h: 62 },
     bio1Label:   { x: 513, y: 38,  w: 92,  h: 36 },
     /* 実機の画面で測った書き始めの位置：「率 .322」「44本110点」（続けて書く）「0盗」 */
+    /* 成績欄の値は左端(x0)から右端(x1)までに、間を等しく空けて並べる（桁数が変わっても釣り合う）。
+       gap は2つ目の数字の前の空き（縮める前の幅） */
+    bio1Row:     { x0: 624, x1: 1018, y: 36 },
     bio1Vals:    [
-        { x: 624, y: 36, w: 120, keys: ["avg"], pre: "率" },
-        { x: 763, y: 36, w: 190, keys: ["hr", "rbi"], pre: "", gap: 9 },  /* 実機の「6勝 7敗」と同じく、本と点の間を少し空ける */
-        { x: 1018, y: 36, w: 90, keys: ["sb"], pre: "", anchor: "end" }  /* 盗塁は右端を揃える（2桁でも枠からはみ出さない） */
+        { keys: ["avg"], pre: "率" },
+        { keys: ["hr", "rbi"], pre: "", gap: 9 },  /* 実機の「6勝 7敗」と同じく、本と点の間を少し空ける */
+        { keys: ["sb"], pre: "" }
     ],
     bioRow2:     { x: 501, y: 93,  w: 546, h: 62 },
     bio2Label1:  { x: 513, y: 106, w: 92,  h: 36 },
@@ -1085,7 +1111,8 @@ function renderCard() {
             var t = unitTspans(i === 0 ? b.pre : "", document.getElementById("p-" + k).value.trim());
             return i === 0 ? t : t.replace("<tspan", '<tspan dx="' + (b.gap || 0) + '"');
         }).join("");
-        return '<text data-squeeze="0.8" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 32) + '"' + (b.anchor ? ' text-anchor="' + b.anchor + '"' : '') + ' font-size="37" font-weight="700" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + spans + '</text>';
+        /* 位置は描いたあとに layoutBioRow() で決める */
+        return '<text data-bio="1" x="0" y="' + (L.bio1Row.y + 32) + '" font-size="37" font-weight="700" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + spans + '</text>';
     }).join("");
 
     var svg = '' +
@@ -1150,6 +1177,7 @@ function renderCard() {
     fitTexts(svgEl);
     justifyTexts(svgEl);
     squeezeTexts(svgEl);
+    layoutBioRow(svgEl);
 }
 
 /* ---- 入力内容の保存（ブラウザのlocalStorageのみ。サーバには送信しない） ----
