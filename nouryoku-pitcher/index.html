@@ -396,7 +396,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku-pitcher/example-sugano.png?v=4" alt="パワプロ風 能力画像ジェネレーター（投手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku-pitcher/example-sugano.png?v=5" alt="パワプロ風 能力画像ジェネレーター（投手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -934,7 +934,7 @@ var L = {
    落とす。野手版と同じ優先順位・配色を流用している。 */
 var NAME_PLATE_COLORS = { yellow: "#FBEA55", water: "#6FD2EC", green: "#7FD06C" };
 var NAME_COLOR_PRIORITY = { water: 0, yellow: 1, green: 2 };
-var ROLE_PLATE_COLOR = { "role-start": "#EE5A55", "role-relief": "#F8BED9" };
+var ROLE_PLATE_COLOR = { "role-start": "#FF8C8F", "role-relief": "#F8BED9" };
 var FALLBACK_PLATE_COLOR = "#CFE1F2";
 /* 先発=赤・中継ぎ=薄いピンクの並び順。通常は赤が先だが、中継ぎか
    抑えのどちらかが先発より高いランク（◎>〇>×）なら、ピンクを先に
@@ -978,10 +978,10 @@ function buildNamePlateColors() {
    〇なら濃い青文字・通常サイズ、◎なら濃い青文字・大きいサイズになる。 */
 var APT_MARKS = [
     { id: "role-start", mark: "先" },
-    { id: "role-relief", mark: "継" },
+    { id: "role-relief", mark: "中" },
     { id: "role-closer", mark: "抑" }
 ];
-var APT_PALE = "#A3C4D3";
+var APT_PALE = "#CFE6F2";
 var APT_DARK = "#3370C0";
 var APT_GAP = 10; /* 先・継・抑の間隔 */
 /* 実機の「適性」欄（白いチップに"適性"、続けて先/中/抑を並べる）を参考に
@@ -996,7 +996,7 @@ function buildAptitudeMarks() {
         var val = document.getElementById("p-" + a.id).value;
         var isMax = val === "◎", isMid = val === "○";
         var color = (isMax || isMid) ? APT_DARK : APT_PALE;
-        var size = isMax ? 22 : 16;
+        var size = isMax ? 27 : 19;
         return { mark: a.mark, color: color, size: size, w: size };
     });
     var markCy = by + bh / 2 + 12;
@@ -1046,7 +1046,7 @@ function buildCatBadges() {
 
 /* 選手名プレートの背景。色を1つなら単色、複数なら左から順に並べ、
    実機と同じく色の境目を縦の波模様にする。上半分には白いつやを重ねる */
-function nameplateStripes(x, y, w, h, colors) {
+function nameplateStripes(x, y, w, h, colors, borderColor) {
     if (!colors.length) colors = [NAME_PLATE_COLORS.yellow];
     var n = colors.length;
     var amp = 5, waves = 1;
@@ -1072,7 +1072,7 @@ function nameplateStripes(x, y, w, h, colors) {
     /* 実機の、白い内側の縁と細い灰色の外側の縁 */
     html +=
         '<rect x="' + (x + 1.5) + '" y="' + (y + 1.5) + '" width="' + (w - 3) + '" height="' + (h - 3) + '" rx="9" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>' +
-        '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="none" stroke="#8E9AA3" stroke-width="1.5"/>';
+        '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="none" stroke="' + (borderColor || "#8E9AA3") + '" stroke-width="' + (borderColor ? 3 : 1.5) + '"/>';
     return html;
 }
 
@@ -1098,20 +1098,27 @@ function numTab(x, y, w, h) {
    - 第二球種・第二ストレートを持たない場合は、そのバー自体を表示しない
    - 持っていない変化球（値0）はラベル自体を表示しない
    ===================================================================== */
-var PD_LINE_BLUE = "#1B6FB0";
-var PD_EMPTY_FILL = "#CFE6F7";
-var PD_SEG_GRAD_IDS = ["pdGradRed", "pdGradOrange", "pdGradYellow"];
+/* 実機の変化球の欄：青い帯の中に四角が7つ並び、先端はとがった形。
+   変化量の分だけ、中心側から橙・黄・金・濃い橙の四角になる（ほかは水色）。 */
+var PD_LINE_BLUE = "#2C64A8";          /* 球種名の文字 */
+var PD_FRAME = "#0A9BEA";              /* 帯の色 */
+var PD_FRAME_LIGHT = "#5FD3FF";        /* 帯の上側の明るい縁 */
+var PD_HALO = "#B4E2F6";               /* 帯のまわりの薄い影 */
+var PD_FILL_IDS = ["pdGradF0", "pdGradF1", "pdGradF2", "pdGradF3"];
 var PD_GRAD_DEFS = [
-    { id: "pdGradRed", light: "#F79690", base: "#E5352E", dark: "#C0221B" },
-    { id: "pdGradOrange", light: "#FCC583", base: "#F5941C", dark: "#D6790C" },
-    { id: "pdGradYellow", light: "#FCEC93", base: "#F3D422", dark: "#D8B60F" }
+    { id: "pdGradEmpty", light: "#3ED2FF", base: "#08BEFC", dark: "#00ACF6" },
+    { id: "pdGradF0", light: "#FFC266", base: "#FF9A00", dark: "#F58A00" },
+    { id: "pdGradF1", light: "#FFFB8A", base: "#F9F000", dark: "#ECDD00" },
+    { id: "pdGradF2", light: "#FFE77A", base: "#FDD500", dark: "#F2C300" },
+    { id: "pdGradF3", light: "#FFA25E", base: "#FF7000", dark: "#F05F00" },
+    { id: "pdGradStraight", light: "#FF8A5E", base: "#FF3D05", dark: "#E52A00" }
 ];
 
 function pdGradDefsSvg() {
     return PD_GRAD_DEFS.map(function (g) {
         return '<linearGradient id="' + g.id + '" x1="0" y1="0" x2="0" y2="1">' +
             '<stop offset="0%" stop-color="' + g.light + '"/>' +
-            '<stop offset="50%" stop-color="' + g.base + '"/>' +
+            '<stop offset="45%" stop-color="' + g.base + '"/>' +
             '<stop offset="100%" stop-color="' + g.dark + '"/>' +
             '</linearGradient>';
     }).join("");
@@ -1163,98 +1170,90 @@ function pdLabelAnchor(dx, shiftX) {
     return dx > 0 ? "start" : "end";
 }
 
+/* 帯の外形（右向き・原点が帯の根元）。len は四角の並ぶ部分の長さ、tip は先端のとがり */
+function pdBarShape(len, halfW, tip) {
+    return [[0, -halfW], [len, -halfW], [len + tip, 0], [len, halfW], [0, halfW]]
+        .map(function (q) { return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" ");
+}
+
 function pdDrawBar(cx, cy, deg, value, label, offsetPerp, thin) {
-    var innerR = 38, segLen = 18, segGap = 3, segW = thin ? 13 : 24;
-    var tipHalfW = thin ? 7 : 13;
+    var innerR = 30, n = 7, sq = 18, gap = 3, pad = 3.5;
+    var halfW = thin ? 8.5 : 13, sqW = thin ? 12 : 19;
+    var tip = thin ? 10 : 14;
+    var len = pad + n * (sq + gap) - gap + pad;
     var rad = deg * Math.PI / 180;
     var dx = Math.cos(rad), dy = Math.sin(rad);
     var px = -dy, py = dx;
     var ocx = cx + px * (offsetPerp || 0), ocy = cy + py * (offsetPerp || 0);
+    var base = pdPolar(ocx, ocy, innerR, deg);
+    var shape = pdBarShape(len, halfW, tip);
 
-    var html = "";
-    for (var i = 0; i < 6; i++) {
-        var r0 = innerR + i * (segLen + segGap);
-        var mid = pdPolar(ocx, ocy, r0 + segLen / 2, deg);
-        var filled = i < value;
-        var color = filled ? "url(#" + PD_SEG_GRAD_IDS[i % PD_SEG_GRAD_IDS.length] + ")" : PD_EMPTY_FILL;
-        var xf = 'transform="translate(' + mid[0].toFixed(1) + ',' + mid[1].toFixed(1) + ') rotate(' + deg + ')"';
-        html += '<g ' + xf + '>' +
-                '<rect x="' + (-segLen / 2) + '" y="' + (-segW / 2) + '" width="' + segLen + '" height="' + segW +
-                '" rx="3" fill="' + color + '" stroke="' + PD_LINE_BLUE + '" stroke-width="2"/>';
-        if (filled) {
-            html += '<ellipse cx="0" cy="' + (-segW * 0.24) + '" rx="' + (segLen * 0.4) + '" ry="' + (segW * 0.16) +
-                    '" fill="#fff" opacity="0.4"/>';
-        }
-        html += '</g>';
+    var html = '<g transform="translate(' + base[0].toFixed(1) + ',' + base[1].toFixed(1) + ') rotate(' + deg + ')">' +
+        '<polygon points="' + shape + '" fill="' + PD_HALO + '" stroke="' + PD_HALO + '" stroke-width="6" stroke-linejoin="round"/>' +
+        '<polygon points="' + shape + '" fill="' + PD_FRAME + '" stroke="' + PD_FRAME + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+        '<line x1="2" y1="' + (-halfW + 1.2) + '" x2="' + len + '" y2="' + (-halfW + 1.2) + '" stroke="' + PD_FRAME_LIGHT + '" stroke-width="1.5" stroke-opacity="0.8"/>';
+    for (var k = 0; k < n; k++) {
+        var x0 = pad + k * (sq + gap);
+        var filled = k < value;
+        html += '<rect x="' + x0 + '" y="' + (-sqW / 2) + '" width="' + sq + '" height="' + sqW + '" rx="1.5" fill="url(#' +
+                (filled ? PD_FILL_IDS[k % PD_FILL_IDS.length] : "pdGradEmpty") + ')"/>';
     }
-    var tipR0 = innerR + 6 * (segLen + segGap);
-    var tip7Filled = value >= 7;
-    var tipColor = tip7Filled ? "url(#" + PD_SEG_GRAD_IDS[6 % PD_SEG_GRAD_IDS.length] + ")" : PD_EMPTY_FILL;
-    var tipBaseP = pdPolar(ocx, ocy, tipR0, deg);
-    var tipLen = 24;
-    var tipXf = 'transform="translate(' + tipBaseP[0].toFixed(1) + ',' + tipBaseP[1].toFixed(1) + ') rotate(' + deg + ')"';
-    html += '<g ' + tipXf + '>' +
-            '<polygon points="0,-' + tipHalfW + ' 0,' + tipHalfW + ' ' + tipLen + ',0" fill="' + tipColor + '" stroke="' + PD_LINE_BLUE + '" stroke-width="2" stroke-linejoin="round"/>';
-    if (tip7Filled) {
-        html += '<ellipse cx="' + (tipLen * 0.3) + '" cy="-3.5" rx="' + (tipLen * 0.3) + '" ry="2.4" fill="#fff" opacity="0.4"/>';
-    }
-    html += '</g>';
+    /* 先端の中の明るい三角 */
+    html += '<polygon points="' + (len - 1) + ',' + (-sqW / 2 + 2) + ' ' + (len + tip - 5) + ',0 ' + (len - 1) + ',' + (sqW / 2 - 2) + '" fill="#3ED2FF"/>' +
+            '</g>';
 
     if (label) {
+        var tipEnd = innerR + len + tip;
         var lp, anchor;
         if (Math.abs(dy) < 0.35) {
             /* シュート・スライダー（真横向き）は、実機同様バーの真上に
-               バーに被らないよう寄せて中央揃えで表示する（バーの延長線上
-               に置くと、その分バーを短くする必要があるため）。第二球種で
+               バーに被らないよう寄せて中央揃えで表示する。第二球種で
                2本並ぶときは、下側にずれたバーの方は下に置き、上のバーと
                ぶつからないようにする。 */
-            var midR = (innerR + tipR0 + tipLen) / 2;
-            var midPt = pdPolar(ocx, ocy, midR, deg);
-            var gap = segW / 2 + 9;
+            var midPt = pdPolar(ocx, ocy, (innerR + tipEnd) / 2, deg);
+            var lgap = halfW + 9;
             lp = (offsetPerp || 0) > 0
-                ? [midPt[0], midPt[1] + gap + 12]
-                : [midPt[0], midPt[1] - gap];
+                ? [midPt[0], midPt[1] + lgap + 14]
+                : [midPt[0], midPt[1] - lgap];
             anchor = "middle";
         } else {
-            /* それ以外（上下・斜め方向）は、バー自身の延長線上（＝バーが
-               第二球種でずれていればそのずれた軸のまま）、先端のすぐ外側
-               に寄せる。実機同様、バーに被らない最小限の余白だけを空ける
-               ことで、バー自体を大きく見せる。 */
-            lp = pdPolar(ocx, ocy, tipR0 + tipLen + 10, deg);
+            /* それ以外（上下・斜め方向）は、バー自身の延長線上、先端のすぐ外側に寄せる */
+            lp = pdPolar(ocx, ocy, tipEnd + 10, deg);
             anchor = pdLabelAnchor(dx, px * (offsetPerp || 0));
         }
-        html += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 4).toFixed(1) + '" text-anchor="' + anchor +
-                '" font-size="17" font-weight="700" fill="' + PD_LINE_BLUE +
+        html += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 6).toFixed(1) + '" text-anchor="' + anchor +
+                '" font-size="23" font-weight="500" fill="' + PD_LINE_BLUE +
                 '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(label) + '</text>';
     }
     return html;
 }
 
 function pdDrawStraightMark(cx, cy, deg, label, offsetPerp, thin) {
-    var baseR = 38, tipR = 38 + 30;
-    var tipHalfW = thin ? 6 : 9;
+    var innerR = 30, sq = 15, pad = 3;
+    var halfW = thin ? 7.5 : 10, sqW = thin ? 10 : 14;
+    var tip = thin ? 7 : 9;
+    var len = pad + sq + pad;
     var rad = deg * Math.PI / 180;
     var dx = Math.cos(rad), dy = Math.sin(rad);
     var px = -dy, py = dx;
     var ocx = cx + px * (offsetPerp || 0), ocy = cy + py * (offsetPerp || 0);
-
-    var tipLen = tipR - baseR;
-    var tBaseP = pdPolar(ocx, ocy, baseR, deg);
-    var xf = 'transform="translate(' + tBaseP[0].toFixed(1) + ',' + tBaseP[1].toFixed(1) + ') rotate(' + deg + ')"';
-    var html = '<g ' + xf + '>' +
-            '<polygon points="0,-' + tipHalfW + ' 0,' + tipHalfW + ' ' + tipLen + ',0" fill="url(#' + PD_SEG_GRAD_IDS[0] + ')" stroke="' + PD_LINE_BLUE + '" stroke-width="2" stroke-linejoin="round"/>' +
-            '<ellipse cx="' + (tipLen * 0.3) + '" cy="-4" rx="' + (tipLen * 0.3) + '" ry="3" fill="#fff" opacity="0.4"/>' +
-            '</g>';
+    var base = pdPolar(ocx, ocy, innerR, deg);
+    var shape = pdBarShape(len, halfW, tip);
+    var html = '<g transform="translate(' + base[0].toFixed(1) + ',' + base[1].toFixed(1) + ') rotate(' + deg + ')">' +
+        '<polygon points="' + shape + '" fill="' + PD_HALO + '" stroke="' + PD_HALO + '" stroke-width="6" stroke-linejoin="round"/>' +
+        '<polygon points="' + shape + '" fill="' + PD_FRAME + '" stroke="' + PD_FRAME + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+        /* ストレートは、実機と同じく赤い四角が1つ（とがった先まで赤） */
+        '<polygon points="' + pad + ',' + (-sqW / 2) + ' ' + (len - 1) + ',' + (-sqW / 2) + ' ' + (len + tip - 4) + ',0 ' + (len - 1) + ',' + (sqW / 2) + ' ' + pad + ',' + (sqW / 2) + '" fill="url(#pdGradStraight)"/>' +
+        '</g>';
 
     if (label) {
-        /* ストレート系・第二ストレートは、実機同様バーが無く三角のみ。
-           第二ストレートがある場合はストレートが左・第二ストレートが右に
+        /* 第二ストレートがある場合はストレートが左・第二ストレートが右に
            なるよう、offsetPerpで既にずれたその軸のまま、先端のすぐ外側に
            ラベルを置く。 */
-        var lp = pdPolar(ocx, ocy, tipR + 10, deg);
+        var lp = pdPolar(ocx, ocy, innerR + len + tip + 10, deg);
         var anchor = pdLabelAnchor(dx, px * (offsetPerp || 0));
         html += '<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 4).toFixed(1) + '" text-anchor="' + anchor +
-                '" font-size="17" font-weight="700" fill="' + PD_LINE_BLUE +
+                '" font-size="23" font-weight="500" fill="' + PD_LINE_BLUE +
                 '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(label) + '</text>';
     }
     return html;
@@ -1340,7 +1339,8 @@ function buildPitchDiagram(x, y, w, h) {
         }
     });
 
-    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="20" fill="#fff" stroke="' + PD_LINE_BLUE + '" stroke-width="3"/>';
+    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="21" fill="none" stroke="' + PD_HALO + '" stroke-width="9"/>';
+    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="19" fill="#fff" stroke="' + PD_FRAME + '" stroke-width="4"/>';
     svg += '<path d="M ' + (cx - 9) + ' ' + (cy - 15) + ' Q ' + cx + ' ' + cy + ' ' + (cx - 9) + ' ' + (cy + 15) + '" stroke="#E5352E" stroke-width="1.5" fill="none"/>';
     svg += '<path d="M ' + (cx + 9) + ' ' + (cy - 15) + ' Q ' + cx + ' ' + cy + ' ' + (cx + 9) + ' ' + (cy + 15) + '" stroke="#E5352E" stroke-width="1.5" fill="none"/>';
 
@@ -1362,6 +1362,7 @@ function renderCard() {
     var throwbat = document.getElementById("p-throwbat").value;
     var form = document.getElementById("p-form").value;
     var number = (document.getElementById("p-number") || { value: "" }).value.trim();
+    var plateColors = buildNamePlateColors();
 
     /* 特殊能力バッジ（4列固定）。野手版と同じロジック。 */
     var cols = 4, catMinRows = 6;
@@ -1491,7 +1492,7 @@ function renderCard() {
         var contentBottom = pitchDiagramContentBottom(diagramY, diagramW, diagramH);
         var origAreaTop = contentBottom, origAreaBottom = diagramY + diagramH - 10;
         var origY = (origAreaTop + origAreaBottom) / 2 + 7;
-        origHTML = '<text data-fit="' + (diagramW - 24) + '" x="' + (diagramX + diagramW / 2) + '" y="' + origY + '" text-anchor="middle" font-size="17" font-weight="700" fill="#163E64" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">オリジナル変化球名　' + esc(origName) + '</text>';
+        origHTML = '<text data-fit="' + (diagramW - 24) + '" x="' + (diagramX + diagramW / 2) + '" y="' + origY + '" text-anchor="middle" font-size="19" font-weight="500" fill="#2C64A8" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">オリジナル変化球名　' + esc(origName) + '</text>';
     }
 
     var bio1 = L.bio1Vals.map(function (b) {
@@ -1506,7 +1507,9 @@ function renderCard() {
 
         '<rect x="' + L.bodyPanel.x + '" y="' + L.bodyPanel.y + '" width="' + L.bodyPanel.w + '" height="' + (H - L.bodyPanel.y - 10) + '" rx="18" fill="#EAFAFF"/>' +
 
-        nameplateStripes(L.namePlate.x, L.namePlate.y, L.namePlate.w, L.namePlate.h, buildNamePlateColors()) +
+        nameplateStripes(L.namePlate.x, L.namePlate.y, L.namePlate.w, L.namePlate.h, plateColors,
+            /* 実機の投手は、先発の赤いプレートに濃い赤の縁が付く */
+            plateColors[0] === ROLE_PLATE_COLOR["role-start"] ? "#E5383F" : null) +
         '<text ' + nameFitAttr(name, L.namePlate.w - 20) + ' x="' + (L.namePlate.x + L.namePlate.w / 2) + '" y="' + (L.namePlate.y + L.namePlate.h / 2 + 10) + '" text-anchor="middle" font-size="30" font-weight="700" fill="#111" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(name) + '</text>' +
 
         (teamFlagImg
@@ -1541,7 +1544,8 @@ function renderCard() {
         /* 特殊能力バッジ（実機と同じく、欄全体を薄い水色の面と枠線で囲む） */
         '<rect x="' + (L.gridColX[0] - 7) + '" y="' + (L.gridRowY0 - 7) + '" width="' + (L.gridColX[3] + L.gridColW - L.gridColX[0] + 14) + '" height="' + (rows * L.gridRowH + 11) + '" rx="12" fill="#F1FAFD" stroke="#B9E0EE" stroke-width="2.5"/>' +
         badgeHTML +
-        '<rect x="' + diagramX + '" y="' + diagramY + '" width="' + diagramW + '" height="' + diagramH + '" rx="16" fill="#ffffff" stroke="#CFE8F2" stroke-width="2"/>' +
+        '<defs><linearGradient id="gDiagram" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E6F8F8"/><stop offset="1" stop-color="#CFF2F4"/></linearGradient></defs>' +
+        '<rect x="' + diagramX + '" y="' + diagramY + '" width="' + diagramW + '" height="' + diagramH + '" rx="12" fill="url(#gDiagram)" stroke="#BCE3F1" stroke-width="2.5"/>' +
         buildPitchDiagram(diagramX, diagramY, diagramW, diagramH) +
         origHTML +
 
