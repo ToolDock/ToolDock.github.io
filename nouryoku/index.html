@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=19" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=20" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -791,7 +791,7 @@ var HEADER_H = 171;
 var L = {
     namePlate:   { x: 33,  y: 30,  w: 158, h: 46 },
     flagBox:     { x: 199, y: 29,  w: 72,  h: 48 },  /* 実機と同じく横長（横1.5：縦1） */
-    numBox:      { x: 278, y: 27,  w: 75,  h: 52 },
+    numBox:      { x: 278, y: 29,  w: 76,  h: 48 },  /* 球団旗と同じ高さ。実機と同じく横長のユニフォーム形 */
     photoBox:    { x: 361, y: 25,  w: 132, h: 130 },
     posLabel:    { x: 29,  y: 104, w: 124, h: 38 },
     posValue:    { x: 164, y: 99,  w: 188, h: 42 },
@@ -800,7 +800,7 @@ var L = {
     /* 実機の画面で測った書き始めの位置：「率 .322」「44本110点」（続けて書く）「0盗」 */
     bio1Vals:    [
         { x: 624, y: 36, w: 120, keys: ["avg"], pre: "率" },
-        { x: 763, y: 36, w: 190, keys: ["hr", "rbi"], pre: "" },
+        { x: 763, y: 36, w: 190, keys: ["hr", "rbi"], pre: "", gap: 9 },  /* 実機の「6勝 7敗」と同じく、本と点の間を少し空ける */
         { x: 969, y: 36, w: 66, keys: ["sb"], pre: "" }
     ],
     bioRow2:     { x: 501, y: 93,  w: 546, h: 62 },
@@ -939,12 +939,11 @@ function nameplateStripes(x, y, w, h, colors) {
     return html;
 }
 
-/* 背番号の枠。実機は左側がとがった矢印のような形 */
 function numTab(x, y, w, h) {
-    var tip = 14, r = 8;
-    var d = 'M' + (x + tip) + ',' + y + ' H' + (x + w - r) + ' Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) +
-            ' V' + (y + h - r) + ' Q' + (x + w) + ',' + (y + h) + ' ' + (x + w - r) + ',' + (y + h) +
-            ' H' + (x + tip) + ' L' + x + ',' + (y + h / 2) + ' Z';
+    /* 実機の背番号の枠はユニフォームの形：上半分（肩）が広く、下半分（胴）は両側が一段狭い */
+    var inset = 7, shoulder = y + Math.round(h * 0.48);
+    var d = 'M' + x + ',' + y + ' H' + (x + w) + ' V' + shoulder + ' H' + (x + w - inset) + ' V' + (y + h) +
+            ' H' + (x + inset) + ' V' + shoulder + ' H' + x + ' Z';
     return '<path d="' + d + '" fill="#ffffff" stroke="#BCE3F1" stroke-width="3" stroke-linejoin="round"/>';
 }
 
@@ -1099,8 +1098,11 @@ function renderCard() {
     var H = bodyBottom + 10;
 
     var bio1 = L.bio1Vals.map(function (b) {
-        var val = b.keys.map(function (k) { return document.getElementById("p-" + k).value.trim(); }).join("");
-        return '<text data-squeeze="0.8" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 32) + '"' + (b.anchor ? ' text-anchor="' + b.anchor + '"' : '') + ' font-size="37" font-weight="700" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + unitTspans(b.pre, val) + '</text>';
+        var spans = b.keys.map(function (k, i) {
+            var t = unitTspans(i === 0 ? b.pre : "", document.getElementById("p-" + k).value.trim());
+            return i === 0 ? t : t.replace("<tspan", '<tspan dx="' + (b.gap || 0) + '"');
+        }).join("");
+        return '<text data-squeeze="0.8" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 32) + '"' + (b.anchor ? ' text-anchor="' + b.anchor + '"' : '') + ' font-size="37" font-weight="700" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + spans + '</text>';
     }).join("");
 
     var svg = '' +
@@ -1125,7 +1127,7 @@ function renderCard() {
 
         /* 背番号 */
         numTab(L.numBox.x, L.numBox.y, L.numBox.w, L.numBox.h) +
-        (number ? '<text data-squeeze="0.9" data-max="' + (L.numBox.w - 14) + '" x="' + (L.numBox.x + 7 + L.numBox.w / 2) + '" y="' + (L.numBox.y + L.numBox.h / 2 + 12) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(number) + '</text>' : '') +
+        (number ? '<text data-squeeze="0.9" data-max="' + (L.numBox.w - 14) + '" x="' + (L.numBox.x + L.numBox.w / 2) + '" y="' + (L.numBox.y + L.numBox.h / 2 + 12) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(number) + '</text>' : '') +
 
         /* 顔写真枠（アップロードした画像があればそれを表示、無ければプレースホルダー） */
         (playerPhotoImg
