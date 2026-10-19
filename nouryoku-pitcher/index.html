@@ -396,7 +396,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku-pitcher/example-sugano.png?v=10" alt="パワプロ風 能力画像ジェネレーター（投手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku-pitcher/example-sugano.png?v=11" alt="パワプロ風 能力画像ジェネレーター（投手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -825,19 +825,22 @@ function justifyTexts(svgRoot) {
 function squeezeTexts(svgRoot) {
     svgRoot.querySelectorAll("text[data-squeeze]").forEach(function (t) {
         try {
-            var natural = t.getComputedTextLength();
+            /* 中に tspan がある字（成績欄・球速）の textLength を Safari が無視して
+               はみ出すので、textLength は使わず、字ごと横に縮める変形をかける */
+            var natural = t.getBBox().width;
             if (natural <= 0) return;
             var ratio = parseFloat(t.getAttribute("data-squeeze"));
-            var target = natural * ratio;
             var maxW = parseFloat(t.getAttribute("data-max"));
-            if (maxW && target > maxW) {
+            if (maxW && natural * ratio > maxW) {
                 /* 長い文字（長いフォーム名など）は横に潰さず、字を小さくして収める */
                 var size = parseFloat(t.getAttribute("font-size"));
-                t.setAttribute("font-size", size * maxW / target);
-                target = t.getComputedTextLength() * ratio;
+                t.setAttribute("font-size", size * maxW / (natural * ratio));
+                natural = t.getBBox().width;
+                if (natural * ratio > maxW) ratio = maxW / natural;
             }
-            t.setAttribute("textLength", target);
-            t.setAttribute("lengthAdjust", "spacingAndGlyphs");
+            /* x を中心に横だけ縮める（text-anchor が start/middle/end のどれでも、x の位置は動かない） */
+            var x = parseFloat(t.getAttribute("x")) || 0;
+            t.setAttribute("transform", "matrix(" + ratio.toFixed(4) + " 0 0 1 " + (x * (1 - ratio)).toFixed(2) + " 0)");
         } catch (e) { /* 非表示要素などでは無視 */ }
     });
 }
@@ -940,8 +943,8 @@ var L = {
     /* 実機の並べ方：「防 3.19」「6勝  7敗」「0HP  0S」。gap は2つ目の数字の前の空き（縮める前の幅） */
     bio1Vals:    [
         { x: 624, y: 36, w: 128, keys: ["era"], pre: "防" },
-        { x: 763, y: 36, w: 146, keys: ["win", "lose"], pre: "", gap: 34 },
-        { x: 917, y: 36, w: 122, keys: ["hp", "sv"], pre: "", gap: 32 }
+        { x: 763, y: 36, w: 140, keys: ["win", "lose"], pre: "", gap: 28 },
+        { x: 925, y: 36, w: 114, keys: ["hp", "sv"], pre: "", gap: 30 }
     ],
     bioRow2:     { x: 501, y: 93,  w: 546, h: 62 },
     bio2Label1:  { x: 513, y: 106, w: 92,  h: 36 },
@@ -1772,6 +1775,12 @@ loadImageState();
 filterAbilities();
 updateCheckedCounts();
 renderCard();
+/* 字の幅はWebフォントで測る必要があるので、読み込みが終わったら描き直す
+   （先に描いたときは代わりのフォントで測っているため、成績欄などの縮め方がずれる） */
+if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { renderCard(); });
+    document.fonts.addEventListener && document.fonts.addEventListener("loadingdone", function () { renderCard(); });
+}
 </script>
 
 <div id="related-tools"></div>
