@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=5" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=6" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -703,11 +703,11 @@ function labelPill(x, y, w, h, text, size) {
 }
 
 /* ---- 能力値のランク文字 ----
-   実機は角ばった極太の字で、上が明るいグラデーション。縁取りは細い
-   （外側に同じ色の濃い縁、その内側に白い縁）。 */
+   実機は2層だけ：上が明るいグラデーションの角ばった極太の字と、
+   右下に少しずらした濃い影。縁取りは無い。 */
 var RANK_DARK = {
-    S: "#C9578F", A: "#A0105E", B: "#A31A16", C: "#A85200",
-    D: "#9C7300", E: "#6E8A12", F: "#1F7FA3", G: "#5E5E5E"
+    S: "#B04A7E", A: "#8E0E54", B: "#8E1713", C: "#8F4600",
+    D: "#8A6500", E: "#5E7810", F: "#1A6E8F", G: "#505050"
 };
 var RANK_LIGHT = {
     S: "#FBCDE3", A: "#F65DAA", B: "#F2635E", C: "#FA9B3C",
@@ -719,18 +719,20 @@ function rankLetter(cx, baseline, rank, size) {
     var font = 'font-family="Rubik,&quot;Arial Black&quot;,sans-serif" font-size="' + size + '" font-weight="800" text-anchor="middle"';
     return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
            '<stop offset="0" stop-color="' + RANK_LIGHT[rank] + '"/><stop offset="0.5" stop-color="' + STAT_RANK_COLOR[rank] + '"/><stop offset="1" stop-color="' + STAT_RANK_COLOR[rank] + '"/></linearGradient></defs>' +
-           '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="' + RANK_DARK[rank] + '" stroke="' + RANK_DARK[rank] + '" stroke-width="4.5" stroke-linejoin="round">' + rank + '</text>' +
-           '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="#FFFFFF" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round">' + rank + '</text>' +
+           '<text x="' + (cx + 2) + '" y="' + (baseline + 2) + '" ' + font + ' fill="' + RANK_DARK[rank] + '" fill-opacity="0.8">' + rank + '</text>' +
            '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="url(#' + gid + ')">' + rank + '</text>';
 }
 
-/* ---- 数字は大きく、単位（率・本・点・盗）は小さく ----
-   実機の成績欄は、数字に比べて漢字の単位がひと回り小さい。 */
-function unitTspans(str, big) {
-    return String(str).split(/([0-9０-９.．\-]+)/).filter(function (part) { return part !== ""; }).map(function (part) {
+/* ---- 数字は大きく、単位（率・本・点・盗）は少し小さく ----
+   pre（「率」）のあとだけ少し空け、あとは続けて書く（「44本110点」）。 */
+function unitTspans(pre, str, big) {
+    var small = Math.round(big * 0.85);
+    var out = pre ? '<tspan font-size="' + small + '">' + esc(pre) + '</tspan>' : "";
+    String(str).split(/([0-9０-９.．\-]+)/).filter(function (part) { return part !== ""; }).forEach(function (part, i) {
         var isNum = /^[0-9０-９.．\-]+$/.test(part);
-        return '<tspan font-size="' + (isNum ? big : Math.round(big * 0.74)) + '">' + esc(part) + '</tspan>';
-    }).join("");
+        out += '<tspan' + (pre && i === 0 ? ' dx="8"' : '') + ' font-size="' + (isNum ? big : small) + '">' + esc(part) + '</tspan>';
+    });
+    return out;
 }
 
 function esc(s) {
@@ -778,11 +780,11 @@ var L = {
     posValue:    { x: 164, y: 99,  w: 188, h: 42 },
     bioRow1:     { x: 501, y: 25,  w: 546, h: 62 },
     bio1Label:   { x: 513, y: 38,  w: 92,  h: 36 },
-    /* 実機の並べ方：「率 .322」は左、「44本110点」は続けて中央、「0盗」は右端にそろえる */
+    /* 実機の画面で測った書き始めの位置：「率 .322」「44本110点」（続けて書く）「0盗」 */
     bio1Vals:    [
-        { x: 620, y: 36, w: 135, keys: ["avg"], pre: "率 " },
-        { x: 772, y: 36, w: 170, keys: ["hr", "rbi"], pre: "" },
-        { x: 1027, y: 36, w: 80, keys: ["sb"], pre: "", anchor: "end" }
+        { x: 624, y: 36, w: 120, keys: ["avg"], pre: "率" },
+        { x: 763, y: 36, w: 190, keys: ["hr", "rbi"], pre: "" },
+        { x: 969, y: 36, w: 66, keys: ["sb"], pre: "" }
     ],
     bioRow2:     { x: 501, y: 93,  w: 546, h: 62 },
     bio2Label1:  { x: 513, y: 106, w: 92,  h: 36 },
@@ -1064,7 +1066,7 @@ function renderCard() {
 
     var bio1 = L.bio1Vals.map(function (b) {
         var val = b.keys.map(function (k) { return document.getElementById("p-" + k).value.trim(); }).join("");
-        return '<text data-squeeze="0.9" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 31) + '"' + (b.anchor ? ' text-anchor="' + b.anchor + '"' : '') + ' font-size="33" font-weight="700" fill="#1E3A66" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + unitTspans(b.pre + val, 33) + '</text>';
+        return '<text data-squeeze="0.9" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 31) + '"' + (b.anchor ? ' text-anchor="' + b.anchor + '"' : '') + ' font-size="33" font-weight="700" fill="#1E3A66" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + unitTspans(b.pre, val, 33) + '</text>';
     }).join("");
 
     var svg = '' +
