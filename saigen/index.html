@@ -377,12 +377,19 @@
             <div class="fields" id="bat-grid"></div>
             <p class="group-title">守備（いちばん多く守った位置）</p>
             <div class="fields" id="fld-grid"></div>
+            <p class="group-title">対左投手・得点圏（任意）</p>
+            <div class="fields" id="bsplit-grid"></div>
+            <p class="hint">チャンスと対左投手は、ここに入れた打率と全体の打率の差で決めます。空欄ならDです。</p>
         </div>
 
         <div id="pit-fields" hidden>
             <p class="group-title">投球</p>
             <div class="fields" id="pit-grid"></div>
             <p class="hint">投球回は「164.1」（164回1/3）の形で入れます。対戦打者が分からなければ空欄でかまいません（アウト・安打・四死球から見積もります）。</p>
+
+            <p class="group-title">対左打者・得点圏（任意）</p>
+            <div class="fields" id="psplit-grid"></div>
+            <p class="hint">対左打者と対ピンチは、ここに入れた被打率と全体の被打率の差で決めます。対左打者は空欄ならD、対ピンチは空欄なら残塁率で決めます。</p>
 
             <p class="group-title">球速・変化球（任意）</p>
             <div class="fields">
@@ -436,6 +443,8 @@
                 <tr><td>肩力</td><td>守備位置と、1試合あたりの補殺</td></tr>
                 <tr><td>守備力</td><td>守備位置と、1試合あたりの刺殺＋補殺</td></tr>
                 <tr><td>捕球</td><td>失策の割合</td></tr>
+                <tr><td>チャンス</td><td>得点圏打率と全体の打率の差</td></tr>
+                <tr><td>対左投手</td><td>対左投手の打率と全体の打率の差</td></tr>
             </tbody>
         </table>
     </div>
@@ -447,7 +456,8 @@
             <tbody>
                 <tr><td>コントロール</td><td>与四死球の割合（故意四球を除く）</td></tr>
                 <tr><td>スタミナ</td><td>1登板あたりの投球回と完投</td></tr>
-                <tr><td>対ピンチ</td><td>残塁率（LOB%）</td></tr>
+                <tr><td>対ピンチ</td><td>得点圏の被打率と全体の被打率の差（入れなければ残塁率）</td></tr>
+                <tr><td>対左打者</td><td>対左打者の被打率と全体の被打率の差</td></tr>
                 <tr><td>回復</td><td>救援投手の登板数</td></tr>
             </tbody>
         </table>
@@ -459,7 +469,8 @@
         <li>投手：ドクターＫ・奪三振・四球・精密機械・本塁打厳禁・重い球・一発</li>
     </ul>
     <p>
-        チャンス・対左・球速・変化球・ノビなど、公開されている成績から決められない能力は計算しません。能力画像ジェネレーターで自分で入れてください。
+        対左・得点圏の成績と、投手の球速・変化球は、NPBの成績表に無いので自分で入れます（スポーツニュースのサイトの選手ページなどに載っています）。
+        ノビ・打たれ強さなど、成績から決められない能力は計算しません。能力画像ジェネレーターで自分で入れてください。
     </p>
 
     <h2>注意</h2>
@@ -494,6 +505,25 @@ const SPEED_PTS = [[2, 42], [3, 52], [4, 60], [5, 70], [6, 78], [7, 86], [8, 93]
 const CTRL_PTS = [[.025, 95], [.040, 85], [.055, 75], [.070, 65], [.085, 57], [.100, 50], [.120, 40], [.140, 30]];
 const STAM_SP_PTS = [[4.5, 50], [5.5, 60], [6.2, 70], [6.8, 80], [7.3, 90], [7.8, 100]];
 const STAM_RP_PTS = [[0.8, 30], [1.0, 38], [1.5, 48], [2.0, 55], [3.0, 60]];
+
+/* チャンス・対左：その場面の打率と全体の打率の差（打数が少ないほど差を小さく見る）
+   野手は差が大きいほど良く、投手は被打率が低いほど良い */
+const SPLIT_REG_AB = 80;
+const BAT_SPLIT = [["S", .100], ["A", .060], ["B", .035], ["C", .015], ["D", -.015], ["E", -.035], ["F", -.060]];
+const PIT_SPLIT = [["S", .080], ["A", .050], ["B", .030], ["C", .012], ["D", -.012], ["E", -.030], ["F", -.050], ["G", -.080]];
+const S_MIN_AB = 100;
+
+/* 差（良いほうが正）→ランク。lowest は表の下に外れたときのランク */
+function splitRank(diff, ab, table, lowest) {
+    const d = diff * ab / (ab + SPLIT_REG_AB);
+    for (const [r, min] of table) {
+        if (r === "S" && ab < S_MIN_AB) continue;
+        if (d >= min) return { r, d };
+    }
+    return { r: lowest, d };
+}
+
+const sign3 = (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(3).replace(/^0/, "");
 
 /* 守備位置ごとの基準値と、2005〜2026年の平均（30試合以上守った選手） */
 const POS = {
@@ -549,6 +579,8 @@ function buildFields(gridId, list) {
 
 buildFields("bat-grid", BAT_FIELDS);
 buildFields("pit-grid", PIT_FIELDS);
+buildFields("bsplit-grid", [["対左 打数", "lab"], ["対左 安打", "lh"], ["得点圏 打数", "rab"], ["得点圏 安打", "rh"]]);
+buildFields("psplit-grid", [["対左 打数", "plab"], ["対左 被安打", "plh"], ["得点圏 打数", "prab"], ["得点圏 被安打", "prh"]]);
 
 (() => {
     const grid = $("fld-grid");
@@ -738,6 +770,15 @@ function computeBatter() {
     const run = (parts[2] + parts[3]) / 2;
     const runR = run >= 7 ? "A" : run >= 6 ? "B" : run >= 5 ? "C" : run <= 2.5 ? "E" : "D";
     out.subs = { "sub-steal": steal, "sub-run": runR };
+    out.splitWhy = [];
+    const avgAll = h / ab;
+    for (const [id, abId, hId, label] of [["sub-vsleft", "f-lab", "f-lh", "対左"], ["sub-chance", "f-rab", "f-rh", "得点圏"]]) {
+        const sab = num(abId), sh2 = num(hId);
+        if (!sab) continue;
+        const k = splitRank(sh2 / sab - avgAll, sab, BAT_SPLIT, "G");
+        out.subs[id] = k.r;
+        out.splitWhy.push(`${label} ${fmt3(sh2 / sab)}（全体との差 ${sign3(sh2 / sab - avgAll)}）`);
+    }
 
     out.card = { avg: fmt3(h / ab), hr, rbi, sb };
     return out;
@@ -771,6 +812,17 @@ function computePitcher() {
     const pinch = lobR >= .84 ? "S" : lobR >= .80 ? "A" : lobR >= .77 ? "B" : lobR >= .745 ? "C" : lobR >= .70 ? "D" : lobR >= .67 ? "E" : lobR >= .64 ? "F" : "G";
     out.subs["sub-pinch"] = pinch;
     out.lob = lobR;
+    out.splitWhy = [];
+    const oppAb = Math.max(1, bf - bb - hbp);
+    const oppAvg = h / oppAb;
+    for (const [id, abId, hId, label] of [["sub-vsleft", "f-plab", "f-plh", "対左"], ["sub-pinch", "f-prab", "f-prh", "得点圏"]]) {
+        const sab = num(abId), sh2 = num(hId);
+        if (!sab) continue;
+        /* 対ピンチはHまで、対左打者はGまで */
+        const k = splitRank(oppAvg - sh2 / sab, sab, PIT_SPLIT, id === "sub-pinch" ? "H" : "G");
+        out.subs[id] = k.r;
+        out.splitWhy.push(`${label}の被打率 ${fmt3(sh2 / sab)}（全体 ${fmt3(oppAvg)}）`);
+    }
     let rec = "D";
     if (!starter) rec = app >= 70 ? "S" : app >= 60 ? "A" : app >= 50 ? "B" : app >= 40 ? "C" : "D";
     out.subs["sub-recover"] = rec;
@@ -783,7 +835,7 @@ function computePitcher() {
     else if (bf >= 250 && aHr <= .012) sp.push(["aoto", "重い球"]);
     else if (bf >= 150 && aHr >= .035) sp.push(["aka", "一発"]);
     if (ip >= 143 && aBb <= .035) sp.push(["kintoku", "精密機械"]);
-    out.why = `奪三振率 ${pct(aK)}・被本塁打率 ${pct(aHr)}・残塁率 ${pct(lobR)}`;
+    out.why = `奪三振率 ${pct(aK)}・被本塁打率 ${pct(aHr)}・` + (num("f-prab") ? "" : `残塁率 ${pct(lobR)}`);
 
     out.card = {
         era: outs ? (er * 27 / outs).toFixed(2) : "",
@@ -796,8 +848,8 @@ function computePitcher() {
    表示
    ====================================================== */
 
-const SUB_LABEL = { "sub-steal": "盗塁", "sub-run": "走塁", "sub-pinch": "対ピンチ", "sub-recover": "回復" };
-const SUB_S_NAME = { "sub-steal": "電光石火", "sub-run": "高速ベースラン", "sub-pinch": "強心臓", "sub-recover": "ガソリンタンク" };
+const SUB_LABEL = { "sub-steal": "盗塁", "sub-run": "走塁", "sub-pinch": "対ピンチ", "sub-recover": "回復", "sub-chance": "チャンス", "sub-vsleft": "対左" };
+const SUB_S_NAME = { "sub-steal": "電光石火", "sub-run": "高速ベースラン", "sub-pinch": "強心臓", "sub-recover": "ガソリンタンク", "sub-chance": "勝負師" };
 const CAT_CLASS = { kintoku: "kin", aoto: "ao", aka: "aka", midori: "mido" };
 const CAT_NAME = { kintoku: "金特", aoto: "青特", aka: "赤特", midori: "緑特" };
 
@@ -874,7 +926,9 @@ function compute() {
         if (r === "D") continue;
         const li = document.createElement("li");
         li.className = "rank";
-        li.textContent = `${SUB_LABEL[id]} ${r}${r === "S" ? `（${SUB_S_NAME[id]}）` : ""}`;
+        const label = id === "sub-vsleft" ? (pit ? "対左打者" : "対左投手") : SUB_LABEL[id];
+        const sName = id === "sub-vsleft" ? (pit ? "左キラー" : "左腕キラー") : r === "H" ? "ノミの心臓" : SUB_S_NAME[id];
+        li.textContent = `${label} ${r}${r === "S" || r === "H" ? `（${sName}）` : ""}`;
         spBox.appendChild(li);
     }
     for (const [cat, name] of res.sp) {
@@ -885,7 +939,8 @@ function compute() {
     }
     if (!spBox.children.length) spBox.innerHTML = "<li>成績から付く特殊能力なし</li>";
 
-    $("r-note").textContent = (pit ? res.why + "。" : "")
+    $("r-note").textContent = (pit ? res.why.replace(/・$/, "") + "。" : "")
+        + (res.splitWhy.length ? res.splitWhy.join("・") + "。" : "")
         + ($("f-adjust").checked ? `${$("f-year").value}年の${$("f-league").value === "central" ? "セ" : "パ"}・リーグ平均で補正した値です。` : "補正なしの値です。");
 }
 
@@ -1080,7 +1135,8 @@ $("pload").addEventListener("click", async () => {
             ["f-fg", "f-po", "f-a", "f-e"].forEach((id) => setVal(id, ""));
         }
     }
-    setStatus(`${picked.name}の${year}年の成績を入れました。`);
+    ["f-lab", "f-lh", "f-rab", "f-rh", "f-plab", "f-plh", "f-prab", "f-prh"].forEach((id) => setVal(id, ""));
+    setStatus(`${picked.name}の${year}年の成績を入れました。対左・得点圏${pit ? "・球速・変化球" : ""}は、分かれば入れてください。`);
     await refreshLeague();
 });
 
