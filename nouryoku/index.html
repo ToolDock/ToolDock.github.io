@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=14" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=15" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -639,12 +639,12 @@ function fitTexts(svgRoot) {
 }
 
 /* ---- 特殊能力バッジの名前の字間 ----
-   実機は短い名前でも枠の端までは広げず、「三 振」「初 球 ○」のように
-   中央寄りに少しだけ空ける（2文字は1字ぶん、3文字は0.7字、4文字は0.12字まで。
-   5文字以上は詰めたまま）。枠より広い名前は、字間ではなくフォントサイズを
-   縮めて収める（字形が潰れるのを防ぐ）。
+   実機は文字数ごとに、名前が枠のどれだけの幅に広がるかが決まっている
+   （2文字「三 振」は枠の6割、3文字「決 勝 打」は8割、4文字「広角打法」は
+   9割弱。5文字以上は詰めたまま）。枠より広い名前は、字間ではなく
+   フォントサイズを縮めて収める（字形が潰れるのを防ぐ）。
    data-full を付けたもの（選手名プレート）は、従来どおり枠いっぱいに広げる。 */
-var JUSTIFY_GAP = { 2: 1.0, 3: 0.7, 4: 0.12 };
+var JUSTIFY_SPAN = { 2: 0.58, 3: 0.78, 4: 0.86 };
 function justifyTexts(svgRoot) {
     svgRoot.querySelectorAll("text[data-justify]").forEach(function (t) {
         var maxW = parseFloat(t.getAttribute("data-justify"));
@@ -655,8 +655,11 @@ function justifyTexts(svgRoot) {
                 var target = maxW;
                 if (!t.hasAttribute("data-full")) {
                     var n = Array.from(t.textContent).length;
-                    var size0 = parseFloat(t.getAttribute("font-size"));
-                    target = Math.min(maxW, natural + size0 * (JUSTIFY_GAP[n] || 0) * (n - 1));
+                    var gap = parseFloat(t.getAttribute("data-gap"));
+                    /* data-gap があれば、字間をその字数ぶん空ける（上段の「盗 塁」など） */
+                    target = gap
+                        ? Math.min(maxW, natural + parseFloat(t.getAttribute("font-size")) * gap * (n - 1))
+                        : Math.max(natural, maxW * (JUSTIFY_SPAN[n] || 0));
                 }
                 if (target > natural + 0.5) {
                     t.setAttribute("textLength", target);
@@ -943,7 +946,7 @@ function trajArrow(cx, cy, value) {
     var spec = TRAJ_ARROW[value] || TRAJ_ARROW[1];
     /* 実機の太い矢印。右向きの矢を基準に、値に応じて回転させる
        （弾道4はほぼ真上）。軸に沿って明るい色から濃い色へのグラデーション */
-    var k = 1.0;
+    var k = 1.3;
     var pts = [
         [19, 0], [1, -16], [1, -7], [-19, -7], [-19, 7], [1, 7], [1, 16]
     ].map(function (p) { return (cx + p[0] * k) + "," + (cy + p[1] * k); }).join(" ");
@@ -951,8 +954,7 @@ function trajArrow(cx, cy, value) {
     return '<defs><linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + (cx - 19 * k) + '" y1="' + cy + '" x2="' + (cx + 19 * k) + '" y2="' + cy + '">' +
            '<stop offset="0" stop-color="' + spec.light + '"/><stop offset="1" stop-color="' + spec.color + '"/></linearGradient></defs>' +
            '<g transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')">' +
-           '<polygon points="' + pts + '" fill="none" stroke="#9AA8B4" stroke-opacity="0.55" stroke-width="7.5" stroke-linejoin="round"/>' +
-           '<polygon points="' + pts + '" fill="url(#' + gid + ')" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round" paint-order="stroke fill"/>' +
+           '<polygon points="' + pts + '" fill="url(#' + gid + ')" stroke="#FFFFFF" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke fill"/>' +
            '</g>';
 }
 
@@ -1033,7 +1035,7 @@ function renderCard() {
             return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
                    '<stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient></defs>' +
                    '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="url(#' + gid + ')"' + border + '/>' +
-                   '<text ' + (Array.from(b.name).length <= 2 ? 'data-justify="' + (labelW - 12) + '"' : 'data-fit="' + labelW + '"') + ' x="' + (x + 8 + labelW / 2) + '" y="' + (y + h / 2 + 8) + '" text-anchor="middle" font-size="26" font-weight="500" fill="' + textColor + '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>' +
+                   '<text ' + (Array.from(b.name).length <= 2 ? 'data-justify="' + (labelW - 12) + '" data-gap="1"' : 'data-fit="' + labelW + '"') + ' x="' + (x + 8 + labelW / 2) + '" y="' + (y + h / 2 + 8) + '" text-anchor="middle" font-size="26" font-weight="500" fill="' + textColor + '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(b.name) + '</text>' +
                    (isPaleText ? '' : '<rect x="' + (x + w - tagW - 3) + '" y="' + (y + 3) + '" width="' + tagW + '" height="' + (h - 6) + '" rx="6" fill="' + tagFill + '"/>') +
                    '<text x="' + (x + w - 3 - tagW / 2) + '" y="' + (y + h / 2 + 9) + '" text-anchor="middle" font-size="25" font-weight="800" fill="#fff" stroke="' + tagStroke + '" stroke-width="' + (isPaleText ? 3 : 1.6) + '" stroke-linejoin="round" paint-order="stroke fill" font-family="\'ADLaM Display\',sans-serif">' + b.rank + '</text>';
         }
