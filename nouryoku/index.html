@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=11" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=12" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -699,7 +699,7 @@ function labelPill(x, y, w, h, text, size) {
     return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
            '<stop offset="0" stop-color="#FFFFFF"/><stop offset="0.6" stop-color="#F6F8FA"/><stop offset="1" stop-color="#E3E8EC"/></linearGradient></defs>' +
            '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + Math.min(10, h / 2) + '" fill="url(#' + gid + ')" stroke="#B9C4CD" stroke-width="1.5"/>' +
-           '<text ' + fitAttr + ' x="' + (x + w / 2) + '" y="' + (y + h / 2 + fs * 0.36) + '" text-anchor="middle" font-size="' + fs + '" font-weight="500" fill="#3F5064" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(text) + '</text>';
+           '<text ' + fitAttr + ' x="' + (x + w / 2) + '" y="' + (y + h / 2 + fs * 0.36) + '" text-anchor="middle" font-size="' + fs + '" font-weight="500" fill="#4A5B71" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(text) + '</text>';
 }
 
 /* ---- 能力値のランク文字 ----
@@ -882,7 +882,7 @@ function buildCatBadges() {
    赤特は純粋な赤色の単色。赤青特（☆がプラスの赤特）だけ左赤・右青のツートンにする。 */
 var CAT_STYLE = {
     kintoku: { bg: ["#FFF3D0", "#F5DFA8"], border: "#E0B03C", text: "#7A4520" },
-    aoto:    { bg: ["#E8FAFE", "#B4E8F5"], border: "#45B3D8", text: "#1F3F63" },
+    aoto:    { bg: ["#E8FAFE", "#B4E8F5"], border: "#45B3D8", text: "#284C74" },
     midori:  { bg: ["#EAFCE6", "#B4EBAE"], border: "#4FAE5C", text: "#1E5E27" },
     aka:     { bg: ["#FFE0E0", "#F5A3A5"], border: "#D9534F", text: "#B3141B" }
 };
@@ -943,7 +943,7 @@ function trajArrow(cx, cy, value) {
     var spec = TRAJ_ARROW[value] || TRAJ_ARROW[1];
     /* 実機の太い矢印。右向きの矢を基準に、値に応じて回転させる
        （弾道4はほぼ真上）。軸に沿って明るい色から濃い色へのグラデーション */
-    var k = 1.25;
+    var k = 1.0;
     var pts = [
         [19, 0], [1, -16], [1, -7], [-19, -7], [-19, 7], [1, 7], [1, 16]
     ].map(function (p) { return (cx + p[0] * k) + "," + (cy + p[1] * k); }).join(" ");
@@ -951,7 +951,8 @@ function trajArrow(cx, cy, value) {
     return '<defs><linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + (cx - 19 * k) + '" y1="' + cy + '" x2="' + (cx + 19 * k) + '" y2="' + cy + '">' +
            '<stop offset="0" stop-color="' + spec.light + '"/><stop offset="1" stop-color="' + spec.color + '"/></linearGradient></defs>' +
            '<g transform="rotate(' + spec.angle + ' ' + cx + ' ' + cy + ')">' +
-           '<polygon points="' + pts + '" fill="url(#' + gid + ')" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>' +
+           '<polygon points="' + pts + '" fill="none" stroke="#9AA8B4" stroke-opacity="0.55" stroke-width="7.5" stroke-linejoin="round"/>' +
+           '<polygon points="' + pts + '" fill="url(#' + gid + ')" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round" paint-order="stroke fill"/>' +
            '</g>';
 }
 
@@ -1019,7 +1020,7 @@ function renderCard() {
                はっきり分かるようにする */
             var isHigh = b.rank === "A" || b.rank === "B";
             var isPaleText = b.rank === "C" || b.rank === "D" || b.rank === "E";
-            var textColor = tier === "bad" ? "#7A2020" : (isPaleText ? "#A3C4D3" : "#1F3F63");
+            var textColor = tier === "bad" ? "#7A2020" : (isPaleText ? "#A3C4D3" : "#284C74");
             /* 実機：B以上は青い四角に白い字、C〜Eは四角無しで白抜きの字（薄い灰青の縁）だけ、F・Gは赤 */
             var tagFill = tier === "bad" ? BADGE_RANK_TAG[b.rank] : "#1E9BD0";
             var tagStroke = tier === "bad" ? "#7A1F1A" : (isPaleText ? "#8DB3C5" : "#0E5F85");
@@ -1076,7 +1077,7 @@ function renderCard() {
         return '<rect x="' + L.statColX + '" y="' + y + '" width="' + statCardW + '" height="' + h + '" rx="7" fill="#FFFFFF" stroke="#CFE8F2" stroke-width="2"/>' +
                labelPill(L.statColX + 5, y + 5, L.statLabelW - 6, h - 10, labelVal("statlabel-" + s.id, s.label), 18) +
                rankText +
-               '<text data-squeeze="0.84" data-max="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 28) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="35" font-weight="800" fill="#1F55A3" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(v) + '</text>';
+               '<text data-squeeze="0.84" data-max="' + (L.statNumW - 24) + '" x="' + (L.statNumX + L.statNumW - 28) + '" y="' + (y + h / 2 + 12) + '" text-anchor="end" font-size="35" font-weight="800" fill="#2763B0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(v) + '</text>';
     }).join("");
 
     var gridBottom = L.gridRowY0 + rows * L.gridRowH;
@@ -1086,7 +1087,7 @@ function renderCard() {
 
     var bio1 = L.bio1Vals.map(function (b) {
         var val = b.keys.map(function (k) { return document.getElementById("p-" + k).value.trim(); }).join("");
-        return '<text data-squeeze="0.8" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 32) + '"' + (b.anchor ? ' text-anchor="' + b.anchor + '"' : '') + ' font-size="37" font-weight="700" fill="#243F68" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + unitTspans(b.pre, val) + '</text>';
+        return '<text data-squeeze="0.8" data-max="' + b.w + '" x="' + b.x + '" y="' + (b.y + 32) + '"' + (b.anchor ? ' text-anchor="' + b.anchor + '"' : '') + ' font-size="37" font-weight="700" fill="#2F5389" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + unitTspans(b.pre, val) + '</text>';
     }).join("");
 
     var svg = '' +
@@ -1111,7 +1112,7 @@ function renderCard() {
 
         /* 背番号 */
         numTab(L.numBox.x, L.numBox.y, L.numBox.w, L.numBox.h) +
-        (number ? '<text data-squeeze="0.9" data-max="' + (L.numBox.w - 14) + '" x="' + (L.numBox.x + 7 + L.numBox.w / 2) + '" y="' + (L.numBox.y + L.numBox.h / 2 + 12) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#243F68" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(number) + '</text>' : '') +
+        (number ? '<text data-squeeze="0.9" data-max="' + (L.numBox.w - 14) + '" x="' + (L.numBox.x + 7 + L.numBox.w / 2) + '" y="' + (L.numBox.y + L.numBox.h / 2 + 12) + '" text-anchor="middle" font-size="34" font-weight="800" fill="#2F5389" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(number) + '</text>' : '') +
 
         /* 顔写真枠（アップロードした画像があればそれを表示、無ければプレースホルダー） */
         (playerPhotoImg
@@ -1122,7 +1123,7 @@ function renderCard() {
 
         /* 守備位置 */
         labelPill(L.posLabel.x, L.posLabel.y, L.posLabel.w, L.posLabel.h, labelVal("label-pos", "守備位置"), 17) +
-        '<text data-fit="' + (L.posValue.w - 10) + '" x="' + L.posValue.x + '" y="' + (L.posValue.y + L.posValue.h / 2 + 9) + '" font-size="27" font-weight="800" fill="#243F68" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(pos) +
+        '<text data-fit="' + (L.posValue.w - 10) + '" x="' + L.posValue.x + '" y="' + (L.posValue.y + L.posValue.h / 2 + 9) + '" font-size="27" font-weight="800" fill="#2F5389" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(pos) +
             (subClean ? '<tspan dx="8" font-size="21" font-weight="700" fill="#5A7598">ー</tspan><tspan dx="7" font-size="21" font-weight="700" fill="#5A7598">' + esc(subClean) + '</tspan>' : '') + '</text>' +
 
         /* 成績・フォーム・投打（2段のパネル） */
@@ -1132,9 +1133,9 @@ function renderCard() {
 
         '<rect x="' + L.bioRow2.x + '" y="' + L.bioRow2.y + '" width="' + L.bioRow2.w + '" height="' + L.bioRow2.h + '" rx="14" fill="#ffffff" stroke="#BCE3F1" stroke-width="4"/>' +
         labelPill(L.bio2Label1.x, L.bio2Label1.y, L.bio2Label1.w, L.bio2Label1.h, labelVal("label-form", "フォーム"), 17) +
-        '<text data-squeeze="0.92" data-max="' + (L.bio2Val1.w - 6) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 9) + '" font-size="26" font-weight="700" fill="#2A3A55" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(zenkakuDigits(form)) + '</text>' +
+        '<text data-squeeze="0.92" data-max="' + (L.bio2Val1.w - 6) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 9) + '" font-size="26" font-weight="700" fill="#34496B" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(zenkakuDigits(form)) + '</text>' +
         labelPill(L.bio2Label2.x, L.bio2Label2.y, L.bio2Label2.w, L.bio2Label2.h, labelVal("label-throwbat", "投打"), 17) +
-        '<text data-squeeze="0.92" data-max="' + (L.bio2Val2.w - 6) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 9) + '" font-size="26" font-weight="700" fill="#2A3A55" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
+        '<text data-squeeze="0.92" data-max="' + (L.bio2Val2.w - 6) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 9) + '" font-size="26" font-weight="700" fill="#34496B" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
 
         /* 能力値テーブル */
         statHTML +
