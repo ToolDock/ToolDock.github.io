@@ -46,6 +46,10 @@ jobs:
             --strict \
             --out "${{ github.workspace }}/${{ env.OUT_DIR }}"
 
+      - name: SNSの共有カード（OGP）をHTMLに書き込む
+        # 作り直したページにはOGPが無いので書き足す（SNSはJavaScriptを動かさないため）
+        run: python scripts/static_ogp.py "$OUT_DIR"
+
       - name: 変更があればコミット
         run: |
           if git diff --quiet -- "$OUT_DIR"; then
