@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=10" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=11" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -730,9 +730,14 @@ function unitTspans(pre, str) {
     var out = pre ? '<tspan font-weight="400">' + esc(pre) + '</tspan>' : "";
     String(str).split(/([0-9０-９.．\-]+)/).filter(function (part) { return part !== ""; }).forEach(function (part, i) {
         var isNum = /^[0-9０-９.．\-]+$/.test(part);
-        out += '<tspan' + (pre && i === 0 ? ' dx="8"' : '') + ' font-weight="' + (isNum ? 700 : 400) + '">' + esc(part) + '</tspan>';
+        out += '<tspan' + (pre && i === 0 ? ' dx="8"' : '') + ' font-weight="' + (isNum ? 800 : 400) + '">' + esc(part) + '</tspan>';
     });
     return out;
+}
+
+/* フォーム名の数字は、実機と同じく全角で表示する（オープン43 → オープン４３） */
+function zenkakuDigits(s) {
+    return String(s).replace(/[0-9]/g, function (d) { return String.fromCharCode(d.charCodeAt(0) + 0xFEE0); });
 }
 
 function esc(s) {
@@ -757,8 +762,11 @@ function nameFitAttr(name, maxW) {
 /* 特殊能力バッジの名前。中央揃えにし、描画後にjustifyTexts()で
    短い名前は文字間隔を広げて均等配置、長い名前は縮小して収める
    （data-justifyで対象幅を持たせておく）。 */
+var BADGE_CONDENSE = 0.86;   /* 実機の特殊能力の字は縦長。字の幅をこの比率に詰める */
 function badgeLabel(cx, cy, maxW, text, color) {
-    return '<text data-justify="' + maxW + '" x="' + cx + '" y="' + cy + '" text-anchor="middle" font-size="29" font-weight="500" fill="' + color + '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(text) + '</text>';
+    /* 横だけ縮めるので、枠の幅は縮める前の字の幅に直して渡す */
+    return '<g transform="translate(' + cx + ' ' + (cy + 1) + ') scale(' + BADGE_CONDENSE + ' 1)">' +
+           '<text data-justify="' + (maxW / BADGE_CONDENSE) + '" x="0" y="0" text-anchor="middle" font-size="31" font-weight="700" fill="' + color + '" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(text) + '</text></g>';
 }
 
 /* =====================================================================
@@ -1124,9 +1132,9 @@ function renderCard() {
 
         '<rect x="' + L.bioRow2.x + '" y="' + L.bioRow2.y + '" width="' + L.bioRow2.w + '" height="' + L.bioRow2.h + '" rx="14" fill="#ffffff" stroke="#BCE3F1" stroke-width="4"/>' +
         labelPill(L.bio2Label1.x, L.bio2Label1.y, L.bio2Label1.w, L.bio2Label1.h, labelVal("label-form", "フォーム"), 17) +
-        '<text data-squeeze="0.92" data-max="' + (L.bio2Val1.w - 6) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 9) + '" font-size="26" font-weight="500" fill="#2A3A55" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(form) + '</text>' +
+        '<text data-squeeze="0.92" data-max="' + (L.bio2Val1.w - 6) + '" x="' + L.bio2Val1.x + '" y="' + (L.bio2Val1.y + L.bio2Val1.h / 2 + 9) + '" font-size="26" font-weight="700" fill="#2A3A55" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(zenkakuDigits(form)) + '</text>' +
         labelPill(L.bio2Label2.x, L.bio2Label2.y, L.bio2Label2.w, L.bio2Label2.h, labelVal("label-throwbat", "投打"), 17) +
-        '<text data-squeeze="0.92" data-max="' + (L.bio2Val2.w - 6) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 9) + '" font-size="26" font-weight="500" fill="#2A3A55" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
+        '<text data-squeeze="0.92" data-max="' + (L.bio2Val2.w - 6) + '" x="' + L.bio2Val2.x + '" y="' + (L.bio2Val2.y + L.bio2Val2.h / 2 + 9) + '" font-size="26" font-weight="700" fill="#2A3A55" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(throwbat) + '</text>' +
 
         /* 能力値テーブル */
         statHTML +
