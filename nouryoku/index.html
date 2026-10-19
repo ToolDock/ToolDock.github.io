@@ -337,7 +337,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 </p>
 
 <p>
-<img src="/nouryoku/example-tsutsugo.png?v=6" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
+<img src="/nouryoku/example-tsutsugo.png?v=7" alt="パワプロ風 能力画像ジェネレーター（野手）で作成した能力画像の例" width="2164" height="1201" loading="lazy" style="max-width:100%; height:auto; border:1px solid #c2cad6; border-radius:12px;">
 </p>
 
 <h2>よくある質問</h2>
@@ -703,8 +703,8 @@ function labelPill(x, y, w, h, text, size) {
 }
 
 /* ---- 能力値のランク文字 ----
-   実機は2層だけ：上が明るいグラデーションの角ばった極太の字と、
-   右下に少しずらした濃い影。縁取りは無い。 */
+   実機は2層：白い縁取りの付いた、上が明るいグラデーションの角ばった極太の字と、
+   右下に少しずらした濃い影。 */
 var RANK_DARK = {
     S: "#B04A7E", A: "#8E0E54", B: "#8E1713", C: "#8F4600",
     D: "#8A6500", E: "#5E7810", F: "#1A6E8F", G: "#505050"
@@ -719,8 +719,8 @@ function rankLetter(cx, baseline, rank, size) {
     var font = 'font-family="Rubik,&quot;Arial Black&quot;,sans-serif" font-size="' + size + '" font-weight="800" text-anchor="middle"';
     return '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
            '<stop offset="0" stop-color="' + RANK_LIGHT[rank] + '"/><stop offset="0.5" stop-color="' + STAT_RANK_COLOR[rank] + '"/><stop offset="1" stop-color="' + STAT_RANK_COLOR[rank] + '"/></linearGradient></defs>' +
-           '<text x="' + (cx + 2) + '" y="' + (baseline + 2) + '" ' + font + ' fill="' + RANK_DARK[rank] + '" fill-opacity="0.8">' + rank + '</text>' +
-           '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="url(#' + gid + ')">' + rank + '</text>';
+           '<text x="' + (cx + 2.5) + '" y="' + (baseline + 2.5) + '" ' + font + ' fill="' + RANK_DARK[rank] + '" fill-opacity="0.8" stroke="' + RANK_DARK[rank] + '" stroke-opacity="0.8" stroke-width="3.5" stroke-linejoin="round">' + rank + '</text>' +
+           '<text x="' + cx + '" y="' + baseline + '" ' + font + ' fill="url(#' + gid + ')" stroke="#FFFFFF" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke fill">' + rank + '</text>';
 }
 
 /* ---- 数字は大きく、単位（率・本・点・盗）は少し小さく ----
