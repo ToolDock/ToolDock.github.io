@@ -450,6 +450,34 @@ $("f-lg").addEventListener("change", function(){ fillTeams(); state.shown = PAGE
     $(id).addEventListener("input", function(){ state.shown = PAGE; render(); });
 });
 
+/* 選手名の入力候補。その年（いま表示している打者か投手）の選手から、名前か読みが入力で始まる人を出す。
+   読みは選手一覧の検索用データ（/player/players.json）から、名前欄に初めて触れたときに読む */
+var kanaById = null, suggItems = null, suggKey = "";
+function suggestItems(){
+    if (!data) return [];
+    var key = data.year + state.kind + (kanaById ? "k" : "");
+    if (key !== suggKey){
+        suggKey = key;
+        suggItems = rows().map(function(o){
+            return { label: o.name.replace(/\u3000/g, " "), value: o.name, keys: kanaById && kanaById[o.id] ? [kanaById[o.id]] : [],
+                     sub: o.teams.join("・") };
+        });
+    }
+    return suggItems;
+}
+$("f-name").addEventListener("focus", function(){
+    if (kanaById) return;
+    kanaById = {};
+    fetch("/player/players.json").then(function(r){ return r.json(); }).then(function(d){
+        var c = {}; d.cols.forEach(function(k, i){ c[k] = i; });
+        d.rows.forEach(function(r){ kanaById[r[c.id]] = r[c.kana]; });
+        suggKey = "";
+    }).catch(function(){});
+}, { once: true });
+(window.tdSuggest = window.tdSuggest || []).push(function(S){
+    S.attach($("f-name"), { items: suggestItems, limit: 15 });
+});
+
 readUrl();
 load($("f-year").value);
 </script>

@@ -707,6 +707,24 @@ function filterAbilities() {
     }
 }
 document.getElementById("abSearch").addEventListener("input", filterAbilities);
+
+/* 特殊能力名の入力候補（「のび」で「ノビ」など）。一覧は描き直されることがあるので、打つたびに読む */
+(window.tdSuggest = window.tdSuggest || []).push(function (S) {
+    var names = null, seen = "";
+    S.attach(document.getElementById("abSearch"), {
+        items: function () {
+            var els = document.querySelectorAll(".ab-item[data-name]");
+            var key = els.length + (els[0] ? els[0].dataset.name : "");
+            if (key !== seen) {
+                seen = key;
+                var uniq = {};
+                els.forEach(function (el) { uniq[el.dataset.name] = 1; });
+                names = Object.keys(uniq).map(function (n) { return { label: n }; });
+            }
+            return names;
+        }
+    });
+});
 document.getElementById("abOnlyChecked").addEventListener("change", filterAbilities);
 document.getElementById("abClearAll").addEventListener("click", function () {
     document.querySelectorAll('#abilityArea input[type="checkbox"]').forEach(function (b) { b.checked = false; });

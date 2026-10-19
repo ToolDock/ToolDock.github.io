@@ -892,6 +892,17 @@ SEARCH_JS = r"""// 選手一覧の検索（npb/build_players.py が書き出す�
       o.key = norm([o.name, o.kana, o.names.join(" "), o.school].join(" "));
       return o;
     });
+    // 入力候補：「さか」と打つと、読みか名前が「さか」で始まる選手を出す。いまいる選手から先に
+    var sugg = data.slice().sort(function(a, b){
+        return (b.cur ? 1 : 0) - (a.cur ? 1 : 0) || (a.cur ? 0 : b.last - a.last) || norm(a.kana).localeCompare(norm(b.kana), "ja");
+      })
+      .map(function(o){
+        return { label: o.name, keys: [o.kana].concat(o.names),
+                 sub: (o.cur || o.teams[o.teams.length - 1] || "") + (o.cur ? "" : "（" + o.last + "年まで）") };
+      });
+    (window.tdSuggest = window.tdSuggest || []).push(function(S){
+      S.attach($("q"), { items: function(){ return sugg; }, limit: 15 });
+    });
     var teams = {};
     data.forEach(function(o){ o.teams.forEach(function(t){ teams[t] = 1; }); });
     var order = ["巨人","阪神","DeNA","横浜","広島","中日","ヤクルト","ソフトバンク","日本ハム","ロッテ","西武","楽天","オリックス"];
