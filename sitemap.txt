@@ -44,6 +44,7 @@ https://tooldock.github.io/seiki/
 https://tooldock.github.io/seiza/
 https://tooldock.github.io/shippo/
 https://tooldock.github.io/standings/
+https://tooldock.github.io/takarakuji/
 https://tooldock.github.io/timer/
 https://tooldock.github.io/todolist/
 https://tooldock.github.io/torikuzushi/
