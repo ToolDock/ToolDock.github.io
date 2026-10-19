@@ -465,9 +465,12 @@
 
     <h3>特殊能力</h3>
     <ul>
-        <li>野手：安打製造機・アベレージヒッター・アーチスト・パワーヒッター・粘り打ち・三振・扇風機・選球眼・併殺・バント職人・バント〇・フル出場・盗塁・走塁</li>
-        <li>投手：ドクターＫ・奪三振・四球・精密機械・本塁打厳禁・重い球・一発</li>
+        <li>野手：安打製造機・アベレージヒッター・アーチスト・パワーヒッター・粘り打ち・三振・扇風機・選球眼・併殺・エラー・バント職人・バント〇・フル出場・盗塁・走塁</li>
+        <li>投手：勝利の星・ドクターＫ・奪三振・四球・精密機械・本塁打厳禁・重い球・一発</li>
     </ul>
+    <p>
+        金特は、50本塁打・200安打・20勝のような歴史に残る記録のときだけ付けます。赤特（三振・併殺・エラーなど）は付きやすくしています。
+    </p>
     <p>
         対左・得点圏の成績と、投手の球速・変化球は、NPBの成績表に無いので自分で入れます（スポーツニュースのサイトの選手ページなどに載っています）。
         ノビ・打たれ強さなど、成績から決められない能力は計算しません。能力画像ジェネレーターで自分で入れてください。
@@ -499,8 +502,10 @@ const REF = { avg: 0.2536, iso: 0.1237, k: 0.1869, bb: 0.0842, hr: 0.0212 };
 /* 少ない打席・打者を平均に寄せるために足す量 */
 const REG_AB = 150, REG_PA = 60, REG_BF = 80, REG_LOB_BF = 150;
 
-const MEET_PTS = [[.200, 40], [.230, 50], [.255, 60], [.280, 70], [.305, 80], [.330, 90], [.355, 100]];
-const POWER_PTS = [[.050, 40], [.090, 50], [.125, 60], [.160, 70], [.200, 80], [.240, 88], [.290, 95], [.340, 100]];
+/* ミート：首位打者争いの .310 前後でA80。Sはイチロー・内川・バースのような .370 前後から */
+const MEET_PTS = [[.200, 40], [.230, 48], [.255, 56], [.275, 64], [.290, 72], [.310, 80], [.340, 88], [.370, 95], [.390, 100]];
+/* パワー：30〜40本塁打でもAに収まる。Sは50本塁打級（ISO .330）から */
+const POWER_PTS = [[.050, 40], [.090, 50], [.125, 60], [.160, 70], [.200, 79], [.250, 83], [.290, 86], [.330, 90], [.400, 100]];
 const SPEED_PTS = [[2, 42], [3, 52], [4, 60], [5, 70], [6, 78], [7, 86], [8, 93], [9, 100]];
 const CTRL_PTS = [[.025, 95], [.040, 85], [.055, 75], [.070, 65], [.085, 57], [.100, 50], [.120, 40], [.140, 30]];
 const STAM_SP_PTS = [[4.5, 50], [5.5, 60], [6.2, 70], [6.8, 80], [7.3, 90], [7.8, 100]];
@@ -509,8 +514,8 @@ const STAM_RP_PTS = [[0.8, 30], [1.0, 38], [1.5, 48], [2.0, 55], [3.0, 60]];
 /* チャンス・対左：その場面の打率と全体の打率の差（打数が少ないほど差を小さく見る）
    野手は差が大きいほど良く、投手は被打率が低いほど良い */
 const SPLIT_REG_AB = 80;
-const BAT_SPLIT = [["S", .100], ["A", .060], ["B", .035], ["C", .015], ["D", -.015], ["E", -.035], ["F", -.060]];
-const PIT_SPLIT = [["S", .080], ["A", .050], ["B", .030], ["C", .012], ["D", -.012], ["E", -.030], ["F", -.050], ["G", -.080]];
+const BAT_SPLIT = [["S", .130], ["A", .060], ["B", .035], ["C", .015], ["D", -.015], ["E", -.035], ["F", -.060]];
+const PIT_SPLIT = [["S", .110], ["A", .050], ["B", .030], ["C", .012], ["D", -.012], ["E", -.030], ["F", -.050], ["G", -.080]];
 const S_MIN_AB = 100;
 
 /* 差（良いほうが正）→ランク。lowest は表の下に外れたときのランク */
@@ -734,6 +739,8 @@ function computeBatter() {
         out.stats.df = { v: field, why: `1試合の刺殺＋補殺 ${rf.toFixed(2)}（${pos}の平均 ${P.rf.toFixed(2)}）` };
         const er = (e + P.e * 150) / (po + a + e + 150);
         const ca = Math.round(clamp(62 - (er / P.e - 1) * 25, 25, 90));
+        /* エラー：失策8以上で、失策率が同じ位置の平均の1.3倍以上 */
+        out.errorProne = e >= 8 && e / Math.max(1, po + a + e) >= P.e * 1.3;
         out.stats.ca = { v: ca, why: `失策率 ${pct(er)}（平均 ${pct(P.e)}）` };
         let arm = P.arm;
         let armWhy = `${pos}の基準値`;
@@ -747,22 +754,25 @@ function computeBatter() {
 
     /* 特殊能力 */
     const sp = out.sp;
-    if (pa >= 400 && aAvg >= .330) sp.push(["kintoku", "安打製造機"]);
+    /* 金特は歴史に残る記録のときだけ（200安打・50本塁打など） */
+    if (h >= 200 || (pa >= 400 && aAvg >= .370)) sp.push(["kintoku", "安打製造機"]);
     else if (pa >= 400 && aAvg >= .300) sp.push(["aoto", "アベレージヒッター"]);
-    if (pa >= 400 && (hr >= 40 || aHr >= .065)) sp.push(["kintoku", "アーチスト"]);
+    if (hr >= 50) sp.push(["kintoku", "アーチスト"]);
     else if (pa >= 300 && (hr >= 25 || aHr >= .045)) sp.push(["aoto", "パワーヒッター"]);
     if (pa >= 300 && aK <= .10) sp.push(["aoto", "粘り打ち"]);
-    if (pa >= 200 && aK >= .32) sp.push(["aka", "扇風機"]);
-    else if (pa >= 200 && aK >= .25) sp.push(["aka", "三振"]);
+    /* 赤特は付きやすくする（三振率22%は規定打席の打者の上位1割強、併殺打2.7%は上位2割） */
+    if (pa >= 200 && aK >= .30) sp.push(["aka", "扇風機"]);
+    else if (pa >= 200 && aK >= .22) sp.push(["aka", "三振"]);
     if (pa >= 300 && aBb >= .12) sp.push(["midori", "選球眼"]);
-    if (pa >= 300 && gdp / pa >= .03) sp.push(["aka", "併殺"]);
+    if (pa >= 300 && gdp / pa >= .027) sp.push(["aka", "併殺"]);
+    if (out.errorProne) sp.push(["aka", "エラー"]);
     if (sh >= 30) sp.push(["aoto", "バント職人"]);
     else if (sh >= 15) sp.push(["aoto", "バント〇"]);
     if (g && g >= tg) sp.push(["midori", "フル出場"]);
 
     const att = sb + cs, rate = att ? sb / att : 0;
     let steal = "D";
-    if (sb >= 40 && rate >= .8) steal = "S";
+    if (sb >= 50 && rate >= .8) steal = "S";
     else if (sb >= 30 && rate >= .75) steal = "A";
     else if (sb >= 20 && rate >= .7) steal = "B";
     else if (sb >= 10 && rate >= .7) steal = "C";
@@ -809,7 +819,8 @@ function computePitcher() {
 
     const lob = (h + bb + hbp - runs) / Math.max(1, h + bb + hbp - 1.4 * hr);
     const lobR = (lob * bf + 0.72 * REG_LOB_BF) / (bf + REG_LOB_BF);
-    const pinch = lobR >= .84 ? "S" : lobR >= .80 ? "A" : lobR >= .77 ? "B" : lobR >= .745 ? "C" : lobR >= .70 ? "D" : lobR >= .67 ? "E" : lobR >= .64 ? "F" : "G";
+    /* 残塁率だけではS（強心臓）にしない */
+    const pinch = lobR >= .80 ? "A" : lobR >= .77 ? "B" : lobR >= .745 ? "C" : lobR >= .70 ? "D" : lobR >= .67 ? "E" : lobR >= .64 ? "F" : "G";
     out.subs["sub-pinch"] = pinch;
     out.lob = lobR;
     out.splitWhy = [];
@@ -824,17 +835,19 @@ function computePitcher() {
         out.splitWhy.push(`${label}の被打率 ${fmt3(sh2 / sab)}（全体 ${fmt3(oppAvg)}）`);
     }
     let rec = "D";
-    if (!starter) rec = app >= 70 ? "S" : app >= 60 ? "A" : app >= 50 ? "B" : app >= 40 ? "C" : "D";
+    if (!starter) rec = app >= 80 ? "S" : app >= 60 ? "A" : app >= 50 ? "B" : app >= 40 ? "C" : "D";
     out.subs["sub-recover"] = rec;
 
     const sp = out.sp;
-    if (ip >= 100 && aK >= .30) sp.push(["kintoku", "ドクターＫ"]);
+    /* 金特は歴史に残る記録のときだけ */
+    if (num("f-w") >= 20) sp.push(["kintoku", "勝利の星"]);
+    if (so >= 250) sp.push(["kintoku", "ドクターＫ"]);
     else if (bf >= 150 && aK >= .25) sp.push(["aoto", "奪三振"]);
     if (bf >= 150 && aBb >= .11) sp.push(["aka", "四球"]);
-    if (ip >= 143 && aHr <= .006) sp.push(["kintoku", "本塁打厳禁"]);
+    if (ip >= 143 && aHr <= .004) sp.push(["kintoku", "本塁打厳禁"]);
     else if (bf >= 250 && aHr <= .012) sp.push(["aoto", "重い球"]);
     else if (bf >= 150 && aHr >= .035) sp.push(["aka", "一発"]);
-    if (ip >= 143 && aBb <= .035) sp.push(["kintoku", "精密機械"]);
+    if (ip >= 143 && aBb <= .025) sp.push(["kintoku", "精密機械"]);
     out.why = `奪三振率 ${pct(aK)}・被本塁打率 ${pct(aHr)}・` + (num("f-prab") ? "" : `残塁率 ${pct(lobR)}`);
 
     out.card = {
@@ -1066,7 +1079,8 @@ function setStatus(text, err = false) {
 
 /* その年の成績の行（同じ年に移籍していれば、球団ごとの行を足す） */
 function rowsOf(s, p, list, cols) {
-    const names = new Set([p.name, ...p.names].map(flat));
+    /* 成績表では、外国出身の選手の頭文字（「Ｗ．バレンティン」の「Ｗ．」）が付かないことが多い */
+    const names = new Set([p.name, ...p.names].flatMap((n) => [flat(n), flat(n).replace(/^([Ａ-ＺA-Z][．.])+/, "")]));
     const teams = new Set(p.teams);
     const c = {};
     cols.forEach((k, i) => { c[k] = i; });
