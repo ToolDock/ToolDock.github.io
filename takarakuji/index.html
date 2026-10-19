@@ -428,7 +428,7 @@
         <label for="count">買う数</label>
         <div>
             <div class="count-row">
-                <input type="number" id="count" min="1" max="10000000" step="1" value="30" inputmode="numeric">
+                <input type="number" id="count" min="1" step="1" value="30" inputmode="numeric">
                 <span class="unit" id="countUnit">枚</span>
                 <span class="cost" id="cost"></span>
             </div>
@@ -532,14 +532,17 @@
 
     <div class="table-scroll">
         <table class="guide-table" id="guideTable">
-            <thead><tr><th>宝くじ</th><th>1等</th><th>1等の確率</th><th>1枚の値段</th><th>理論上の回収率</th></tr></thead>
+            <thead><tr><th>宝くじ</th><th>1等</th><th>1等の確率</th><th>1枚の値段</th><th>発行枚数</th><th>理論上の回収率</th></tr></thead>
             <tbody></tbody>
         </table>
     </div>
 
     <p>
-        ジャンボ宝くじは、1ユニット（ジャンボは1,000万枚、年末ジャンボは2,000万枚）あたりの本数から確率を出しています。
-        ユニットの数が変わっても、1枚あたりの確率は変わりません。
+        ジャンボ宝くじは、1ユニット（ジャンボは1,000万枚、年末ジャンボは2,000万枚）ごとに同じ本数の当たりがあり、発行枚数はユニットの数で決まります。
+        このツールでは、発行枚数の全部の中から買ったことにして抽せんします。全部買えば、当たりも全部手元にあります。
+    </p>
+    <p>
+        ロト・ナンバーズ・ビンゴ5は、買う人が数字を選ぶくじなので、発行枚数に決まりがありません。1,000万口まで買えるようにしています。
     </p>
     <p>
         ロト・ナンバーズ・ビンゴ5の当せん金は、販売元が示している理論値です。実際の当せん金は、その回の売り上げと当せんした口数で毎回変わります。
@@ -583,7 +586,8 @@
 
     <p><strong>Q. ジャンボ宝くじは何枚買えば1等が当たりますか？</strong><br>
     A. 1等の確率は、年末ジャンボで2,000万分の1、ほかのジャンボで1,000万分の1です。
-    1,000万分の1のくじを1,000万枚（30億円）買っても、1等が1枚以上当たる確率は約63%です。
+    たとえばドリームジャンボ（発行1億2,000万枚・1等12本）を1ユニット分の1,000万枚（30億円）買っても、1等が1枚以上当たる確率は約65%です。
+    確実に当てるには、発行枚数のうち1等以外の枚数より多く買う必要があります。
     「1つ以上当たる確率」の欄で、枚数ごとの確率を確かめられます。</p>
 
     <p><strong>Q. 連番とバラは、どちらが得ですか？</strong><br>
@@ -604,7 +608,7 @@
 
 /* ======================================================
    宝くじのデータ
-   ジャンボ：unit は1ユニットの枚数、per は1ユニットあたりの本数
+   ジャンボ：unit は1ユニットの枚数、units はユニットの数、per は1ユニットあたりの本数
      kind: first（1等）/ zenko（1等の前後賞）/ last1（下1桁。10枚に1枚必ず当たる）
    数字選択式：total は組み合わせの数、per はそのうち当たる組み合わせの数
    ====================================================== */
@@ -613,7 +617,7 @@ const LOTTERIES = [
     {
         id: "nenmatsu", group: "ジャンボ宝くじ", type: "jumbo",
         name: "年末ジャンボ宝くじ", note: "2025年・第1082回の当せん金と本数",
-        price: 300, unit: 20000000,
+        price: 300, unit: 20000000, units: 23,
         tiers: [
             ["1等", 700000000, 1, "first"],
             ["1等の前後賞", 150000000, 2, "zenko"],
@@ -629,7 +633,7 @@ const LOTTERIES = [
     {
         id: "halloween", group: "ジャンボ宝くじ", type: "jumbo",
         name: "ハロウィンジャンボ宝くじ", note: "2026年・第1126回の当せん金と本数",
-        price: 300, unit: 10000000,
+        price: 300, unit: 10000000, units: 12,
         tiers: [
             ["1等", 200000000, 1, "first"],
             ["1等の前後賞", 100000000, 2, "zenko"],
@@ -644,7 +648,7 @@ const LOTTERIES = [
     {
         id: "halloween-mini", group: "ジャンボ宝くじ", type: "jumbo",
         name: "ハロウィンジャンボミニ", note: "2026年・第1127回の当せん金と本数",
-        price: 300, unit: 10000000,
+        price: 300, unit: 10000000, units: 5,
         tiers: [
             ["1等", 20000000, 10, "first"],
             ["1等の前後賞", 10000000, 20, "zenko"],
@@ -657,7 +661,7 @@ const LOTTERIES = [
     {
         id: "summer", group: "ジャンボ宝くじ", type: "jumbo",
         name: "サマージャンボ宝くじ", note: "2026年・第1115回の当せん金と本数",
-        price: 300, unit: 10000000,
+        price: 300, unit: 10000000, units: 20,
         tiers: [
             ["1等", 500000000, 1, "first"],
             ["1等の前後賞", 100000000, 2, "zenko"],
@@ -671,7 +675,7 @@ const LOTTERIES = [
     {
         id: "dream", group: "ジャンボ宝くじ", type: "jumbo",
         name: "ドリームジャンボ宝くじ", note: "2026年・第1106回の当せん金と本数",
-        price: 300, unit: 10000000,
+        price: 300, unit: 10000000, units: 12,
         tiers: [
             ["1等", 300000000, 1, "first"],
             ["1等の前後賞", 100000000, 2, "zenko"],
@@ -763,13 +767,22 @@ const LOTTERIES = [
 const CUSTOM_ID = "custom";
 const STORE = "td-takarakuji";
 const RUNS = 10000;
-const MAX = 10000000;      // 買える数の上限（1,000万枚・口）
+const MAX = 10000000;      // ロト・ナンバーズなど、本数に決まりがないくじの上限（1,000万口）
 
-/* 等級ごとの確率に直したもの */
+/* 等級ごとの確率に直したもの。ジャンボは、全部の枚数 all と、全部の当せん本数 win も持つ */
 function tiersOf(lot) {
     if (lot.id === CUSTOM_ID) return lot.tiers;
     const all = lot.type === "jumbo" ? lot.unit : lot.total;
-    return lot.tiers.map(([name, prize, per, kind]) => ({ name, prize, p: per / all, kind: kind || "" }));
+    return lot.tiers.map(([name, prize, per, kind]) => ({
+        name, prize, p: per / all, kind: kind || "",
+        all: lot.units ? lot.unit * lot.units : 0,
+        win: lot.units ? per * lot.units : 0
+    }));
+}
+
+/* 買える数の上限。ジャンボは発行枚数（全部） */
+function maxOf(lot) {
+    return lot.units ? lot.unit * lot.units : MAX;
 }
 
 /* ======================================================
@@ -869,6 +882,25 @@ function binom(n, p) {
     return Math.max(0, Math.min(n, k));
 }
 
+/* 全部で all 枚、そのうち当たりが win 枚あるくじから n 枚買ったときの、当たった枚数。
+   当たりが少なければ1枚ずつ（i 枚目の当たりが手元にある確率は、残りの買う枚数 ÷ 残りの枚数）、
+   多ければ正規分布で近づける。全部買えば、当たりは全部手元にある */
+function hyper(all, win, n) {
+    if (n >= all) return win;
+    if (win <= 2000) {
+        let k = 0;
+        for (let i = 0; i < win; i++) {
+            if (rand() * (all - i) < n - k) k++;
+        }
+        return k;
+    }
+    const p = win / all;
+    const mean = n * p;
+    if (mean < 40) return binom(n, p);
+    const sd = Math.sqrt(mean * (1 - p) * (all - n) / (all - 1));
+    return Math.max(0, Math.min(win, n, Math.round(mean + sd * gauss())));
+}
+
 /* 1回分の抽せん。等級ごとの当たった数を返す */
 function drawOnce(lot, tiers, n, renban) {
     const hits = tiers.map(() => 0);
@@ -881,18 +913,35 @@ function drawOnce(lot, tiers, n, renban) {
                 hits[i] = Math.floor(n / 10) + binom(n % 10, 0.1);
             } else if (t.kind === "zenko" && renban && first >= 0) {
                 hits[i] = -1;       // 1等が決まってから
+            } else if (t.kind === "first" && renban) {
+                hits[i] = -2;       // 前後賞といっしょに決める
             } else {
-                hits[i] = binom(n, t.p);
+                hits[i] = t.all ? hyper(t.all, t.win, n) : binom(n, t.p);
             }
         });
         const z = hits.indexOf(-1);
         if (z >= 0) {
-            /* 連番：1等が当たれば前後賞も手元にある（下1桁が0か9なら片方だけ）。
-               1等が隣の10枚にあって、前後賞だけ当たることもある。期待値はバラと同じになる */
-            let k = 0;
-            for (let j = 0; j < hits[first]; j++) k += rand() < 0.8 ? 2 : 1;
-            k += binom(n, tiers[first].p * 0.2);
-            hits[z] = k;
+            /* 連番：1等が当たれば前後賞も手元にある（下1桁が0か9なら片方だけで、もう片方は隣の10枚）。
+               1等が隣の10枚にあって、前後賞だけ当たることもある。期待値はバラと同じで、全部買えば全部当たる */
+            const t = tiers[first];
+            const q = Math.min(1, n / t.all);
+            let k1 = 0;
+            let kz = 0;
+            let left = n;
+            for (let i = 0; i < t.win; i++) {
+                const edge = rand() < 0.2;
+                if (rand() * (t.all - i) < left) {
+                    k1++;
+                    left--;
+                    kz += edge ? 1 + (rand() < q ? 1 : 0) : 2;
+                } else if (edge && rand() < q) {
+                    kz++;
+                }
+            }
+            hits[first] = k1;
+            hits[z] = kz;
+        } else if (first >= 0 && hits[first] === -2) {
+            hits[first] = hyper(tiers[first].all, tiers[first].win, n);
         }
         return hits;
     }
@@ -913,6 +962,15 @@ function drawOnce(lot, tiers, n, renban) {
 /* n 枚で、その等級が1つ以上当たる確率 */
 function atLeastOne(t, n) {
     if (t.kind === "last1") return n >= 10 ? 1 : -Math.expm1(n * Math.log1p(-0.1));
+    if (t.all) {
+        /* 全部で all 枚の中から買う：外れだけを n 枚引く確率を、当たりの1枚ずつについて掛ける */
+        if (n > t.all - t.win) return 1;
+        if (t.win <= 100000) {
+            let lg = 0;
+            for (let i = 0; i < t.win; i++) lg += Math.log1p(-n / (t.all - i));
+            return -Math.expm1(lg);
+        }
+    }
     return -Math.expm1(n * Math.log1p(-Math.min(t.p, 1 - 1e-15)));
 }
 
@@ -959,7 +1017,7 @@ function buildSelect() {
 
 function count() {
     const v = Math.floor(Number(countEl.value));
-    return Math.max(1, Math.min(MAX, Number.isFinite(v) ? v : 1));
+    return Math.max(1, Math.min(maxOf(current()), Number.isFinite(v) ? v : 1));
 }
 
 function theoryRate(lot) {
@@ -972,10 +1030,15 @@ function syncForm() {
     $("countUnit").textContent = word;
     $("cost").textContent = "＝ " + yen(count() * lot.price);
     const limit = $("countLimit");
-    const over = Number(countEl.value) > MAX;
+    const max = maxOf(lot);
+    countEl.max = max;
+    const over = Number(countEl.value) > max;
+    const whole = lot.units ? "全部で" : "";
     limit.textContent = over
-        ? `${bigNum(MAX)}${word}より多くは買えません。${bigNum(MAX)}${word}（${yen(MAX * lot.price)}）で計算します。`
-        : `1〜${bigNum(MAX)}${word}（最大${yen(MAX * lot.price)}）まで買えます。`;
+        ? `${whole}${bigNum(max)}${word}より多くは買えません。${bigNum(max)}${word}（${yen(max * lot.price)}）で計算します。`
+        : lot.units
+            ? `1〜${bigNum(max)}${word}（発行枚数の全部。${lot.units}ユニット・${yen(max * lot.price)}）まで買えます。`
+            : `1〜${bigNum(max)}${word}（${yen(max * lot.price)}）まで買えます。`;
     limit.classList.toggle("over", over);
     $("lotteryMeta").textContent = `${lot.note}・1${word} ${comma(lot.price)}円`;
 
@@ -991,11 +1054,12 @@ function syncForm() {
 
     const quick = $("quick");
     quick.innerHTML = "";
-    const steps = jumbo ? [10, 30, 100, 300, 1000, 10000, 100000, 1000000, MAX] : [1, 5, 10, 100, 1000, 10000, 100000, 1000000, MAX];
+    const steps = jumbo ? [10, 30, 100, 300, 1000, 10000, 100000, 1000000, lot.unit, max] : [1, 5, 10, 100, 1000, 10000, 100000, 1000000, max];
     for (const s of steps) {
         const b = document.createElement("button");
         b.type = "button";
-        b.textContent = `${s === MAX ? "最大 " : ""}${bigNum(s)}${word}（${yen(s * lot.price)}）`;
+        const head = s === max ? (jumbo ? "全部 " : "最大 ") : jumbo && s === lot.unit ? "1ユニット " : "";
+        b.textContent = `${head}${bigNum(s)}${word}（${yen(s * lot.price)}）`;
         b.addEventListener("click", () => {
             countEl.value = s;
             syncForm();
@@ -1252,7 +1316,8 @@ $("draw").addEventListener("click", run);
     for (const l of LOTTERIES) {
         const t = tiersOf(l)[0];
         const tr = document.createElement("tr");
-        const cells = [l.name, yen(t.prize), odds(t.p), yen(l.price), rateText(theoryRate(l))];
+        const issued = l.units ? `${bigNum(l.unit * l.units)}枚（${l.units}ユニット）` : "決まりなし";
+        const cells = [l.name, yen(t.prize), odds(t.p), yen(l.price), issued, rateText(theoryRate(l))];
         cells.forEach((c, i) => {
             const td = document.createElement("td");
             td.textContent = c;
