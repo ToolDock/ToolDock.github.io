@@ -114,35 +114,17 @@ canvas {
 
 }
 
+/* 当たりを示す矢印。定番のWebルーレットと同じく、右側（3時の位置）に左向きの赤い三角 */
 .pointer {
   position: absolute;
-  top: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 26px;
-  height: 32px;
+  top: 50%;
+  right: -4px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 28px;
   z-index: 10;
-}
-
-.pointer::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(160deg, #e3b45f, #b8863a);
-  clip-path: polygon(50% 100%, 100% 38%, 100% 0%, 0% 0%, 0% 38%);
-  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
-}
-
-.pointer::after {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.55);
+  background: #E8352B;
+  clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
 }
 
 .input-area {
@@ -445,11 +427,14 @@ function load() {
 // 色生成
 // ======================
 
-// ルーレットらしく、鮮やかな8色を順番に割り当てる。
-// 隣どうしがはっきり違う色になるよう、色相を飛ばしながら並べている。
+// 定番のWebルーレットと同じく、青・サーモン・黄緑・ベージュ・薄紫の5色を
+// 順番に割り当てる（黒い字が読める、明るすぎず暗すぎない色）。
 // 項目数がパレット数で割り切れないと、円環の継ぎ目（最後と最初）
 // で同じ色が隣り合うことがあるため、その場合だけ最後の色をずらす。
-const PALETTE = ["#FF3B5C","#FF9F0A","#FFD60A","#2ECC40","#00B8F0","#3D5AFE","#B44CF5","#FF4FA3"];
+// 当たりを示す矢印の向き（canvasの角度。右＝0）。当たりの判定などはこの向きで行う
+const POINTER_ANGLE = 0;
+
+const PALETTE = ["#4A68DC","#EA8A7A","#AEF7A1","#F1DFB9","#D5A7DD"];
 
 function genColors(n) {
 
@@ -483,7 +468,7 @@ function genColors(n) {
 
 /* 盤面の文字は Noto Sans JP。Webフォントはキャンバスで使うだけでは
    読み込まれないことがあるので、まだなら読み込んでから描き直す */
-const WHEEL_FONT = "700 16px 'Noto Sans JP','Hiragino Sans',sans-serif";
+const WHEEL_FONT = "500 19px 'Noto Sans JP','Hiragino Sans',sans-serif";
 const wheelFontTried = new Set();
 
 function ensureWheelFont() {
@@ -516,16 +501,14 @@ function draw() {
     ctx.beginPath();
     ctx.moveTo(200,200);
     ctx.arc(200,200,180,start,start+arc);
+    ctx.closePath();
 
-    // 区画ごとに、中心寄りを明るく、ふち寄りを少し濃くして奥行きを出す
-    const seg = ctx.createRadialGradient(200,200,0,200,200,180);
-    seg.addColorStop(0, shadeColor(colors[i], 0.18));
-    seg.addColorStop(0.5, colors[i]);
-    seg.addColorStop(1, shadeColor(colors[i], -0.22));
-    ctx.fillStyle = seg;
+    // 区画は平らな単色。境目とふちは細い灰色の線
+    ctx.fillStyle = colors[i];
     ctx.fill();
-
-    // 扇の境目とふちには線を引かない（色の違いだけで区切る）
+    ctx.lineWidth = 0.8;
+    ctx.strokeStyle = "rgba(0,0,0,0.3)";
+    ctx.stroke();
 
     ctx.save();
 
@@ -537,38 +520,18 @@ function draw() {
 
     ctx.font=WHEEL_FONT;
 
-    // 字はすべて白（縁取り・影なし）
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(items[i],158,5);
+    // 字は黒（縁取り・影なし）
+    ctx.fillStyle = "#1c1d1f";
+    ctx.fillText(items[i],164,7);
 
     ctx.restore();
   }
 
-  // ふちの内側に落ちる影。盤面が枠の下にもぐり込んで見え、手前に盛り上がる
-  const rimShade = ctx.createRadialGradient(200,200,148,200,200,180);
-  rimShade.addColorStop(0,"rgba(0,0,0,0)");
-  rimShade.addColorStop(1,"rgba(0,0,0,0.3)");
-  ctx.fillStyle = rimShade;
-  ctx.fill();
-
-  // 中心のハブ。左上が光る銀の玉（縁取りはしない）
-  const hub = ctx.createRadialGradient(196,196,0,200,200,15);
-  hub.addColorStop(0,"#ffffff");
-  hub.addColorStop(0.6,"#d5dae1");
-  hub.addColorStop(1,"#8d97a5");
-
+  // 中心の軸。小さな灰色の丸
   ctx.beginPath();
-  ctx.arc(200,200,14,0,Math.PI*2);
-  ctx.fillStyle = hub;
+  ctx.arc(200,200,11,0,Math.PI*2);
+  ctx.fillStyle = "#7d7d7d";
   ctx.fill();
-}
-
-/* 色を明るく（amount > 0、白に寄せる）・暗く（amount < 0、黒に寄せる）する */
-function shadeColor(hex, amount) {
-  const v = parseInt(hex.slice(1), 16);
-  const to = amount > 0 ? 255 : 0, t = Math.abs(amount);
-  const ch = (c) => Math.round(c + (to - c) * t);
-  return `rgb(${ch(v >> 16)},${ch((v >> 8) & 255)},${ch(v & 255)})`;
 }
 
 // ======================
@@ -582,7 +545,7 @@ function getResultIndex() {
   const arc = (2*Math.PI)/n;
 
   let normalized =
-    (2*Math.PI - angle - Math.PI/2)
+    (2*Math.PI - angle - POINTER_ANGLE)
     % (2*Math.PI);
 
   if (normalized < 0) {
