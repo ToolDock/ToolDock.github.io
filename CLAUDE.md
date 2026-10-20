@@ -13,9 +13,17 @@
 `/player/` から全選手ページへ普通のリンクがある。
 
 **「様子見しましょう」で話を締めない。** 設定や申請で打てる手は打ち終えている。
-提案するときは、こちらで実装できる具体的な手（内部リンク・サイトマップの中身・外部からのリンクのきっかけ作りなど）にする。
+提案するときは、こちらで実装できる具体的な手（内部リンク・サイトマップの中身など）にする。
+関係のない外部サイトにリンクを置く案は、持ち主が好まない。
 
 ## Bing
 
 - Bing Webmaster Tools 登録済み（Search Console から取り込み、2026-10-19）。サイトマップは受理済み
 - IndexNow は `.github/workflows/indexnow.yml` で、main への push とプロ野球データ更新のたびに送っている
+
+## ツールを足す・名前や説明を変えたとき
+
+SNSとGoogleが最初に読むHTMLに、OGPと「同じカテゴリのツール」のリンクを書き込んでおく（head.js・related.js はJSで書くため、それだけでは読まれない）。
+
+    python3 scripts/static_ogp.py
+    python3 scripts/static_related.py
