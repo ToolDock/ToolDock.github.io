@@ -194,6 +194,8 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
                 <label><input type="checkbox" id="p-color-yellow" checked> 黄色（内野）</label>
                 <label><input type="checkbox" id="p-color-water"> 水色（捕手）</label>
                 <label><input type="checkbox" id="p-color-green"> 緑色（外野）</label>
+                <label><input type="checkbox" id="p-color-red"> 赤（先発）</label>
+                <label><input type="checkbox" id="p-color-pink"> ピンク（中継ぎ）</label>
             </div>
         </div>
         <div class="field">
@@ -217,6 +219,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
                 <option value="三">三</option>
                 <option value="遊">遊</option>
                 <option value="外">外</option>
+                <option value="投">投</option>
             </select>
         </div>
         <div class="field">
@@ -365,6 +368,9 @@ A. 使えます。金特・青特・赤特・緑特は、<a href="/satei/">☆�
 
 <p><strong>Q. 入力した内容は保存されますか？</strong><br>
 A. ブラウザ内（localStorage）に保存され、次回このページを開いたときにそのまま復元されます。サーバーには送信されません。ブラウザやシークレットモードを変えると引き継がれません。</p>
+
+<p><strong>Q. 二刀流や打てる投手の、野手としての能力を作れますか？</strong><br>
+A. 作れます。守備位置で「投」を選び、選手名プレートの色に「赤（先発）」「ピンク（中継ぎ）」を選んでください。外野なども守る場合は、サブポジションや緑色などと組み合わせられます。</p>
 
 <p><strong>Q. 投手カードも作れますか？</strong><br>
 A. 作れます。<a href="/nouryoku-pitcher/">投手版</a>を別ページで公開しています。</p>
@@ -862,20 +868,22 @@ var L = {
     gridRowH: 48.75 /* 能力値テーブルの下端(y=570)と特能8行の下端を揃える */
 };
 
-var POS_LABEL_MAP = { "捕": "捕", "一": "一", "二": "二", "三": "三", "遊": "遊", "外": "外" };
+var POS_LABEL_MAP = { "捕": "捕", "一": "一", "二": "二", "三": "三", "遊": "遊", "外": "外", "投": "投" };
 
 /* 選手名プレートの色。守備位置ごとの「メインポジション色」が一番左に来て、
-   残りの選択色は 水>黄>緑 の優先順で左から並ぶ。 */
-var POS_COLOR_KEY = { "一": "yellow", "二": "yellow", "三": "yellow", "遊": "yellow", "捕": "water", "外": "green" };
-var NAME_PLATE_COLORS = { yellow: "#FBEA55", water: "#6FD2EC", green: "#7FD06C" };
-var NAME_COLOR_PRIORITY = { water: 0, yellow: 1, green: 2 };
+   残りの選択色は 水>黄>緑>赤>ピンク の優先順で左から並ぶ。
+   赤（先発）・ピンク（中継ぎ）は、二刀流や打てる投手の野手能力を作るとき用（色は投手版と同じ）。
+   何も選ばなければ、守備位置の色にする。 */
+var POS_COLOR_KEY = { "一": "yellow", "二": "yellow", "三": "yellow", "遊": "yellow", "捕": "water", "外": "green", "投": "red" };
+var NAME_PLATE_COLORS = { yellow: "#FBEA55", water: "#6FD2EC", green: "#7FD06C", red: "#FF8C8F", pink: "#F8BED9" };
+var NAME_COLOR_PRIORITY = { water: 0, yellow: 1, green: 2, red: 3, pink: 4 };
 function buildNamePlateColors() {
-    var checked = [];
-    if (document.getElementById("p-color-yellow").checked) checked.push("yellow");
-    if (document.getElementById("p-color-water").checked) checked.push("water");
-    if (document.getElementById("p-color-green").checked) checked.push("green");
-    if (checked.length === 0) checked.push("yellow");
+    var checked = Object.keys(NAME_COLOR_PRIORITY).filter(function (k) {
+        var el = document.getElementById("p-color-" + k);
+        return el && el.checked;
+    });
     var mainKey = POS_COLOR_KEY[document.getElementById("p-pos").value];
+    if (checked.length === 0) checked.push(mainKey || "yellow");
     checked.sort(function (a, b) {
         if (a === mainKey) return -1;
         if (b === mainKey) return 1;
@@ -987,7 +995,7 @@ var TRAJ_ARROW = {
 };
 /* 選手名プレートの背景。色を1つなら単色、複数なら左から順に並べ、
    実機と同じく色の境目を縦の波模様にする。上半分には白いつやを重ねる */
-function nameplateStripes(x, y, w, h, colors) {
+function nameplateStripes(x, y, w, h, colors, borderColor) {
     if (!colors.length) colors = [NAME_PLATE_COLORS.yellow];
     var n = colors.length;
     var amp = 5, waves = 1;
@@ -1013,7 +1021,7 @@ function nameplateStripes(x, y, w, h, colors) {
     /* 実機の、白い内側の縁と細い灰色の外側の縁 */
     html +=
         '<rect x="' + (x + 1.5) + '" y="' + (y + 1.5) + '" width="' + (w - 3) + '" height="' + (h - 3) + '" rx="9" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>' +
-        '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="none" stroke="#8E9AA3" stroke-width="1.5"/>';
+        '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="none" stroke="' + (borderColor || "#8E9AA3") + '" stroke-width="' + (borderColor ? 3 : 1.5) + '"/>';
     return html;
 }
 
@@ -1055,6 +1063,7 @@ function renderCard() {
        少し小さく並べる。入力に「ー」などが入っていても1つにまとめる */
     var subClean = subpos.replace(/[ー－\-‐・、,\s]/g, "");
     var number = (document.getElementById("p-number") || { value: "" }).value.trim();
+    var plateColors = buildNamePlateColors();
     var throwbat = document.getElementById("p-throwbat").value;
     var form = document.getElementById("p-form").value;
     var avg = document.getElementById("p-avg").value;
@@ -1144,7 +1153,9 @@ function renderCard() {
         '<rect x="' + L.bodyPanel.x + '" y="' + L.bodyPanel.y + '" width="' + L.bodyPanel.w + '" height="' + (H - L.bodyPanel.y - 10) + '" rx="18" fill="#EAFAFF"/>' +
 
         /* 選手名プレート */
-        nameplateStripes(L.namePlate.x, L.namePlate.y, L.namePlate.w, L.namePlate.h, buildNamePlateColors()) +
+        nameplateStripes(L.namePlate.x, L.namePlate.y, L.namePlate.w, L.namePlate.h, plateColors,
+            /* 投手版と同じく、先発の赤いプレートには濃い赤の縁が付く */
+            plateColors[0] === NAME_PLATE_COLORS.red ? "#E5383F" : null) +
         '<text ' + nameFitAttr(name, L.namePlate.w - 20) + ' x="' + (L.namePlate.x + L.namePlate.w / 2) + '" y="' + (L.namePlate.y + L.namePlate.h / 2 + 10) + '" text-anchor="middle" font-size="30" font-weight="700" fill="#111" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(name) + '</text>' +
 
         /* 球団旗枠（アップロードした画像があればそれを表示、無ければ色のみ） */
