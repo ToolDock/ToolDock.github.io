@@ -24,6 +24,7 @@ window.CATEGORY_NAMES = {
    id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
    1件は1行で書く（build_index.py が1行ずつ読む） */
 window.UPDATES = [
+  { date: "2026-10-20", id: "roulette", kind: "update", text: "盤面を鮮やかな8色に一新（イカサマ・ヒリつくルーレットも同じ配色に）" },
   { date: "2026-10-20", id: "nouryoku", kind: "update", text: "実機に近いデザインにリニューアル。二刀流（守備位置「投」）にも対応" },
   { date: "2026-10-20", id: "seiza", kind: "fix", text: "下の「同じカテゴリのツール」が真っ白になる不具合を修正" },
   { date: "2026-10-19", id: "nouryoku-pitcher", kind: "update", text: "実機に近いデザインにリニューアル。変化球の欄も一新" },
