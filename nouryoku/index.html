@@ -86,6 +86,7 @@ p{ margin:0 0 12px; }
 .field input[type="color"]{ width:100%; height:36px; padding:2px; border:1px solid var(--line); border-radius:var(--r-ctl); }
 .name-color-picks{ display:flex; flex-wrap:wrap; gap:4px 12px; padding-top:6px; }
 .name-color-picks label{ display:flex; align-items:center; gap:4px; font-size:0.85rem; font-weight:400; color:var(--ink); }
+.name-color-picks label:has(input:disabled){ opacity:0.45; }
 
 .stat-rows{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
 .stat-row{ display:grid; grid-template-columns:100px 90px 1fr; gap:8px; align-items:center; }
@@ -189,7 +190,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
             <input type="text" id="p-number" value="10" maxlength="3" inputmode="numeric">
         </div>
         <div class="field">
-            <label>選手名プレートの色（複数選択でツートン）</label>
+            <label>選手名プレートの色（3色まで。複数選択でツートン）</label>
             <div class="name-color-picks">
                 <label><input type="checkbox" id="p-color-yellow" checked> 黄色（内野）</label>
                 <label><input type="checkbox" id="p-color-water"> 水色（捕手）</label>
@@ -873,7 +874,8 @@ var POS_LABEL_MAP = { "捕": "捕", "一": "一", "二": "二", "三": "三", "�
 /* 選手名プレートの色。投手版と同じく、投手の色（赤（先発）→ピンク（中継ぎ））が先、野手の色が後に並ぶ。
    野手の色の中では、守備位置ごとの「メインポジション色」が一番左に来て、残りは 水>黄>緑 の優先順。
    赤・ピンクは、二刀流や打てる投手の野手能力を作るとき用（色は投手版と同じ）。
-   何も選ばなければ、守備位置の色にする。 */
+   何も選ばなければ、守備位置の色にする。実機と同じく、色は3色まで（3色選ぶと残りは選べなくなる）。 */
+var NAME_COLOR_MAX = 3;
 var POS_COLOR_KEY = { "一": "yellow", "二": "yellow", "三": "yellow", "遊": "yellow", "捕": "water", "外": "green", "投": "red" };
 var NAME_PLATE_COLORS = { yellow: "#FBEA55", water: "#6FD2EC", green: "#7FD06C", red: "#FF8C8F", pink: "#F8BED9" };
 var NAME_COLOR_PRIORITY = { red: 0, pink: 1, water: 2, yellow: 3, green: 4 };
@@ -882,6 +884,10 @@ function buildNamePlateColors() {
     var checked = Object.keys(NAME_COLOR_PRIORITY).filter(function (k) {
         var el = document.getElementById("p-color-" + k);
         return el && el.checked;
+    });
+    Object.keys(NAME_COLOR_PRIORITY).forEach(function (k) {
+        var el = document.getElementById("p-color-" + k);
+        if (el) el.disabled = !el.checked && checked.length >= NAME_COLOR_MAX;
     });
     var mainKey = POS_COLOR_KEY[document.getElementById("p-pos").value];
     if (checked.length === 0) checked.push(mainKey || "yellow");
@@ -894,7 +900,7 @@ function buildNamePlateColors() {
         }
         return NAME_COLOR_PRIORITY[a] - NAME_COLOR_PRIORITY[b];
     });
-    return checked.map(function (k) { return NAME_PLATE_COLORS[k]; });
+    return checked.slice(0, NAME_COLOR_MAX).map(function (k) { return NAME_PLATE_COLORS[k]; });
 }
 
 /* ---- 特殊能力バッジの中身を組み立てる ----
