@@ -100,7 +100,7 @@ h1 {
   position: absolute;
   inset: 5%;
   border-radius: 50%;
-  box-shadow: 6px 16px 28px rgba(15, 23, 42, 0.38), 2px 5px 8px rgba(15, 23, 42, 0.22);
+  box-shadow: 4px 6px 12px rgba(15, 23, 42, 0.25);
   z-index: 0;
 }
 
@@ -511,10 +511,7 @@ function draw() {
     ctx.fillStyle = seg;
     ctx.fill();
 
-    // 扇の境目とふちは、ごく細い黒い線で区切る
-    ctx.strokeStyle = "#1c1d1f";
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // 扇の境目とふちには線を引かない（色の違いだけで区切る）
 
     ctx.save();
 
