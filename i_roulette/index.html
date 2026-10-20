@@ -93,8 +93,17 @@ h1 {
   margin: 0 auto;
 }
 
-/* 盤面のまわりに白い枠は付けない（枠があると、盤面が皿の内側に窪んで見える）。
-   代わりに、盤面の下に落ちる影を canvas に描いて、盤面を手前に浮かせる */
+/* 盤面の下に落ちる影。枠（canvasに描く紺の輪）と同じ大きさの円を後ろに敷き、
+   左上からの光に合わせて右下へ影を落とす（canvasの中に描くと、端で切れる） */
+.wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 2.25%;
+  border-radius: 50%;
+  box-shadow: 6px 16px 28px rgba(15, 23, 42, 0.38), 2px 5px 8px rgba(15, 23, 42, 0.22);
+  z-index: 0;
+}
+
 /* 幅の狭い画面では盤面を縮めて、横スクロールが出ないようにする */
 canvas {
   position: relative;
@@ -484,40 +493,63 @@ function draw() {
 
   ctx.clearRect(0,0,400,400);
 
-  // 盤面の下に落ちる影。白い枠で囲まず、影で盤面を浮かせて手前に迫り出して見せる
-  ctx.save();
+  // 外周の枠。濃い紺の金属の輪で、左上から光が当たったように左上が明るく右下が暗い。
+  // 盤面の下に落ちる影は、枠の後ろの .wrapper::before（CSS）で付ける
+  const bezel = ctx.createLinearGradient(9,9,391,391);
+  bezel.addColorStop(0,"#6a7aa0");
+  bezel.addColorStop(0.45,"#28355a");
+  bezel.addColorStop(1,"#0c1222");
   ctx.beginPath();
-  ctx.arc(200,200,180,0,Math.PI*2);
-  ctx.shadowColor = "rgba(15,23,42,0.38)";
-  ctx.shadowBlur = 16;
-  ctx.shadowOffsetY = 7;
-  ctx.fillStyle = "#ffffff";
+  ctx.arc(200,200,191,0,Math.PI*2);
+  ctx.fillStyle = bezel;
   ctx.fill();
-  ctx.restore();
+
+  // 枠のふちの光（左上だけ明るく見える細い線）
+  const bezelEdge = ctx.createLinearGradient(9,9,391,391);
+  bezelEdge.addColorStop(0,"rgba(255,255,255,0.7)");
+  bezelEdge.addColorStop(0.5,"rgba(255,255,255,0.08)");
+  bezelEdge.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.beginPath();
+  ctx.arc(200,200,190,0,Math.PI*2);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = bezelEdge;
+  ctx.stroke();
+
+  // 枠の電飾。盤面と一緒に回る光の粒
+  const bulbs = 24;
+  for (let k=0;k<bulbs;k++) {
+    const a = angle + k*2*Math.PI/bulbs;
+    const x = 200 + 185.5*Math.cos(a);
+    const y = 200 + 185.5*Math.sin(a);
+    const glow = ctx.createRadialGradient(x,y,0,x,y,4.2);
+    glow.addColorStop(0,"#ffffff");
+    glow.addColorStop(0.45,"#ffe8a3");
+    glow.addColorStop(1,"rgba(255,196,64,0)");
+    ctx.beginPath();
+    ctx.arc(x,y,4.2,0,Math.PI*2);
+    ctx.fillStyle = glow;
+    ctx.fill();
+  }
 
   for (let i=0;i<n;i++) {
 
     const start = angle + i*arc;
 
     ctx.beginPath();
-
     ctx.moveTo(200,200);
+    ctx.arc(200,200,180,start,start+arc);
 
-    ctx.arc(
-      200,
-      200,
-      180,
-      start,
-      start+arc
-    );
-
-    ctx.fillStyle = colors[i];
-
+    // 区画ごとに、中心寄りを明るく、ふち寄りを少し濃くして奥行きを出す
+    const seg = ctx.createRadialGradient(200,200,0,200,200,180);
+    seg.addColorStop(0, shadeColor(colors[i], 0.4));
+    seg.addColorStop(0.55, colors[i]);
+    seg.addColorStop(1, shadeColor(colors[i], -0.22));
+    ctx.fillStyle = seg;
     ctx.fill();
 
     // 扇の境目は白い線で区切る（黒の細線より盤面がすっきりする）
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
     ctx.save();
@@ -543,38 +575,63 @@ function draw() {
     ctx.restore();
   }
 
-  // 盤面のつや。左上から光が当たったように、左上を明るく右下を暗くして、
-  // 盤面が手前に迫り出して見えるようにする（光の向きは回しても動かない）
-  const gloss = ctx.createRadialGradient(142,132,0,200,200,194);
-  gloss.addColorStop(0,"rgba(255,255,255,0.42)");
-  gloss.addColorStop(0.35,"rgba(255,255,255,0.12)");
-  gloss.addColorStop(0.7,"rgba(0,0,0,0)");
-  gloss.addColorStop(1,"rgba(0,0,0,0.26)");
+  // 光の当たり方。左上から光が当たったように、盤面全体の左上を明るく右下を暗くする
+  // （光の向きは盤面を回しても動かない）
+  const light = ctx.createLinearGradient(20,20,380,380);
+  light.addColorStop(0,"rgba(255,255,255,0.22)");
+  light.addColorStop(0.5,"rgba(255,255,255,0)");
+  light.addColorStop(1,"rgba(0,0,0,0.24)");
   ctx.beginPath();
   ctx.arc(200,200,180,0,Math.PI*2);
-  ctx.fillStyle = gloss;
+  ctx.fillStyle = light;
   ctx.fill();
 
-  // ふちに細い光の線。盤面の丸みの縁が立って見える
-  ctx.beginPath();
-  ctx.arc(200,200,178.5,0,Math.PI*2);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "rgba(255,255,255,0.75)";
-  ctx.stroke();
+  // ふちの内側に落ちる影。盤面が枠の下にもぐり込んで見え、手前に盛り上がる
+  const rimShade = ctx.createRadialGradient(200,200,148,200,200,180);
+  rimShade.addColorStop(0,"rgba(0,0,0,0)");
+  rimShade.addColorStop(1,"rgba(0,0,0,0.3)");
+  ctx.fillStyle = rimShade;
+  ctx.fill();
 
-  // 中心のハブ。単色の点ではなく、輪っか＋グラデーションで
-  // 少し高級感を出す
-  const hub = ctx.createRadialGradient(197,197,0,200,200,12);
+  // つやの照り返し。左上に斜めの楕円の光を置き、表面の丸みを見せる
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(200,200,180,0,Math.PI*2);
+  ctx.clip();
+  ctx.translate(146,124);
+  ctx.rotate(-0.55);
+  ctx.scale(1,0.45);
+  const spec = ctx.createRadialGradient(0,0,0,0,0,119);
+  spec.addColorStop(0,"rgba(255,255,255,0.5)");
+  spec.addColorStop(0.6,"rgba(255,255,255,0.14)");
+  spec.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.beginPath();
+  ctx.arc(0,0,119,0,Math.PI*2);
+  ctx.fillStyle = spec;
+  ctx.fill();
+  ctx.restore();
+
+  // 中心のハブ。枠と同じ紺の輪に、左上が光る銀の玉
+  const hub = ctx.createRadialGradient(196,196,0,200,200,15);
   hub.addColorStop(0,"#ffffff");
-  hub.addColorStop(1,"#c7ccd3");
+  hub.addColorStop(0.6,"#d5dae1");
+  hub.addColorStop(1,"#8d97a5");
 
   ctx.beginPath();
-  ctx.arc(200,200,10,0,Math.PI*2);
+  ctx.arc(200,200,14,0,Math.PI*2);
   ctx.fillStyle = hub;
   ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#28355a";
   ctx.stroke();
+}
+
+/* 色を明るく（amount > 0、白に寄せる）・暗く（amount < 0、黒に寄せる）する */
+function shadeColor(hex, amount) {
+  const v = parseInt(hex.slice(1), 16);
+  const to = amount > 0 ? 255 : 0, t = Math.abs(amount);
+  const ch = (c) => Math.round(c + (to - c) * t);
+  return `rgb(${ch(v >> 16)},${ch((v >> 8) & 255)},${ch(v & 255)})`;
 }
 
 // ======================
