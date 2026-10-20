@@ -6,7 +6,9 @@ const currentTool = TOOLS.find(t => t.id === CURRENT_TOOL);
 
 const container = document.getElementById("related-tools");
 
-if (currentTool && container) {
+/* scripts/static_related.py がHTMLに書き込んだページでは、そのまま使う
+   （Googleが最初に読むHTMLにリンクがあるように） */
+if (currentTool && container && !container.querySelector("a")) {
 
   const relatedTools = TOOLS.filter(
     t => !t.hidden

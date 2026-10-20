@@ -412,6 +412,9 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 
 <h2>よくある質問</h2>
 
+<p><strong>Q. 実在の選手の成績はどこで調べられますか？</strong><br>
+A. <a href="/player/">プロ野球 選手一覧・選手検索</a>で、2005年以降に一軍に出場した選手の年度別成績・通算成績を調べられます。再現選手を作るときの、成績欄や能力の目安にお使いください。</p>
+
 <p><strong>Q. 実在の特殊能力名を使えますか？</strong><br>
 A. 使えます。金特・青特・赤特・緑特は、<a href="/satei/">査定☆計算ツール</a>と同じ実データの一覧から選べます。</p>
 
@@ -1824,7 +1827,22 @@ if (document.fonts && document.fonts.ready) {
 }
 </script>
 
-<div id="related-tools"></div>
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/typing-game/" class="related-tool-card"><h3>横文字ばっかりのタイピングゲーム</h3><p>やたら横文字しか出てこない、無料のタイピングゲームです。</p></a>
+<a href="/mylife-start/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ アピールポイントのすゝめ</h3><p>経歴・ドラフト順位・アピールポイント・ウィークポイントによる初期能力とボーナスの解説です。</p></a>
+<a href="/eikan-kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 栄冠ナイン 金特の入手方法まとめ</h3><p>金特本・国際大会・特訓の3つの手段。欲しい金特から狙う評価を逆引きできます。</p></a>
+<a href="/shippo/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 尻尾 入手方法一覧</h3><p>尻尾12種の入手方法とオススメ度。9個でMAXになるので、あと何個かも分かります。</p></a>
+<a href="/crystal-banno/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 万能クリスタル（小）（大）入手方法一覧</h3><p>万能クリスタル（小）9通りと（大）の入手方法を、チェックしながら管理できる一覧。</p></a>
+<a href="/crystal/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ イベントクリスタル（小）（大）入手方法一覧</h3><p>特殊能力ファイルに使うイベントクリスタルの入手方法と、怪しい露店の交換レート一覧。</p></a>
+<a href="/kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 能力研究所の金特ミッション一覧</h3><p>マイライフの能力研究所で受けられる金特ミッションの内容と取得条件の一覧。2024-2025 とも共通です。</p></a>
+<a href="/satei/" class="related-tool-card"><h3>パワプロ2026-2027 ⭐︎(星)計算ツール</h3><p>能力値と所持する特殊能力を入力すると、査定である☆(星)を計算します。</p></a>
+<a href="/nouryoku/" class="related-tool-card"><h3>パワプロ風 能力画像ジェネレーター（野手）</h3><p>パワプロ風の能力画像を作れる能力メーカー。野手の能力値と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
 <script src="/js/related.js"></script>
 </body>
 </html>
