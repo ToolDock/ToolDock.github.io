@@ -80,10 +80,10 @@ jobs:
         # ツール名が変わったときのカードと、新しい年のドラフトのページをサイトマップに載せる
         run: python scripts/build_index.py
 
-      - name: SNSの共有カード（OGP）をHTMLに書き込む
+      - name: SNSの共有カード（OGP）とパンくずをHTMLに書き込む
         # 作り直したページにはOGPが無いので書き足す（SNSはJavaScriptを動かさないため、head.js任せにできない）。
         # 中身が同じなら書き換えないので、成績に変化が無い日は差分が出ない
-        run: python scripts/static_ogp.py
+        run: python scripts/static_html.py
 
       - name: 変更があればコミット
         run: |

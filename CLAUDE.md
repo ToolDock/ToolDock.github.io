@@ -23,7 +23,7 @@
 
 ## ツールを足す・名前や説明を変えたとき
 
-SNSとGoogleが最初に読むHTMLに、OGPと「同じカテゴリのツール」のリンクを書き込んでおく（head.js・related.js はJSで書くため、それだけでは読まれない）。
+SNSとGoogleが最初に読むHTMLに、OGP・パンくず・「同じカテゴリのツール」のリンクを書き込んでおく
+（head.js・related.js はJSで書くため、それだけでは読まれない）。
 
-    python3 scripts/static_ogp.py
-    python3 scripts/static_related.py
+    python3 scripts/static_html.py

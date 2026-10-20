@@ -89,6 +89,10 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 </head>
 
 <body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=baseball">野球</a> <span class="bc-sep">›</span> <a href="/draft/">ドラフト答え合わせ</a> <span class="bc-sep">›</span> <span>楽天</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "野球", "item": "https://tooldock.github.io/category/?cat=baseball"}, {"@type": "ListItem", "position": 3, "name": "ドラフト答え合わせ", "item": "https://tooldock.github.io/draft/"}, {"@type": "ListItem", "position": 4, "name": "楽天", "item": "https://tooldock.github.io/draft/team/eagles/"}]}</script>
+<!-- /BREADCRUMB -->
 <div class="page-wrapper">
 <div class="td-banner" style="--tm-bg:#860010; --tm-fg:#ffffff; --tm-line:#C2A36B">
     <h1>楽天のドラフト答え合わせ</h1>

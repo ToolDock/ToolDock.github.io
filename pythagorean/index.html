@@ -145,6 +145,10 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 </head>
 
 <body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=baseball">野球</a> <span class="bc-sep">›</span> <span>プロ野球 運ランキング（ピタゴラス勝率）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "野球", "item": "https://tooldock.github.io/category/?cat=baseball"}, {"@type": "ListItem", "position": 3, "name": "プロ野球 運ランキング（ピタゴラス勝率）", "item": "https://tooldock.github.io/pythagorean/"}]}</script>
+<!-- /BREADCRUMB -->
 
 <div class="page-wrapper">
 

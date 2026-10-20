@@ -330,6 +330,10 @@ padding: var(--pad); }
 </head>
 
 <body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=work">業務</a> <span class="bc-sep">›</span> <span>文字数カウント</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "業務", "item": "https://tooldock.github.io/category/?cat=work"}, {"@type": "ListItem", "position": 3, "name": "文字数カウント", "item": "https://tooldock.github.io/counter/"}]}</script>
+<!-- /BREADCRUMB -->
 
 <div class="container">
 
