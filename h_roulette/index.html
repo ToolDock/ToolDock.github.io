@@ -93,12 +93,12 @@ h1{
   margin:0 auto;
 }
 
-/* 盤面の下に落ちる影。枠（canvasに描く紺の輪）と同じ大きさの円を後ろに敷き、
+/* 盤面の下に落ちる影。盤面と同じ大きさの円を後ろに敷き、
    左上からの光に合わせて右下へ影を落とす（canvasの中に描くと、端で切れる） */
 .wrapper::before {
   content: "";
   position: absolute;
-  inset: 2.14%;
+  inset: 4.76%;
   border-radius: 50%;
   box-shadow: 6px 16px 28px rgba(15, 23, 42, 0.38), 2px 5px 8px rgba(15, 23, 42, 0.22);
   z-index: 0;
@@ -468,43 +468,7 @@ function draw() {
 
   ctx.clearRect(0,0,420,420);
 
-  // 外周の枠。濃い紺の金属の輪で、左上から光が当たったように左上が明るく右下が暗い。
-  // 盤面の下に落ちる影は、枠の後ろの .wrapper::before（CSS）で付ける
-  const bezel = ctx.createLinearGradient(9,9,411,411);
-  bezel.addColorStop(0,"#6a7aa0");
-  bezel.addColorStop(0.45,"#28355a");
-  bezel.addColorStop(1,"#0c1222");
-  ctx.beginPath();
-  ctx.arc(210,210,201,0,Math.PI*2);
-  ctx.fillStyle = bezel;
-  ctx.fill();
-
-  // 枠のふちの光（左上だけ明るく見える細い線）
-  const bezelEdge = ctx.createLinearGradient(9,9,411,411);
-  bezelEdge.addColorStop(0,"rgba(255,255,255,0.7)");
-  bezelEdge.addColorStop(0.5,"rgba(255,255,255,0.08)");
-  bezelEdge.addColorStop(1,"rgba(255,255,255,0)");
-  ctx.beginPath();
-  ctx.arc(210,210,200,0,Math.PI*2);
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = bezelEdge;
-  ctx.stroke();
-
-  // 枠の電飾。盤面と一緒に回る光の粒
-  const bulbs = 24;
-  for (let k=0;k<bulbs;k++) {
-    const a = angle + k*2*Math.PI/bulbs;
-    const x = 210 + 195.5*Math.cos(a);
-    const y = 210 + 195.5*Math.sin(a);
-    const glow = ctx.createRadialGradient(x,y,0,x,y,4.2);
-    glow.addColorStop(0,"#ffffff");
-    glow.addColorStop(0.45,"#ffe8a3");
-    glow.addColorStop(1,"rgba(255,196,64,0)");
-    ctx.beginPath();
-    ctx.arc(x,y,4.2,0,Math.PI*2);
-    ctx.fillStyle = glow;
-    ctx.fill();
-  }
+  // 盤面の下に落ちる影は、盤面の後ろの .wrapper::before（CSS）で付ける
 
   for (let i=0;i<n;i++) {
 
