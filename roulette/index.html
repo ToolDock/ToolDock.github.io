@@ -93,18 +93,8 @@ h1 {
   margin: 0 auto;
 }
 
-/* ホイール外周の縁取り。canvas自体のレイアウトは変えず、
-   一回り大きい円をinsetの負値で背後に敷くだけにしている */
-.wrapper::before {
-  content: "";
-  position: absolute;
-  inset: -12px;
-  border-radius: 50%;
-  background: linear-gradient(150deg, #ffffff, #e4e8ec);
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16), inset 0 0 0 1px rgba(15, 23, 42, 0.05);
-  z-index: 0;
-}
-
+/* 盤面のまわりに白い枠は付けない（枠があると、盤面が皿の内側に窪んで見える）。
+   代わりに、盤面の下に落ちる影を canvas に描いて、盤面を手前に浮かせる */
 /* 幅の狭い画面では盤面を縮めて、横スクロールが出ないようにする */
 canvas {
   position: relative;
@@ -113,13 +103,11 @@ canvas {
   width: 100%;
   height: auto;
 
-  background: white;
-  border-radius: 50%;
 }
 
 .pointer {
   position: absolute;
-  top: -22px;
+  top: -6px;
   left: 50%;
   transform: translateX(-50%);
   width: 26px;
@@ -510,6 +498,17 @@ function draw() {
 
   ctx.clearRect(0,0,400,400);
 
+  // 盤面の下に落ちる影。白い枠で囲まず、影で盤面を浮かせて手前に迫り出して見せる
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(200,200,180,0,Math.PI*2);
+  ctx.shadowColor = "rgba(15,23,42,0.38)";
+  ctx.shadowBlur = 16;
+  ctx.shadowOffsetY = 7;
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.restore();
+
   for (let i=0;i<n;i++) {
 
     const start = angle + i*arc;
@@ -569,6 +568,13 @@ function draw() {
   ctx.arc(200,200,180,0,Math.PI*2);
   ctx.fillStyle = gloss;
   ctx.fill();
+
+  // ふちに細い光の線。盤面の丸みの縁が立って見える
+  ctx.beginPath();
+  ctx.arc(200,200,178.5,0,Math.PI*2);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(255,255,255,0.75)";
+  ctx.stroke();
 
   // 中心のハブ。単色の点ではなく、輪っか＋グラデーションで
   // 少し高級感を出す
