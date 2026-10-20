@@ -511,9 +511,9 @@ function draw() {
     ctx.fillStyle = seg;
     ctx.fill();
 
-    // 扇の境目は白い線で区切る（黒の細線より盤面がすっきりする）
+    // 扇の境目とふちは、ごく細い白い線で区切る（黒の細線より盤面がすっきりする）
     ctx.strokeStyle = "rgba(255,255,255,0.9)";
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 1;
     ctx.stroke();
 
     ctx.save();
