@@ -21,6 +21,10 @@
      ここに直書きすると、実際のアクセスとすぐズレる */
   const POPULAR_COUNT = 6;
 
+  /* 「最近の更新」に出す件数。中身は tool-data.js の UPDATES（新しい順） */
+  const UPDATES_COUNT = 4;
+  const UPDATE_KIND = { new: "NEW", update: "更新", fix: "修正" };
+
   const CATEGORY_ORDER = ["math", "work", "life", "finance", "game", "baseball"];
 
   /* ---- 背景の明るさから配色を決める ---- */
@@ -157,6 +161,26 @@
         font-weight: bold;
       }
 
+      .td-up-meta {
+        display: block;
+        margin-bottom: 1px;
+        font-size: 0.75rem;
+        font-variant-numeric: tabular-nums;
+        color: ${dark ? "#cbd5e1" : "#5c6470"};
+      }
+
+      .td-up-kind {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 0 6px;
+        font-weight: bold;
+        color: #ffffff;
+        background: #1d4fbf;
+      }
+
+      .td-up-kind.new { background: #bf0000; }
+      .td-up-kind.fix { background: #5c6470; }
+
       .td-cats {
         display: flex;
         flex-wrap: wrap;
@@ -246,6 +270,33 @@
         <div class="td-box">
           <h2>人気のページ</h2>
           ${linkList(popular, true)}
+        </div>
+      `;
+    }
+
+    /* 最近の更新。トップの「最近の更新」と同じ中身を、新しい順に数件 */
+    const updates = (window.UPDATES || [])
+      .map(u => ({ u, t: tools.find(t => t.id === u.id) }))
+      .filter(x => x.t)
+      .slice(0, UPDATES_COUNT);
+
+    if (updates.length) {
+      html += `
+        <div class="td-box">
+          <h2>最近の更新</h2>
+          <ul>
+            ${updates.map(({ u, t }) => {
+              const [, m, d] = u.date.split("-").map(Number);
+              return `
+                <li>
+                  <a href="${t.url}"${t.url === location.pathname ? ' class="current"' : ""}>
+                    <span class="td-up-meta">${m}/${d}<span class="td-up-kind ${escape(u.kind)}">${UPDATE_KIND[u.kind] || "更新"}</span></span>
+                    ${escape(t.title)}
+                  </a>
+                </li>
+              `;
+            }).join("")}
+          </ul>
         </div>
       `;
     }

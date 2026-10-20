@@ -19,6 +19,17 @@ window.CATEGORY_NAMES = {
   baseball: "野球"
 };
 
+/* 最近の更新・新しいツール（新しい順に、上へ足していく）。
+   トップの「最近の更新」と、各ページの右レールの「最近の更新」に出す（scripts/build_index.py・js/sidebar.js）。
+   id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
+   1件は1行で書く（build_index.py が1行ずつ読む） */
+window.UPDATES = [
+  { date: "2026-10-20", id: "nouryoku", kind: "update", text: "実機に近いデザインにリニューアル。二刀流（守備位置「投」）にも対応" },
+  { date: "2026-10-20", id: "seiza", kind: "fix", text: "下の「同じカテゴリのツール」が真っ白になる不具合を修正" },
+  { date: "2026-10-19", id: "nouryoku-pitcher", kind: "update", text: "実機に近いデザインにリニューアル。変化球の欄も一新" },
+  { date: "2026-10-19", id: "takarakuji", kind: "new", text: "ジャンボ・ロト・ナンバーズ・ビンゴ5を何枚でも買って抽せんできるシミュレーターを公開" }
+];
+
 window.TOOLS = [
   {
     id: "roulette",
