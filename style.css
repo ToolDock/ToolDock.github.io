@@ -183,7 +183,8 @@ footer {
   border-top: 3px solid var(--c);
   background: var(--surface);
   text-decoration: none;
-  color: inherit;
+  /* 札の地は明るいので、字も濃い色に決めておく（inherit だと、地の暗いページ（seiza など）で白い字になって消える） */
+  color: var(--ink);
 }
 
 .related-tool-card:hover {
