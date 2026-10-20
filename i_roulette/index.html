@@ -541,8 +541,8 @@ function draw() {
 
     // 区画ごとに、中心寄りを明るく、ふち寄りを少し濃くして奥行きを出す
     const seg = ctx.createRadialGradient(200,200,0,200,200,180);
-    seg.addColorStop(0, shadeColor(colors[i], 0.4));
-    seg.addColorStop(0.55, colors[i]);
+    seg.addColorStop(0, shadeColor(colors[i], 0.18));
+    seg.addColorStop(0.5, colors[i]);
     seg.addColorStop(1, shadeColor(colors[i], -0.22));
     ctx.fillStyle = seg;
     ctx.fill();
@@ -575,41 +575,12 @@ function draw() {
     ctx.restore();
   }
 
-  // 光の当たり方。左上から光が当たったように、盤面全体の左上を明るく右下を暗くする
-  // （光の向きは盤面を回しても動かない）
-  const light = ctx.createLinearGradient(20,20,380,380);
-  light.addColorStop(0,"rgba(255,255,255,0.22)");
-  light.addColorStop(0.5,"rgba(255,255,255,0)");
-  light.addColorStop(1,"rgba(0,0,0,0.24)");
-  ctx.beginPath();
-  ctx.arc(200,200,180,0,Math.PI*2);
-  ctx.fillStyle = light;
-  ctx.fill();
-
   // ふちの内側に落ちる影。盤面が枠の下にもぐり込んで見え、手前に盛り上がる
   const rimShade = ctx.createRadialGradient(200,200,148,200,200,180);
   rimShade.addColorStop(0,"rgba(0,0,0,0)");
   rimShade.addColorStop(1,"rgba(0,0,0,0.3)");
   ctx.fillStyle = rimShade;
   ctx.fill();
-
-  // つやの照り返し。左上に斜めの楕円の光を置き、表面の丸みを見せる
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(200,200,180,0,Math.PI*2);
-  ctx.clip();
-  ctx.translate(146,124);
-  ctx.rotate(-0.55);
-  ctx.scale(1,0.45);
-  const spec = ctx.createRadialGradient(0,0,0,0,0,119);
-  spec.addColorStop(0,"rgba(255,255,255,0.5)");
-  spec.addColorStop(0.6,"rgba(255,255,255,0.14)");
-  spec.addColorStop(1,"rgba(255,255,255,0)");
-  ctx.beginPath();
-  ctx.arc(0,0,119,0,Math.PI*2);
-  ctx.fillStyle = spec;
-  ctx.fill();
-  ctx.restore();
 
   // 中心のハブ。枠と同じ紺の輪に、左上が光る銀の玉
   const hub = ctx.createRadialGradient(196,196,0,200,200,15);
