@@ -522,12 +522,13 @@ function draw(){
     ctx.restore();
   }
 
-  // 盤面のつや。中心を少し明るく、外周を少し締めて、色が平板に見えないようにする
-  const gloss = ctx.createRadialGradient(210,210,0,210,210,190);
-  gloss.addColorStop(0,"rgba(255,255,255,0.28)");
-  gloss.addColorStop(0.5,"rgba(255,255,255,0)");
-  gloss.addColorStop(0.9,"rgba(0,0,0,0)");
-  gloss.addColorStop(1,"rgba(0,0,0,0.16)");
+  // 盤面のつや。左上から光が当たったように、左上を明るく右下を暗くして、
+  // 盤面が手前に迫り出して見えるようにする（光の向きは回しても動かない）
+  const gloss = ctx.createRadialGradient(149,138,0,210,210,205);
+  gloss.addColorStop(0,"rgba(255,255,255,0.42)");
+  gloss.addColorStop(0.35,"rgba(255,255,255,0.12)");
+  gloss.addColorStop(0.7,"rgba(0,0,0,0)");
+  gloss.addColorStop(1,"rgba(0,0,0,0.26)");
   ctx.beginPath();
   ctx.arc(210,210,190,0,Math.PI*2);
   ctx.fillStyle = gloss;
