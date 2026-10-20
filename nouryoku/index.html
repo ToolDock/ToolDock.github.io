@@ -870,13 +870,14 @@ var L = {
 
 var POS_LABEL_MAP = { "捕": "捕", "一": "一", "二": "二", "三": "三", "遊": "遊", "外": "外", "投": "投" };
 
-/* 選手名プレートの色。守備位置ごとの「メインポジション色」が一番左に来て、
-   残りの選択色は 水>黄>緑>赤>ピンク の優先順で左から並ぶ。
-   赤（先発）・ピンク（中継ぎ）は、二刀流や打てる投手の野手能力を作るとき用（色は投手版と同じ）。
+/* 選手名プレートの色。投手版と同じく、投手の色（赤（先発）→ピンク（中継ぎ））が先、野手の色が後に並ぶ。
+   野手の色の中では、守備位置ごとの「メインポジション色」が一番左に来て、残りは 水>黄>緑 の優先順。
+   赤・ピンクは、二刀流や打てる投手の野手能力を作るとき用（色は投手版と同じ）。
    何も選ばなければ、守備位置の色にする。 */
 var POS_COLOR_KEY = { "一": "yellow", "二": "yellow", "三": "yellow", "遊": "yellow", "捕": "water", "外": "green", "投": "red" };
 var NAME_PLATE_COLORS = { yellow: "#FBEA55", water: "#6FD2EC", green: "#7FD06C", red: "#FF8C8F", pink: "#F8BED9" };
-var NAME_COLOR_PRIORITY = { water: 0, yellow: 1, green: 2, red: 3, pink: 4 };
+var NAME_COLOR_PRIORITY = { red: 0, pink: 1, water: 2, yellow: 3, green: 4 };
+var PITCHER_COLORS = { red: true, pink: true };
 function buildNamePlateColors() {
     var checked = Object.keys(NAME_COLOR_PRIORITY).filter(function (k) {
         var el = document.getElementById("p-color-" + k);
@@ -885,8 +886,12 @@ function buildNamePlateColors() {
     var mainKey = POS_COLOR_KEY[document.getElementById("p-pos").value];
     if (checked.length === 0) checked.push(mainKey || "yellow");
     checked.sort(function (a, b) {
-        if (a === mainKey) return -1;
-        if (b === mainKey) return 1;
+        /* 投手の色と野手の色が混ざるときは、投手の色が先 */
+        if (!!PITCHER_COLORS[a] !== !!PITCHER_COLORS[b]) return PITCHER_COLORS[a] ? -1 : 1;
+        if (!PITCHER_COLORS[a]) {
+            if (a === mainKey) return -1;
+            if (b === mainKey) return 1;
+        }
         return NAME_COLOR_PRIORITY[a] - NAME_COLOR_PRIORITY[b];
     });
     return checked.map(function (k) { return NAME_PLATE_COLORS[k]; });
