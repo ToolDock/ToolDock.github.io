@@ -196,6 +196,10 @@ button:hover { background: #00e5ff; color: #000; }
 </style>
 </head>
 <body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=game">ゲーム</a> <span class="bc-sep">›</span> <span>横文字ばっかりのタイピングゲーム</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "ゲーム", "item": "https://tooldock.github.io/category/?cat=game"}, {"@type": "ListItem", "position": 3, "name": "横文字ばっかりのタイピングゲーム", "item": "https://tooldock.github.io/typing-game/"}]}</script>
+<!-- /BREADCRUMB -->
 
 <div class="container">
   <h1>横文字ばっかりのタイピングゲーム</h1>

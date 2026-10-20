@@ -10,7 +10,7 @@
  *   node scripts/ogp/generate.js <tool-id> [<tool-id> ...]
  *   node scripts/ogp/generate.js --all-missing   # ogp/<id>.png が無いツールだけ生成
  *
- * 新しいツールを足したら、OGPをHTMLに書き込む python3 scripts/static_ogp.py も実行する
+ * 新しいツールを足したら、OGPなどをHTMLに書き込む python3 scripts/static_html.py も実行する
  * （SNSはJavaScriptを動かさないので、head.js が書くOGPは読まれない）。
  *
  * タイトル・説明文は js/tool-data.js の該当ツール（seoTitle||title,

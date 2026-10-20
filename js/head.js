@@ -209,7 +209,9 @@ document.addEventListener("DOMContentLoaded", () => {
      カテゴリを持たないページ（カテゴリ一覧など）では出さない
   ========================= */
 
-  if (!tool.hidden) {
+  /* scripts/static_html.py がHTMLに書き込んだページでは、それを使う
+     （Googleが最初に読むHTMLに、パンくずのリンクと構造化データがあるように） */
+  if (!tool.hidden && !document.querySelector("nav.breadcrumb")) {
 
     /* ツールの下層ページ（/draft/2018/ など）は、ページ側で
        const BREADCRUMB_EXTRA = { name: "2018年", url: "/draft/2018/" };

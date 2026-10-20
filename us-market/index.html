@@ -35,6 +35,10 @@
 <script src="/js/vendor/chart.umd.min.js"></script>
 </head>
 <body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=finance">金融</a> <span class="bc-sep">›</span> <span>米国市場ダッシュボード</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "金融", "item": "https://tooldock.github.io/category/?cat=finance"}, {"@type": "ListItem", "position": 3, "name": "米国市場ダッシュボード", "item": "https://tooldock.github.io/us-market/"}]}</script>
+<!-- /BREADCRUMB -->
 
 <!--
   中身はすべて board.js が market.json から流し込む。
