@@ -59,7 +59,7 @@ h1 {
    当たった項目の色（colors[result]）をJSから --accent に渡し、
    枠と影の色がルーレットの盤面と連動するようにしている。 */
 .result-badge {
-  --accent: #45b4ac;
+  --accent: #FF3B5C;
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -448,11 +448,11 @@ function load() {
 // 色生成
 // ======================
 
-// シンプルだが洗練された印象になるよう、彩度を抑えた5色の
-// パレットを順番に割り当てる（虹色のグラデーションにはしない）。
+// ルーレットらしく、鮮やかな8色を順番に割り当てる。
+// 隣どうしがはっきり違う色になるよう、色相を飛ばしながら並べている。
 // 項目数がパレット数で割り切れないと、円環の継ぎ目（最後と最初）
 // で同じ色が隣り合うことがあるため、その場合だけ最後の色をずらす。
-const PALETTE = ["#45b4ac","#f0955f","#f2c14e","#a688c9","#5d9bd1"];
+const PALETTE = ["#FF3B5C","#FF9F0A","#FFD60A","#2ECC40","#00B8F0","#3D5AFE","#B44CF5","#FF4FA3"];
 
 function genColors(n) {
 
@@ -548,8 +548,8 @@ function draw() {
     // 明るい色の区画でも文字が沈まないよう、白い塗りに加えて
     // 濃い色の縁取りを入れて、どの背景色でも読めるようにする
     ctx.lineJoin = "round";
-    ctx.lineWidth = 3.5;
-    ctx.strokeStyle = "rgba(31,41,55,0.45)";
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "rgba(17,24,39,0.6)";
     ctx.strokeText(items[i],158,5);
 
     ctx.fillStyle = "#ffffff";
@@ -557,6 +557,17 @@ function draw() {
 
     ctx.restore();
   }
+
+  // 盤面のつや。中心を少し明るく、外周を少し締めて、色が平板に見えないようにする
+  const gloss = ctx.createRadialGradient(200,200,0,200,200,180);
+  gloss.addColorStop(0,"rgba(255,255,255,0.28)");
+  gloss.addColorStop(0.5,"rgba(255,255,255,0)");
+  gloss.addColorStop(0.9,"rgba(0,0,0,0)");
+  gloss.addColorStop(1,"rgba(0,0,0,0.16)");
+  ctx.beginPath();
+  ctx.arc(200,200,180,0,Math.PI*2);
+  ctx.fillStyle = gloss;
+  ctx.fill();
 
   // 中心のハブ。単色の点ではなく、輪っか＋グラデーションで
   // 少し高級感を出す
