@@ -523,16 +523,8 @@ function draw() {
 
     ctx.font=WHEEL_FONT;
 
-    // 縁取りはせず、区画の色で字の色を変えて読みやすくする
-    // （黄色などの明るい区画は濃い字、それ以外は白い字に薄い影）
-    if (isLightColor(colors[i])) {
-      ctx.fillStyle = "#1c1d1f";
-    } else {
-      ctx.fillStyle = "#ffffff";
-      ctx.shadowColor = "rgba(0,0,0,0.35)";
-      ctx.shadowBlur = 3;
-      ctx.shadowOffsetY = 1;
-    }
+    // 字はすべて白（縁取り・影なし）
+    ctx.fillStyle = "#ffffff";
     ctx.fillText(items[i],158,5);
 
     ctx.restore();
@@ -555,13 +547,6 @@ function draw() {
   ctx.arc(200,200,14,0,Math.PI*2);
   ctx.fillStyle = hub;
   ctx.fill();
-}
-
-/* 明るい色か（字を濃くするかどうか）。人の目の感じ方に合わせた明るさで判定する */
-function isLightColor(hex) {
-  const v = parseInt(hex.slice(1), 16);
-  const lum = (0.299 * (v >> 16) + 0.587 * ((v >> 8) & 255) + 0.114 * (v & 255)) / 255;
-  return lum > 0.62;
 }
 
 /* 色を明るく（amount > 0、白に寄せる）・暗く（amount < 0、黒に寄せる）する */
