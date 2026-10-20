@@ -27,3 +27,9 @@ SNSとGoogleが最初に読むHTMLに、OGP・パンくず・「同じカテゴ�
 （head.js・related.js はJSで書くため、それだけでは読まれない）。
 
     python3 scripts/static_html.py
+
+## お知らせ（最近の更新）
+
+ツールを公開したり、目に見えるアップデート・不具合の修正をしたりしたら、`js/tool-data.js` の
+`window.UPDATES` の先頭に1行足し、`python3 scripts/build_index.py` を実行する
+（トップの「最近の更新」はHTMLに書き込み、各ページの右レールは sidebar.js が同じ一覧から出す）。

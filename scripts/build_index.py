@@ -46,6 +46,42 @@ def parse_tools():
     return categories, tools
 
 
+# トップの「最近の更新」に出す数（tool-data.js の UPDATES の新しい順）
+UPDATES_SHOWN = 5
+UPDATE_KIND = {"new": "NEW", "update": "更新", "fix": "修正"}
+
+
+def parse_updates():
+    js = DATA.read_text(encoding="utf-8")
+    body = re.search(r"window\.UPDATES\s*=\s*\[(.*?)\n\];", js, re.S)
+    if not body:
+        return []
+    pat = re.compile(r'\{\s*date:\s*"([^"]+)",\s*id:\s*"([^"]+)",\s*kind:\s*"(\w+)",\s*text:\s*"((?:[^"\\]|\\.)*)"\s*\}')
+    return [{"date": m.group(1), "id": m.group(2), "kind": m.group(3), "text": m.group(4).replace('\\"', '"')}
+            for m in pat.finditer(body.group(1))]
+
+
+def render_updates(tools):
+    """「最近の更新」。日付・種類・ツール名（リンク）・ひとこと"""
+    by_id = {t["id"]: t for t in tools}
+    rows = []
+    for u in parse_updates():
+        t = by_id.get(u["id"])
+        if not t:
+            continue
+        y, m, d = u["date"].split("-")
+        rows.append(f'    <li><time datetime="{u["date"]}">{int(m)}/{int(d)}</time>'
+                    f'<span class="up-kind up-{html.escape(u["kind"])}">{UPDATE_KIND.get(u["kind"], "更新")}</span>'
+                    f'<a href="{html.escape(t["url"])}">{html.escape(t["title"])}</a>'
+                    f'<span class="up-text">{html.escape(u["text"])}</span></li>')
+        if len(rows) == UPDATES_SHOWN:
+            break
+    if not rows:
+        return []
+    return ['  <section class="cat" id="updates">', "  <h2>最近の更新</h2>",
+            '  <ul class="update-list">', *rows, "  </ul>", "  </section>"]
+
+
 # トップの「よく使われているツール」に出す数（tool-data.js の popularity の大きい順。4列で2行）
 POPULAR = 8
 
@@ -71,6 +107,8 @@ def render(categories, tools):
             out.append(f'    <a class="c-{key}" href="#cat-{key}">'
                        f'{html.escape(label)}<span>{n}</span></a>')
     out.append("  </nav>")
+
+    out.extend(render_updates(tools))
 
     popular = sorted((t for t in tools if t["popularity"] > 0),
                      key=lambda t: -t["popularity"])[:POPULAR]
