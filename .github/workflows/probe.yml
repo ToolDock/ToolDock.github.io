@@ -1,0 +1,17 @@
+name: probe-npb
+on:
+  push:
+    branches: [probe-npb]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          getent ahosts npb.jp || true
+          for u in https://npb.jp/ https://npb.jp/bis/2026/stats/std_c.html http://npb.jp/; do
+            echo "== $u (v4)"; curl -4 -sS -m 25 -o /dev/null -w "%{http_code} connect=%{time_connect} total=%{time_total} ip=%{remote_ip}\n" "$u" || true
+            echo "== $u (v6)"; curl -6 -sS -m 15 -o /dev/null -w "%{http_code} connect=%{time_connect} total=%{time_total} ip=%{remote_ip}\n" "$u" || true
+          done
+          echo "== control"; curl -sS -m 15 -o /dev/null -w "%{http_code} %{time_total}\n" https://www.yahoo.co.jp/ || true
+          curl -sS -m 15 https://ipinfo.io/json || true
