@@ -95,7 +95,8 @@ def load_drafts(data_dir):
         picks = [p for p in d["picks"] if not p["name"].startswith(("（", "("))]
         for p in picks:   # 名前の後ろの「※」などの印を外す
             p["name"] = re.sub(r"[\s\u3000]*[※＊*]+$", "", p["name"])
-        if picks:
+        # 手入力の年は、指名がまだ無くても（ドラフト会議の開催前でも）ページを作る
+        if picks or d.get("source") == "manual":
             drafts[d["year"]] = picks
     return drafts
 
@@ -737,6 +738,19 @@ def result_page(year, picks, years):
             f'<td class="nm" data-v="{esc(p["name"])}">{name_link(p)}{tags}</td>'
             f'<td data-v="{esc(p["pos"])}">{esc(p["pos"] or "―")}</td>'
             f'<td class="sub" data-v="{esc(p["from"])}">{esc(p["from"])}</td></tr>')
+
+    if not picks:
+        # ドラフト会議の開催前（手入力の年だけ）。指名が入り始めたら、下の一覧のページになる
+        body = f"""
+{nav}
+<p class="lead">{year}年のプロ野球ドラフト会議の指名結果を、このページにまとめます。会議が始まったら、12球団の1位指名と、球団ごとの指名選手（支配下・育成）を、決まった順に追加していきます。</p>
+<p class="note">・過去の年の指名選手と、そのその後（一軍の成績と簡易WAR）は、上の年の一覧から見られます。{wiki_note(year)}</p>
+"""
+        return shell(f"{year}年ドラフト 指名結果一覧｜12球団の1位指名・全指名選手と育成指名",
+                     f"{year}年のプロ野球ドラフト会議の指名結果一覧。12球団の1位指名と、球団ごとの指名選手（支配下・育成）を、決まった順にまとめます。",
+                     f"/draft/{year}/", f"{year}年ドラフト 指名結果一覧",
+                     "12球団の指名選手を、1位指名と球団別の一覧でまとめています", body, "draft",
+                     crumb=f"{year}年")
 
     body = f"""
 {nav}
