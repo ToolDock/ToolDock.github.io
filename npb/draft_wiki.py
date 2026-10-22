@@ -8,7 +8,7 @@
     python3 npb/draft_wiki.py --data npb/data            # 今年
     python3 npb/draft_wiki.py --data npb/data --year 2025 --check   # NPB公式の保存分と突き合わせるだけ
 
-- NPB公式から取った保存分（"source" が無いもの）は上書きしない。npb.jp に届くようになれば、
+- NPB公式から取った保存分（"source" が無いもの）と、手で入れた分（"source": "manual"）は上書きしない。npb.jp に届くようになれば、
   stats_store.py が公式の一覧で上書きする
 - 名前は記事の表示のまま（姓と名の間の空白は無い）。照合は空白を無視するので、成績の結びつけには困らない
 - 指名の途中で記事が書きかけでも、読めた行だけ書く（指名が進めば、次の実行で増える）
@@ -128,8 +128,9 @@ def main(argv=None):
     old = load(path)
     if args.check:
         return 0 if old and check(picks, old["picks"]) else 1
-    if old and "source" not in old:
-        print(f"{year}年はNPB公式の一覧を保存済みなので、Wikipediaでは上書きしない")
+    if old and old.get("source") != "wikipedia":
+        # NPB公式の一覧（source 無し）や、ドラフト中継を見ながら手で入れた一覧（source: manual）は上書きしない
+        print(f"{year}年は{'手入力' if old.get('source') == 'manual' else 'NPB公式'}の一覧を保存済みなので、Wikipediaでは上書きしない")
         return 0
     if not picks:
         print(f"{year}年のドラフトはまだ記事に無い")

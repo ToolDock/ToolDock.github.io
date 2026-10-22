@@ -81,16 +81,16 @@ def load_seasons(data_dir, league):
     return by_name, last_year
 
 
-# 指名選手を Wikipedia の記事から取った年（npb/draft_wiki.py。NPB公式に届かなかった年）
-WIKI_YEARS = set()
+# 指名選手をNPB公式以外から取った年 → 取り元（"wikipedia"：npb/draft_wiki.py、"manual"：ドラフト中継を見ながら手で入力）
+SOURCES = {}
 
 
 def load_drafts(data_dir):
     drafts = {}
     for f in sorted(data_dir.glob("draft_*.json")):
         d = json.loads(f.read_text(encoding="utf-8"))
-        if d.get("source") == "wikipedia":
-            WIKI_YEARS.add(d["year"])
+        if d.get("source"):
+            SOURCES[d["year"]] = d["source"]
         # 「（辞退）」のような、選手名ではない行は除く
         picks = [p for p in d["picks"] if not p["name"].startswith(("（", "("))]
         for p in picks:   # 名前の後ろの「※」などの印を外す
@@ -683,8 +683,11 @@ def school_kind(p):
 
 
 def wiki_note(year):
-    """Wikipedia の記事から取った年は、出典を書く（記事は CC BY-SA 4.0）"""
-    if year not in WIKI_YEARS:
+    """NPB公式以外から取った年は、取り元を書く（Wikipedia の記事は CC BY-SA 4.0）"""
+    if SOURCES.get(year) == "manual":
+        return ("<br>・この年の指名選手は、ドラフト会議の中継をもとに当サイトで入力しています。"
+                "NPB公式サイトの一覧が取れるようになれば、そちらに置き換えます。")
+    if SOURCES.get(year) != "wikipedia":
         return ""
     title = f"{year}年度新人選手選択会議 (日本プロ野球)"
     url = "https://ja.wikipedia.org/wiki/" + title.replace(" ", "_")
@@ -767,7 +770,7 @@ def result_page(year, picks, years):
 <tbody>{team_rows}</tbody></table></div>
 
 <p class="note">・{year + 1}年のシーズンが始まる前に、このページは指名選手のその後（一軍の成績と簡易WAR）を振り返る「答え合わせ」に切り替わります。過去の年の答え合わせは、上の年の一覧から見られます。<br>
-・出身の区分（高校・大学・社会人など）は、{"記事" if year in WIKI_YEARS else "NPBの発表"}の出身校・所属先の名前から分けています。{wiki_note(year)}</p>
+・出身の区分（高校・大学・社会人など）は、{"NPBの発表" if year not in SOURCES else ("記事" if SOURCES[year] == "wikipedia" else "中継で発表された")}の出身校・所属先の名前から分けています。{wiki_note(year)}</p>
 """
     top = "・".join(f'{disp(p["name"])}（{p["team"]}）' for p in firsts[:4])
     title = f"{year}年ドラフト 指名結果一覧｜12球団の1位指名・全指名選手と育成指名"
