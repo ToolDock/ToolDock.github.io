@@ -76,8 +76,6 @@ tr.none td{ color:var(--ink-mute); }
 tr.none td.nm{ font-weight:400; }
 .tag{ display:inline-block; font-size:0.7rem; padding:0 6px; background:#fef3c7; color:var(--gold); margin-left:4px; font-weight:700; }
 .tag.ik{ background:#e0e7ff; color:#3730a3; }
-.filter{ display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin:0 0 10px; font-size:0.86rem; color:var(--ink-sub); }
-.filter select{ font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:var(--r-ctl); background:var(--surface); }
 table.sortable th[data-k]{ cursor:pointer; }
 /* 球団ごとに分けた指名選手一覧：球団の色の見出し行。横に送っても球団名は左に残す */
 .years.teams{ margin:0 0 10px; }
@@ -269,11 +267,10 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 
 <script>
 "use strict";
-/* 表の見出しを押すと並べ替え、球団で絞り込み */
+/* 表の見出しを押すと並べ替え */
 (function(){
   var t = document.getElementById("picks");
   if (!t) return;
-  var body = t.tBodies[0];
   t.tHead.addEventListener("click", function(e){
     var th = e.target.closest("th[data-k]");
     if (!th) return;
@@ -281,7 +278,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
     var desc = th.dataset.dir !== "desc";
     th.parentNode.querySelectorAll("th").forEach(function(x){ delete x.dataset.dir; });
     th.dataset.dir = desc ? "desc" : "asc";
-    // 球団ごとに分けた表（tbody が球団ごと）は、球団の中で並べ替える。先頭の球団名の行は動かさない
+    // 球団・年ごとに分けた表（tbody が区切り）は、区切りの中で並べ替える。先頭の見出しの行は動かさない
     Array.prototype.forEach.call(t.tBodies, function(tb){
       var rows = Array.prototype.filter.call(tb.rows, function(r){ return !r.classList.contains("tm"); });
       rows.sort(function(a, b){
@@ -291,12 +288,6 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
         return desc ? String(y).localeCompare(String(x), "ja") : String(x).localeCompare(String(y), "ja");
       });
       rows.forEach(function(r){ tb.appendChild(r); });
-    });
-  });
-  var sel = document.getElementById("team-filter");
-  if (sel) sel.addEventListener("change", function(){
-    Array.prototype.forEach.call(body.rows, function(r){
-      r.hidden = !!sel.value && r.dataset.team !== sel.value;
     });
   });
 })();
