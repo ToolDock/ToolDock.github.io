@@ -24,7 +24,7 @@ window.CATEGORY_NAMES = {
    id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
    1件は1行で書く（build_index.py が1行ずつ読む） */
 window.UPDATES = [
-  { date: "2026-10-22", id: "draft", kind: "update", text: "年ごとの指名選手一覧を、球団ごとに分けて見やすく。球団名を押すと、その球団の一覧へ移動します" },
+  { date: "2026-10-22", id: "draft", kind: "update", text: "指名選手一覧を見やすく。年ごとのページは球団ごと、球団ごとのページは年ごとに区切りました" },
   { date: "2026-10-22", id: "draft", kind: "new", text: "2026年ドラフトの指名結果一覧を公開。会議の進行に合わせて、12球団の指名選手を追加していきます" },
   { date: "2026-10-20", id: "roulette", kind: "update", text: "盤面のデザインを一新。定番の配色と、右側の赤い矢印に（イカサマ・ヒリつくルーレットも同じ）" },
   { date: "2026-10-20", id: "nouryoku", kind: "update", text: "実機に近いデザインにリニューアル。二刀流（守備位置「投」）にも対応" },
