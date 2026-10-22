@@ -79,6 +79,16 @@ tr.none td.nm{ font-weight:400; }
 .filter{ display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin:0 0 10px; font-size:0.86rem; color:var(--ink-sub); }
 .filter select{ font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:var(--r-ctl); background:var(--surface); }
 table.sortable th[data-k]{ cursor:pointer; }
+/* 球団ごとに分けた指名選手一覧：球団の色の見出し行。横に送っても球団名は左に残す */
+.years.teams{ margin:0 0 10px; }
+tbody[id]{ scroll-margin-top:12px; }
+tr.tm th{ background:var(--tm-bg, var(--ink-strong)); color:var(--tm-fg, #fff); border-bottom:3px solid var(--tm-line, transparent);
+          padding:6px 10px; font-size:0.92rem; }
+tbody + tbody tr.tm th{ border-top:14px solid var(--surface); }
+tr.tm th span{ display:inline-block; position:sticky; left:10px; }
+tr.tm th a{ color:inherit; text-decoration:none; font-weight:800; }
+tr.tm th a:hover{ text-decoration:underline; }
+tr.tm th small{ margin-left:10px; font-size:0.76rem; font-weight:400; opacity:0.85; }
 article{ background:var(--surface); border:1px solid var(--line); padding:4px 20px 18px; margin-top:26px; }
 footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 @media (max-width:600px){
@@ -356,14 +366,17 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
     var desc = th.dataset.dir !== "desc";
     th.parentNode.querySelectorAll("th").forEach(function(x){ delete x.dataset.dir; });
     th.dataset.dir = desc ? "desc" : "asc";
-    var rows = Array.prototype.slice.call(body.rows);
-    rows.sort(function(a, b){
-      var x = a.cells[idx].dataset.v, y = b.cells[idx].dataset.v;
-      var nx = parseFloat(x), ny = parseFloat(y);
-      if (!isNaN(nx) && !isNaN(ny)) return desc ? ny - nx : nx - ny;
-      return desc ? String(y).localeCompare(String(x), "ja") : String(x).localeCompare(String(y), "ja");
+    // 球団ごとに分けた表（tbody が球団ごと）は、球団の中で並べ替える。先頭の球団名の行は動かさない
+    Array.prototype.forEach.call(t.tBodies, function(tb){
+      var rows = Array.prototype.filter.call(tb.rows, function(r){ return !r.classList.contains("tm"); });
+      rows.sort(function(a, b){
+        var x = a.cells[idx].dataset.v, y = b.cells[idx].dataset.v;
+        var nx = parseFloat(x), ny = parseFloat(y);
+        if (!isNaN(nx) && !isNaN(ny)) return desc ? ny - nx : nx - ny;
+        return desc ? String(y).localeCompare(String(x), "ja") : String(x).localeCompare(String(y), "ja");
+      });
+      rows.forEach(function(r){ tb.appendChild(r); });
     });
-    rows.forEach(function(r){ body.appendChild(r); });
   });
   var sel = document.getElementById("team-filter");
   if (sel) sel.addEventListener("change", function(){

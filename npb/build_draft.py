@@ -378,6 +378,16 @@ tr.none td.nm{ font-weight:400; }
 .filter{ display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin:0 0 10px; font-size:0.86rem; color:var(--ink-sub); }
 .filter select{ font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:var(--r-ctl); background:var(--surface); }
 table.sortable th[data-k]{ cursor:pointer; }
+/* 球団ごとに分けた指名選手一覧：球団の色の見出し行。横に送っても球団名は左に残す */
+.years.teams{ margin:0 0 10px; }
+tbody[id]{ scroll-margin-top:12px; }
+tr.tm th{ background:var(--tm-bg, var(--ink-strong)); color:var(--tm-fg, #fff); border-bottom:3px solid var(--tm-line, transparent);
+          padding:6px 10px; font-size:0.92rem; }
+tbody + tbody tr.tm th{ border-top:14px solid var(--surface); }
+tr.tm th span{ display:inline-block; position:sticky; left:10px; }
+tr.tm th a{ color:inherit; text-decoration:none; font-weight:800; }
+tr.tm th a:hover{ text-decoration:underline; }
+tr.tm th small{ margin-left:10px; font-size:0.76rem; font-weight:400; opacity:0.85; }
 article{ background:var(--surface); border:1px solid var(--line); padding:4px 20px 18px; margin-top:26px; }
 footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 @media (max-width:600px){
@@ -401,14 +411,17 @@ SORT_JS = """
     var desc = th.dataset.dir !== "desc";
     th.parentNode.querySelectorAll("th").forEach(function(x){ delete x.dataset.dir; });
     th.dataset.dir = desc ? "desc" : "asc";
-    var rows = Array.prototype.slice.call(body.rows);
-    rows.sort(function(a, b){
-      var x = a.cells[idx].dataset.v, y = b.cells[idx].dataset.v;
-      var nx = parseFloat(x), ny = parseFloat(y);
-      if (!isNaN(nx) && !isNaN(ny)) return desc ? ny - nx : nx - ny;
-      return desc ? String(y).localeCompare(String(x), "ja") : String(x).localeCompare(String(y), "ja");
+    // 球団ごとに分けた表（tbody が球団ごと）は、球団の中で並べ替える。先頭の球団名の行は動かさない
+    Array.prototype.forEach.call(t.tBodies, function(tb){
+      var rows = Array.prototype.filter.call(tb.rows, function(r){ return !r.classList.contains("tm"); });
+      rows.sort(function(a, b){
+        var x = a.cells[idx].dataset.v, y = b.cells[idx].dataset.v;
+        var nx = parseFloat(x), ny = parseFloat(y);
+        if (!isNaN(nx) && !isNaN(ny)) return desc ? ny - nx : nx - ny;
+        return desc ? String(y).localeCompare(String(x), "ja") : String(x).localeCompare(String(y), "ja");
+      });
+      rows.forEach(function(r){ tb.appendChild(r); });
     });
-    rows.forEach(function(r){ body.appendChild(r); });
   });
   var sel = document.getElementById("team-filter");
   if (sel) sel.addEventListener("change", function(){
@@ -522,8 +535,7 @@ def pick_rows(picks):
         cls = "" if c["years"] else ' class="none"'
         order = (0 if p["label"] == "希望枠" else 1) * 100 + (p["round"] or 0) + (50 if p["ikusei"] else 0)
         out.append(
-            f'<tr{cls} data-team="{esc(p["team"])}">'
-            f'<td data-v="{esc(p["team"])}">{esc(p["team"])}</td>'
+            f'<tr{cls}>'
             f'<td data-v="{order}">{esc(pick_label(p))}</td>'
             f'<td class="nm" data-v="{esc(p["name"])}">{name_link(p)}{tags}</td>'
             f'<td data-v="{esc(p["pos"])}">{esc(p["pos"] or "―")}</td>'
@@ -536,6 +548,32 @@ def pick_rows(picks):
 
 def team_sort_key(t):
     return TEAM_ORDER.index(t) if t in TEAM_ORDER else 99
+
+
+def pick_order(p):
+    return (p["ikusei"], 0 if p["label"] == "希望枠" else 1, p["round"] or 0)
+
+
+def team_jump(teams):
+    """指名選手一覧の上の、球団の見出しへ飛ぶリンク"""
+    return '<ul class="years teams">' + "".join(
+        f'<li><a href="#t-{TEAM_SLUG[team_short_franchise(t)]}">{esc(t)}</a></li>' for t in teams) + "</ul>"
+
+
+def team_groups(picks, ncols, rows_fn):
+    """指名選手一覧を球団ごとに分ける。球団ごとに <tbody> を作り、先頭の行を球団の色の見出しにする
+    （列の幅は12球団でそろう。並べ替えは球団の中で行う）"""
+    out = []
+    for t in sorted({p["team"] for p in picks}, key=team_sort_key):
+        ps = sorted((p for p in picks if p["team"] == t), key=pick_order)
+        n_ik = sum(p["ikusei"] for p in ps)
+        slug = TEAM_SLUG[team_short_franchise(t)]
+        out.append(
+            f'<tbody id="t-{slug}"><tr class="tm"{team_style(team_short_franchise(t))}><th colspan="{ncols}"><span>'
+            f'<a href="/draft/team/{slug}/">{esc(t)}</a>'
+            f'<small>支配下{len(ps) - n_ik}人{f"・育成{n_ik}人" if n_ik else ""}</small></span></th></tr>\n'
+            f'{rows_fn(ps)}\n</tbody>')
+    return "\n".join(out)
 
 
 def year_points(year, picks, played, team_rank, early):
@@ -647,14 +685,12 @@ def year_page(year, picks, years, last_season):
 </tbody></table></div>
 
 <h2>{year}年ドラフト 指名選手一覧とその後</h2>
-<div class="filter"><label>球団で絞り込む <select id="team-filter"><option value="">全球団</option>
-{"".join(f'<option>{esc(t)}</option>' for t in sorted(by_team, key=team_sort_key))}
-</select></label><span class="note">見出しを押すと並べ替えられます</span></div>
+{team_jump(sorted(by_team, key=team_sort_key))}
+<p class="note">表の見出しを押すと、球団の中で並べ替えられます。</p>
 <div class="tbl-wrap"><table class="sortable" id="picks">
-<thead><tr><th data-k>球団</th><th data-k>指名</th><th data-k>選手</th><th data-k>守備</th><th data-k>出身</th><th data-k class="n">一軍</th><th data-k>一軍通算成績</th><th data-k class="n">通算WAR</th></tr></thead>
-<tbody>
-{pick_rows(sorted(picks, key=lambda p: (team_sort_key(p["team"]), p["ikusei"], 0 if p["label"] == "希望枠" else 1, p["round"] or 0)))}
-</tbody></table></div>
+<thead><tr><th data-k>指名</th><th data-k>選手</th><th data-k>守備</th><th data-k>出身</th><th data-k class="n">一軍</th><th data-k>一軍通算成績</th><th data-k class="n">通算WAR</th></tr></thead>
+{team_groups(picks, 7, pick_rows)}
+</table></div>
 <p class="note">・「一軍」は一軍の公式戦に出場したシーズン数です。<br>
 ・簡易WARは、打撃・盗塁・守備位置・代替水準（投手はFIP）から計算したもので、守備の上手さ（UZR）や球場の補正は入っていません（<a href="/war/">計算方法</a>）。<br>
 ・登録名を変えた選手は「岡田 貴弘（T-岡田）」のように表示し、変更後の成績も含めて集計しています。<br>
@@ -725,19 +761,16 @@ def result_page(year, picks, years):
         f'<tr><td class="nm">{esc(t)}</td><td class="n">{cnt[t]["sh"]}人</td><td class="n">{cnt[t]["ik"]}人</td>'
         f'<td class="n">{cnt[t]["pit"]}</td><td class="n">{cnt[t]["fld"]}</td>'
         + "".join(f'<td class="n">{cnt[t][k]}</td>' for k in kinds) + "</tr>" for t in teams)
-    rows = []
-    for p in sorted(picks, key=lambda p: (team_sort_key(p["team"]), p["ikusei"], 0 if p["label"] == "希望枠" else 1, p["round"] or 0)):
+
+    def result_row(p):
         order = (0 if p["label"] == "希望枠" else 1) * 100 + (p["round"] or 0) + (50 if p["ikusei"] else 0)
         tags = '<span class="tag ik">育成</span>' if p["ikusei"] else ""
         if p["redrafted"]:
             tags += f'<span class="tag">{p["redrafted"][0]}年に{esc(p["redrafted"][1])}が再指名</span>'
-        rows.append(
-            f'<tr data-team="{esc(p["team"])}">'
-            f'<td data-v="{esc(p["team"])}">{esc(p["team"])}</td>'
-            f'<td data-v="{order}">{esc(pick_label(p))}</td>'
-            f'<td class="nm" data-v="{esc(p["name"])}">{name_link(p)}{tags}</td>'
-            f'<td data-v="{esc(p["pos"])}">{esc(p["pos"] or "―")}</td>'
-            f'<td class="sub" data-v="{esc(p["from"])}">{esc(p["from"])}</td></tr>')
+        return (f'<tr><td data-v="{order}">{esc(pick_label(p))}</td>'
+                f'<td class="nm" data-v="{esc(p["name"])}">{name_link(p)}{tags}</td>'
+                f'<td data-v="{esc(p["pos"])}">{esc(p["pos"] or "―")}</td>'
+                f'<td class="sub" data-v="{esc(p["from"])}">{esc(p["from"])}</td></tr>')
 
     if not picks:
         # ドラフト会議の開催前（手入力の年だけ）。指名が入り始めたら、下の一覧のページになる
@@ -768,15 +801,12 @@ def result_page(year, picks, years):
 <thead><tr><th>球団</th><th>選手</th><th>守備</th><th>出身</th></tr></thead>
 <tbody>{first_rows}</tbody></table></div>
 
-<h2>{year}年ドラフト 指名選手一覧</h2>
-<div class="filter"><label>球団で絞り込む <select id="team-filter"><option value="">全球団</option>
-{"".join(f'<option>{esc(t)}</option>' for t in teams)}
-</select></label><span class="note">見出しを押すと並べ替えられます</span></div>
+<h2>{year}年ドラフト 球団別の指名選手一覧</h2>
+{team_jump(teams)}
 <div class="tbl-wrap"><table class="sortable" id="picks">
-<thead><tr><th data-k>球団</th><th data-k>指名</th><th data-k>選手</th><th data-k>守備</th><th data-k>出身</th></tr></thead>
-<tbody>
-{chr(10).join(rows)}
-</tbody></table></div>
+<thead><tr><th data-k>指名</th><th data-k>選手</th><th data-k>守備</th><th data-k>出身</th></tr></thead>
+{team_groups(picks, 4, lambda ps: chr(10).join(result_row(p) for p in ps))}
+</table></div>
 
 <h2>球団別の指名人数（{year}年）</h2>
 <div class="tbl-wrap"><table>
@@ -790,7 +820,7 @@ def result_page(year, picks, years):
     title = f"{year}年ドラフト 指名結果一覧｜12球団の1位指名・全指名選手と育成指名"
     desc = (f"{year}年のプロ野球ドラフト会議で指名された{n_all}人（支配下{n_all - n_ik}人・育成{n_ik}人）の一覧。"
             + (f"1位指名は{top}など。" if top else "")
-            + "12球団の指名選手を球団別に絞り込めるほか、投手・野手、高校・大学・社会人の内訳もまとめています。")
+            + "12球団の指名選手を球団ごとに分けて並べ、、投手・野手、高校・大学・社会人の内訳もまとめています。")
     return shell(title, desc, f"/draft/{year}/", f"{year}年ドラフト 指名結果一覧",
                  "12球団の指名選手を、1位指名と球団別の一覧でまとめています", body, "draft",
                  crumb=f"{year}年")
