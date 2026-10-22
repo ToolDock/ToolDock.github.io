@@ -41,7 +41,8 @@ jobs:
 
       - name: NPB公式サイトにつながるか確かめる
         # 2026-10-21 から、GitHub のサーバー（米国）から npb.jp へ接続できなくなった（つながらずに時間切れ）。
-        # つながらない日は、以降をすべて飛ばして、失敗ではなく警告として終える（公開中のページはそのまま）
+        # つながらない日は、NPB公式から取る工程を飛ばして、失敗ではなく警告として終える（公開中のページはそのまま）。
+        # ドラフトの指名選手だけは、Wikipedia の記事から取ってページを作る（下の「…Wikipediaから取る」）
         id: npb
         run: |
           if curl -sS -o /dev/null -m 30 --retry 2 --retry-delay 10 --retry-all-errors https://npb.jp/; then
@@ -76,8 +77,13 @@ jobs:
         if: steps.npb.outputs.ok == 'true'
         run: python npb/build_saber.py --data npb/data --league war/league.json --out saber
 
+      - name: ドラフトの指名選手をWikipediaから取る（NPB公式に届かないとき）
+        if: steps.npb.outputs.ok != 'true'
+        # NPB公式の一覧を保存済みの年は上書きしない。記事が書きかけでも読めた分だけ書き、次の実行で増える
+        run: python npb/draft_wiki.py --data npb/data
+
       - name: ドラフト答え合わせを作成
-        if: steps.npb.outputs.ok == 'true'
+        # 保存済みのデータだけで作れるので、NPB公式に届かない日も作る（Wikipediaから取った指名選手を載せる）
         run: python npb/build_draft.py --data npb/data --league war/league.json --out draft
 
       - name: 運ランキング（ピタゴラス勝率）を作成
@@ -99,19 +105,16 @@ jobs:
         run: python npb/build_standings.py --data npb/data --out standings
 
       - name: SNSの共有カード（OGP）とパンくずをHTMLに書き込む
-        if: steps.npb.outputs.ok == 'true'
         # 作り直したページにはOGPが無いので書き足す（SNSはJavaScriptを動かさないため、head.js任せにできない）。
         # 中身が同じなら書き換えないので、成績に変化が無い日は差分が出ない。
         # サイトマップの更新日は書き込んだあとの中身で決めるので、サイトマップより先に実行する
         run: python scripts/static_html.py
 
       - name: トップ・一覧のカードとサイトマップを作り直す
-        if: steps.npb.outputs.ok == 'true'
         # ツール名が変わったときのカードと、新しい年のドラフトのページをサイトマップに載せる
         run: python scripts/build_index.py
 
       - name: 変更があればコミット
-        if: steps.npb.outputs.ok == 'true'
         run: |
           # 「最終更新」の時刻だけが変わった場合はコミットしない。
           # テンプレートを直したときは本文が変わるので、それはコミットする。
