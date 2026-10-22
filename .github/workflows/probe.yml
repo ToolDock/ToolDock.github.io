@@ -1,0 +1,27 @@
+name: probe-wiki
+on:
+  push:
+    branches: [probe-wiki]
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: probe-wiki
+      - run: |
+          mkdir -p _probe
+          for t in "2025年度新人選手選択会議_(日本プロ野球)" "2026年度新人選手選択会議_(日本プロ野球)"; do
+            curl -sS -m 30 -A "ToolDock/1.0 (https://tooldock.github.io/)" -G "https://ja.wikipedia.org/w/api.php" \
+              --data-urlencode "action=parse" --data-urlencode "page=$t" --data-urlencode "prop=wikitext" \
+              --data-urlencode "format=json" --data-urlencode "formatversion=2" -o "_probe/$(echo $t | cut -c1-4).json" || true
+            ls -la _probe
+          done
+          curl -sS -m 30 -o _probe/omyutech.html "https://baseball.omyutech.com/draftresult.action?year=2025" || true
+          curl -sS -m 30 -o _probe/bbchannel.html "https://www.baseballchannel.jp/npb/235657/" || true
+          ls -la _probe
+          git config user.name probe; git config user.email probe@example.com
+          git add _probe && git commit -m "probe data" && git push
