@@ -543,13 +543,11 @@ function drawFace(ctx, cy0, key, t) {
             ctx.quadraticCurveTo(0.4 * side, 3.0, -2.8 * side, -1.6);
             ctx.stroke();
         } else if (eyes === "droop") {
-            /* ぎゅっとつぶった目（＞＜） */
+            /* 短い斜めの目。内側が上、外側が下（左目は「／」、右目は「＼」）で、しょんぼり */
             var sd = ex < 0 ? -1 : 1;
-            ctx.lineWidth = 2.1;
-            ctx.lineJoin = "round";
-            ctx.moveTo(2.4 * sd, -2.3);
-            ctx.lineTo(-2.2 * sd, 0);
-            ctx.lineTo(2.4 * sd, 2.3);
+            ctx.lineWidth = 2.6;
+            ctx.moveTo(1.9 * sd, 1.5);
+            ctx.lineTo(-1.5 * sd, -1.5);
             ctx.stroke();
         } else {
             var eh = key === "zekko" ? 7.2 : 6.2;
@@ -613,9 +611,15 @@ function drawFace(ctx, cy0, key, t) {
             ctx.quadraticCurveTo(-sw * 0.6, sh * 1.25, -sw, sh * 0.6);
             ctx.fill();
         } else {
-            /* うめく口：少しゆがんだ、縦に開いた丸 */
+            /* うめく口：上がせまく下が広い台形。つぶれるほど大きく開く */
+            var tw = 3.4 + 1.2 * open, bw = 6 + 3 * open, gh = 3 + 4 * open;
             ctx.beginPath();
-            ctx.ellipse(wob * 0.4, 2.5, 3.6 + 1.2 * open, 1.6 + 2.6 * open, wob * 0.06, 0, 2 * Math.PI);
+            ctx.moveTo(-tw, 1);
+            ctx.lineTo(tw, 1);
+            ctx.quadraticCurveTo(bw, 1 + gh * 0.55, bw * 0.85, 1 + gh);
+            ctx.lineTo(-bw * 0.85, 1 + gh);
+            ctx.quadraticCurveTo(-bw, 1 + gh * 0.55, -tw, 1);
+            ctx.closePath();
             ctx.fill();
         }
         ctx.restore();
