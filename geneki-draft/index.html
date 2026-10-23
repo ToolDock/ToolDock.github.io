@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- npb/build_draft.py が生成する。直接書き換えても、次の自動更新で消える -->
+<title>現役ドラフト答え合わせ｜移籍した選手のその後・成績とWAR【2022年〜】</title>
+<meta name="description" content="プロ野球の現役ドラフト（2022年〜）で移籍した49人の、移籍前と移籍後の一軍成績・簡易WARを比較。移籍後のWARトップは細川 成也（16.1）・水谷 瞬（4.9）・大竹 耕太郎（4.5）。球団別の損得や、年ごとの移籍選手のその後もまとめています。">
+<link rel="canonical" href="https://tooldock.github.io/geneki-draft/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="現役ドラフト答え合わせ｜移籍した選手のその後・成績とWAR【2022年〜】 | ToolDock">
+<meta property="og:description" content="プロ野球の現役ドラフト（2022年〜）で移籍した全選手の、移籍前と移籍後の一軍成績・簡易WARを比較。当たりの移籍ランキング、球団別の損得、年ごとの移籍選手のその後をまとめています。">
+<meta property="og:url" content="https://tooldock.github.io/geneki-draft/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/geneki-draft.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "geneki-draft"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<style>
+*{ box-sizing:border-box; }
+:root{
+    --ink-strong:var(--ink); --ink-sub:var(--ink); --ink-mute:var(--ink);
+    --head-bg:var(--surface-2); --tint:var(--surface-2);
+    --good:#15803d; --gold:#b45309;
+}
+body{ margin:0; padding:0 0 48px; font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+      color:var(--ink); line-height:1.75; background:var(--bg); }
+.page-wrapper{ max-width:1100px; margin:0 auto; padding:0 16px; }
+/* ほかのページ（金特ツールなど）と同じく左に寄せ、左右に20pxの余白を取る。
+   サイト共通の style.css は body を幅900pxに絞るので外し、表の広さに合わせた幅にする。
+   下に付く「人気のページ」なども本文と同じ幅・余白にそろえる */
+body{ max-width:none; }
+.page-wrapper{ margin:0; padding:0 20px; }
+body .td-rail-inline{ max-width:1100px; margin:40px 0 0; padding:0 20px; }
+h2{ margin:30px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong); border-bottom:2px solid var(--c); }
+h3{ margin:20px 0 8px; font-size:1rem; color:var(--ink-strong); }
+p{ margin:0 0 12px; }
+.lead{ font-size:0.95rem; }
+ul.points{ margin:0 0 8px; padding-left:1.3em; }
+ul.points li{ margin:4px 0; }
+.note{ font-size:0.84rem; color:var(--ink-mute); }
+.years{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px; padding:0; list-style:none; }
+.years a, .years span{ display:inline-block; padding:4px 10px; border:1px solid var(--line); background:var(--surface);
+                       font-size:0.86rem; color:var(--ink-sub); text-decoration:none; }
+.years span{ background:var(--ink-strong); color:#fff; border-color:var(--ink-strong); }
+.cards{ display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); margin:0 0 16px; }
+.card{ background:var(--surface); border:1px solid var(--line); padding:10px 12px; }
+.card .k{ font-size:0.78rem; color:var(--ink-sub); }
+.card .v{ font-size:1.35rem; font-weight:800; color:var(--ink-strong); line-height:1.3; }
+.card .s{ font-size:0.8rem; color:var(--ink-mute); }
+.tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; background:var(--surface); border:1px solid var(--line); margin:0 0 14px; }
+table{ border-collapse:collapse; width:100%; font-size:0.86rem; font-variant-numeric:tabular-nums; }
+th, td{ padding:7px 8px; border-bottom:1px solid var(--line-soft); text-align:left; white-space:nowrap; }
+thead th{ background:var(--head-bg); font-size:0.78rem; color:var(--ink-sub); }
+td.n, th.n{ text-align:right; }
+td.nm{ font-weight:700; color:var(--ink-strong); }
+td a.pl{ color:inherit; text-decoration:none; border-bottom:1px dotted var(--ink-mute); }
+td a.pl:hover{ color:var(--accent); border-bottom-color:var(--accent); }
+td.sub{ font-size:0.78rem; color:var(--ink-mute); }
+td.war{ font-weight:800; text-align:right; }
+tr.none td{ color:var(--ink-mute); }
+tr.none td.nm{ font-weight:400; }
+.tag{ display:inline-block; font-size:0.7rem; padding:0 6px; background:#fef3c7; color:var(--gold); margin-left:4px; font-weight:700; }
+.tag.ik{ background:#e0e7ff; color:#3730a3; }
+table.sortable th[data-k]{ cursor:pointer; }
+/* 今年の指名結果への案内（過去の年のページの上） */
+a.now-box{ display:block; margin:0 0 16px; padding:10px 14px; background:var(--surface); border:1px solid var(--line);
+           border-left:4px solid var(--c); color:var(--ink); text-decoration:none; }
+a.now-box b{ display:block; font-size:0.98rem; color:var(--ink-strong); }
+a.now-box b::after{ content:" →"; }
+a.now-box span{ font-size:0.82rem; color:var(--ink-mute); }
+a.now-box:hover b{ color:var(--accent); }
+/* 球団ごとに分けた指名選手一覧：球団の色の見出し行。横に送っても球団名は左に残す */
+.years.teams{ margin:0 0 10px; }
+tbody[id]{ scroll-margin-top:12px; }
+tr.tm th{ background:var(--tm-bg, var(--ink-strong)); color:var(--tm-fg, #fff); border-bottom:3px solid var(--tm-line, transparent);
+          padding:6px 10px; font-size:0.92rem; }
+tbody + tbody tr.tm th{ border-top:14px solid var(--surface); }
+tr.tm th span{ display:inline-block; position:sticky; left:10px; }
+tr.tm th a{ color:inherit; text-decoration:none; font-weight:800; }
+tr.tm th a:hover{ text-decoration:underline; }
+tr.tm th small{ margin-left:10px; font-size:0.76rem; font-weight:400; opacity:0.85; }
+article{ background:var(--surface); border:1px solid var(--line); padding:4px 20px 18px; margin-top:26px; }
+footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
+@media (max-width:600px){
+    th, td{ padding:6px 6px; font-size:0.8rem; }
+    article{ padding:2px 14px 14px; }
+}
+
+.cnt{ margin-left:2px; font-size:0.74rem; color:var(--ink-mute); font-weight:400; }
+.yss{ margin-top:2px; }
+.mv{ display:block; font-size:0.74rem; font-weight:400; color:var(--ink-mute); }
+.mv b{ color:var(--ink); }
+.ys{ display:inline-block; margin-right:8px; font-size:0.74rem; color:var(--ink-mute); }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=baseball">野球</a> <span class="bc-sep">›</span> <span>現役ドラフト答え合わせ</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "野球", "item": "https://tooldock.github.io/category/?cat=baseball"}, {"@type": "ListItem", "position": 3, "name": "現役ドラフト答え合わせ", "item": "https://tooldock.github.io/geneki-draft/"}]}</script>
+<!-- /BREADCRUMB -->
+<div class="page-wrapper">
+<div class="td-banner">
+    <h1>現役ドラフト答え合わせ</h1>
+    <p>移籍した選手の「移籍前」と「移籍後」を、一軍の成績と簡易WARで比べます</p>
+</div>
+<div class="container">
+
+<p class="lead">現役ドラフトは、出場機会の少ない選手に移籍のチャンスを与えるため、2022年に始まった制度です。毎年12月、12球団が2人以上の選手を候補に出し合い、1人ずつ指名して獲得します。このページでは、これまでに移籍した49人について、移籍前（移籍の年までの3年間）と移籍後の一軍成績・簡易WARを比べ、移籍が「当たり」だったかを振り返ります。成績は2026年シーズンまでの一軍公式戦の合計です。</p>
+
+<div class="cards">
+  <div class="card"><div class="k">移籍した選手（2022〜2025年）</div><div class="v">49人</div><div class="s">うち投手 28人</div></div>
+  <div class="card"><div class="k">移籍後に一軍に出場</div><div class="v">46人</div><div class="s">93%</div></div>
+  <div class="card"><div class="k">WAR1以上のシーズンあり</div><div class="v">3人</div><div class="s">移籍後に1度でも</div></div>
+  <div class="card"><div class="k">移籍後のWARトップ</div><div class="v">細川 成也</div><div class="s">2022年 DeNA→中日 ・WAR 16.1</div></div>
+</div>
+
+<h2>現役ドラフトの見どころ</h2>
+<ul class="points">
+<li>移籍後に最も活躍しているのは細川 成也（2022年・DeNA→中日）で、移籍後の通算WARは16.1。移籍前の3年間は-0.7だった。次いで水谷 瞬（2023年・ソフトバンク→日本ハム）の4.9。</li><li>49人のうち、移籍後に一軍に出場したのは46人。1シーズンでWAR1以上を記録したのは3人（細川 成也・水谷 瞬・大竹 耕太郎）。移籍をきっかけに主力へ定着できたのは、ごく一握りだ。</li><li>1シーズンあたりのWARが移籍前より上がったのは6人（細川 成也・水谷 瞬・大竹 耕太郎・田中 瑛斗など）。</li><li>年別では2022年の移籍組が、移籍後のWAR合計19.2で最も多い。</li><li>投手は28人で移籍後のWAR合計1.6、野手は21人で19.4。野手のほうが、移籍で出番をつかみやすい傾向がある。</li>
+</ul>
+
+<h2>現役ドラフトの「当たり」トップ10</h2>
+<p>移籍の翌年から2026年までの、一軍での通算WARの順です。</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>順位</th><th>選手</th><th>年</th><th>移籍</th><th>移籍後の一軍成績</th><th class="n">移籍前3年WAR</th><th class="n">移籍後WAR</th></tr></thead>
+<tbody><tr><td>1</td><td class="nm"><a class="pl" href="/player/31835134/">細川 成也</a></td><td>2022年</td><td>DeNA→中日</td><td>534試合 打率.257 92本 5盗塁</td><td class="n">-0.7</td><td class="war">16.1</td></tr><tr><td>2</td><td class="nm"><a class="pl" href="/player/31835138/">水谷 瞬</a></td><td>2023年</td><td>ソフトバンク→日本ハム</td><td>246試合 打率.272 27本 12盗塁</td><td class="n">0.0</td><td class="war">4.9</td></tr><tr><td>3</td><td class="nm"><a class="pl" href="/player/41345136/">大竹 耕太郎</a></td><td>2022年</td><td>ソフトバンク→阪神</td><td>79登板 39勝22敗 防御率2.65</td><td class="n">0.3</td><td class="war">4.5</td></tr><tr><td>4</td><td class="nm"><a class="pl" href="/player/13515157/">吉田 賢吾</a></td><td>2024年</td><td>ソフトバンク→日本ハム</td><td>100試合 打率.247 12本 1盗塁</td><td class="n">-0.3</td><td class="war">1.1</td></tr><tr><td>5</td><td class="nm"><a class="pl" href="/player/61065136/">田中 瑛斗</a></td><td>2024年</td><td>日本ハム→巨人</td><td>123登板 4勝6敗 2S 78H 防御率1.82</td><td class="n">-1.3</td><td class="war">0.6</td></tr><tr><td>6</td><td class="nm"><a class="pl" href="/player/01505132/">オコエ 瑠偉</a></td><td>2022年</td><td>楽天→巨人</td><td>170試合 打率.248 5本 8盗塁</td><td class="n">-0.5</td><td class="war">0.4</td></tr><tr><td>7</td><td class="nm"><a class="pl" href="/player/71075139/">中村 祐太</a></td><td>2023年</td><td>広島→西武</td><td>70登板 1勝4敗 2H 防御率2.08</td><td class="n">-0.5</td><td class="war">0.3</td></tr><tr><td>8</td><td class="nm"><a class="pl" href="/player/41445136/">馬場 皐輔</a></td><td>2023年</td><td>阪神→巨人</td><td>20登板 3勝1敗 1H 防御率3.26</td><td class="n">0.1</td><td class="war">0.2</td></tr><tr><td>9</td><td class="nm"><a class="pl" href="/player/31635155/">長谷川 威展</a></td><td>2023年</td><td>日本ハム→ソフトバンク</td><td>32登板 4勝0敗 6H 防御率2.49</td><td class="n">0.0</td><td class="war">0.2</td></tr><tr><td>10</td><td class="nm"><a class="pl" href="/player/91095151/">佐藤 直樹</a></td><td>2025年</td><td>ソフトバンク→楽天</td><td>71試合 打率.244 6本 4盗塁</td><td class="n">0.0</td><td class="war">0.2</td></tr></tbody></table></div>
+
+<h2>球団別の損得</h2>
+<p>獲得した選手と、出ていった選手の、移籍後の通算WARの合計を比べます。差がプラスなら、現役ドラフトで得をしている球団です。</p>
+<div class="tbl-wrap"><table>
+<thead><tr><th>順位</th><th>球団</th><th class="n">獲得した選手</th><th class="n">出ていった選手</th><th class="n">差</th><th>獲得した選手のトップ</th></tr></thead>
+<tbody><tr><td>1</td><td class="nm"><a class="pl" href="/draft/team/dragons/">中日</a></td><td class="n">15.8<span class="cnt">（4人）</span></td><td class="n">-0.5<span class="cnt">（4人）</span></td><td class="war">+16.3</td><td><a class="pl" href="/player/31835134/">細川 成也</a>（16.1）</td></tr><tr><td>2</td><td class="nm"><a class="pl" href="/draft/team/fighters/">日本ハム</a></td><td class="n">5.8<span class="cnt">（4人）</span></td><td class="n">-0.1<span class="cnt">（5人）</span></td><td class="war">+5.9</td><td><a class="pl" href="/player/31835138/">水谷 瞬</a>（4.9）</td></tr><tr><td>3</td><td class="nm"><a class="pl" href="/draft/team/tigers/">阪神</a></td><td class="n">4.4<span class="cnt">（4人）</span></td><td class="n">-0.4<span class="cnt">（4人）</span></td><td class="war">+4.8</td><td><a class="pl" href="/player/41345136/">大竹 耕太郎</a>（4.5）</td></tr><tr><td>4</td><td class="nm"><a class="pl" href="/draft/team/giants/">巨人</a></td><td class="n">1.2<span class="cnt">（4人）</span></td><td class="n">-1.3<span class="cnt">（4人）</span></td><td class="war">+2.5</td><td><a class="pl" href="/player/61065136/">田中 瑛斗</a>（0.6）</td></tr><tr><td>5</td><td class="nm"><a class="pl" href="/draft/team/lions/">西武</a></td><td class="n">-0.3<span class="cnt">（4人）</span></td><td class="n">-1.4<span class="cnt">（4人）</span></td><td class="war">+1.1</td><td><a class="pl" href="/player/71075139/">中村 祐太</a>（0.3）</td></tr><tr><td>6</td><td class="nm"><a class="pl" href="/draft/team/swallows/">ヤクルト</a></td><td class="n">-0.4<span class="cnt">（4人）</span></td><td class="n">-1.0<span class="cnt">（4人）</span></td><td class="war">+0.6</td><td><a class="pl" href="/player/71575134/">矢崎 拓也</a>（0.1）</td></tr><tr><td>7</td><td class="nm"><a class="pl" href="/draft/team/buffaloes/">オリックス</a></td><td class="n">-0.6<span class="cnt">（4人）</span></td><td class="n">-0.3<span class="cnt">（4人）</span></td><td class="war">-0.3</td><td><a class="pl" href="/player/31835132/">本田 圭佑</a>（0.1）</td></tr><tr><td>8</td><td class="nm"><a class="pl" href="/draft/team/eagles/">楽天</a></td><td class="n">-0.5<span class="cnt">（4人）</span></td><td class="n">0.4<span class="cnt">（4人）</span></td><td class="war">-0.9</td><td><a class="pl" href="/player/91095151/">佐藤 直樹</a>（0.2）</td></tr><tr><td>9</td><td class="nm"><a class="pl" href="/draft/team/marines/">ロッテ</a></td><td class="n">-1.7<span class="cnt">（4人）</span></td><td class="n">-0.4<span class="cnt">（4人）</span></td><td class="war">-1.3</td><td><a class="pl" href="/player/41145134/">石垣 雅海</a>（-0.1）</td></tr><tr><td>10</td><td class="nm"><a class="pl" href="/draft/team/carp/">広島</a></td><td class="n">-1.4<span class="cnt">（5人）</span></td><td class="n">0.4<span class="cnt">（4人）</span></td><td class="war">-1.8</td><td><a class="pl" href="/player/71075157/">辰見 鴻之介</a>（0.1）</td></tr><tr><td>11</td><td class="nm"><a class="pl" href="/draft/team/hawks/">ソフトバンク</a></td><td class="n">-1.0<span class="cnt">（4人）</span></td><td class="n">10.7<span class="cnt">（4人）</span></td><td class="war">-11.7</td><td><a class="pl" href="/player/31635155/">長谷川 威展</a>（0.2）</td></tr><tr><td>12</td><td class="nm"><a class="pl" href="/draft/team/baystars/">DeNA</a></td><td class="n">-0.3<span class="cnt">（4人）</span></td><td class="n">14.9<span class="cnt">（4人）</span></td><td class="war">-15.2</td><td><a class="pl" href="/player/71675134/">浜地 真澄</a>（0.1）</td></tr></tbody></table></div>
+
+<h2>年ごとの現役ドラフト 移籍した選手とその後</h2>
+<ul class="years teams"><li><a href="#y-2025">2025年</a></li><li><a href="#y-2024">2024年</a></li><li><a href="#y-2023">2023年</a></li><li><a href="#y-2022">2022年</a></li></ul>
+<p class="note">表の見出しを押すと、年の中で並べ替えられます。「移籍前3年」は、移籍の年までの3シーズンの合計です。</p>
+<div class="tbl-wrap"><table class="sortable" id="picks">
+<thead><tr><th data-k>選手（元の球団→移籍先）</th><th data-k>守備</th><th data-k class="n">移籍後WAR</th><th data-k class="n">移籍前3年WAR</th><th data-k>移籍後の一軍成績</th><th data-k>移籍前3年の一軍成績</th></tr></thead>
+<tbody id="y-2025"><tr class="tm"><th colspan="6"><span>2025年の現役ドラフト<small>12人・移籍後のWAR合計 -0.4</small></span></th></tr>
+<tr><td class="nm" data-v="佐藤 直樹"><a class="pl" href="/player/91095151/">佐藤 直樹</a><span class="mv">ソフトバンク→<b>楽天</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="0.2">0.2</td><td class="n" data-v="0.0">0.0</td><td data-v="0.2">71試合 打率.244 6本 4盗塁</td><td class="sub" data-v="0.0">189試合 打率.219 6本 16盗塁</td></tr>
+<tr><td class="nm" data-v="辰見 鴻之介"><a class="pl" href="/player/71075157/">辰見 鴻之介</a><span class="mv">楽天→<b>広島</b></span></td><td data-v="内野手">内野手</td><td class="war" data-v="0.1">0.1</td><td class="n" data-v="-0.1">-0.1</td><td data-v="0.1">71試合 打率.136 0本 28盗塁</td><td class="sub" data-v="-0.1">2試合 打率.000 0本 0盗塁</td></tr>
+<tr><td class="nm" data-v="中村 稔弥"><a class="pl" href="/player/01205138/">中村 稔弥</a><span class="mv">ロッテ→<b>ソフトバンク</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.1">0.1</td><td class="n" data-v="0.0">0.0</td><td data-v="0.1">7登板 0勝0敗 防御率2.70</td><td class="sub" data-v="0.0">49登板 4勝1敗 防御率3.14</td></tr>
+<tr><td class="nm" data-v="大道 温貴"><a class="pl" href="/player/41545153/">大道 温貴</a><span class="mv">広島→<b>ヤクルト</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.0">0.0</td><td class="n" data-v="0.0">0.0</td><td data-v="0.0">1登板 0勝0敗 防御率16.20</td><td class="sub" data-v="0.0">53登板 3勝1敗 10H 防御率3.27</td></tr>
+<tr><td class="nm" data-v="菊地 大稀"><a class="pl" href="/player/31735155/">菊地 大稀</a><span class="mv">巨人→<b>日本ハム</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.0">0.0</td><td class="n" data-v="0.7">0.7</td><td data-v="0.0">6登板 0勝0敗 1S 防御率4.26</td><td class="sub" data-v="0.7">57登板 5勝5敗 1S 11H 防御率3.12</td></tr>
+<tr><td class="nm" data-v="知野 直人"><a class="pl" href="/player/91095138/">知野 直人</a><span class="mv">DeNA→<b>中日</b></span></td><td data-v="内野手">内野手</td><td class="war" data-v="-0.1">-0.1</td><td class="n" data-v="0.1">0.1</td><td data-v="-0.1">6試合 打率.000 0本 0盗塁</td><td class="sub" data-v="0.1">71試合 打率.154 3本 3盗塁</td></tr>
+<tr><td class="nm" data-v="濱田 太貴"><a class="pl" href="/player/91495138/">濱田 太貴</a><span class="mv">ヤクルト→<b>阪神</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="-0.1">-0.1</td><td class="n" data-v="0.2">0.2</td><td data-v="-0.1">19試合 打率.160 1本 0盗塁</td><td class="sub" data-v="0.2">147試合 打率.220 9本 4盗塁</td></tr>
+<tr><td class="nm" data-v="茶野 篤政"><a class="pl" href="/player/61065157/">茶野 篤政</a><span class="mv">オリックス→<b>西武</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="-0.1">-0.1</td><td class="n" data-v="-0.4">-0.4</td><td data-v="-0.1">16試合 打率.143 0本 0盗塁</td><td class="sub" data-v="-0.4">110試合 打率.239 1本 12盗塁</td></tr>
+<tr><td class="nm" data-v="平沼 翔太"><a class="pl" href="/player/01605132/">平沼 翔太</a><span class="mv">西武→<b>オリックス</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="-0.2">-0.2</td><td class="n" data-v="-0.4">-0.4</td><td data-v="-0.2">27試合 打率.216 0本 0盗塁</td><td class="sub" data-v="-0.4">172試合 打率.241 2本 8盗塁</td></tr>
+<tr><td class="nm" data-v="井上 広大"><a class="pl" href="/player/31335151/">井上 広大</a><span class="mv">阪神→<b>ロッテ</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="-0.3">-0.3</td><td class="n" data-v="0.0">0.0</td><td data-v="-0.3">54試合 打率.182 8本 0盗塁</td><td class="sub" data-v="0.0">37試合 打率.211 3本 2盗塁</td></tr>
+<tr class="none"><td class="nm" data-v="松浦 慶斗"><a class="pl" href="/player/33135155/">松浦 慶斗</a><span class="mv">日本ハム→<b>巨人</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-999">―</td><td class="n" data-v="-0.1">-0.1</td><td data-v="-999">一軍出場なし</td><td class="sub" data-v="-0.1">5登板 0勝0敗 1H 防御率2.25</td></tr>
+<tr class="none"><td class="nm" data-v="濱 将乃介"><a class="pl" href="/player/71675157/">濱 将乃介</a><span class="mv">中日→<b>DeNA</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="-999">―</td><td class="n" data-v="0.0">0.0</td><td data-v="-999">一軍出場なし</td><td class="sub" data-v="0.0">5試合 打率.250 0本 0盗塁</td></tr>
+</tbody>
+<tbody id="y-2024"><tr class="tm"><th colspan="6"><span>2024年の現役ドラフト<small>13人・移籍後のWAR合計 -1.0</small></span></th></tr>
+<tr><td class="nm" data-v="吉田 賢吾"><a class="pl" href="/player/13515157/">吉田 賢吾</a><span class="mv">ソフトバンク→<b>日本ハム</b></span></td><td data-v="捕手">捕手</td><td class="war" data-v="1.1">1.1</td><td class="n" data-v="-0.3">-0.3</td><td data-v="1.1">100試合 打率.247 12本 1盗塁<div class=yss><span class="ys">25年 0.2</span><span class="ys">26年 0.9</span></div></td><td class="sub" data-v="-0.3">11試合 打率.185 0本 0盗塁</td></tr>
+<tr><td class="nm" data-v="田中 瑛斗"><a class="pl" href="/player/61065136/">田中 瑛斗</a><span class="mv">日本ハム→<b>巨人</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.6">0.6</td><td class="n" data-v="-1.3">-1.3</td><td data-v="0.6">123登板 4勝6敗 2S 78H 防御率1.82<div class=yss><span class="ys">25年 0.2</span><span class="ys">26年 0.4</span></div></td><td class="sub" data-v="-1.3">9登板 1勝3敗 防御率5.81</td></tr>
+<tr><td class="nm" data-v="矢崎 拓也"><a class="pl" href="/player/71575134/">矢崎 拓也</a><span class="mv">広島→<b>ヤクルト</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.1">0.1</td><td class="n" data-v="-0.1">-0.1</td><td data-v="0.1">52登板 2勝0敗 12H 防御率3.51<div class=yss><span class="ys">25年 0.4</span><span class="ys">26年 -0.3</span></div></td><td class="sub" data-v="-0.1">127登板 7勝3敗 25S 37H 防御率2.58</td></tr>
+<tr><td class="nm" data-v="浜地 真澄"><a class="pl" href="/player/71675134/">浜地 真澄</a><span class="mv">阪神→<b>DeNA</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.1">0.1</td><td class="n" data-v="0.2">0.2</td><td data-v="0.1">36登板 1勝0敗 1S 21H 防御率1.51<div class=yss><span class="ys">25年 -0.3</span><span class="ys">26年 0.4</span></div></td><td class="sub" data-v="0.2">100登板 4勝4敗 27H 防御率2.71</td></tr>
+<tr><td class="nm" data-v="本田 圭佑"><a class="pl" href="/player/31835132/">本田 圭佑</a><span class="mv">西武→<b>オリックス</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.1">0.1</td><td class="n" data-v="-0.1">-0.1</td><td data-v="0.1">9登板 0勝0敗 防御率6.39</td><td class="sub" data-v="-0.1">101登板 5勝7敗 32H 防御率2.41</td></tr>
+<tr><td class="nm" data-v="伊藤 茉央"><a class="pl" href="/player/61165157/">伊藤 茉央</a><span class="mv">楽天→<b>中日</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-0.1">-0.1</td><td class="n" data-v="-0.6">-0.6</td><td data-v="-0.1">32登板 2勝1敗 防御率2.57<div class=yss><span class="ys">25年 0.0</span><span class="ys">26年 -0.1</span></div></td><td class="sub" data-v="-0.6">31登板 1勝0敗 4H 防御率4.23</td></tr>
+<tr><td class="nm" data-v="畠 世周"><a class="pl" href="/player/31635134/">畠 世周</a><span class="mv">巨人→<b>阪神</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-0.1">-0.1</td><td class="n" data-v="-0.3">-0.3</td><td data-v="-0.1">23登板 0勝1敗 7H 防御率1.17<div class=yss><span class="ys">25年 0.0</span><span class="ys">26年 -0.1</span></div></td><td class="sub" data-v="-0.3">28登板 3勝0敗 1S 5H 防御率3.13</td></tr>
+<tr><td class="nm" data-v="山足 達也"><a class="pl" href="/player/13115136/">山足 達也</a><span class="mv">オリックス→<b>広島</b></span></td><td data-v="内野手">内野手</td><td class="war" data-v="-0.1">-0.1</td><td class="n" data-v="-1.0">-1.0</td><td data-v="-0.1">11試合 打率.111 0本 0盗塁</td><td class="sub" data-v="-1.0">114試合 打率.179 1本 5盗塁</td></tr>
+<tr><td class="nm" data-v="平沢 大河"><a class="pl" href="/player/91695132/">平沢 大河</a><span class="mv">ロッテ→<b>西武</b></span></td><td data-v="内野手">内野手</td><td class="war" data-v="-0.1">-0.1</td><td class="n" data-v="-0.3">-0.3</td><td data-v="-0.1">98試合 打率.239 3本 1盗塁<div class=yss><span class="ys">25年 -0.3</span><span class="ys">26年 0.2</span></div></td><td class="sub" data-v="-0.3">70試合 打率.167 3本 4盗塁</td></tr>
+<tr><td class="nm" data-v="石垣 雅海"><a class="pl" href="/player/41145134/">石垣 雅海</a><span class="mv">中日→<b>ロッテ</b></span></td><td data-v="内野手">内野手</td><td class="war" data-v="-0.1">-0.1</td><td class="n" data-v="-0.6">-0.6</td><td data-v="-0.1">28試合 打率.158 0本 1盗塁<div class=yss><span class="ys">25年 -0.1</span><span class="ys">26年 0.0</span></div></td><td class="sub" data-v="-0.6">81試合 打率.149 3本 1盗塁</td></tr>
+<tr><td class="nm" data-v="柴田 大地"><a class="pl" href="/player/81985155/">柴田 大地</a><span class="mv">ヤクルト→<b>楽天</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-0.7">-0.7</td><td class="n" data-v="0.0">0.0</td><td data-v="-0.7">38登板 3勝1敗 1S 4H 防御率5.34<div class=yss><span class="ys">25年 -0.2</span><span class="ys">26年 -0.5</span></div></td><td class="sub" data-v="0.0">2登板 0勝0敗 防御率6.00</td></tr>
+<tr><td class="nm" data-v="鈴木 健矢"><a class="pl" href="/player/61065151/">鈴木 健矢</a><span class="tag">2巡目</span><span class="mv">日本ハム→<b>広島</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-0.7">-0.7</td><td class="n" data-v="-1.1">-1.1</td><td data-v="-0.7">59登板 5勝2敗 2H 防御率2.30<div class=yss><span class="ys">25年 0.1</span><span class="ys">26年 -0.8</span></div></td><td class="sub" data-v="-1.1">51登板 9勝7敗 5H 防御率2.71</td></tr>
+<tr><td class="nm" data-v="上茶谷 大河"><a class="pl" href="/player/81585138/">上茶谷 大河</a><span class="mv">DeNA→<b>ソフトバンク</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-1.1">-1.1</td><td class="n" data-v="0.1">0.1</td><td data-v="-1.1">44登板 8勝3敗 1S 10H 防御率3.72<div class=yss><span class="ys">25年 -0.3</span><span class="ys">26年 -0.8</span></div></td><td class="sub" data-v="0.1">77登板 10勝11敗 5H 防御率3.58</td></tr>
+</tbody>
+<tbody id="y-2023"><tr class="tm"><th colspan="6"><span>2023年の現役ドラフト<small>12人・移籍後のWAR合計 3.2</small></span></th></tr>
+<tr><td class="nm" data-v="水谷 瞬"><a class="pl" href="/player/31835138/">水谷 瞬</a><span class="mv">ソフトバンク→<b>日本ハム</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="4.9">4.9</td><td class="n" data-v="-999">―</td><td data-v="4.9">246試合 打率.272 27本 12盗塁<div class=yss><span class="ys">24年 2.5</span><span class="ys">25年 2.2</span><span class="ys">26年 0.2</span></div></td><td class="sub" data-v="-999">一軍出場なし</td></tr>
+<tr><td class="nm" data-v="中村 祐太"><a class="pl" href="/player/71075139/">中村 祐太</a><span class="mv">広島→<b>西武</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.3">0.3</td><td class="n" data-v="-0.5">-0.5</td><td data-v="0.3">70登板 1勝4敗 2H 防御率2.08<div class=yss><span class="ys">24年 -0.2</span><span class="ys">25年 0.3</span><span class="ys">26年 0.2</span></div></td><td class="sub" data-v="-0.5">8登板 0勝3敗 防御率7.65</td></tr>
+<tr><td class="nm" data-v="馬場 皐輔"><a class="pl" href="/player/41445136/">馬場 皐輔</a><span class="mv">阪神→<b>巨人</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.2">0.2</td><td class="n" data-v="0.1">0.1</td><td data-v="0.2">20登板 3勝1敗 1H 防御率3.26<div class=yss><span class="ys">24年 0.0</span><span class="ys">25年 0.0</span><span class="ys">26年 0.2</span></div></td><td class="sub" data-v="0.1">70登板 5勝2敗 13H 防御率3.54</td></tr>
+<tr><td class="nm" data-v="長谷川 威展"><a class="pl" href="/player/31635155/">長谷川 威展</a><span class="mv">日本ハム→<b>ソフトバンク</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.2">0.2</td><td class="n" data-v="0.0">0.0</td><td data-v="0.2">32登板 4勝0敗 6H 防御率2.49</td><td class="sub" data-v="0.0">11登板 0勝0敗 1H 防御率0.87</td></tr>
+<tr><td class="nm" data-v="漆原 大晟"><a class="pl" href="/player/11315138/">漆原 大晟</a><span class="mv">オリックス→<b>阪神</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.1">0.1</td><td class="n" data-v="-0.5">-0.5</td><td data-v="0.1">49登板 1勝4敗 7H 防御率2.91<div class=yss><span class="ys">24年 0.0</span><span class="ys">25年 0.1</span></div></td><td class="sub" data-v="-0.5">50登板 2勝2敗 2S 5H 防御率3.02</td></tr>
+<tr><td class="nm" data-v="櫻井 周斗"><a class="pl" href="/player/11915136/">櫻井 周斗</a><span class="mv">DeNA→<b>楽天</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.0">0.0</td><td class="n" data-v="-0.1">-0.1</td><td data-v="0.0">8登板 0勝0敗 防御率8.44</td><td class="sub" data-v="-0.1">30登板 0勝1敗 1H 防御率3.07</td></tr>
+<tr><td class="nm" data-v="梅野 雄吾"><a class="pl" href="/player/51355134/">梅野 雄吾</a><span class="mv">ヤクルト→<b>中日</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-0.1">-0.1</td><td class="n" data-v="-0.9">-0.9</td><td data-v="-0.1">46登板 3勝1敗 4H 防御率4.62<div class=yss><span class="ys">24年 0.2</span><span class="ys">25年 -0.2</span><span class="ys">26年 -0.1</span></div></td><td class="sub" data-v="-0.9">75登板 4勝3敗 24H 防御率2.86</td></tr>
+<tr><td class="nm" data-v="佐々木 千隼"><a class="pl" href="/player/71975134/">佐々木 千隼</a><span class="mv">ロッテ→<b>DeNA</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-0.4">-0.4</td><td class="n" data-v="0.0">0.0</td><td data-v="-0.4">53登板 3勝2敗 1S 10H 防御率2.54<div class=yss><span class="ys">24年 -0.4</span><span class="ys">25年 0.0</span><span class="ys">26年 0.0</span></div></td><td class="sub" data-v="0.0">79登板 10勝4敗 1S 27H 防御率2.85</td></tr>
+<tr><td class="nm" data-v="鈴木 博志"><a class="pl" href="/player/61965136/">鈴木 博志</a><span class="mv">中日→<b>オリックス</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-0.4">-0.4</td><td class="n" data-v="-0.3">-0.3</td><td data-v="-0.4">68登板 4勝1敗 13H 防御率3.22<div class=yss><span class="ys">24年 -0.2</span><span class="ys">25年 -0.2</span><span class="ys">26年 0.0</span></div></td><td class="sub" data-v="-0.3">30登板 3勝3敗 2H 防御率4.53</td></tr>
+<tr><td class="nm" data-v="北村 拓己"><a class="pl" href="/player/21525136/">北村 拓己</a><span class="mv">巨人→<b>ヤクルト</b></span></td><td data-v="内野手">内野手</td><td class="war" data-v="-0.5">-0.5</td><td class="n" data-v="-0.4">-0.4</td><td data-v="-0.5">110試合 打率.173 4本 2盗塁<div class=yss><span class="ys">24年 -0.3</span><span class="ys">25年 -0.2</span></div></td><td class="sub" data-v="-0.4">113試合 打率.219 4本 1盗塁</td></tr>
+<tr><td class="nm" data-v="愛斗"><a class="pl" href="/player/31535132/">愛斗</a><span class="mv">西武→<b>ロッテ</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="-1.1">-1.1</td><td class="n" data-v="-0.8">-0.8</td><td data-v="-1.1">110試合 打率.194 1本 3盗塁<div class=yss><span class="ys">24年 -0.5</span><span class="ys">25年 -0.2</span><span class="ys">26年 -0.4</span></div></td><td class="sub" data-v="-0.8">291試合 打率.227 21本 12盗塁</td></tr>
+<tr class="none"><td class="nm" data-v="内間 拓馬"><a class="pl" href="/player/71575153/">内間 拓馬</a><span class="mv">楽天→<b>広島</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-999">―</td><td class="n" data-v="0.3">0.3</td><td data-v="-999">一軍出場なし</td><td class="sub" data-v="0.3">12登板 0勝0敗 防御率5.40</td></tr>
+</tbody>
+<tbody id="y-2022"><tr class="tm"><th colspan="6"><span>2022年の現役ドラフト<small>12人・移籍後のWAR合計 19.2</small></span></th></tr>
+<tr><td class="nm" data-v="細川 成也"><a class="pl" href="/player/31835134/">細川 成也</a><span class="mv">DeNA→<b>中日</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="16.1">16.1</td><td class="n" data-v="-0.7">-0.7</td><td data-v="16.1">534試合 打率.257 92本 5盗塁<div class=yss><span class="ys">23年 3.0</span><span class="ys">24年 5.6</span><span class="ys">25年 3.8</span><span class="ys">26年 3.7</span></div></td><td class="sub" data-v="-0.7">74試合 打率.174 2本 1盗塁</td></tr>
+<tr><td class="nm" data-v="大竹 耕太郎"><a class="pl" href="/player/41345136/">大竹 耕太郎</a><span class="mv">ソフトバンク→<b>阪神</b></span></td><td data-v="投手">投手</td><td class="war" data-v="4.5">4.5</td><td class="n" data-v="0.3">0.3</td><td data-v="4.5">79登板 39勝22敗 防御率2.65<div class=yss><span class="ys">23年 1.5</span><span class="ys">24年 1.1</span><span class="ys">25年 0.9</span><span class="ys">26年 1.0</span></div></td><td class="sub" data-v="0.3">7登板 2勝3敗 1H 防御率5.40</td></tr>
+<tr><td class="nm" data-v="オコエ 瑠偉"><a class="pl" href="/player/01505132/">オコエ 瑠偉</a><span class="mv">楽天→<b>巨人</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="0.4">0.4</td><td class="n" data-v="-0.5">-0.5</td><td data-v="0.4">170試合 打率.248 5本 8盗塁<div class=yss><span class="ys">23年 0.0</span><span class="ys">24年 0.6</span><span class="ys">25年 -0.2</span></div></td><td class="sub" data-v="-0.5">48試合 打率.218 0本 4盗塁</td></tr>
+<tr><td class="nm" data-v="正隨 優弥"><a class="pl" href="/player/71975138/">正隨 優弥</a><span class="mv">広島→<b>楽天</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="0.0">0.0</td><td class="n" data-v="-0.3">-0.3</td><td data-v="0.0">1試合 打率.000 0本 0盗塁</td><td class="sub" data-v="-0.3">21試合 打率.121 2本 0盗塁</td></tr>
+<tr><td class="nm" data-v="成田 翔"><a class="pl" href="/player/51455132/">成田 翔</a><span class="mv">ロッテ→<b>ヤクルト</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.0">0.0</td><td class="n" data-v="-0.2">-0.2</td><td data-v="0.0">3登板 0勝0敗 防御率5.40</td><td class="sub" data-v="-0.2">6登板 0勝0敗 防御率9.00</td></tr>
+<tr><td class="nm" data-v="笠原 祥太郎"><a class="pl" href="/player/31535134/">笠原 祥太郎</a><span class="mv">中日→<b>DeNA</b></span></td><td data-v="投手">投手</td><td class="war" data-v="0.0">0.0</td><td class="n" data-v="-1.2">-1.2</td><td data-v="0.0">2登板 0勝2敗 防御率4.50</td><td class="sub" data-v="-1.2">8登板 1勝4敗 防御率5.84</td></tr>
+<tr><td class="nm" data-v="渡邉 大樹"><a class="pl" href="/player/73375132/">渡邉 大樹</a><span class="mv">ヤクルト→<b>オリックス</b></span></td><td data-v="外野手">外野手</td><td class="war" data-v="-0.1">-0.1</td><td class="n" data-v="-0.9">-0.9</td><td data-v="-0.1">1試合 打率.000 0本 0盗塁</td><td class="sub" data-v="-0.9">176試合 打率.177 0本 9盗塁</td></tr>
+<tr><td class="nm" data-v="古川 侑利"><a class="pl" href="/player/41245139/">古川 侑利</a><span class="mv">日本ハム→<b>ソフトバンク</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-0.2">-0.2</td><td class="n" data-v="-0.7">-0.7</td><td data-v="-0.2">9登板 0勝0敗 防御率4.50</td><td class="sub" data-v="-0.7">40登板 0勝1敗 3H 防御率5.57</td></tr>
+<tr><td class="nm" data-v="大下 誠一郎"><a class="pl" href="/player/91595151/">大下 誠一郎</a><span class="mv">オリックス→<b>ロッテ</b></span></td><td data-v="内野手">内野手</td><td class="war" data-v="-0.2">-0.2</td><td class="n" data-v="-0.1">-0.1</td><td data-v="-0.2">45試合 打率.190 1本 0盗塁<div class=yss><span class="ys">23年 0.1</span><span class="ys">24年 -0.3</span></div></td><td class="sub" data-v="-0.1">52試合 打率.207 3本 0盗塁</td></tr>
+<tr><td class="nm" data-v="松岡 洸希"><a class="pl" href="/player/61665151/">松岡 洸希</a><span class="mv">西武→<b>日本ハム</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-0.2">-0.2</td><td class="n" data-v="-0.2">-0.2</td><td data-v="-0.2">5登板 0勝1敗 防御率10.12<div class=yss><span class="ys">25年 -0.1</span><span class="ys">26年 -0.1</span></div></td><td class="sub" data-v="-0.2">7登板 0勝0敗 防御率12.00</td></tr>
+<tr><td class="nm" data-v="陽川 尚将"><a class="pl" href="/player/11615139/">陽川 尚将</a><span class="mv">阪神→<b>西武</b></span></td><td data-v="内野手">内野手</td><td class="war" data-v="-0.4">-0.4</td><td class="n" data-v="0.2">0.2</td><td data-v="-0.4">20試合 打率.148 1本 0盗塁<div class=yss><span class="ys">23年 0.0</span><span class="ys">24年 -0.4</span></div></td><td class="sub" data-v="0.2">157試合 打率.246 11本 2盗塁</td></tr>
+<tr><td class="nm" data-v="戸根 千明"><a class="pl" href="/player/21225130/">戸根 千明</a><span class="mv">巨人→<b>広島</b></span></td><td data-v="投手">投手</td><td class="war" data-v="-0.7">-0.7</td><td class="n" data-v="-0.8">-0.8</td><td data-v="-0.7">24登板 1勝0敗 5H 防御率4.64</td><td class="sub" data-v="-0.8">38登板 2勝0敗 1S 防御率4.88</td></tr>
+</tbody>
+</table></div>
+<p class="note">・2026年の現役ドラフトは12月に行われます。結果が出たら、このページに追加します。</p>
+<p class="note">・簡易WARは、打撃・盗塁・守備位置・代替水準（投手はFIP）から計算したもので、守備の上手さ（UZR）や球場の補正は入っていません（<a href="/war/">計算方法</a>）。<br>
+・移籍後の成績には、移籍先から別の球団に移った後の成績も含めています。<br>
+・ドラフト会議で指名された選手のその後は、<a href="/draft/">ドラフト答え合わせ</a>で見られます。</p>
+
+<footer class="disclaimer">
+移籍の一覧はNPB（日本野球機構）の現役ドラフト結果、成績はNPB公式サイトの個人成績をもとに、当サイトが独自に集計したものです。
+成績は一軍の公式戦のみです。選手と成績は、NPBの在籍者名簿（在籍した年・球団・改名の履歴）で照合しています。
+</footer>
+</div>
+</div>
+
+<script>
+"use strict";
+/* 表の見出しを押すと並べ替え */
+(function(){
+  var t = document.getElementById("picks");
+  if (!t) return;
+  t.tHead.addEventListener("click", function(e){
+    var th = e.target.closest("th[data-k]");
+    if (!th) return;
+    var idx = Array.prototype.indexOf.call(th.parentNode.children, th);
+    var desc = th.dataset.dir !== "desc";
+    th.parentNode.querySelectorAll("th").forEach(function(x){ delete x.dataset.dir; });
+    th.dataset.dir = desc ? "desc" : "asc";
+    // 球団・年ごとに分けた表（tbody が区切り）は、区切りの中で並べ替える。先頭の見出しの行は動かさない
+    Array.prototype.forEach.call(t.tBodies, function(tb){
+      var rows = Array.prototype.filter.call(tb.rows, function(r){ return !r.classList.contains("tm"); });
+      rows.sort(function(a, b){
+        var x = a.cells[idx].dataset.v, y = b.cells[idx].dataset.v;
+        var nx = parseFloat(x), ny = parseFloat(y);
+        if (!isNaN(nx) && !isNaN(ny)) return desc ? ny - nx : nx - ny;
+        return desc ? String(y).localeCompare(String(x), "ja") : String(x).localeCompare(String(y), "ja");
+      });
+      rows.forEach(function(r){ tb.appendChild(r); });
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

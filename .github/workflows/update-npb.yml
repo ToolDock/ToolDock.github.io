@@ -86,6 +86,10 @@ jobs:
         # 保存済みのデータだけで作れるので、NPB公式に届かない日も作る（Wikipediaから取った指名選手を載せる）
         run: python npb/build_draft.py --data npb/data --league war/league.json --out draft
 
+      - name: 現役ドラフト答え合わせを作成
+        # 移籍の一覧（npb/data/geneki_draft.json）は手で入れる。成績は保存済みのデータだけで作れる
+        run: python npb/build_geneki.py --data npb/data --league war/league.json --out geneki-draft
+
       - name: 運ランキング（ピタゴラス勝率）を作成
         if: steps.npb.outputs.ok == 'true'
         run: python npb/build_pythagorean.py --data npb/data --out pythagorean
@@ -126,7 +130,7 @@ jobs:
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add magic war/league.json saber draft pythagorean milestone kings standings player npb/data sitemap.xml sitemap.txt sitemap-lastmod.json js/tool-data.js index.html category/index.html
+          git add magic war/league.json saber draft geneki-draft pythagorean milestone kings standings player npb/data sitemap.xml sitemap.txt sitemap-lastmod.json js/tool-data.js index.html category/index.html
           git commit -m "chore: プロ野球データを更新 ($(date -u '+%Y-%m-%d %H:%M UTC'))"
           for i in 1 2 3; do
             git push && break
