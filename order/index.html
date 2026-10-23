@@ -237,8 +237,8 @@ var ROW_Y0 = 62, ROW_STEP = 57, ROW_H = 46;
 var PLATE = { x: 58, w: 196, r: 12 };
 var FACE = { cx: 279, r: 18 };
 var BADGE = { x: 302, w: 40, h: 44 };
-var LOOP_MS = 1000;          // 調子くんの動きの1周
-var GIF_FRAMES = 12;         // GIFは1周を12コマ（約83ミリ秒ずつ）
+var LOOP_MS = 1500;          // 調子くんの動きの1周
+var GIF_FRAMES = 25;         // GIFは1周を25コマ（60ミリ秒ずつ）
 
 var FONT_NAME = '"M PLUS 1p","Hiragino Kaku Gothic ProN","Hiragino Sans",sans-serif';
 var FONT_ROUND = '"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif';
@@ -414,147 +414,218 @@ function drawBadge(ctx, y, pos) {
     ctx.restore();
 }
 
-/* 調子の顔。t は 0〜1（1周のうちの位置） */
-/* 調子の顔。t は 0〜1（1周のうちの位置）。
-   つやのある玉に縦長の目、調子ごとの口と動き（絶好調は大笑いで跳ねて伸び縮み、
-   好調はにこにこ小さく跳ねる、普通はきょろきょろ、不調はため息、絶不調はしぼむ） */
+/* 調子の顔。t は 0〜1（1周のうちの位置）、null は静止画用の止まった形。
+   絶好調：大笑いのあと、縦にくるっと一回転
+   好調　：にこにこしながら、口を閉じたり開けたり
+   普通　：口はまっすぐで、きょろきょろしてまばたき
+   不調　：目を閉じて、口を開けて悲しそうに
+   絶不調：ぐにゃっとつぶれて広がり、うめく */
+function easeInOut(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
+
+/* 玉の輪郭。melt（0〜1）が大きいほど、上がつぶれて下が広がる（もちのように） */
+function ballPath(ctx, r, melt, wob) {
+    ctx.beginPath();
+    var N = 48;
+    for (var i = 0; i <= N; i++) {
+        var a = 2 * Math.PI * i / N;
+        var x = r * Math.cos(a), y = r * Math.sin(a);
+        var low = (y + r) / (2 * r);                 // 0（上）〜1（下）
+        var yy = r - (r - y) * (1 - 0.42 * melt);
+        var xx = x * (1 + melt * (0.55 * low * low - 0.05)) + (wob || 0) * Math.sin(a * 3) * melt;
+        if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+    }
+    ctx.closePath();
+}
+
 function drawFace(ctx, cy0, key, t) {
     var c = COND_BY_KEY[key] || COND_BY_KEY.futsu;
-    var ph = 2 * Math.PI * t;
     var r = FACE.r;
-    var dy = 0, sx = 1, sy = 1, look = 0, blink = false, mouth = "line", open = 0;
     var still = t === null;
-    if (still) {
-        /* 静止画：跳ねたり伸びたりしていない、止まった形 */
-        mouth = { zekko: "laugh", kocho: "smile", futsu: "line", fucho: "frown", zeffu: "groan" }[key] || "line";
-        open = key === "zekko" ? 0.85 : key === "zeffu" ? 0.5 : 0;
-    } else if (key === "zekko") {
-        /* 1周で2回跳ねる。着地でつぶれ、上がるときに伸びる */
-        var hop = Math.abs(Math.sin(ph));
-        dy = -7 * hop;
-        var land = Math.pow(1 - hop, 6);
-        sx = 1 + 0.12 * land - 0.05 * hop;
-        sy = 1 - 0.12 * land + 0.07 * hop;
-        mouth = "laugh"; open = 0.65 + 0.35 * Math.abs(Math.sin(ph * 2));
+    var tt = still ? 0 : t;
+    var ph = 2 * Math.PI * tt;
+    var dy = 0, sx = 1, sy = 1, look = 0, blink = false, melt = 0, wob = 0;
+    var spin = 0;                // 絶好調の縦回転（0〜2π）
+    var mouth = "line", open = 0, eyes = "tall";
+
+    if (key === "zekko") {
+        mouth = "laugh"; eyes = "tall";
+        if (still) { open = 0.85; }
+        else if (tt < 0.45) {
+            /* 大笑い：口をぱくぱく、少し弾む */
+            var q = tt / 0.45;
+            open = 0.55 + 0.45 * Math.abs(Math.sin(q * Math.PI * 3));
+            dy = -2 * Math.abs(Math.sin(q * Math.PI * 3));
+        } else {
+            /* 縦にくるっと一回転。回る間は少し浮く */
+            var q2 = (tt - 0.45) / 0.55;
+            spin = 2 * Math.PI * easeInOut(q2);
+            open = 0.9;
+            dy = -4 * Math.sin(Math.PI * q2);
+        }
     } else if (key === "kocho") {
-        var hop2 = Math.abs(Math.sin(ph));
-        dy = -2.5 * hop2;
-        var land2 = Math.pow(1 - hop2, 6);
-        sx = 1 + 0.07 * land2; sy = 1 - 0.07 * land2;
-        look = 3 * Math.sin(ph);
+        eyes = "tall";
+        /* 口を閉じたり開けたり（1周で2回） */
+        open = still ? 0 : Math.max(0, Math.sin(ph * 2));
         mouth = "smile";
+        dy = still ? 0 : -1 * open;
     } else if (key === "futsu") {
-        /* 左を見て、右を見て、まばたき */
-        look = 4.5 * Math.sin(ph);
-        blink = t > 0.9;
-        mouth = "line";
+        eyes = "tall"; mouth = "line";
+        if (!still) { look = 4.5 * Math.sin(ph); blink = tt > 0.9; }
     } else if (key === "fucho") {
-        /* ため息：途中で口が開いて、少し沈む */
-        var sigh = Math.max(0, Math.sin(ph));
-        dy = 1.5 * sigh;
-        sx = 1 + 0.04 * sigh; sy = 1 - 0.04 * sigh;
-        look = -2;
-        mouth = "frown"; open = sigh;
+        /* 目を閉じ、口を開けて悲しそうに。口がゆっくり開いたり閉じたり、少しうなだれる */
+        eyes = "sadshut"; mouth = "sadopen";
+        open = still ? 0.6 : 0.35 + 0.65 * (0.5 - 0.5 * Math.cos(ph));
+        dy = still ? 0 : 1.2 * (0.5 - 0.5 * Math.cos(ph));
+        look = -1;
     } else {
-        /* 絶不調：ゆっくりつぶれて、うめく */
-        var sq = 0.5 - 0.5 * Math.cos(ph);
-        sx = 1 + 0.14 * sq; sy = 1 - 0.16 * sq;
-        mouth = "groan"; open = 0.3 + 0.7 * sq;
+        /* 絶不調：大きくぐにゃっとつぶれて、ゆがみながら戻る */
+        eyes = "droop"; mouth = "groan";
+        var sq = still ? 0.55 : 0.5 - 0.5 * Math.cos(ph);
+        melt = 0.25 + 0.75 * sq;
+        wob = still ? 0 : 1.6 * Math.sin(ph * 2);
+        open = 0.3 + 0.7 * sq;
     }
-    /* 足もと（玉の下端）を基準に伸び縮みさせる */
-    var footY = cy0 + r;
+
+    /* 足もと（玉の下端）を基準にする */
     ctx.save();
-    ctx.translate(FACE.cx, footY + dy);
+    ctx.translate(FACE.cx, cy0 + r + dy);
     ctx.scale(sx, sy);
     ctx.translate(0, -r);
 
     /* 玉：右下に向かって暗く、左上につやの白い斑 */
-    var g = ctx.createRadialGradient(-r * 0.35, -r * 0.4, r * 0.15, r * 0.1, r * 0.15, r * 1.2);
+    var g = ctx.createRadialGradient(-r * 0.35, -r * 0.4 + melt * r * 0.3, r * 0.15, r * 0.1, r * 0.15, r * 1.25);
     g.addColorStop(0, c.hl);
     g.addColorStop(0.35, c.top);
     g.addColorStop(0.75, c.base);
     g.addColorStop(1, c.dark);
+    ballPath(ctx, r, melt, wob);
     ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, 2 * Math.PI);
     ctx.fill();
     ctx.lineWidth = 1.2;
     ctx.strokeStyle = c.dark;
     ctx.stroke();
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.beginPath();
-    ctx.ellipse(-r * 0.42, -r * 0.5, r * 0.26, r * 0.15, -0.6, 0, 2 * Math.PI);
-    ctx.fill();
 
-    /* 目：縦長の黒。見る向きで左右に寄る */
+    /* 顔のパーツは玉の中だけに描く（回転で裏に回ったぶんは隠れる） */
+    ctx.save();
+    ballPath(ctx, r - 0.6, melt, wob);
+    ctx.clip();
+
+    /* 縦回転：顔のパーツを球面に沿って上へ送り、裏に回ったら描かない */
+    function place(x, y) {
+        if (!spin) return { x: x + look, y: y + melt * (r - y) * 0.42 * 0.9, s: 1, vis: true };
+        var z = Math.sqrt(Math.max(0, r * r - x * x - y * y));
+        var y2 = y * Math.cos(spin) - z * Math.sin(spin);
+        var z2 = y * Math.sin(spin) + z * Math.cos(spin);
+        return { x: x, y: y2, s: Math.max(0.05, z2 / r), vis: z2 > 0 };
+    }
+
     ctx.fillStyle = "#000";
-    var ex = 5.2, ey = -3.5;
-    [-ex, ex].forEach(function (x) {
-        var xx = x + look;
-        if (blink) { rr(ctx, xx - 2.2, ey, 4.4, 1.6, 0.8); ctx.fill(); return; }
-        if (key === "zeffu") {
-            /* しょんぼりした「ハの字」の目 */
-            ctx.save();
-            ctx.translate(xx, ey + 1);
-            ctx.rotate(x < 0 ? -0.5 : 0.5);
-            rr(ctx, -2.6, -0.9, 5.2, 1.8, 0.9);
-            ctx.fill();
-            ctx.restore();
-            return;
+    ctx.strokeStyle = "#000";
+    ctx.lineCap = "round";
+    /* 目 */
+    [-5.2, 5.2].forEach(function (ex) {
+        var P = place(ex, -3.5);
+        if (!P.vis) return;
+        ctx.save();
+        ctx.translate(P.x, P.y);
+        ctx.scale(1, P.s);
+        ctx.beginPath();
+        if (blink) {
+            rr(ctx, -2.2, 0, 4.4, 1.6, 0.8); ctx.fill();
+        } else if (eyes === "sadshut") {
+            /* 閉じた目。内側が上がった、悲しい形 */
+            ctx.lineWidth = 2.2;
+            var side = ex < 0 ? -1 : 1;
+            ctx.moveTo(-2.8 * side, -1.2);
+            ctx.quadraticCurveTo(0, 1.4, 2.8 * side, 1.6);
+            ctx.stroke();
+        } else if (eyes === "droop") {
+            ctx.lineWidth = 2;
+            var sd = ex < 0 ? -1 : 1;
+            ctx.moveTo(-2.6 * sd, -1.6);
+            ctx.lineTo(2.6 * sd, 1.2);
+            ctx.stroke();
+        } else {
+            var eh = key === "zekko" ? 7.2 : 6.2;
+            rr(ctx, -1.5, -eh / 2, 3, eh, 1.4); ctx.fill();
         }
-        var eh = key === "zekko" ? 7.2 : 6.2;
-        rr(ctx, xx - 1.5, ey - eh / 2, 3, eh, 1.4);
-        ctx.fill();
+        ctx.restore();
     });
 
     /* 口 */
-    var mx = look * 0.8, my = 5.5;
-    ctx.fillStyle = "#000";
-    if (mouth === "laugh") {
-        var mw = 9.5, mh = 3 + 6 * open;
-        ctx.beginPath();
-        ctx.moveTo(mx - mw, my - 1);
-        ctx.lineTo(mx + mw, my - 1);
-        ctx.quadraticCurveTo(mx + mw, my + mh * 1.3, mx, my + mh * 1.3);
-        ctx.quadraticCurveTo(mx - mw, my + mh * 1.3, mx - mw, my - 1);
-        ctx.fill();
-        /* 上の歯と舌 */
-        ctx.fillStyle = "#FFF";
-        rr(ctx, mx - mw + 2, my - 1, (mw - 2) * 2, 2.2, 1);
-        ctx.fill();
-        ctx.fillStyle = c.tongue;
-        ctx.beginPath();
-        ctx.ellipse(mx, my + mh * 1.05, mw * 0.45, Math.max(1, mh * 0.3), 0, 0, 2 * Math.PI);
-        ctx.fill();
-    } else if (mouth === "smile") {
-        ctx.beginPath();
-        ctx.moveTo(mx - 7, my - 0.5);
-        ctx.quadraticCurveTo(mx, my + 1, mx + 7, my - 0.5);
-        ctx.quadraticCurveTo(mx, my + 9, mx - 7, my - 0.5);
-        ctx.fill();
-    } else if (mouth === "line") {
-        rr(ctx, mx - 6, my + 1, 12, 2.2, 1);
-        ctx.fill();
-    } else if (mouth === "frown") {
-        /* への字。ため息のところで口が丸く開く */
-        if (open < 0.25) {
-            ctx.strokeStyle = "#000";
-            ctx.lineWidth = 2.6;
-            ctx.lineCap = "round";
+    var M = place(0, 6);
+    if (M.vis) {
+        ctx.save();
+        ctx.translate(M.x - (spin ? 0 : look) + look * 0.8, M.y);
+        ctx.scale(1, M.s);
+        ctx.fillStyle = "#000";
+        if (mouth === "laugh") {
+            var mw = 9.5, mh = 3 + 6 * open;
             ctx.beginPath();
-            ctx.moveTo(mx - 6, my + 4.5);
-            ctx.quadraticCurveTo(mx, my - 0.5, mx + 6, my + 4.5);
-            ctx.stroke();
+            ctx.moveTo(-mw, -1.5);
+            ctx.lineTo(mw, -1.5);
+            ctx.quadraticCurveTo(mw, mh * 1.3 - 0.5, 0, mh * 1.3 - 0.5);
+            ctx.quadraticCurveTo(-mw, mh * 1.3 - 0.5, -mw, -1.5);
+            ctx.fill();
+            ctx.fillStyle = "#FFF";
+            rr(ctx, -mw + 2, -1.5, (mw - 2) * 2, 2.2, 1); ctx.fill();
+            ctx.fillStyle = c.tongue;
+            ctx.beginPath();
+            ctx.ellipse(0, mh * 1.05 - 0.5, mw * 0.45, Math.max(1, mh * 0.3), 0, 0, 2 * Math.PI);
+            ctx.fill();
+        } else if (mouth === "smile") {
+            if (open < 0.15) {
+                /* 閉じた口：にっこりした線 */
+                ctx.lineWidth = 2.4;
+                ctx.beginPath();
+                ctx.moveTo(-6.5, -0.5);
+                ctx.quadraticCurveTo(0, 5, 6.5, -0.5);
+                ctx.stroke();
+            } else {
+                var oh = 3 + 6 * open;
+                ctx.beginPath();
+                ctx.moveTo(-7, -1);
+                ctx.quadraticCurveTo(0, 0.5, 7, -1);
+                ctx.quadraticCurveTo(0, oh * 1.5, -7, -1);
+                ctx.fill();
+                if (open > 0.5) {
+                    ctx.fillStyle = c.tongue;
+                    ctx.beginPath();
+                    ctx.ellipse(0, oh * 0.55, 3, 1.4 * open, 0, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+        } else if (mouth === "line") {
+            rr(ctx, -6, 0.5, 12, 2.2, 1); ctx.fill();
+        } else if (mouth === "sadopen") {
+            /* 悲しそうに開いた口：上がへこんだ形 */
+            var sh = 2.5 + 5 * open, sw = 5 + 1.5 * open;
+            ctx.beginPath();
+            ctx.moveTo(-sw, sh * 0.6);
+            ctx.quadraticCurveTo(0, -sh * 0.55, sw, sh * 0.6);
+            ctx.quadraticCurveTo(sw * 0.6, sh * 1.25, 0, sh * 1.2);
+            ctx.quadraticCurveTo(-sw * 0.6, sh * 1.25, -sw, sh * 0.6);
+            ctx.fill();
         } else {
+            /* うめく口：横に広く、ゆがむ */
+            var gw = 6 + 3 * open, gh = 2 + 4.5 * open;
             ctx.beginPath();
-            ctx.ellipse(mx, my + 3, 2.5 + 2.5 * open, 1.8 + 3 * open, 0, 0, 2 * Math.PI);
+            ctx.moveTo(-gw, 1);
+            ctx.quadraticCurveTo(-gw * 0.3, -1 - wob * 0.6, 0, 0.5);
+            ctx.quadraticCurveTo(gw * 0.3, -1 + wob * 0.6, gw, 1);
+            ctx.quadraticCurveTo(gw * 0.6, 1 + gh, 0, 1 + gh);
+            ctx.quadraticCurveTo(-gw * 0.6, 1 + gh, -gw, 1);
             ctx.fill();
         }
-    } else {
-        var gh = 2 + 5 * open;
-        rr(ctx, mx - 6, my + 1, 12, gh, Math.min(3, gh / 2));
-        ctx.fill();
+        ctx.restore();
     }
+    ctx.restore();
+
+    /* つやは一番上に（回転しても、光の当たり方は変わらない） */
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.42 * (1 + melt * 0.2), -r * 0.5 + melt * r * 0.38, r * 0.26, r * 0.15, -0.6, 0, 2 * Math.PI);
+    ctx.fill();
     ctx.restore();
 }
 
@@ -838,7 +909,7 @@ function makeFileNow() {
 
 function busyMessage() {
     var fmt = document.querySelector('input[name="fmt"]:checked').value;
-    return fmt === "gif" ? "GIFアニメを作っています…" : fmt === "video" ? "動画を録画しています（3秒）…" : "画像を作っています…";
+    return fmt === "gif" ? "GIFアニメを作っています…" : fmt === "video" ? "動画を録画しています（4秒半）…" : "画像を作っています…";
 }
 
 document.getElementById("btnDownload").addEventListener("click", function () {
