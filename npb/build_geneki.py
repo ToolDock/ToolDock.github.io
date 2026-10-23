@@ -54,6 +54,11 @@ def find_pid(people, m):
     return found[0] if len(found) == 1 else None
 
 
+def ra9_war(seasons):
+    """投手としての防御率ベース（実際の失点から）のWAR"""
+    return round(sum(p.get("war_ra9") or 0 for _, _, p in seasons if p), 1)
+
+
 def season_war(s):
     _, b, p = s
     return (b["war"] or 0 if b else 0) + (p["war"] or 0 if p else 0)
@@ -68,8 +73,11 @@ def move_text(m):
     return f'{m["from"]}→{m["to"]}'
 
 
-def war_cell(c, played):
-    return f'{c["war"]:.1f}' if played else "―"
+def war_cell(c, played, ra9=None):
+    """投手は、防御率ベースのWARを下に添える（下の「投手のWARについて」）"""
+    if not played:
+        return "―"
+    return f'{c["war"]:.1f}' + (f'<span class="ra9">（{ra9:.1f}）</span>' if ra9 is not None else "")
 
 
 def points(done, latest):
@@ -106,7 +114,8 @@ def points(done, latest):
     if pit and fld:
         pw = sum(m["after"]["war"] for m in pit)
         fw = sum(m["after"]["war"] for m in fld)
-        pts.append(f'投手は{len(pit)}人で移籍後のWAR合計{pw:.1f}、野手は{len(fld)}人で{fw:.1f}。'
+        pr = sum(m["after_ra9"] for m in pit)
+        pts.append(f'投手は{len(pit)}人で移籍後のWAR合計{pw:.1f}（防御率ベースでは{pr:.1f}）、野手は{len(fld)}人で{fw:.1f}。'
                    + ("野手のほうが、移籍で出番をつかみやすい傾向がある。" if fw / len(fld) > pw / len(pit)
                       else "投手のほうが、移籍で出番をつかみやすい傾向がある。"))
     return pts
@@ -121,6 +130,8 @@ def build(moves, by_pid, people, has_page, latest):
             after = [s for s in seasons if s[0] > m["year"]]
             m["before"] = bd.career({"seasons": before, "pos": m["pos"]})
             m["after"] = bd.career({"seasons": after, "pos": m["pos"]})
+            m["pit"] = m["pos"] == "投手"
+            m["before_ra9"], m["after_ra9"] = ra9_war(before), ra9_war(after)
             m["after_seasons"] = [(s[0], season_war(s)) for s in sorted(after, key=lambda s: s[0])]
             m["good"] = any(w >= GOOD_WAR for _, w in m["after_seasons"])
             n_after = max(1, latest - m["year"])
@@ -161,7 +172,8 @@ def build(moves, by_pid, people, has_page, latest):
     top_rows = "".join(
         f'<tr><td>{i}</td><td class="nm">{name_link(m, has_page)}</td><td>{m["year"]}年</td>'
         f'<td>{esc(move_text(m))}</td><td>{esc(bd.stat_text(m["after"]))}</td>'
-        f'<td class="n">{m["before"]["war"]:.1f}</td><td class="war">{m["after"]["war"]:.1f}</td></tr>'
+        f'<td class="n">{war_cell(m["before"], True, m["before_ra9"] if m["pit"] else None)}</td>'
+        f'<td class="war">{war_cell(m["after"], True, m["after_ra9"] if m["pit"] else None)}</td></tr>'
         for i, m in enumerate(tops[:10], 1))
     led_rows = "".join(
         f'<tr><td>{i}</td><td class="nm">{bd.team_link(t)}</td>'
@@ -182,8 +194,8 @@ def build(moves, by_pid, people, has_page, latest):
                 + ('<span class="tag">2巡目</span>' if m["round"] == 2 else "")
                 + f'<span class="mv">{esc(m["from"])}→<b>{esc(m["to"])}</b></span></td>'
                 f'<td data-v="{esc(m["pos"])}">{esc(m["pos"])}</td>'
-                f'<td class="war" data-v="{a["war"] if a["years"] else -999}">{war_cell(a, a["years"])}</td>'
-                f'<td class="n" data-v="{b["war"] if b["years"] else -999}">{war_cell(b, b["years"])}</td>'
+                f'<td class="war" data-v="{a["war"] if a["years"] else -999}">{war_cell(a, a["years"], m["after_ra9"] if m["pit"] else None)}</td>'
+                f'<td class="n" data-v="{b["war"] if b["years"] else -999}">{war_cell(b, b["years"], m["before_ra9"] if m["pit"] else None)}</td>'
                 f'<td data-v="{a["war"] if a["years"] else -999}">{esc(bd.stat_text(a) if a["years"] else "一軍出場なし")}'
                 f'{f"<div class=yss>{per}</div>" if len(m["after_seasons"]) > 1 else ""}</td>'
                 f'<td class="sub" data-v="{b["war"] if b["years"] else -999}">{esc(bd.stat_text(b) if b["years"] else "一軍出場なし")}</td></tr>')
@@ -225,7 +237,7 @@ def build(moves, by_pid, people, has_page, latest):
 </ul>
 
 <h2>現役ドラフトの「当たり」トップ10</h2>
-<p>移籍の翌年から{latest}年までの、一軍での通算WARの順です。</p>
+<p>移籍の翌年から{latest}年までの、一軍での通算WARの順です。投手の下の（　）は、実際の失点から計算した「防御率ベース」のWARです（<a href="#ra9">理由</a>）。</p>
 <div class="tbl-wrap"><table>
 <thead><tr><th>順位</th><th>選手</th><th>年</th><th>移籍</th><th>移籍後の一軍成績</th><th class="n">移籍前3年WAR</th><th class="n">移籍後WAR</th></tr></thead>
 <tbody>{top_rows}</tbody></table></div>
@@ -238,12 +250,22 @@ def build(moves, by_pid, people, has_page, latest):
 
 <h2>年ごとの現役ドラフト 移籍した選手とその後</h2>
 {year_nav}
-<p class="note">表の見出しを押すと、年の中で並べ替えられます。「移籍前3年」は、移籍の年までの3シーズンの合計です。</p>
+<p class="note">表の見出しを押すと、年の中で並べ替えられます。「移籍前3年」は、移籍の年までの3シーズンの合計です。投手のWARの下の（　）は、実際の失点から計算した「防御率ベース」のWARです（<a href="#ra9">理由</a>）。</p>
 <div class="tbl-wrap"><table class="sortable" id="picks">
 <thead><tr><th data-k>選手（元の球団→移籍先）</th><th data-k>守備</th><th data-k class="n">移籍後WAR</th><th data-k class="n">移籍前3年WAR</th><th data-k>移籍後の一軍成績</th><th data-k>移籍前3年の一軍成績</th></tr></thead>
 {tbodies}
 </table></div>
 {upcoming}
+
+<h2 id="ra9">投手のWARについて（このページだけ「防御率ベース」を添えている理由）</h2>
+<p>このサイトの簡易WARは、投手の部分を防御率ではなくFIP（奪三振・与四死球・被本塁打だけから計算する指標）で出しています。運に左右されにくく、他のページではこの値だけを使っています。ただしFIPでは、次のような投手が実際の働きより低く出やすくなります。</p>
+<ul class="points">
+<li>制球と緩急で弱い打球を打たせて取る投手（三振が少なくても、失点が少ない投手）</li>
+<li>救援投手（WARは投げたイニングに比例するので、年に50イニングほどでは、よく抑えても1前後にとどまる）</li>
+</ul>
+<p>現役ドラフトで移籍した選手は半分以上が投手で、その多くが救援です。移籍後に「実際にどれだけ失点を防いだか」も見ないと、移籍の当たり外れを見誤りやすいため、このページでは投手に限り、実際の失点から計算した「防御率ベース」のWARを、WARの下に（　）で添えています。順位や合計は、他のページと同じFIPベースの値です。</p>
+<p>なお、救援投手が勝敗を左右する場面で投げた価値（メジャーのWARでは上乗せされる分）は、どちらの値にも入っていません。</p>
+
 <p class="note">・簡易WARは、打撃・盗塁・守備位置・代替水準（投手はFIP）から計算したもので、守備の上手さ（UZR）や球場の補正は入っていません（<a href="/war/">計算方法</a>）。<br>
 ・移籍後の成績には、移籍先から別の球団に移った後の成績も含めています。<br>
 ・ドラフト会議で指名された選手のその後は、<a href="/draft/">ドラフト答え合わせ</a>で見られます。</p>
@@ -261,6 +283,7 @@ def build(moves, by_pid, people, has_page, latest):
 CSS = """
 .cnt{ margin-left:2px; font-size:0.74rem; color:var(--ink-mute); font-weight:400; }
 .yss{ margin-top:2px; }
+.ra9{ display:block; font-size:0.72rem; font-weight:400; color:var(--ink-mute); white-space:nowrap; }
 .mv{ display:block; font-size:0.74rem; font-weight:400; color:var(--ink-mute); }
 .mv b{ color:var(--ink); }
 .ys{ display:inline-block; margin-right:8px; font-size:0.74rem; color:var(--ink-mute); }

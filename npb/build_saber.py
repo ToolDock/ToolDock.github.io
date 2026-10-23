@@ -188,7 +188,7 @@ def compute_season(st, lg_consts, links=None, include_zero=False):
                     "ip": 0, "outs": 0, "so": p["三振"], "bb": p["四球"], "hr": p["本塁打"], "er": p["自責点"],
                     "ha": p["安打"], "ra": p["失点"], "hbp": p["死球"], "cg": 0, "bf": p["打者"],
                     "era": None, "fip": None, "whip": None, "kp": None, "bbp": None, "kbb": None, "hr9": None,
-                    "war": 0.0, "qual": False, "zero": True})
+                    "war": 0.0, "war_ra9": 0.0, "qual": False, "zero": True})
             continue
         main_team = max(p["outs_by_team"], key=p["outs_by_team"].get)
         name = p["name_by_team"][main_team]
@@ -203,6 +203,8 @@ def compute_season(st, lg_consts, links=None, include_zero=False):
         role = "先発" if g and ip / g >= SP_IP_PER_GAME else "救援"
         base = 0.30 if role == "先発" else -0.55
         rar = (1.19 * L["ra9"] + base - fip_ra) / 9 * ip
+        # 防御率ベース（実際の失点から）。FIPでは低く出る打たせて取る投手を見るため、現役ドラフト答え合わせで添える
+        rar_ra9 = (1.19 * L["ra9"] + base - 9 * p["失点"] / ip) / 9 * ip
         pitchers.append({
             "name": name, "pid": idt[1] if idt[0] == "p" else None,
             "teams": [teams[c]["name"] for c in p["teams"]], "lg": lg,
@@ -216,6 +218,7 @@ def compute_season(st, lg_consts, links=None, include_zero=False):
             "kp": r(div(so, bf), 3), "bbp": r(div(bb, bf), 3),
             "kbb": r(div(so - bb, bf), 3), "hr9": r(9 * hr / ip, 2),
             "war": r(rar / L["rpw"], 1),
+            "war_ra9": r(rar_ra9 / L["rpw"], 1),
             "qual": ip >= games,
         })
     return batters, pitchers
