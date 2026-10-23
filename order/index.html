@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>パワプロ風 スタメン画像ジェネレーター｜オーダー表・打順を画像やGIFで作成</title>
+<meta name="description" content="パワプロ風のスターティングオーダー（スタメン・打順）の画像を作れる無料ツールです。名前・守備位置・調子を入れるだけで、動く調子くん付きのGIFアニメや動画、PNG画像として保存できます。理想のオーダーや今日のスタメンをSNSに投稿するのにどうぞ。">
+<link rel="canonical" href="https://tooldock.github.io/order/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="パワプロ風 スタメン画像ジェネレーター｜オーダー表・打順を画像やGIFで作成 | ToolDock">
+<meta property="og:description" content="パワプロ風のスターティングオーダー（スタメン・打順）の画像を作れる無料ツールです。名前・守備位置・調子を入れるだけで、動く調子くん付きのGIFアニメや動画、PNG画像として保存できます。">
+<meta property="og:url" content="https://tooldock.github.io/order/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/order.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "order"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<!-- 画像の中の文字に使うフォント（能力画像ジェネレーターと同じ） -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800;900&family=M+PLUS+1p:wght@700&display=swap" rel="stylesheet">
+
+<meta name="keywords" content="パワプロ,パワプロ風,スタメン,オーダー,打順,スターティングオーダー,画像作成,ジェネレーター,GIF,調子,無料">
+
+<style>
+*{ box-sizing:border-box; }
+
+:root{
+    --ink-strong:var(--ink); --ink-sub:var(--ink); --ink-mute:var(--ink);
+    --tint:var(--surface-2);
+}
+
+body{
+    margin:0; padding:0 0 48px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    color:var(--ink); line-height:1.75; background:var(--bg);
+}
+.page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
+body .td-rail-inline{ padding:0 16px; }
+
+h2{ margin:34px 0 12px; padding-bottom:6px; font-size:1.15rem; color:var(--ink-strong);
+    border-bottom:2px solid var(--c); }
+h3{ margin:0 0 10px; font-size:1.02rem; color:var(--ink-strong); }
+p{ margin:0 0 12px; }
+
+/* ── 画像と入力を横に並べる（スマホでは縦） ── */
+.workspace{ display:grid; grid-template-columns:minmax(0, 400px) minmax(0, 1fr); gap:20px; align-items:start; }
+@media (max-width:820px){ .workspace{ grid-template-columns:minmax(0, 1fr); } }
+
+.card-wrap{ background:#fff; border:1px solid var(--line); padding:16px; }
+@media (min-width:821px){ .card-wrap{ position:sticky; top:12px; } }
+#orderCanvas{ display:block; width:100%; max-width:372px; height:auto; margin:0 auto; }
+
+.export{ margin-top:14px; }
+.export .formats{ display:flex; gap:6px; margin-bottom:10px; }
+.export .formats label{ flex:1 1 0; text-align:center; font-size:0.86rem; font-weight:700; padding:7px 4px;
+    border:1px solid var(--line); border-radius:var(--r-ctl); cursor:pointer; background:#fff; color:var(--ink-sub); }
+.export .formats input{ position:absolute; opacity:0; pointer-events:none; }
+.export .formats label:has(input:checked){ border-color:var(--accent); background:var(--accent); color:#fff; }
+.export .buttons{ display:flex; gap:8px; flex-wrap:wrap; }
+.export button{ flex:1 1 140px; font:inherit; font-size:0.9rem; font-weight:700; padding:9px 12px;
+    border:1px solid var(--accent); border-radius:var(--r-ctl); background:var(--accent); color:#fff; cursor:pointer; }
+.export button.secondary{ background:#fff; color:var(--accent); }
+.export button:disabled{ opacity:0.55; cursor:wait; }
+.export .status{ min-height:1.4em; margin:8px 0 0; font-size:0.84rem; color:var(--ink-mute); }
+
+/* ── 入力 ── */
+.editor{ background:#fff; border:1px solid var(--line); padding:16px; }
+.options{ display:flex; flex-wrap:wrap; gap:6px 18px; margin-bottom:12px; font-size:0.9rem; }
+.options label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
+.options input[type="text"]{ font:inherit; font-size:0.9rem; padding:5px 8px; border:1px solid var(--line); border-radius:var(--r-ctl); width:13em; }
+
+.rows{ display:flex; flex-direction:column; gap:8px; }
+.row{ display:grid; grid-template-columns:28px minmax(0, 1fr) 76px 84px; grid-template-areas:"no name pos cond" "no colors colors colors";
+      gap:4px 6px; align-items:center; padding:8px; border:1px solid var(--line-soft); background:var(--tint); }
+.row.off{ display:none; }
+.row .no{ grid-area:no; font-weight:800; font-size:1.1rem; text-align:center; color:var(--ink-sub); }
+.row input[type="text"], .row select{ font:inherit; font-size:0.95rem; padding:6px 7px; border:1px solid var(--line);
+    border-radius:var(--r-ctl); background:#fff; color:var(--ink); width:100%; min-width:0; }
+.row .nm{ grid-area:name; }
+.row .ps{ grid-area:pos; }
+.row .cd{ grid-area:cond; }
+.row .colors{ grid-area:colors; display:flex; flex-wrap:wrap; gap:2px 10px; font-size:0.8rem; color:var(--ink-sub); }
+.row .colors label{ display:flex; align-items:center; gap:3px; cursor:pointer; }
+.row .colors label:has(input:disabled){ opacity:0.4; }
+.row .colors i{ display:inline-block; width:12px; height:12px; border-radius:3px; border:1px solid rgba(0,0,0,0.25); }
+.editor .note{ margin:10px 0 0; font-size:0.84rem; color:var(--ink-mute); }
+.editor .reset{ font:inherit; font-size:0.84rem; padding:5px 12px; margin-top:10px; border:1px solid var(--line);
+    border-radius:var(--r-ctl); background:#fff; color:var(--ink-sub); cursor:pointer; }
+
+.tool-article{ margin-top:34px; }
+.tool-article .note{ font-size:0.86rem; color:var(--ink-mute); }
+footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); border-top:1px solid var(--line-soft); padding-top:14px; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=game">ゲーム</a> <span class="bc-sep">›</span> <span>パワプロ風 スタメン画像ジェネレーター</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "ゲーム", "item": "https://tooldock.github.io/category/?cat=game"}, {"@type": "ListItem", "position": 3, "name": "パワプロ風 スタメン画像ジェネレーター", "item": "https://tooldock.github.io/order/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="page-wrapper">
+
+<div class="td-banner">
+    <h1>パワプロ風 スタメン画像ジェネレーター</h1>
+    <p>名前・守備位置・調子を入れるだけで、パワプロ風のスターティングオーダーを画像・GIFアニメ・動画にできます</p>
+</div>
+
+<div class="container">
+
+<div class="workspace">
+
+<div class="card-wrap">
+    <canvas id="orderCanvas" width="744" height="1280" aria-label="スターティングオーダーの画像"></canvas>
+    <div class="export">
+        <div class="formats" role="radiogroup" aria-label="保存する形式">
+            <label><input type="radio" name="fmt" value="png" checked>静止画（PNG）</label>
+            <label><input type="radio" name="fmt" value="gif">GIFアニメ</label>
+            <label><input type="radio" name="fmt" value="video">動画</label>
+        </div>
+        <div class="buttons">
+            <button type="button" id="btnDownload">ダウンロード</button>
+            <button type="button" class="secondary" id="btnShare">共有して保存</button>
+        </div>
+        <p class="status">PCは「ダウンロード」、スマートフォンは「共有して保存」をお使いください。</p>
+        <p class="status" id="status" aria-live="polite"></p>
+    </div>
+</div>
+
+<div class="editor">
+    <h3>オーダーを入力</h3>
+    <div class="options">
+        <label><input type="checkbox" id="opt-pitcher" checked> 投手（P）の欄を出す</label>
+        <label>見出し <input type="text" id="opt-title" value="スターティングオーダー" maxlength="14"></label>
+    </div>
+    <div class="rows" id="rows"></div>
+    <p class="note">名前の欄の色は3色まで選べます（複数でツートン・スリートーン）。守備位置を変えると、色はその守備位置の色になります。入力した内容はこのブラウザに保存されます。</p>
+    <button type="button" class="reset" id="btnReset">初期値に戻す</button>
+</div>
+
+</div>
+
+<article class="tool-article">
+<h2>パワプロ風 スタメン画像ジェネレーターについて</h2>
+<p>
+打順ごとに選手名・守備位置・調子を入力すると、パワプロ風のスターティングオーダー画面のような画像を作れる無料ツールです。
+調子の顔は動くので、GIFアニメや動画で保存すると、試合前のオーダー画面の雰囲気をそのまま残せます。
+すべてブラウザの中で作るので、アプリのインストールや登録はいりません。
+</p>
+<p>
+贔屓の球団の今日のスタメン、考えた理想のオーダー、草野球やゲームのチームの打順発表などに使えます。
+</p>
+<p class="note">
+このツールは実況パワフルプロ野球シリーズの公式ツールではなく、当サイトが独自にデザインしたものです。調子の顔も、当サイトで描いたものです。
+</p>
+
+<h2>使い方</h2>
+<ol>
+<li>1番から9番まで、選手名と守備位置を入力します。指名打者は「DH」を選びます</li>
+<li>調子（絶好調・好調・普通・不調・絶不調）を選ぶと、顔の色と表情、動き方が変わります</li>
+<li>名前の欄の色は、守備位置に合わせて自動で変わります。複数のポジションを守れる選手は、色を足してツートンにできます</li>
+<li>先発投手を出さないときは「投手（P）の欄を出す」のチェックを外します</li>
+<li>保存する形式（静止画・GIFアニメ・動画）を選び、PCは「ダウンロード」、スマートフォンは「共有して保存」で保存します</li>
+</ol>
+
+<h2>使用例</h2>
+<p>このツールで作ったGIFアニメの例です。調子の顔が、調子ごとに違う動きをします。</p>
+<p><img src="/order/example.gif" alt="パワプロ風 スタメン画像ジェネレーターで作ったスターティングオーダーのGIFアニメの例" width="558" height="960" loading="lazy" style="max-width:100%; width:300px; height:auto;"></p>
+
+<h2>名前の欄と守備位置の色</h2>
+<ul>
+<li>赤：先発投手　／　ピンク：中継ぎ投手</li>
+<li>水色：捕手</li>
+<li>黄色：内野手（一塁・二塁・三塁・遊撃）</li>
+<li>緑：外野手（左翼・中堅・右翼）</li>
+</ul>
+
+<h2>よくある質問</h2>
+<p><strong>Q. X（旧Twitter）に動く画像を投稿するには？</strong><br>
+A. 「GIFアニメ」か「動画」を選んで保存し、そのまま投稿してください。動画は、ブラウザに合わせてMP4かWebMで保存されます（XにはMP4が向いています。Chrome・Edge・Safariの新しい版ではMP4になります）。</p>
+<p><strong>Q. 保存した画像の大きさは？</strong><br>
+A. 静止画（PNG）は744×1280ピクセル、GIFアニメは558×960ピクセル、動画は744×1280ピクセルです。</p>
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. ブラウザ内（localStorage）に保存され、次にこのページを開いたときに元に戻ります。サーバーには送信されません。</p>
+<p><strong>Q. 選手の能力の画像も作れますか？</strong><br>
+A. 作れます。<a href="/nouryoku/">能力画像ジェネレーター（野手）</a>と<a href="/nouryoku-pitcher/">投手版</a>をどうぞ。</p>
+</article>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/typing-game/" class="related-tool-card"><h3>横文字ばっかりのタイピングゲーム</h3><p>やたら横文字しか出てこない、無料のタイピングゲームです。</p></a>
+<a href="/mylife-start/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ アピールポイントのすゝめ</h3><p>経歴・ドラフト順位・アピールポイント・ウィークポイントによる初期能力とボーナスの解説です。</p></a>
+<a href="/eikan-kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 栄冠ナイン 金特の入手方法まとめ</h3><p>金特本・国際大会・特訓の3つの手段。欲しい金特から狙う評価を逆引きできます。</p></a>
+<a href="/shippo/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 尻尾 入手方法一覧</h3><p>尻尾12種の入手方法とオススメ度。9個でMAXになるので、あと何個かも分かります。</p></a>
+<a href="/crystal-banno/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 万能クリスタル（小）（大）入手方法一覧</h3><p>万能クリスタル（小）9通りと（大）の入手方法を、チェックしながら管理できる一覧。</p></a>
+<a href="/crystal/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ イベントクリスタル（小）（大）入手方法一覧</h3><p>特殊能力ファイルに使うイベントクリスタルの入手方法と、怪しい露店の交換レート一覧。</p></a>
+<a href="/kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 能力研究所の金特ミッション一覧</h3><p>マイライフの能力研究所で受けられる金特ミッションの内容と取得条件の一覧。2024-2025 とも共通です。</p></a>
+<a href="/satei/" class="related-tool-card"><h3>パワプロ2026-2027 ⭐︎(星)計算ツール</h3><p>能力値と所持する特殊能力を入力すると、査定である☆(星)を計算します。</p></a>
+<a href="/nouryoku/" class="related-tool-card"><h3>パワプロ風 能力画像ジェネレーター（野手）</h3><p>パワプロ風の能力画像を作れる能力メーカー。野手の能力値と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
+<a href="/nouryoku-pitcher/" class="related-tool-card"><h3>パワプロ風 能力画像ジェネレーター（投手）</h3><p>パワプロ風の能力画像を作れる能力メーカー。投手の能力値・変化球と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+<footer class="disclaimer">
+このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
+「実況パワフルプロ野球」はコナミデジタルエンタテインメントの登録商標です。当サイトは同社とは無関係の非公式ツールです。
+</footer>
+
+</div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   描画の大きさ（論理座標）。画面とPNGは2倍、GIFは1.5倍で描く
+   ============================================================ */
+var W = 372, H = 640;
+var ROW_Y0 = 62, ROW_STEP = 57, ROW_H = 46;
+var PLATE = { x: 58, w: 196, r: 12 };
+var FACE = { cx: 279, r: 18 };
+var BADGE = { x: 302, w: 40, h: 44 };
+var LOOP_MS = 1000;          // 調子くんの動きの1周
+var GIF_FRAMES = 12;         // GIFは1周を12コマ（約83ミリ秒ずつ）
+
+var FONT_NAME = '"M PLUS 1p","Hiragino Kaku Gothic ProN","Hiragino Sans",sans-serif';
+var FONT_ROUND = '"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif';
+
+/* 名前の欄の色（能力画像ジェネレーターと同じ）と、守備位置ごとの色 */
+var NAME_PLATE_COLORS = { red: "#FF8C8F", pink: "#F8BED9", water: "#6FD2EC", yellow: "#FBEA55", green: "#7FD06C" };
+var COLOR_KEYS = ["red", "pink", "water", "yellow", "green"];
+var COLOR_LABELS = { red: "赤", pink: "ピンク", water: "水色", yellow: "黄", green: "緑" };
+var NAME_COLOR_MAX = 3;
+var POSITIONS = ["捕", "一", "二", "三", "遊", "左", "中", "右", "DH", "投"];
+var POS_COLOR = { "投": "red", "捕": "water", "一": "yellow", "二": "yellow", "三": "yellow", "遊": "yellow",
+                  "左": "green", "中": "green", "右": "green", "DH": "yellow" };
+/* 守備位置の札：地の色・縁の色 */
+var BADGE_STYLE = {
+    red:    { top: "#FFC2CA", base: "#F2808F", edge: "#C93A50" },
+    water:  { top: "#C9F1FC", base: "#6FCDEB", edge: "#2B93BE" },
+    yellow: { top: "#FFF0B3", base: "#F8CB4E", edge: "#D8901A" },
+    green:  { top: "#D2F5C4", base: "#86D46E", edge: "#3E9A32" },
+    purple: { top: "#EBD5FF", base: "#C69AF0", edge: "#8656C2" }
+};
+
+/* 調子：顔の色と表情。動きは drawFace で決める */
+var CONDITIONS = [
+    { key: "zekko", label: "絶好調", top: "#F7A6FF", base: "#C93FD6", dark: "#7D1592" },
+    { key: "kocho", label: "好調",   top: "#FFD08A", base: "#FF922E", dark: "#B95300" },
+    { key: "futsu", label: "普通",   top: "#FFF2A0", base: "#FFD23A", dark: "#B98A00" },
+    { key: "fucho", label: "不調",   top: "#A9D5FF", base: "#4C9BE8", dark: "#1D5DA6" },
+    { key: "zeffu", label: "絶不調", top: "#C9C3DD", base: "#7D7698", dark: "#45405C" }
+];
+var COND_BY_KEY = {};
+CONDITIONS.forEach(function (c) { COND_BY_KEY[c.key] = c; });
+
+var DEFAULT_ROWS = [
+    { name: "中野", pos: "中", cond: "zekko", colors: ["yellow", "green"] },
+    { name: "山口", pos: "一", cond: "zekko", colors: ["water", "yellow"] },
+    { name: "西村", pos: "左", cond: "kocho", colors: ["green"] },
+    { name: "大川", pos: "二", cond: "zekko", colors: ["yellow"] },
+    { name: "林", pos: "三", cond: "futsu", colors: ["yellow"] },
+    { name: "池上", pos: "右", cond: "kocho", colors: ["green"] },
+    { name: "杉山", pos: "DH", cond: "fucho", colors: ["green", "yellow"] },
+    { name: "若林", pos: "捕", cond: "futsu", colors: ["water"] },
+    { name: "宮本", pos: "遊", cond: "zeffu", colors: ["yellow"] },
+    { name: "ジョンソン", pos: "投", cond: "zekko", colors: ["red"] }
+];
+var STORAGE_KEY = "tooldock:order:v1";
+
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+var state = { rows: clone(DEFAULT_ROWS), pitcher: true, title: "スターティングオーダー" };
+
+/* ============================================================
+   描画の部品
+   ============================================================ */
+function rr(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+}
+
+function vgrad(ctx, y0, y1, stops) {
+    var g = ctx.createLinearGradient(0, y0, 0, y1);
+    stops.forEach(function (s) { g.addColorStop(s[0], s[1]); });
+    return g;
+}
+
+/* 色を明るく・暗くする（#RRGGBB と -1〜1） */
+function shade(hex, amt) {
+    var n = parseInt(hex.slice(1), 16);
+    var r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    function f(c) { return Math.round(amt < 0 ? c * (1 + amt) : c + (255 - c) * amt); }
+    return "rgb(" + f(r) + "," + f(g) + "," + f(b) + ")";
+}
+
+/* 名前の欄：色を左から並べ、境目は縦の波。上につや、下にうすい影、縁は地の色を暗くした線 */
+function drawPlate(ctx, y, colors) {
+    var x = PLATE.x, w = PLATE.w, h = ROW_H, r = PLATE.r;
+    var cols = colors.length ? colors : ["yellow"];
+    ctx.save();
+    rr(ctx, x, y, w, h, r);
+    ctx.clip();
+    ctx.fillStyle = NAME_PLATE_COLORS[cols[0]];
+    ctx.fillRect(x, y, w, h);
+    for (var c = 1; c < cols.length; c++) {
+        var bx = x + w * c / cols.length;
+        ctx.beginPath();
+        ctx.moveTo(x + w + 2, y - 2);
+        for (var k = 0; k <= 20; k++) {
+            var yy = y - 2 + (h + 4) * k / 20;
+            ctx.lineTo(bx + 5 * Math.sin(2 * Math.PI * k / 20), yy);
+        }
+        ctx.lineTo(x + w + 2, y + h + 2);
+        ctx.closePath();
+        ctx.fillStyle = NAME_PLATE_COLORS[cols[c]];
+        ctx.filter = "blur(1px)";
+        ctx.fill();
+        ctx.filter = "none";
+    }
+    ctx.fillStyle = vgrad(ctx, y, y + h, [[0, "rgba(255,255,255,0.55)"], [0.48, "rgba(255,255,255,0.12)"], [0.5, "rgba(255,255,255,0)"], [1, "rgba(0,0,0,0.10)"]]);
+    ctx.fillRect(x, y, w, h);
+    ctx.restore();
+    rr(ctx, x + 1, y + 1, w - 2, h - 2, r - 1);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = shade(NAME_PLATE_COLORS[cols[0]], -0.32);
+    ctx.stroke();
+}
+
+/* 名前：1〜3文字は欄いっぱいに間を空けて置く（実機と同じ）。4文字以上は詰めて、入らなければ横を縮める */
+function drawName(ctx, y, name) {
+    var chars = Array.from(name || "");
+    var cx = PLATE.x + PLATE.w / 2, cy = y + ROW_H / 2 + 1;
+    ctx.fillStyle = "#151515";
+    ctx.font = "700 30px " + FONT_NAME;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    var n = chars.length;
+    if (!n) return;
+    var step = n === 2 ? PLATE.w * 0.44 : n === 3 ? PLATE.w * 0.27 : 0;
+    var allWide = chars.every(function (ch) { return /[^\x00-\xff｡-ﾟ]/.test(ch); });
+    if (n <= 3 && allWide) {
+        chars.forEach(function (ch, i) { ctx.fillText(ch, cx + (i - (n - 1) / 2) * step, cy); });
+        return;
+    }
+    var maxW = PLATE.w - 22;
+    var tw = ctx.measureText(name).width;
+    var sx = Math.min(1, maxW / tw);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(sx, 1);
+    ctx.fillText(name, 0, 0);
+    ctx.restore();
+}
+
+/* 打順の数字（1〜9・P）：水色から白のグラデーションに、紺のふち */
+function drawOrderNo(ctx, y, label) {
+    var cx = 33, cy = y + ROW_H / 2 + 2;
+    ctx.font = "900 46px " + FONT_ROUND;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "#16284C";
+    ctx.strokeText(label, cx, cy);
+    ctx.fillStyle = vgrad(ctx, cy - 20, cy + 20, [[0, "#FFFFFF"], [0.45, "#D7EAFF"], [1, "#7FAEE3"]]);
+    ctx.fillText(label, cx, cy);
+}
+
+/* 守備位置の札 */
+function drawBadge(ctx, y, pos) {
+    var key = pos === "DH" ? "purple" : POS_COLOR[pos] || "yellow";
+    var s = BADGE_STYLE[key];
+    var x = BADGE.x, yy = y + (ROW_H - BADGE.h) / 2, w = BADGE.w, h = BADGE.h;
+    rr(ctx, x, yy, w, h, 8);
+    ctx.fillStyle = vgrad(ctx, yy, yy + h, [[0, s.top], [0.5, s.base], [1, shade(s.base, -0.08)]]);
+    ctx.fill();
+    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = s.edge;
+    ctx.stroke();
+    var cx = x + w / 2, cy = yy + h / 2 + 1;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    ctx.font = (pos === "DH" ? "900 21px " : "900 27px ") + FONT_ROUND;
+    ctx.save();
+    if (pos === "DH") { ctx.translate(cx, cy); ctx.scale(0.86, 1.15); ctx.translate(-cx, -cy); }
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = s.edge;
+    ctx.strokeText(pos, cx, cy);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillText(pos, cx, cy);
+    ctx.restore();
+}
+
+/* 調子の顔。t は 0〜1（1周のうちの位置） */
+function drawFace(ctx, cy0, key, t) {
+    var c = COND_BY_KEY[key] || COND_BY_KEY.futsu;
+    var ph = 2 * Math.PI * t;
+    var dx = 0, dy = 0, rot = 0, open = 0;
+    if (key === "zekko") { dy = -3 * Math.abs(Math.sin(ph)); open = 0.55 + 0.45 * Math.abs(Math.sin(ph)); }
+    else if (key === "kocho") { dy = -1.6 * Math.abs(Math.sin(ph)); open = 0.35 + 0.25 * Math.abs(Math.sin(ph)); }
+    else if (key === "futsu") { rot = 0.08 * Math.sin(ph); }
+    else if (key === "fucho") { dy = 1.2 * Math.sin(ph); rot = -0.05 + 0.04 * Math.sin(ph); }
+    else { dx = 0.9 * Math.sin(ph * 6); dy = 1.2; }
+    var cx = FACE.cx + dx, cy = cy0 + dy, r = FACE.r;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+    /* 玉 */
+    var g = ctx.createRadialGradient(-r * 0.4, -r * 0.45, r * 0.1, 0, 0, r * 1.05);
+    g.addColorStop(0, "#FFFFFF");
+    g.addColorStop(0.18, c.top);
+    g.addColorStop(0.65, c.base);
+    g.addColorStop(1, c.dark);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = c.dark;
+    ctx.stroke();
+    /* 目 */
+    ctx.fillStyle = "#111";
+    var eyeY = key === "zeffu" || key === "fucho" ? -3 : -5;
+    [-6, 6].forEach(function (ex) {
+        ctx.beginPath();
+        if (key === "zekko") {
+            ctx.ellipse(ex, eyeY, 2.6, 4.4, 0, 0, 2 * Math.PI);
+        } else if (key === "zeffu") {
+            ctx.ellipse(ex, eyeY, 2.6, 1.4, 0, 0, 2 * Math.PI);
+        } else {
+            ctx.ellipse(ex, eyeY, 2.3, 3.6, 0, 0, 2 * Math.PI);
+        }
+        ctx.fill();
+        ctx.fillStyle = "#FFF";
+        ctx.beginPath();
+        ctx.arc(ex - 0.7, eyeY - 1.6, 0.9, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = "#111";
+    });
+    /* 口 */
+    ctx.lineCap = "round";
+    if (key === "zekko" || key === "kocho") {
+        var mw = key === "zekko" ? 9.5 : 7.5, mh = (key === "zekko" ? 10 : 6) * open;
+        ctx.fillStyle = "#2A0A10";
+        ctx.beginPath();
+        ctx.moveTo(-mw, 3);
+        ctx.quadraticCurveTo(0, 3 - 1.2, mw, 3);
+        ctx.quadraticCurveTo(mw * 0.9, 3 + mh * 1.25, 0, 3 + mh * 1.25);
+        ctx.quadraticCurveTo(-mw * 0.9, 3 + mh * 1.25, -mw, 3);
+        ctx.fill();
+        if (mh > 3) {
+            ctx.fillStyle = "#FF6F8A";
+            ctx.beginPath();
+            ctx.ellipse(0, 3 + mh * 1.0, mw * 0.5, mh * 0.28, 0, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    } else {
+        ctx.strokeStyle = "#1A1A1A";
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        if (key === "futsu") { ctx.moveTo(-6, 6); ctx.lineTo(6, 6); }
+        else if (key === "fucho") { ctx.moveTo(-6, 9); ctx.quadraticCurveTo(0, 3, 6, 9); }
+        else {
+            ctx.moveTo(-7, 8);
+            for (var i = 1; i <= 4; i++) ctx.lineTo(-7 + i * 3.5, 8 + (i % 2 ? -2 : 0));
+        }
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
+/* 動かない部分（枠・見出し・数字・名前・札）。調子の顔は毎コマ上から描く */
+function visibleRows() {
+    var rows = state.rows.slice(0, 9).map(function (r, i) { return { r: r, label: String(i + 1) }; });
+    if (state.pitcher) rows.push({ r: state.rows[9], label: "P" });
+    return rows;
+}
+function canvasHeight() {
+    return state.pitcher ? H : H - ROW_STEP;
+}
+
+function drawStatic(ctx) {
+    var h = canvasHeight();
+    ctx.clearRect(0, 0, W, h);
+    /* 外側（角の外）は暗い紺で埋める。GIFは透明を扱いにくいので、透明にはしない */
+    ctx.fillStyle = "#0E1830";
+    ctx.fillRect(0, 0, W, h);
+    rr(ctx, 4, 4, W - 8, h - 8, 14);
+    ctx.fillStyle = vgrad(ctx, 0, h, [[0, "#2D4170"], [1, "#1A2747"]]);
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#AFC3E0";
+    ctx.stroke();
+    rr(ctx, 8, 8, W - 16, h - 16, 11);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255,255,255,0.18)";
+    ctx.stroke();
+
+    /* 見出し */
+    rr(ctx, 18, 15, W - 36, 34, 5);
+    ctx.fillStyle = vgrad(ctx, 15, 49, [[0, "#E6F3FE"], [0.5, "#BCDCF6"], [1, "#94C3EC"]]);
+    ctx.fill();
+    ctx.font = "800 22px " + FONT_ROUND;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#6E9CCB";
+    var title = state.title || "";
+    var tw = ctx.measureText(title).width, maxW = W - 56;
+    ctx.save();
+    ctx.translate(W / 2, 33);
+    ctx.scale(Math.min(1, maxW / Math.max(1, tw)), 1);
+    ctx.strokeText(title, 0, 0);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillText(title, 0, 0);
+    ctx.restore();
+
+    visibleRows().forEach(function (v, i) {
+        var y = ROW_Y0 + i * ROW_STEP;
+        drawOrderNo(ctx, y, v.label);
+        drawPlate(ctx, y, v.r.colors);
+        drawName(ctx, y, v.r.name);
+        drawBadge(ctx, y, v.r.pos);
+    });
+}
+
+function drawFaces(ctx, t) {
+    visibleRows().forEach(function (v, i) {
+        drawFace(ctx, ROW_Y0 + i * ROW_STEP + ROW_H / 2, v.r.cond, t);
+    });
+}
+
+/* 1コマを、指定の倍率で canvas に描く */
+var staticCache = { scale: 0, canvas: null, dirty: true };
+function staticLayer(scale) {
+    if (!staticCache.dirty && staticCache.scale === scale) return staticCache.canvas;
+    var cv = document.createElement("canvas");
+    cv.width = Math.round(W * scale);
+    cv.height = Math.round(canvasHeight() * scale);
+    var ctx = cv.getContext("2d");
+    ctx.scale(scale, scale);
+    drawStatic(ctx);
+    staticCache = { scale: scale, canvas: cv, dirty: false };
+    return cv;
+}
+function drawFrame(canvas, scale, t) {
+    var ctx = canvas.getContext("2d");
+    var st = staticLayer(scale);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(st, 0, 0);
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    drawFaces(ctx, t);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+/* ============================================================
+   画面のプレビュー（動かし続ける）
+   ============================================================ */
+var view = document.getElementById("orderCanvas");
+var VIEW_SCALE = 2;
+function resizeView() {
+    var w = Math.round(W * VIEW_SCALE), h = Math.round(canvasHeight() * VIEW_SCALE);
+    if (view.width !== w || view.height !== h) { view.width = w; view.height = h; }
+}
+var t0 = performance.now();
+function tick(now) {
+    resizeView();
+    drawFrame(view, VIEW_SCALE, ((now - t0) % LOOP_MS) / LOOP_MS);
+    requestAnimationFrame(tick);
+}
+
+function invalidate() {
+    staticCache.dirty = true;
+    save();
+}
+
+/* ============================================================
+   入力欄
+   ============================================================ */
+var rowsEl = document.getElementById("rows");
+function orderColors(keys, pos) {
+    /* 投手の色 → 守備位置の色 → 残り、の順に並べる（能力画像ジェネレーターと同じ考え方） */
+    var main = POS_COLOR[pos];
+    var out = [];
+    ["red", "pink"].forEach(function (k) { if (keys.indexOf(k) >= 0) out.push(k); });
+    if (main && keys.indexOf(main) >= 0 && out.indexOf(main) < 0) out.push(main);
+    ["water", "yellow", "green"].forEach(function (k) { if (keys.indexOf(k) >= 0 && out.indexOf(k) < 0) out.push(k); });
+    return out.slice(0, NAME_COLOR_MAX);
+}
+
+function buildRows() {
+    rowsEl.innerHTML = "";
+    state.rows.forEach(function (r, i) {
+        var label = i < 9 ? String(i + 1) : "P";
+        var div = document.createElement("div");
+        div.className = "row" + (i === 9 && !state.pitcher ? " off" : "");
+        div.innerHTML =
+            '<span class="no">' + label + '</span>' +
+            '<input type="text" class="nm" maxlength="10" aria-label="' + label + '番の選手名">' +
+            '<select class="ps" aria-label="' + label + '番の守備位置">' + POSITIONS.map(function (p) { return '<option>' + p + '</option>'; }).join("") + '</select>' +
+            '<select class="cd" aria-label="' + label + '番の調子">' + CONDITIONS.map(function (c) { return '<option value="' + c.key + '">' + c.label + '</option>'; }).join("") + '</select>' +
+            '<div class="colors">' + COLOR_KEYS.map(function (k) {
+                return '<label><input type="checkbox" value="' + k + '"><i style="background:' + NAME_PLATE_COLORS[k] + '"></i>' + COLOR_LABELS[k] + '</label>';
+            }).join("") + '</div>';
+        var nm = div.querySelector(".nm"), ps = div.querySelector(".ps"), cd = div.querySelector(".cd");
+        var boxes = Array.prototype.slice.call(div.querySelectorAll(".colors input"));
+        nm.value = r.name; ps.value = r.pos; cd.value = r.cond;
+        function syncBoxes() {
+            boxes.forEach(function (b) { b.checked = r.colors.indexOf(b.value) >= 0; });
+            var full = r.colors.length >= NAME_COLOR_MAX;
+            boxes.forEach(function (b) { b.disabled = full && !b.checked; });
+        }
+        syncBoxes();
+        nm.addEventListener("input", function () { r.name = nm.value; invalidate(); });
+        cd.addEventListener("change", function () { r.cond = cd.value; save(); });
+        ps.addEventListener("change", function () {
+            r.pos = ps.value;
+            r.colors = [POS_COLOR[r.pos] || "yellow"];
+            syncBoxes(); invalidate();
+        });
+        boxes.forEach(function (b) {
+            b.addEventListener("change", function () {
+                var keys = boxes.filter(function (x) { return x.checked; }).map(function (x) { return x.value; });
+                r.colors = orderColors(keys, r.pos);
+                syncBoxes(); invalidate();
+            });
+        });
+        rowsEl.appendChild(div);
+    });
+}
+
+document.getElementById("opt-pitcher").addEventListener("change", function (e) {
+    state.pitcher = e.target.checked;
+    rowsEl.children[9].classList.toggle("off", !state.pitcher);
+    invalidate();
+});
+document.getElementById("opt-title").addEventListener("input", function (e) {
+    state.title = e.target.value;
+    invalidate();
+});
+document.getElementById("btnReset").addEventListener("click", function () {
+    if (!confirm("入力した内容を初期値に戻しますか？")) return;
+    state = { rows: clone(DEFAULT_ROWS), pitcher: true, title: "スターティングオーダー" };
+    applyStateToForm();
+    invalidate();
+});
+
+function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* 保存できなくても使える */ }
+}
+function load() {
+    try {
+        var s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if (s && Array.isArray(s.rows) && s.rows.length === 10) state = s;
+    } catch (e) { /* 壊れていれば初期値 */ }
+}
+function applyStateToForm() {
+    document.getElementById("opt-pitcher").checked = state.pitcher;
+    document.getElementById("opt-title").value = state.title;
+    buildRows();
+}
+
+/* ============================================================
+   保存（PNG・GIF・動画）
+   ============================================================ */
+var statusEl = document.getElementById("status");
+function setBusy(on, msg) {
+    document.getElementById("btnDownload").disabled = on;
+    document.getElementById("btnShare").disabled = on;
+    statusEl.textContent = msg || "";
+}
+function fileBase() {
+    var d = new Date();
+    return "starting_order_" + d.getFullYear() + ("0" + (d.getMonth() + 1)).slice(-2) + ("0" + d.getDate()).slice(-2);
+}
+
+function makePng() {
+    var cv = document.createElement("canvas");
+    cv.width = Math.round(W * 2); cv.height = Math.round(canvasHeight() * 2);
+    drawFrame(cv, 2, 0.25);
+    return new Promise(function (resolve) {
+        cv.toBlob(function (b) { resolve({ blob: b, name: fileBase() + ".png", type: "image/png" }); }, "image/png");
+    });
+}
+
+function makeGif() {
+    var scale = 1.5;
+    return import("/js/vendor/gifenc.esm.js").then(function (m) {
+        var cv = document.createElement("canvas");
+        cv.width = Math.round(W * scale); cv.height = Math.round(canvasHeight() * scale);
+        var ctx = cv.getContext("2d", { willReadFrequently: true });
+        var frames = [];
+        for (var k = 0; k < GIF_FRAMES; k++) {
+            drawFrame(cv, scale, k / GIF_FRAMES);
+            frames.push(ctx.getImageData(0, 0, cv.width, cv.height).data);
+        }
+        /* 色は全コマ共通の256色にする（コマごとに変えると、ちらつく） */
+        var sample = new Uint8ClampedArray(frames[0].length * 2);
+        sample.set(frames[0], 0);
+        sample.set(frames[Math.floor(GIF_FRAMES / 4)], frames[0].length);
+        var palette = m.quantize(sample, 256);
+        var gif = m.GIFEncoder();
+        frames.forEach(function (f) {
+            gif.writeFrame(m.applyPalette(f, palette), cv.width, cv.height, { palette: palette, delay: Math.round(LOOP_MS / GIF_FRAMES) });
+        });
+        gif.finish();
+        return { blob: new Blob([gif.bytes()], { type: "image/gif" }), name: fileBase() + ".gif", type: "image/gif" };
+    });
+}
+
+function pickVideoType() {
+    if (!window.MediaRecorder) return null;
+    var types = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+    for (var i = 0; i < types.length; i++) {
+        if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(types[i])) return types[i];
+    }
+    return null;
+}
+/* 動画は、画面のプレビューをそのまま3周ぶん録画する */
+function makeVideo() {
+    var type = pickVideoType();
+    if (!type || !view.captureStream) {
+        return Promise.reject(new Error("この端末・ブラウザでは動画の保存に対応していません。GIFアニメをお使いください。"));
+    }
+    return new Promise(function (resolve, reject) {
+        var stream = view.captureStream(30);
+        var rec = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 4000000 });
+        var chunks = [];
+        rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        rec.onerror = function (e) { reject(e.error || new Error("録画に失敗しました")); };
+        rec.onstop = function () {
+            stream.getTracks().forEach(function (tr) { tr.stop(); });
+            var mime = type.split(";")[0];
+            resolve({ blob: new Blob(chunks, { type: mime }), name: fileBase() + (mime === "video/mp4" ? ".mp4" : ".webm"), type: mime });
+        };
+        rec.start();
+        setTimeout(function () { rec.stop(); }, LOOP_MS * 3 + 100);
+    });
+}
+
+function makeFile() {
+    /* 文字のフォントを読み込み終えてから描く（読み込み前だと代わりのフォントで書き出してしまう） */
+    return loadFonts().then(function () {
+        staticCache.dirty = true;
+        return makeFileNow();
+    });
+}
+function makeFileNow() {
+    var fmt = document.querySelector('input[name="fmt"]:checked').value;
+    if (fmt === "gif") return makeGif();
+    if (fmt === "video") return makeVideo();
+    return makePng();
+}
+
+function busyMessage() {
+    var fmt = document.querySelector('input[name="fmt"]:checked').value;
+    return fmt === "gif" ? "GIFアニメを作っています…" : fmt === "video" ? "動画を録画しています（3秒）…" : "画像を作っています…";
+}
+
+document.getElementById("btnDownload").addEventListener("click", function () {
+    setBusy(true, busyMessage());
+    makeFile().then(function (f) {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(f.blob);
+        a.download = f.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
+        setBusy(false, "保存しました（" + f.name + "）");
+    }).catch(function (e) { setBusy(false, e.message || "保存できませんでした"); });
+});
+
+document.getElementById("btnShare").addEventListener("click", function () {
+    setBusy(true, busyMessage());
+    makeFile().then(function (f) {
+        var file = new File([f.blob], f.name, { type: f.type });
+        setBusy(false, "");
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: f.name }).catch(function () { /* キャンセル時は無視 */ });
+        } else {
+            statusEl.textContent = "この端末・ブラウザでは共有機能が使えません。「ダウンロード」をお使いください。";
+        }
+    }).catch(function (e) { setBusy(false, e.message || "保存できませんでした"); });
+});
+
+/* ============================================================
+   はじめに
+   ============================================================ */
+load();
+applyStateToForm();
+requestAnimationFrame(tick);
+/* 文字はWebフォントで描くので、読み込みが終わったら描き直す */
+function loadFonts() {
+    if (!document.fonts || !document.fonts.load) return Promise.resolve();
+    var text = state.rows.map(function (r) { return r.name; }).join("") + (state.title || "") + "0123456789P捕一二三遊左中右DH投";
+    return Promise.all([
+        document.fonts.load("700 30px " + FONT_NAME, text),
+        document.fonts.load("800 22px " + FONT_ROUND, text),
+        document.fonts.load("900 46px " + FONT_ROUND, text)
+    ]).then(function () { staticCache.dirty = true; }, function () { /* 読めなくても代わりのフォントで描く */ });
+}
+loadFonts();
+if (document.fonts) {
+    document.fonts.addEventListener && document.fonts.addEventListener("loadingdone", function () { staticCache.dirty = true; });
+    var fontTimer = null;
+    rowsEl.addEventListener("input", function () { clearTimeout(fontTimer); fontTimer = setTimeout(loadFonts, 300); });
+}
+</script>
+</body>
+</html>

@@ -24,6 +24,7 @@ window.CATEGORY_NAMES = {
    id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
    1件は1行で書く（build_index.py が1行ずつ読む） */
 window.UPDATES = [
+  { date: "2026-10-23", id: "order", kind: "new", text: "パワプロ風のスタメン画像ジェネレーターを公開。動く調子くん付きでGIFアニメ・動画にもできます" },
   { date: "2026-10-23", id: "milestone", kind: "update", text: "シーズン終了に合わせて、2026年に達成した記録の一覧と、2027年に達成が近い記録の見込みを追加" },
   { date: "2026-10-23", id: "geneki-draft", kind: "new", text: "現役ドラフト答え合わせを公開。移籍した49人の移籍前と移籍後を、一軍の成績と簡易WARで比べます" },
   { date: "2026-10-22", id: "draft", kind: "update", text: "指名選手一覧を見やすく。年ごとのページは球団ごと、球団ごとのページは年ごとに区切りました" },
@@ -455,6 +456,17 @@ window.TOOLS = [
     themeColor: "#2563eb",
     category: "game",
     url: "/nouryoku-pitcher/"
+  },
+
+  {
+    id: "order",
+    title: "パワプロ風 スタメン画像ジェネレーター",
+    desc: "名前・守備位置・調子を入れるだけで、パワプロ風のスターティングオーダーを画像・GIFアニメ・動画にできます。",
+    seoTitle: "パワプロ風 スタメン画像ジェネレーター｜オーダー表・打順を画像やGIFで作成",
+    seoDesc: "パワプロ風のスターティングオーダー（スタメン・打順）の画像を作れる無料ツールです。名前・守備位置・調子を入れるだけで、動く調子くん付きのGIFアニメや動画、PNG画像として保存できます。",
+    themeColor: "#2563eb",
+    category: "game",
+    url: "/order/"
   },
 
   {

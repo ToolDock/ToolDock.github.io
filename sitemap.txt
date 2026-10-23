@@ -32,6 +32,7 @@ https://tooldock.github.io/nouryoku-pitcher/
 https://tooldock.github.io/nouryoku/
 https://tooldock.github.io/ode/
 https://tooldock.github.io/omikuji/
+https://tooldock.github.io/order/
 https://tooldock.github.io/player/
 https://tooldock.github.io/privacy/
 https://tooldock.github.io/pythagorean/
