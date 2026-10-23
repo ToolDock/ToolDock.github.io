@@ -451,6 +451,12 @@ function ballPath(ctx, r, melt, wob) {
     ctx.closePath();
 }
 
+/* 玉の上の1点が、ひしゃげたときにどこへ動くか（ballPath と同じ式） */
+function meltPoint(x, y, r, melt) {
+    var low = (y + r) / (2 * r);
+    return { x: x * (1 + melt * (0.22 * low * low - 0.04)), y: r - (r - y) * (1 - 0.42 * melt) };
+}
+
 function drawFace(ctx, cy0, key, t) {
     var c = COND_BY_KEY[key] || COND_BY_KEY.futsu;
     var r = FACE.r;
@@ -517,7 +523,8 @@ function drawFace(ctx, cy0, key, t) {
     ctx.translate(0, -r);
 
     /* 玉：右下に向かって暗く、左上につやの白い斑 */
-    var g = ctx.createRadialGradient(-r * 0.35, -r * 0.4 + melt * r * 0.3, r * 0.15, r * 0.1, r * 0.15, r * 1.25);
+    var gp = meltPoint(-r * 0.35, -r * 0.4, r, melt);
+    var g = ctx.createRadialGradient(gp.x, gp.y, r * 0.15, r * 0.1, r * 0.15 + melt * r * 0.3, r * 1.25);
     g.addColorStop(0, c.hl);
     g.addColorStop(0.35, c.top);
     g.addColorStop(0.75, c.base);
@@ -672,11 +679,17 @@ function drawFace(ctx, cy0, key, t) {
     }
     ctx.restore();
 
-    /* つやは一番上に（回転しても、光の当たり方は変わらない） */
+    /* つやは一番上に（回転しても、光の当たり方は変わらない）。
+       ひしゃげたときは、玉の輪郭と同じ式で動かして縮め、玉の表面に付いてくるようにする */
+    var hp = meltPoint(-r * 0.42, -r * 0.5, r, melt);
+    ctx.save();
+    ballPath(ctx, r - 0.6, melt, wob);
+    ctx.clip();
     ctx.fillStyle = "rgba(255,255,255,0.85)";
     ctx.beginPath();
-    ctx.ellipse(-r * 0.42 * (1 + melt * 0.2), -r * 0.5 + melt * r * 0.38, r * 0.26, r * 0.15, -0.6, 0, 2 * Math.PI);
+    ctx.ellipse(hp.x, hp.y, r * 0.26, r * 0.15 * (1 - 0.42 * melt), -0.6 * (1 - 0.5 * melt), 0, 2 * Math.PI);
     ctx.fill();
+    ctx.restore();
     ctx.restore();
 }
 
