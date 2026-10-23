@@ -75,6 +75,10 @@ p{ margin:0 0 12px; }
     border:1px solid var(--accent); border-radius:var(--r-ctl); background:var(--accent); color:#fff; cursor:pointer; }
 .export button.secondary{ background:#fff; color:var(--accent); }
 .export button:disabled{ opacity:0.55; cursor:wait; }
+.export button.x-post{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-bottom:8px;
+    padding:12px; font-size:1rem; background:#000; border-color:#000; color:#fff; }
+.export button.x-post:hover{ background:#222; }
+.export .x-logo{ font-size:1.2rem; line-height:1; }
 .export .status{ min-height:1.4em; margin:8px 0 0; font-size:0.84rem; color:var(--ink-mute); }
 
 /* ── 入力 ── */
@@ -128,15 +132,16 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
     <canvas id="orderCanvas" width="744" height="1280" aria-label="スターティングオーダーの画像"></canvas>
     <div class="export">
         <div class="formats" role="radiogroup" aria-label="保存する形式">
-            <label><input type="radio" name="fmt" value="png" checked>静止画（PNG）</label>
-            <label><input type="radio" name="fmt" value="gif">GIFアニメ</label>
+            <label><input type="radio" name="fmt" value="gif" checked>GIFアニメ</label>
+            <label><input type="radio" name="fmt" value="png">静止画（PNG）</label>
             <label><input type="radio" name="fmt" value="video">動画</label>
         </div>
+        <button type="button" class="x-post" id="btnX"><span class="x-logo" aria-hidden="true">𝕏</span>Xに投稿する</button>
         <div class="buttons">
             <button type="button" id="btnDownload">ダウンロード</button>
             <button type="button" class="secondary" id="btnShare">共有して保存</button>
         </div>
-        <p class="status">PCは「ダウンロード」、スマートフォンは「共有して保存」をお使いください。</p>
+        <p class="status">「Xに投稿する」は、スマートフォンでは共有の画面でXを選ぶと、画像付きで投稿できます。PCでは画像を保存してXの投稿画面を開くので、保存した画像を添付してください。</p>
         <p class="status" id="status" aria-live="polite"></p>
     </div>
 </div>
@@ -180,6 +185,13 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <h2>使用例</h2>
 <p>このツールで作ったGIFアニメの例です。調子の顔が、調子ごとに違う動きをします。</p>
 <p><img src="/order/example.gif" alt="パワプロ風 スタメン画像ジェネレーターで作ったスターティングオーダーのGIFアニメの例" width="558" height="960" loading="lazy" style="max-width:100%; width:300px; height:auto;"></p>
+
+<h2>Xに投稿する</h2>
+<p>
+「Xに投稿する」を押すと、スマートフォンでは共有の画面が開きます。Xを選ぶと、作った画像（GIFアニメ・静止画・動画）を付けて、そのまま投稿できます。
+PCでは画像を保存して、Xの投稿画面を開きます。保存した画像を添付して投稿してください。
+投稿の本文には <strong>#パワプロ風スタメン</strong> が入ります。みんなのスタメンも、このハッシュタグで見られます。
+</p>
 
 <h2>名前の欄と守備位置の色</h2>
 <ul>
@@ -886,6 +898,7 @@ var statusEl = document.getElementById("status");
 function setBusy(on, msg) {
     document.getElementById("btnDownload").disabled = on;
     document.getElementById("btnShare").disabled = on;
+    document.getElementById("btnX").disabled = on;
     statusEl.textContent = msg || "";
 }
 function fileBase() {
@@ -976,30 +989,80 @@ function busyMessage() {
     return fmt === "gif" ? "GIFアニメを作っています…" : fmt === "video" ? "動画を録画しています（6秒）…" : "画像を作っています…";
 }
 
+function downloadFile(file) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(file);
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
+}
+
 document.getElementById("btnDownload").addEventListener("click", function () {
     setBusy(true, busyMessage());
-    makeFile().then(function (f) {
-        var a = document.createElement("a");
-        a.href = URL.createObjectURL(f.blob);
-        a.download = f.name;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
-        setBusy(false, "保存しました（" + f.name + "）");
+    getFile().then(function (file) {
+        downloadFile(file);
+        setBusy(false, "保存しました（" + file.name + "）");
     }).catch(function (e) { setBusy(false, e.message || "保存できませんでした"); });
 });
 
-document.getElementById("btnShare").addEventListener("click", function () {
-    setBusy(true, busyMessage());
-    makeFile().then(function (f) {
+/* スマートフォンの共有は、ボタンを押してすぐに呼ばないと断られることがある（GIFや動画は作るのに時間がかかる）。
+   作ったファイルを入力内容ごとに覚えておき、断られたら「もう一度押す」で、すぐに共有できるようにする */
+var SHARE_URL = "https://tooldock.github.io/order/";
+var SHARE_TEXT = "パワプロ風のスタメン画像を作りました⚾\n#パワプロ風スタメン";
+var prepared = null;
+function currentKey() {
+    return JSON.stringify(state) + "|" + document.querySelector('input[name="fmt"]:checked').value;
+}
+function getFile() {
+    var key = currentKey();
+    if (prepared && prepared.key === key) return Promise.resolve(prepared.file);
+    return makeFile().then(function (f) {
         var file = new File([f.blob], f.name, { type: f.type });
-        setBusy(false, "");
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            navigator.share({ files: [file], title: f.name }).catch(function () { /* キャンセル時は無視 */ });
+        prepared = { key: key, file: file };
+        return file;
+    });
+}
+function canShareFiles() {
+    try { return !!(navigator.canShare && navigator.canShare({ files: [new File(["x"], "x.png", { type: "image/png" })] })); }
+    catch (e) { return false; }
+}
+function shareFile(file, withText) {
+    var data = { files: [file] };
+    if (withText) data.text = SHARE_TEXT + "\n" + SHARE_URL;
+    else data.title = file.name;
+    return navigator.share(data).then(function () { setBusy(false, ""); }, function (e) {
+        if (e && e.name === "NotAllowedError") {
+            setBusy(false, "準備ができました。もう一度ボタンを押してください。");
         } else {
-            statusEl.textContent = "この端末・ブラウザでは共有機能が使えません。「ダウンロード」をお使いください。";
+            setBusy(false, "");      // キャンセル
         }
+    });
+}
+function shareFlow(withText) {
+    var fast = prepared && prepared.key === currentKey();
+    if (!fast) setBusy(true, busyMessage());
+    getFile().then(function (file) {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) return shareFile(file, withText);
+        setBusy(false, "この端末・ブラウザでは共有機能が使えません。「ダウンロード」をお使いください。");
+    }).catch(function (e) { setBusy(false, e.message || "保存できませんでした"); });
+}
+
+document.getElementById("btnShare").addEventListener("click", function () { shareFlow(false); });
+
+/* Xに投稿：スマートフォンは共有の画面（Xを選ぶと画像付きで投稿できる）。
+   PCは画像を保存し、本文とURLを入れたXの投稿画面を開く（画像は自分で添付する） */
+document.getElementById("btnX").addEventListener("click", function () {
+    if (canShareFiles()) { shareFlow(true); return; }
+    var intent = "https://x.com/intent/post?text=" + encodeURIComponent(SHARE_TEXT) + "&url=" + encodeURIComponent(SHARE_URL);
+    var win = window.open(intent, "_blank");
+    if (win) win.opener = null;
+    setBusy(true, busyMessage());
+    getFile().then(function (file) {
+        downloadFile(file);
+        setBusy(false, "画像を保存しました（" + file.name + "）。開いたXの投稿画面に、保存した画像を添付して投稿してください。"
+            + (win ? "" : " 投稿画面が開かなかったときは、ポップアップを許可してください。"));
     }).catch(function (e) { setBusy(false, e.message || "保存できませんでした"); });
 });
 
