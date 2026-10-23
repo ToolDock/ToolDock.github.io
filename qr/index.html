@@ -27,6 +27,7 @@
   <script src="/js/tool-data.js"></script>
   <script src="/js/head.js"></script>
   <script src="/js/analytics.js"></script>
+  <script src="/js/two-step.js"></script>
 
   <!-- QRコード生成ライブラリ（自前で配信。CDNに依存しない） -->
   <script src="/js/vendor/qrcode.min.js"></script>
@@ -658,14 +659,14 @@
       render();
     });
 
-    $("reset-opt").addEventListener("click", () => {
+    twoStepButton($("reset-opt"), () => {
       $("opt-size").value = 320;
       $("opt-margin").value = 2;
       $("opt-level").value = "M";
       $("opt-dark").value = "#000000";
       $("opt-light").value = "#ffffff";
       render();
-    });
+    }, "もう一度押すと、見た目を初期値に戻します");
 
     restore();
     updateMode();
