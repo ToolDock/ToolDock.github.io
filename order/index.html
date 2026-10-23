@@ -415,10 +415,10 @@ function drawBadge(ctx, y, pos) {
 }
 
 /* 調子の顔。t は 0〜1（1周＝2秒のうちの位置）、null は静止画用の止まった形。
-   絶好調：大笑いで跳ねたあと、縦にくるっと一回転
-   好調　：1秒ごとに、口を開ける中くらいの跳ね1回と、小さな跳ね3回
+   絶好調：大笑いで1回跳ねたあと、縦にくるっと一回転
+   好調　：本物のバウンド（浮く→細長く伸びて「お」の口→横につぶれる）を1秒に1回
    普通　：口はまっすぐで、横にくるっと一回転
-   不調　：目を閉じ口を開けて悲しそうに、目線が手前で円を描く
+   不調　：目を閉じ口を開けて悲しそうに、やや上を向いて、目線が手前で円を描く
    絶不調：1秒かけてひしゃげ、1秒かけて戻る */
 function easeInOut(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
 
@@ -431,7 +431,7 @@ function ballPath(ctx, r, melt, wob) {
         var x = r * Math.cos(a), y = r * Math.sin(a);
         var low = (y + r) / (2 * r);                 // 0（上）〜1（下）
         var yy = r - (r - y) * (1 - 0.42 * melt);
-        var xx = x * (1 + melt * (0.55 * low * low - 0.05)) + (wob || 0) * Math.sin(a * 3) * melt;
+        var xx = x * (1 + melt * (0.22 * low * low - 0.04)) + (wob || 0) * Math.sin(a * 3) * melt;
         if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
     }
     ctx.closePath();
@@ -466,7 +466,7 @@ function drawFace(ctx, cy0, key, t) {
         if (still) { open = 0.85; }
         else if (tt < 0.5) {
             var q = tt / 0.5;
-            hops(q, 2, 1);
+            hops(q, 1, 1);
             open = 0.5 + 0.5 * Math.abs(Math.sin(q * Math.PI * 4));
         } else {
             var q2 = (tt - 0.5) / 0.5;
@@ -475,25 +475,25 @@ function drawFace(ctx, cy0, key, t) {
             dy = -5 * Math.sin(Math.PI * q2);
         }
     } else if (key === "kocho") {
-        /* 1秒ごとに「中くらいの跳ね（口を開ける）→ 小さな跳ね3回（口は閉じる）」を繰り返す。
-           1秒＝10コマを、中の跳ね4コマ＋小さな跳ね2コマ×3 に割り当てる */
+        /* 本物（Webパワプロの好調アイコン）のバウンドに合わせる：
+           ふつう → 1ドット浮く → 細長く伸びて「お」の口 → 浮く → ふつう → 横につぶれて沈む。
+           1回のバウンドを10コマ（1秒）にして、2秒で2回 */
         eyes = "tall"; mouth = "smile";
-        if (still) { open = 0; }
-        else {
+        if (!still) {
             var k = ((Math.round(tt * GIF_FRAMES) % 10) + 10) % 10;
-            var MID = [
-                { sx: 1.05, sy: 0.83, dy: 0, open: 0 },      // ぐっとつぶれて
-                { sx: 0.97, sy: 1.04, dy: -1, open: 1 },     // 伸び上がって口を開ける
-                { sx: 0.98, sy: 1.02, dy: -1.5, open: 1 },
-                { sx: 1, sy: 1, dy: 0, open: 0.6 }           // 着地
-            ];
-            if (k < 4) {
-                sx = MID[k].sx; sy = MID[k].sy; dy = MID[k].dy; open = MID[k].open;
-            } else if ((k - 4) % 2 === 0) {
-                sx = 1.03; sy = 0.92; open = 0;               // 小さくつぶれる
-            } else {
-                open = 0;                                     // 戻る
-            }
+            var B = [
+                { sx: 1, sy: 1, dy: 0, m: "smile" },
+                { sx: 1, sy: 1, dy: -2.2, m: "smile" },        // 浮く
+                { sx: 0.88, sy: 1.07, dy: -1, m: "oh" },       // 細長く伸びる
+                { sx: 0.88, sy: 1.07, dy: -1, m: "oh" },
+                { sx: 1, sy: 1, dy: -2.2, m: "smile" },
+                { sx: 1, sy: 1, dy: 0, m: "smile" },
+                { sx: 1.08, sy: 0.9, dy: 1, m: "wide" },       // 横につぶれて少し沈む
+                { sx: 1.08, sy: 0.9, dy: 1, m: "wide" },
+                { sx: 1, sy: 1, dy: 0, m: "smile" },
+                { sx: 1, sy: 1, dy: 0, m: "smile" }
+            ][k];
+            sx = B.sx; sy = B.sy; dy = B.dy; mouth = B.m;
         }
     } else if (key === "futsu") {
         /* 横にくるっと一回転（少し止まってから回る） */
@@ -503,9 +503,10 @@ function drawFace(ctx, cy0, key, t) {
         /* 目を閉じ、口を開けて悲しそう。目線（顔全体）が手前で円を描くように回る */
         eyes = "sadshut"; mouth = "sadopen";
         open = 0.6;
+        gy = -1.6;               // やや上を向く
         if (!still) {
             gx = 3.2 * Math.cos(2 * Math.PI * tt);
-            gy = 2.4 * Math.sin(2 * Math.PI * tt) + 0.6;
+            gy = 2 * Math.sin(2 * Math.PI * tt) - 1.6;
         }
     } else {
         /* 絶不調：1秒かけてひしゃげ、1秒かけて戻る */
@@ -615,6 +616,18 @@ function drawFace(ctx, cy0, key, t) {
             ctx.beginPath();
             ctx.ellipse(0, mh * 1.05 - 0.5, mw * 0.45, Math.max(1, mh * 0.3), 0, 0, 2 * Math.PI);
             ctx.fill();
+        } else if (mouth === "oh") {
+            /* 伸びたときの「お」の口：縦長の楕円 */
+            ctx.beginPath();
+            ctx.ellipse(0, 3, 2.6, 4.2, 0, 0, 2 * Math.PI);
+            ctx.fill();
+        } else if (mouth === "wide") {
+            /* つぶれたときの口：横に長いにっこり */
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.moveTo(-8, -0.5);
+            ctx.quadraticCurveTo(0, 3.5, 8, -0.5);
+            ctx.stroke();
         } else if (mouth === "smile") {
             if (open < 0.15) {
                 /* 閉じた口：にっこりした線 */
