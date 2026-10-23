@@ -13,10 +13,10 @@ jobs:
         with:
           ref: probe-wiki
       - run: |
-          mkdir -p _probe
-          curl -sS -m 30 -A "ToolDock/1.0 (https://tooldock.github.io/)" -G "https://ja.wikipedia.org/w/api.php" \
-            --data-urlencode "action=parse" --data-urlencode "page=現役ドラフト" --data-urlencode "prop=wikitext" \
-            --data-urlencode "format=json" --data-urlencode "formatversion=2" -o _probe/genekidraft.json || true
+          mkdir -p _probe/choushi
+          curl -sSL -m 30 -A "Mozilla/5.0" -o _probe/choushi/page.html "https://junichi13.hatenadiary.org/entry/20080830/p2" || true
+          grep -oE 'https?://[^"'"'"' ]+\.(gif|png|jpg)' _probe/choushi/page.html | grep -i fotolife | sort -u | head -20 > _probe/choushi/imgs.txt || true
+          n=0; while read u; do n=$((n+1)); curl -sSL -m 30 -A "Mozilla/5.0" -o "_probe/choushi/img$n.${u##*.}" "$u" || true; done < _probe/choushi/imgs.txt
           ls -la _probe
           git config user.name probe; git config user.email probe@example.com
           git add _probe && git commit -m "probe data $(date -u +%H%M)" && git push
