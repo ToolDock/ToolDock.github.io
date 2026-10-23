@@ -415,7 +415,7 @@ function drawBadge(ctx, y, pos) {
 }
 
 /* 調子の顔。t は 0〜1（1周＝2秒のうちの位置）、null は静止画用の止まった形。
-   絶好調：大笑いで1回跳ねたあと、縦にくるっと一回転
+   絶好調：大笑いでその場で1回跳ね（上下には動かない）、縦にくるっと一回転
    好調　：本物のバウンド（浮く→細長く伸びて「お」の口→横につぶれる）を1秒に1回
    普通　：口はまっすぐで、横にくるっと一回転
    不調　：目を閉じ口を開けて悲しそうに、やや上を向いて、目線が手前で円を描く
@@ -466,13 +466,13 @@ function drawFace(ctx, cy0, key, t) {
         if (still) { open = 0.85; }
         else if (tt < 0.5) {
             var q = tt / 0.5;
-            hops(q, 1, 1);
+            hops(q, 1, 0);
             open = 0.5 + 0.5 * Math.abs(Math.sin(q * Math.PI * 4));
         } else {
             var q2 = (tt - 0.5) / 0.5;
             spin = 2 * Math.PI * easeInOut(q2);
             open = 0.9;
-            dy = -5 * Math.sin(Math.PI * q2);
+            dy = 0;                       // 回っても浮かない（その場で回る）
         }
     } else if (key === "kocho") {
         /* 本物（Webパワプロの好調アイコン）のバウンドに合わせる：
