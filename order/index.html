@@ -24,6 +24,7 @@
 <script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
+<script src="/js/two-step.js"></script>
 
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
@@ -104,7 +105,6 @@ p{ margin:0 0 12px; }
 .editor .note{ margin:10px 0 0; font-size:0.84rem; color:var(--ink-mute); }
 .editor .reset{ font:inherit; font-size:0.84rem; padding:5px 12px; margin-top:10px; border:1px solid var(--line);
     border-radius:var(--r-ctl); background:#fff; color:var(--ink-sub); cursor:pointer; }
-.editor .reset.armed{ border-color:#dc2626; color:#dc2626; font-weight:700; }
 
 .tool-article{ margin-top:34px; }
 .tool-article .note{ font-size:0.86rem; color:var(--ink-mute); }
@@ -870,28 +870,12 @@ document.getElementById("opt-title").addEventListener("input", function (e) {
     state.title = e.target.value;
     invalidate();
 });
-/* 初期値に戻す：確認は confirm() を使わず、ボタンを2回押す形にする
-   （アプリの中のブラウザなどでは confirm() が出ず、押しても何も起きないことがあるため） */
-var resetBtn = document.getElementById("btnReset");
-var resetTimer = null;
-resetBtn.addEventListener("click", function () {
-    if (!resetTimer) {
-        resetBtn.textContent = "もう一度押すと、初期値に戻します";
-        resetBtn.classList.add("armed");
-        resetTimer = setTimeout(disarmReset, 4000);
-        return;
-    }
-    disarmReset();
+/* 初期値に戻す（2回押し。js/two-step.js） */
+twoStepButton(document.getElementById("btnReset"), function () {
     state = { rows: clone(DEFAULT_ROWS), pitcher: true, title: "スターティングオーダー" };
     applyStateToForm();
     invalidate();
-});
-function disarmReset() {
-    clearTimeout(resetTimer);
-    resetTimer = null;
-    resetBtn.textContent = "初期値に戻す";
-    resetBtn.classList.remove("armed");
-}
+}, "もう一度押すと、初期値に戻します");
 
 function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* 保存できなくても使える */ }

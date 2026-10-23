@@ -24,6 +24,7 @@
 <script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
+<script src="/js/two-step.js"></script>
 
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
@@ -1309,11 +1310,9 @@ for (const node of [
 
 el.print.addEventListener("click", () => window.print());
 
-el.clear.addEventListener("click", () => {
+twoStepButton(el.clear, () => {
 
   if (el.editor.value === "" && el.title.value === "" && el.author.value === "") return;
-
-  if (!confirm("入力した文章・題名・氏名を消します。よろしいですか？")) return;
 
   el.editor.value = "";
   el.title.value = "";
@@ -1322,7 +1321,7 @@ el.clear.addEventListener("click", () => {
   onChange();
 
   el.editor.focus();
-});
+}, "もう一度押すと、文章・題名・氏名を消します");
 
 restore();
 render();

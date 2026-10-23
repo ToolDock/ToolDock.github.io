@@ -23,6 +23,7 @@
 <script src="/js/tool-data.js"></script>
 <script src="/js/head.js"></script>
 <script src="/js/analytics.js"></script>
+<script src="/js/two-step.js"></script>
 
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
@@ -1680,7 +1681,7 @@ document.querySelectorAll(".editor input, .editor select").forEach(function (el)
     el.addEventListener("change", function () { updateCheckedCounts(); renderCard(); saveFormState(); });
 });
 
-document.getElementById("btnReset").addEventListener("click", function () {
+twoStepButton(document.getElementById("btnReset"), function () {
     /* 選手情報・能力値・成績・表示ラベル・変化球など、.editor内の入力を
        まるごと初期状態（ページ読み込み直後の値）へ戻す。 */
     document.querySelectorAll(".editor input, .editor select").forEach(function (el) {
@@ -1703,7 +1704,7 @@ document.getElementById("btnReset").addEventListener("click", function () {
     renderCard();
     saveFormState();
     saveImageState();
-});
+}, "もう一度押すと、初期値に戻します");
 
 /* ---- 顔写真・球団旗の画像アップロード ---- */
 var playerPhotoImg = null;
