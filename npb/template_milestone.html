@@ -6,7 +6,7 @@
 
 <!-- このファイルは npb/template_milestone.html から npb/build_milestone.py が生成する。
      milestone/index.html を直接書き換えても、次の自動更新で消える -->
-<title>プロ野球 記録達成カウントダウン｜2000本安打・200勝・250セーブまであと何本【{{YEAR}}年・毎日更新】</title>
+<title>プロ野球 記録達成カウントダウン｜2000本安打・200勝・250セーブまであと何本{{TITLE_TAIL}}</title>
 <meta name="description" content="{{DESCRIPTION}}">
 <link rel="canonical" href="https://tooldock.github.io/milestone/">
 
@@ -105,13 +105,15 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 
 <div class="td-banner">
     <h1>プロ野球 記録達成カウントダウン</h1>
-    <p>2000本安打・200勝・250セーブ（名球会）など、現役選手の節目の記録まで「あと何本」かを毎日更新します</p>
+    <p>{{SUB}}</p>
 </div>
 
 <div class="container">
 
 <p class="stamp"><span>成績：<strong>{{AS_OF}}</strong></span><span>最終更新：{{UPDATED}}</span></p>
-<p class="lead">{{YEAR}}年に一軍に出場している現役選手のうち、節目の記録の{{NEAR}}%を超えて近づいている選手（{{COUNT}}件）を並べています。通算はデビューからのNPBの一軍公式戦の合計で、名球会の3記録（2000安打・200勝・250セーブ）だけはメジャーリーグでの成績を足した日米通算です。</p>
+<p class="lead">{{LEAD}}</p>
+
+{{ACHIEVED}}
 
 <nav class="jump">{{NAV}}</nav>
 

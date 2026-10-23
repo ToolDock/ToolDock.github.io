@@ -62,6 +62,15 @@ def load_mlb(data_dir):
     return {k: v for k, v in d.items() if not k.startswith("_")}
 
 
+def rec_name(e):
+    """「2000安打」「300本塁打」「250セーブ」「100勝」のような記録の呼び名"""
+    if e["label"] in ("安打", "本塁打"):
+        return f'{e["m"]}{e["label"]}'
+    if e["label"] == "出場試合":
+        return f'{e["m"]}試合出場'
+    return f'{e["m"]}{e["unit"]}'
+
+
 def when_text(need, per_season_now, left_ratio, per_season, final):
     """あと need を、今季の残り（今季ペース）→ 来季以降（1シーズンの量）で埋めると、いつ届くか"""
     if need <= 0:
@@ -102,6 +111,7 @@ def main(argv=None):
     SEASON_GAMES = 143
 
     rows = {rec: [] for rec in range(len(RECORDS))}
+    done = []           # 今季に達成した節目（今季の前は届いておらず、今は届いている）
     for pid, seasons in by_pid.items():
         if not any(y == latest for y, _, _ in seasons) or pid.startswith("r") or pid not in people.by_pid:
             continue
@@ -127,6 +137,12 @@ def main(argv=None):
             if per:
                 per_season = (sum(per) + per_season) / (len(per) + 1)
             extra = mlb.get(pid, {}).get(k, 0) if meikyu else 0
+            for m in marks:
+                cur = v + extra if m == meikyu else v
+                if now and cur - now < m <= cur:
+                    done.append({"pid": pid, "name": person["name"], "team": team, "i": i, "label": label,
+                                 "m": m, "cur": cur, "now": now, "unit": unit, "meikyu": m == meikyu,
+                                 "mlb": extra if m == meikyu else 0})
             for m in marks:
                 # 名球会の節目は日米通算で見る。それ以外はNPBだけ
                 cur = v + extra if m == meikyu else v
@@ -169,6 +185,24 @@ def main(argv=None):
                         f'<p class="marks">節目：{"・".join(f"{m}{unit}" for m in marks)}</p>'
                         f'<div class="tbl-wrap"><table class="std"><thead>{head}</thead><tbody>{body}</tbody></table></div></section>')
 
+    # 今季に達成した節目の記録（名球会の記録 → 大きな節目の順）
+    achieved = ""
+    if done:
+        done.sort(key=lambda e: (not e["meikyu"], e["i"], -e["m"]))
+        body = "".join(
+            f'<tr><th class="nm">{name_cell(e)}<span class="tm">{esc(e["team"])}</span></th>'
+            f'<td class="mk">{esc(rec_name(e))}'
+            + ('<span class="badge">名球会</span>' if e["meikyu"] else "") + "</td>"
+            f'<td class="cur">{e["cur"]}' + (f'<span class="sub">NPB {e["cur"] - e["mlb"]}＋MLB {e["mlb"]}</span>' if e["mlb"] else "")
+            # スマホでは「記録」の列を隠すので、通算の下に出す
+            + f'<span class="sub m-only">{esc(rec_name(e))}{"（名球会）" if e["meikyu"] else ""}</span>'
+            + f'</td><td class="opt">{e["now"]}</td></tr>' for e in done)
+        achieved = (f'<section class="rec" id="done"><h2>{latest}年に達成した節目の記録</h2>'
+                    f'<p class="marks">{latest}年のシーズン中に、通算で節目に届いた現役選手です（{len(done)}件）。</p>'
+                    f'<div class="tbl-wrap"><table class="std"><thead><tr><th class="nm">選手</th><th class="mk">記録</th>'
+                    f'<th>通算</th><th class="opt">{latest}年</th></tr></thead><tbody>{body}</tbody></table></div></section>')
+        nav.insert(0, f'<a href="#done">{latest}年に達成</a>')
+
     as_of = st.get("as_of") or ""
     try:
         d = datetime.strptime(as_of, "%Y-%m-%d")
@@ -178,12 +212,28 @@ def main(argv=None):
     # 説明文には、名球会に近い選手を3人まで
     tops = sorted((e for v in rows.values() for e in v if e["meikyu"]), key=lambda e: e["need"])
     lead_bits = [f'{bp.disp(e["name"])}（{e["m"]}{e["unit"]}まであと{e["need"]}）' for e in tops[:3]]
-    desc = (f"プロ野球の現役選手が、2000本安打・200勝・250セーブ（名球会）や300本塁打・1500奪三振などの節目の記録まであと何本かを毎日更新。"
-            + (f"{'、'.join(lead_bits)}など。" if lead_bits else "")
-            + "今のペースでいつ届くかの見込みも出しています。")
+    nxt = latest + 1
+    if final:
+        # シーズンが終わったら（オフの間）、来季に達成が近い記録と、今季に達成した記録のページにする
+        desc = (f"プロ野球の現役選手で、{nxt}年に2000本安打・200勝・250セーブ（名球会）や300本塁打・1500奪三振などの節目の記録に届きそうな選手の一覧。"
+                + (f"{'、'.join(lead_bits)}など。" if lead_bits else "")
+                + f"来季の何月ごろに届くかの見込みと、{latest}年に達成した記録もまとめています。")
+        title_tail = f"【{nxt}年に達成が近い記録】"
+        sub = f"2000本安打・200勝・250セーブ（名球会）など、{nxt}年シーズンに節目の記録へ届きそうな現役選手と、{latest}年に達成した記録をまとめています"
+        lead = (f"{latest}年シーズン終了時点の通算で、節目の記録の{round(NEAR * 100)}%を超えて近づいている現役選手（{count}件）を並べています。"
+                f"「見込み」は、来季（{nxt}年）の何月ごろに届くかの目安です。")
+    else:
+        desc = (f"プロ野球の現役選手が、2000本安打・200勝・250セーブ（名球会）や300本塁打・1500奪三振などの節目の記録まであと何本かを毎日更新。"
+                + (f"{'、'.join(lead_bits)}など。" if lead_bits else "")
+                + "今のペースでいつ届くかの見込みも出しています。")
+        title_tail = f"【{latest}年・毎日更新】"
+        sub = "2000本安打・200勝・250セーブ（名球会）など、現役選手の節目の記録まで「あと何本」かを毎日更新します"
+        lead = (f"{latest}年に一軍に出場している現役選手のうち、節目の記録の{round(NEAR * 100)}%を超えて近づいている選手（{count}件）を並べています。")
+    lead += "通算はデビューからのNPBの一軍公式戦の合計で、名球会の3記録（2000安打・200勝・250セーブ）だけはメジャーリーグでの成績を足した日米通算です。"
     now = datetime.now(JST)
     template = (Path(__file__).resolve().parent / "template_milestone.html").read_text(encoding="utf-8")
-    rep = {"{{DESCRIPTION}}": esc(desc), "{{AS_OF}}": esc(as_of_text),
+    rep = {"{{DESCRIPTION}}": esc(desc), "{{TITLE_TAIL}}": esc(title_tail), "{{SUB}}": esc(sub),
+           "{{LEAD}}": esc(lead), "{{ACHIEVED}}": achieved, "{{AS_OF}}": esc(as_of_text),
            "{{UPDATED}}": f"{now.year}年{now.month}月{now.day}日 {now.hour}:{now.minute:02d}",
            "{{NAV}}": "".join(nav), "{{SECTIONS}}": "\n".join(sections), "{{YEAR}}": str(latest),
            "{{NEAR}}": str(round(NEAR * 100)), "{{COUNT}}": str(count), "{{PACE_YEARS}}": str(PACE_YEARS)}
