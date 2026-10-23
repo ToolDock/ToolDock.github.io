@@ -454,8 +454,10 @@ function drawFace(ctx, cy0, key, t) {
         var a = Math.abs(Math.sin(Math.PI * q * n));
         var land = Math.pow(1 - a, 3);
         dy = -h * Math.pow(a, 2);
-        sx = 1 + 0.18 * land - 0.07 * a;
-        sy = 1 - 0.18 * land + 0.12 * a;
+        /* 正方形（直径×直径）からなるべくはみ出さない：横は少しだけ広がり、
+           伸び上がりも浮きと合わせて1〜2ピクセルにとどめる。跳ねは主に「縦につぶれる」で見せる */
+        sx = 1 + 0.05 * land - 0.04 * a;
+        sy = 1 - 0.17 * land + 0.03 * a;
     }
 
     if (key === "zekko") {
@@ -464,7 +466,7 @@ function drawFace(ctx, cy0, key, t) {
         if (still) { open = 0.85; }
         else if (tt < 0.5) {
             var q = tt / 0.5;
-            hops(q, 2, 1.5);
+            hops(q, 2, 1);
             open = 0.5 + 0.5 * Math.abs(Math.sin(q * Math.PI * 4));
         } else {
             var q2 = (tt - 0.5) / 0.5;
@@ -476,7 +478,7 @@ function drawFace(ctx, cy0, key, t) {
         /* 1.5秒まではにこにこ跳ねて、1.5秒で口を開ける */
         eyes = "tall"; mouth = "smile";
         if (still) { open = 0; }
-        else if (tt < 0.75) { hops(tt / 0.75, 3, 2); open = 0; }
+        else if (tt < 0.75) { hops(tt / 0.75, 3, 1); open = 0; }
         else { open = Math.min(1, (tt - 0.75) / 0.1); }
     } else if (key === "futsu") {
         /* 横にくるっと一回転（少し止まってから回る） */
