@@ -24,6 +24,7 @@ window.CATEGORY_NAMES = {
    id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
    1件は1行で書く（build_index.py が1行ずつ読む） */
 window.UPDATES = [
+  { date: "2026-10-23", id: "geneki-draft", kind: "new", text: "現役ドラフト答え合わせを公開。移籍した49人の移籍前と移籍後を、一軍の成績と簡易WARで比べます" },
   { date: "2026-10-22", id: "draft", kind: "update", text: "指名選手一覧を見やすく。年ごとのページは球団ごと、球団ごとのページは年ごとに区切りました" },
   { date: "2026-10-22", id: "draft", kind: "new", text: "2026年ドラフトの指名結果一覧を公開。12球団の全指名選手127人（支配下76人・育成51人）を掲載" },
   { date: "2026-10-20", id: "roulette", kind: "update", text: "盤面のデザインを一新。定番の配色と、右側の赤い矢印に（イカサマ・ヒリつくルーレットも同じ）" },
@@ -496,6 +497,17 @@ window.TOOLS = [
     themeColor: "#111827",
     category: "baseball",
     url: "/draft/"
+  },
+
+  {
+    id: "geneki-draft",
+    title: "現役ドラフト答え合わせ",
+    desc: "現役ドラフトで移籍した選手の、移籍前と移籍後の一軍成績・簡易WARを比べ、当たりの移籍と球団別の損得を振り返ります。",
+    seoTitle: "現役ドラフト答え合わせ｜移籍した選手のその後・成績とWAR【2022年〜】",
+    seoDesc: "プロ野球の現役ドラフト（2022年〜）で移籍した全選手の、移籍前と移籍後の一軍成績・簡易WARを比較。当たりの移籍ランキング、球団別の損得、年ごとの移籍選手のその後をまとめています。",
+    themeColor: "#111827",
+    category: "baseball",
+    url: "/geneki-draft/"
   },
 
   {

@@ -438,7 +438,11 @@ SORT_JS = """
 """
 
 
-def shell(title, desc, canonical, h1, sub, body, tool_id, crumb=None, banner_attr=""):
+FOOTER = """指名選手と成績はNPB（日本野球機構）公式サイトのドラフト会議・個人成績をもとに、当サイトが独自に集計したものです。
+成績は一軍の公式戦のみです。指名選手と成績は、NPBの在籍者名簿（在籍した年・球団・改名の履歴）で照合しています。"""
+
+
+def shell(title, desc, canonical, h1, sub, body, tool_id, crumb=None, banner_attr="", footer=None):
     """crumb: パンくずの最後に足す段の名前（年別ページの「2018年」）
     banner_attr: 見出しの帯の style 属性（球団のページは球団の色。team_colors.team_style）"""
     extra = (f'<script> const BREADCRUMB_EXTRA = {{ name: "{esc(crumb)}", url: "{canonical}" }}; </script>\n'
@@ -474,8 +478,7 @@ def shell(title, desc, canonical, h1, sub, body, tool_id, crumb=None, banner_att
 <div class="container">
 {body}
 <footer class="disclaimer">
-指名選手と成績はNPB（日本野球機構）公式サイトのドラフト会議・個人成績をもとに、当サイトが独自に集計したものです。
-成績は一軍の公式戦のみです。指名選手と成績は、NPBの在籍者名簿（在籍した年・球団・改名の履歴）で照合しています。
+{footer or FOOTER}
 </footer>
 </div>
 </div>
