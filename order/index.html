@@ -415,11 +415,25 @@ function drawBadge(ctx, y, pos) {
 }
 
 /* 調子の顔。t は 0〜1（1周＝2秒のうちの位置）、null は静止画用の止まった形。
-   絶好調：大笑いでその場で1回跳ね（上下には動かない）、縦にくるっと一回転
+   絶好調：大笑いで好調と同じように1回跳ね、その場で縦にくるっと一回転
    好調　：本物のバウンド（浮く→細長く伸びて「お」の口→横につぶれる）を1秒に1回
    普通　：口はまっすぐで、横にくるっと一回転
    不調　：目を閉じ口を開けて悲しそうに、やや上を向いて、目線が手前で円を描く
    絶不調：1秒かけてひしゃげ、1秒かけて戻る */
+/* 本物（Webパワプロの好調アイコン）のバウンド。1回＝10コマ（1秒）。好調と絶好調で使う */
+var BOUNCE = [
+    { sx: 1, sy: 1, dy: 0, m: "smile" },
+    { sx: 1, sy: 1, dy: -2.2, m: "smile" },        // 浮く
+    { sx: 0.88, sy: 1.07, dy: -1, m: "oh" },       // 細長く伸びる
+    { sx: 0.88, sy: 1.07, dy: -1, m: "oh" },
+    { sx: 1, sy: 1, dy: -2.2, m: "smile" },
+    { sx: 1, sy: 1, dy: 0, m: "smile" },
+    { sx: 1.08, sy: 0.9, dy: 1, m: "wide" },       // 横につぶれて少し沈む
+    { sx: 1.08, sy: 0.9, dy: 1, m: "wide" },
+    { sx: 1, sy: 1, dy: 0, m: "smile" },
+    { sx: 1, sy: 1, dy: 0, m: "smile" }
+];
+
 function easeInOut(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
 
 /* 玉の輪郭。melt（0〜1）が大きいほど、上がつぶれて下が広がる（もちのように） */
@@ -448,26 +462,16 @@ function drawFace(ctx, cy0, key, t) {
     var gx = 0, gy = 0;          // 目線（顔のパーツ全体）のずれ（不調）
     var mouth = "line", open = 0, eyes = "tall";
 
-    /* その場で跳ねる：0〜1 の間に n 回。ほとんど浮かず（h はごく小さく）、
-       着地でぐっとつぶれ、伸び上がる伸び縮みで跳ねているように見せる */
-    function hops(q, n, h) {
-        var a = Math.abs(Math.sin(Math.PI * q * n));
-        var land = Math.pow(1 - a, 3);
-        dy = -h * Math.pow(a, 2);
-        /* 正方形（直径×直径）からなるべくはみ出さない：横は少しだけ広がり、
-           伸び上がりも浮きと合わせて1〜2ピクセルにとどめる。跳ねは主に「縦につぶれる」で見せる */
-        sx = 1 + 0.05 * land - 0.04 * a;
-        sy = 1 - 0.17 * land + 0.03 * a;
-    }
-
     if (key === "zekko") {
         /* 前半は大笑いで跳ね、後半で縦にくるっと一回転 */
         mouth = "laugh"; eyes = "tall";
         if (still) { open = 0.85; }
         else if (tt < 0.5) {
-            var q = tt / 0.5;
-            hops(q, 1, 0);
-            open = 0.5 + 0.5 * Math.abs(Math.sin(q * Math.PI * 4));
+            /* 好調と同じ高さのバウンドを1回（形は好調と同じ動き、口は大笑いのまま） */
+            var kz = ((Math.round(tt * GIF_FRAMES) % 10) + 10) % 10;
+            var Bz = BOUNCE[kz];
+            sx = Bz.sx; sy = Bz.sy; dy = Bz.dy;
+            open = Bz.m === "oh" ? 1 : Bz.m === "wide" ? 0.55 : 0.8;
         } else {
             var q2 = (tt - 0.5) / 0.5;
             spin = 2 * Math.PI * easeInOut(q2);
@@ -481,18 +485,7 @@ function drawFace(ctx, cy0, key, t) {
         eyes = "tall"; mouth = "smile";
         if (!still) {
             var k = ((Math.round(tt * GIF_FRAMES) % 10) + 10) % 10;
-            var B = [
-                { sx: 1, sy: 1, dy: 0, m: "smile" },
-                { sx: 1, sy: 1, dy: -2.2, m: "smile" },        // 浮く
-                { sx: 0.88, sy: 1.07, dy: -1, m: "oh" },       // 細長く伸びる
-                { sx: 0.88, sy: 1.07, dy: -1, m: "oh" },
-                { sx: 1, sy: 1, dy: -2.2, m: "smile" },
-                { sx: 1, sy: 1, dy: 0, m: "smile" },
-                { sx: 1.08, sy: 0.9, dy: 1, m: "wide" },       // 横につぶれて少し沈む
-                { sx: 1.08, sy: 0.9, dy: 1, m: "wide" },
-                { sx: 1, sy: 1, dy: 0, m: "smile" },
-                { sx: 1, sy: 1, dy: 0, m: "smile" }
-            ][k];
+            var B = BOUNCE[k];
             sx = B.sx; sy = B.sy; dy = B.dy; mouth = B.m;
         }
     } else if (key === "futsu") {
