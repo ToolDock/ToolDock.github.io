@@ -237,8 +237,8 @@ var ROW_Y0 = 62, ROW_STEP = 57, ROW_H = 46;
 var PLATE = { x: 58, w: 196, r: 12 };
 var FACE = { cx: 279, r: 18 };
 var BADGE = { x: 302, w: 40, h: 44 };
-var LOOP_MS = 1500;          // 調子くんの動きの1周
-var GIF_FRAMES = 25;         // GIFは1周を25コマ（60ミリ秒ずつ）
+var LOOP_MS = 2000;          // 調子くんの動きの1周
+var GIF_FRAMES = 20;         // 1周を20コマ（100ミリ秒ずつ）。画面も同じコマ数でカクカク動かす
 
 var FONT_NAME = '"M PLUS 1p","Hiragino Kaku Gothic ProN","Hiragino Sans",sans-serif';
 var FONT_ROUND = '"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif';
@@ -414,12 +414,12 @@ function drawBadge(ctx, y, pos) {
     ctx.restore();
 }
 
-/* 調子の顔。t は 0〜1（1周のうちの位置）、null は静止画用の止まった形。
-   絶好調：大笑いのあと、縦にくるっと一回転
-   好調　：にこにこしながら、口を閉じたり開けたり
-   普通　：口はまっすぐで、きょろきょろしてまばたき
-   不調　：目を閉じて、口を開けて悲しそうに
-   絶不調：ぐにゃっとつぶれて広がり、うめく */
+/* 調子の顔。t は 0〜1（1周＝2秒のうちの位置）、null は静止画用の止まった形。
+   絶好調：大笑いで跳ねたあと、縦にくるっと一回転
+   好調　：にこにこ大きく跳ね、1.5秒で口を開ける
+   普通　：口はまっすぐで、横にくるっと一回転
+   不調　：目を閉じ口を開けて悲しそうに、目線が手前で円を描く
+   絶不調：1秒かけてひしゃげ、1秒かけて戻る */
 function easeInOut(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
 
 /* 玉の輪郭。melt（0〜1）が大きいほど、上がつぶれて下が広がる（もちのように） */
@@ -441,49 +441,61 @@ function drawFace(ctx, cy0, key, t) {
     var c = COND_BY_KEY[key] || COND_BY_KEY.futsu;
     var r = FACE.r;
     var still = t === null;
-    var tt = still ? 0 : t;
-    var ph = 2 * Math.PI * tt;
-    var dy = 0, sx = 1, sy = 1, look = 0, blink = false, melt = 0, wob = 0;
-    var spin = 0;                // 絶好調の縦回転（0〜2π）
+    /* 実機のようにカクカク動かす：時間を GIF と同じ20コマに区切る */
+    var tt = still ? 0 : Math.floor(t * GIF_FRAMES) / GIF_FRAMES;
+    var dy = 0, sx = 1, sy = 1, look = 0, melt = 0, wob = 0;
+    var spin = 0, spinY = 0;     // 縦回転（絶好調）・横回転（普通）
+    var gx = 0, gy = 0;          // 目線（顔のパーツ全体）のずれ（不調）
     var mouth = "line", open = 0, eyes = "tall";
 
+    /* 跳ねる高さ：0〜1 の間に n 回、着地でつぶれる */
+    function hops(q, n, h) {
+        var a = Math.abs(Math.sin(Math.PI * q * n));
+        var land = Math.pow(1 - a, 4);
+        dy = -h * a;
+        sx = 1 + 0.12 * land - 0.04 * a;
+        sy = 1 - 0.12 * land + 0.06 * a;
+    }
+
     if (key === "zekko") {
+        /* 前半は大笑いで跳ね、後半で縦にくるっと一回転 */
         mouth = "laugh"; eyes = "tall";
         if (still) { open = 0.85; }
-        else if (tt < 0.45) {
-            /* 大笑い：口をぱくぱく、少し弾む */
-            var q = tt / 0.45;
-            open = 0.55 + 0.45 * Math.abs(Math.sin(q * Math.PI * 3));
-            dy = -2 * Math.abs(Math.sin(q * Math.PI * 3));
+        else if (tt < 0.5) {
+            var q = tt / 0.5;
+            hops(q, 2, 4);
+            open = 0.5 + 0.5 * Math.abs(Math.sin(q * Math.PI * 4));
         } else {
-            /* 縦にくるっと一回転。回る間は少し浮く */
-            var q2 = (tt - 0.45) / 0.55;
+            var q2 = (tt - 0.5) / 0.5;
             spin = 2 * Math.PI * easeInOut(q2);
             open = 0.9;
-            dy = -4 * Math.sin(Math.PI * q2);
+            dy = -5 * Math.sin(Math.PI * q2);
         }
     } else if (key === "kocho") {
-        eyes = "tall";
-        /* 口を閉じたり開けたり（1周で2回） */
-        open = still ? 0 : Math.max(0, Math.sin(ph * 2));
-        mouth = "smile";
-        dy = still ? 0 : -1 * open;
+        /* 1.5秒まではにこにこ跳ねて、1.5秒で口を開ける */
+        eyes = "tall"; mouth = "smile";
+        if (still) { open = 0; }
+        else if (tt < 0.75) { hops(tt / 0.75, 3, 8); open = 0; }
+        else { open = Math.min(1, (tt - 0.75) / 0.1); }
     } else if (key === "futsu") {
+        /* 横にくるっと一回転（少し止まってから回る） */
         eyes = "tall"; mouth = "line";
-        if (!still) { look = 4.5 * Math.sin(ph); blink = tt > 0.9; }
+        if (!still && tt >= 0.25) spinY = 2 * Math.PI * easeInOut((tt - 0.25) / 0.75);
     } else if (key === "fucho") {
-        /* 目を閉じ、口を開けて悲しそうに。口がゆっくり開いたり閉じたり、少しうなだれる */
+        /* 目を閉じ、口を開けて悲しそう。目線（顔全体）が手前で円を描くように回る */
         eyes = "sadshut"; mouth = "sadopen";
-        open = still ? 0.6 : 0.35 + 0.65 * (0.5 - 0.5 * Math.cos(ph));
-        dy = still ? 0 : 1.2 * (0.5 - 0.5 * Math.cos(ph));
-        look = -1;
+        open = 0.6;
+        if (!still) {
+            gx = 3.2 * Math.cos(2 * Math.PI * tt);
+            gy = 2.4 * Math.sin(2 * Math.PI * tt) + 0.6;
+        }
     } else {
-        /* 絶不調：大きくぐにゃっとつぶれて、ゆがみながら戻る */
+        /* 絶不調：1秒かけてひしゃげ、1秒かけて戻る */
         eyes = "droop"; mouth = "groan";
-        var sq = still ? 0.55 : 0.5 - 0.5 * Math.cos(ph);
-        melt = 0.25 + 0.75 * sq;
-        wob = still ? 0 : 1.6 * Math.sin(ph * 2);
-        open = 0.3 + 0.7 * sq;
+        var sq = still ? 0.5 : (tt < 0.5 ? easeInOut(tt / 0.5) : 1 - easeInOut((tt - 0.5) / 0.5));
+        melt = 0.1 + 0.9 * sq;
+        wob = still ? 0 : 1.4 * Math.sin(Math.PI * sq);
+        open = 0.25 + 0.75 * sq;
     }
 
     /* 足もと（玉の下端）を基準にする */
@@ -511,12 +523,22 @@ function drawFace(ctx, cy0, key, t) {
     ctx.clip();
 
     /* 縦回転：顔のパーツを球面に沿って上へ送り、裏に回ったら描かない */
+    /* 顔のパーツの置き場所。回転では球面に沿って動かし、裏に回ったら描かない。
+       s・sx は奥に行くほど縮む向き（縦回転は縦、横回転は横） */
     function place(x, y) {
-        if (!spin) return { x: x + look, y: y + melt * (r - y) * 0.42 * 0.9, s: 1, vis: true };
+        x += gx; y += gy;
         var z = Math.sqrt(Math.max(0, r * r - x * x - y * y));
-        var y2 = y * Math.cos(spin) - z * Math.sin(spin);
-        var z2 = y * Math.sin(spin) + z * Math.cos(spin);
-        return { x: x, y: y2, s: Math.max(0.05, z2 / r), vis: z2 > 0 };
+        if (spin) {
+            var y2 = y * Math.cos(spin) - z * Math.sin(spin);
+            var z2 = y * Math.sin(spin) + z * Math.cos(spin);
+            return { x: x, y: y2, s: Math.max(0.05, z2 / r), sx: 1, vis: z2 > 0 };
+        }
+        if (spinY) {
+            var x3 = x * Math.cos(spinY) + z * Math.sin(spinY);
+            var z3 = -x * Math.sin(spinY) + z * Math.cos(spinY);
+            return { x: x3, y: y, s: 1, sx: Math.max(0.05, z3 / r), vis: z3 > 0 };
+        }
+        return { x: x + look, y: y + melt * (r - y) * 0.42 * 0.9, s: 1, sx: 1, vis: true };
     }
 
     ctx.fillStyle = "#000";
@@ -531,11 +553,9 @@ function drawFace(ctx, cy0, key, t) {
         if (!P.vis) return;
         ctx.save();
         ctx.translate(P.x, P.y);
-        ctx.scale(1, P.s);
+        ctx.scale(P.sx, P.s);
         ctx.beginPath();
-        if (blink) {
-            rr(ctx, -2.2, 0, 4.4, 1.6, 0.8); ctx.fill();
-        } else if (eyes === "sadshut") {
+        if (eyes === "sadshut") {
             /* 閉じた目：下にふくらんだ弧を、目尻が下がる向きに少し傾ける（しょんぼり） */
             var side = ex < 0 ? -1 : 1;     // -1 が左目。外側は side の向き
             ctx.lineWidth = 2.3;
@@ -560,8 +580,8 @@ function drawFace(ctx, cy0, key, t) {
     var M = place(0, 6);
     if (M.vis) {
         ctx.save();
-        ctx.translate(M.x - (spin ? 0 : look) + look * 0.8, M.y);
-        ctx.scale(1, M.s);
+        ctx.translate(M.x, M.y);
+        ctx.scale(M.sx, M.s);
         ctx.fillStyle = "#000";
         if (mouth === "laugh") {
             var mw = 9.5, mh = 3 + 6 * open;
@@ -861,7 +881,7 @@ function makeGif() {
         var palette = m.quantize(sample, 256);
         var gif = m.GIFEncoder();
         frames.forEach(function (f) {
-            gif.writeFrame(m.applyPalette(f, palette), cv.width, cv.height, { palette: palette, delay: Math.round(LOOP_MS / GIF_FRAMES) });
+            gif.writeFrame(m.applyPalette(f, palette), cv.width, cv.height, { palette: palette, delay: LOOP_MS / GIF_FRAMES });
         });
         gif.finish();
         return { blob: new Blob([gif.bytes()], { type: "image/gif" }), name: fileBase() + ".gif", type: "image/gif" };
@@ -914,7 +934,7 @@ function makeFileNow() {
 
 function busyMessage() {
     var fmt = document.querySelector('input[name="fmt"]:checked').value;
-    return fmt === "gif" ? "GIFアニメを作っています…" : fmt === "video" ? "動画を録画しています（4秒半）…" : "画像を作っています…";
+    return fmt === "gif" ? "GIFアニメを作っています…" : fmt === "video" ? "動画を録画しています（6秒）…" : "画像を作っています…";
 }
 
 document.getElementById("btnDownload").addEventListener("click", function () {
