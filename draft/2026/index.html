@@ -77,6 +77,13 @@ tr.none td.nm{ font-weight:400; }
 .tag{ display:inline-block; font-size:0.7rem; padding:0 6px; background:#fef3c7; color:var(--gold); margin-left:4px; font-weight:700; }
 .tag.ik{ background:#e0e7ff; color:#3730a3; }
 table.sortable th[data-k]{ cursor:pointer; }
+/* 今年の指名結果への案内（過去の年のページの上） */
+a.now-box{ display:block; margin:0 0 16px; padding:10px 14px; background:var(--surface); border:1px solid var(--line);
+           border-left:4px solid var(--c); color:var(--ink); text-decoration:none; }
+a.now-box b{ display:block; font-size:0.98rem; color:var(--ink-strong); }
+a.now-box b::after{ content:" →"; }
+a.now-box span{ font-size:0.82rem; color:var(--ink-mute); }
+a.now-box:hover b{ color:var(--accent); }
 /* 球団ごとに分けた指名選手一覧：球団の色の見出し行。横に送っても球団名は左に残す */
 .years.teams{ margin:0 0 10px; }
 tbody[id]{ scroll-margin-top:12px; }
@@ -117,6 +124,11 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
   <div class="card"><div class="k">高校 / 大学</div><div class="v">39 / 50</div><div class="s">人</div></div>
   <div class="card"><div class="k">社会人・独立ほか</div><div class="v">38人</div><div class="s">&nbsp;</div></div>
 </div>
+
+<h2>2026年ドラフトの見どころ</h2>
+<ul class="points">
+<li>1位指名は青山学院大の2人に重複。鈴木泰成（投手）はソフトバンクとロッテ、渡部海（捕手）は楽天と中日が指名し、抽選でソフトバンクと楽天が交渉権を獲得。外れ1位でも近畿大の宮原廉にロッテと中日が重なり、中日が当てた。ロッテは2度抽選を外し、3回目の入札で関西大の左腕・米沢友翔を指名。</li><li>巨人は、アメリカ挑戦を表明していた横浜高の織田翔希を単独で1位指名。日本ハムは、投打二刀流の山梨学院高・菰田陽生を単独で1位指名した。</li><li>海外の大学からの指名が相次いだ。DeNAは3位で、最速158キロの二刀流「カナダの大谷」ことブリティッシュコロンビア大の杉本寛斎を指名。ソフトバンクは8位で国立台湾体育運動大の深見一騎、9位でペンシルベニア州立大の佐藤幻瑛を指名した。</li><li>ソフトバンクは支配下9人・育成15人の計24人を指名し、12球団で最多。DeNAは支配下7人で、育成指名には参加しなかった。巨人は育成5位で、中学校の捕手・関蓮太郎を指名する驚きの一手。</li><li>指名は全体で127人（支配下76人・育成51人）と、前年の116人から11人増えた。独立リーグからは14人が指名され、四国アイランドリーグplusの徳島インディゴソックスからは6人（支配下2人・育成4人）と、チーム別で最も多かった。</li>
+</ul>
 
 <h2>2026年ドラフト 12球団の1位指名</h2>
 <div class="tbl-wrap"><table>

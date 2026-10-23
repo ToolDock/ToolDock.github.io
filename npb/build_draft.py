@@ -85,6 +85,9 @@ def load_seasons(data_dir, league):
 SOURCES = {}
 
 
+POINTS = {}         # 指名結果一覧の「見どころ」（npb/data/draft-points.json。手で書く）
+
+
 def load_drafts(data_dir):
     drafts = {}
     for f in sorted(data_dir.glob("draft_*.json")):
@@ -98,6 +101,9 @@ def load_drafts(data_dir):
         # 手入力の年は、指名がまだ無くても（ドラフト会議の開催前でも）ページを作る
         if picks or d.get("source") == "manual":
             drafts[d["year"]] = picks
+    pts = data_dir / "draft-points.json"
+    if pts.exists():
+        POINTS.update({int(y): v for y, v in json.loads(pts.read_text(encoding="utf-8")).items() if y.isdigit()})
     return drafts
 
 
@@ -376,6 +382,13 @@ tr.none td.nm{ font-weight:400; }
 .tag{ display:inline-block; font-size:0.7rem; padding:0 6px; background:#fef3c7; color:var(--gold); margin-left:4px; font-weight:700; }
 .tag.ik{ background:#e0e7ff; color:#3730a3; }
 table.sortable th[data-k]{ cursor:pointer; }
+/* 今年の指名結果への案内（過去の年のページの上） */
+a.now-box{ display:block; margin:0 0 16px; padding:10px 14px; background:var(--surface); border:1px solid var(--line);
+           border-left:4px solid var(--c); color:var(--ink); text-decoration:none; }
+a.now-box b{ display:block; font-size:0.98rem; color:var(--ink-strong); }
+a.now-box b::after{ content:" →"; }
+a.now-box span{ font-size:0.82rem; color:var(--ink-mute); }
+a.now-box:hover b{ color:var(--accent); }
 /* 球団ごとに分けた指名選手一覧：球団の色の見出し行。横に送っても球団名は左に残す */
 .years.teams{ margin:0 0 10px; }
 tbody[id]{ scroll-margin-top:12px; }
@@ -628,6 +641,15 @@ def year_points(year, picks, played, team_rank, early):
     return (low[0] if low else None), pts
 
 
+def latest_result_box(years, year=None):
+    """今年のドラフトが「指名結果一覧」の間（翌年3月まで）、ほかのページの上に今年の結果への案内を出す"""
+    latest = max(years)
+    if latest == year or not result_mode(latest):
+        return ""
+    return (f'<a class="now-box" href="/draft/{latest}/"><b>{latest}年ドラフトの指名結果はこちら</b>'
+            f'<span>12球団の1位指名と、球団ごとの全指名選手（支配下・育成）</span></a>')
+
+
 def year_page(year, picks, years, last_season):
     n_all = len(picks)
     n_ik = sum(p["ikusei"] for p in picks)
@@ -654,6 +676,7 @@ def year_page(year, picks, years, last_season):
     low, points = year_points(year, picks, played, team_rank, early)
     body = f"""
 {nav}
+{latest_result_box(years, year)}
 <p class="lead">{year}年のドラフト会議で指名された{n_all}人（うち育成{n_ik}人）が、その後どうなったかを一軍の通算成績と簡易WARで振り返ります。成績は{last_season}年{"シーズン途中" if last_season == datetime.now(JST).year else ""}までの一軍公式戦の合計です。</p>
 {'<p class="note">※指名からまだ日が浅いため、評価はこれからです。</p>' if early else ''}
 
@@ -785,6 +808,8 @@ def result_page(year, picks, years):
                      "12球団の指名選手を、1位指名と球団別の一覧でまとめています", body, "draft",
                      crumb=f"{year}年")
 
+    points = (f'<h2>{year}年ドラフトの見どころ</h2>\n<ul class="points">\n'
+              + "".join(f"<li>{esc(t)}</li>" for t in POINTS[year]) + "\n</ul>\n\n") if POINTS.get(year) else ""
     body = f"""
 {nav}
 <p class="lead">{year}年のプロ野球ドラフト会議で指名された{n_all}人（支配下{n_all - n_ik}人・育成{n_ik}人）の一覧です。12球団の1位指名と、球団ごとの指名選手をまとめています。</p>
@@ -796,7 +821,7 @@ def result_page(year, picks, years):
   <div class="card"><div class="k">社会人・独立ほか</div><div class="v">{total["社会人・独立ほか"]}人</div><div class="s">&nbsp;</div></div>
 </div>
 
-<h2>{year}年ドラフト 12球団の1位指名</h2>
+{points}<h2>{year}年ドラフト 12球団の1位指名</h2>
 <div class="tbl-wrap"><table>
 <thead><tr><th>球団</th><th>選手</th><th>守備</th><th>出身</th></tr></thead>
 <tbody>{first_rows}</tbody></table></div>
@@ -880,6 +905,7 @@ def index_page(drafts, last_season):
                       f'<tr><td class="nm"><a href="/draft/{y}/">{y}年</a></td><td class="n">{len(drafts[y])}人</td><td>―</td><td class="war">―</td></tr>')
 
     body = f"""
+{latest_result_box(sorted(drafts))}
 <p class="lead">{min(drafts)}年以降のプロ野球ドラフト会議で指名された全{len(all_picks)}人について、その後の一軍通算成績と簡易WARを集計しました。年ごとの「答え合わせ」ページで、どの球団のどの指名が当たりだったのかを振り返れます。</p>
 
 <h2>年別のドラフト答え合わせ</h2>

@@ -77,6 +77,13 @@ tr.none td.nm{ font-weight:400; }
 .tag{ display:inline-block; font-size:0.7rem; padding:0 6px; background:#fef3c7; color:var(--gold); margin-left:4px; font-weight:700; }
 .tag.ik{ background:#e0e7ff; color:#3730a3; }
 table.sortable th[data-k]{ cursor:pointer; }
+/* 今年の指名結果への案内（過去の年のページの上） */
+a.now-box{ display:block; margin:0 0 16px; padding:10px 14px; background:var(--surface); border:1px solid var(--line);
+           border-left:4px solid var(--c); color:var(--ink); text-decoration:none; }
+a.now-box b{ display:block; font-size:0.98rem; color:var(--ink-strong); }
+a.now-box b::after{ content:" →"; }
+a.now-box span{ font-size:0.82rem; color:var(--ink-mute); }
+a.now-box:hover b{ color:var(--accent); }
 /* 球団ごとに分けた指名選手一覧：球団の色の見出し行。横に送っても球団名は左に残す */
 .years.teams{ margin:0 0 10px; }
 tbody[id]{ scroll-margin-top:12px; }
@@ -109,6 +116,7 @@ footer.disclaimer{ margin-top:22px; font-size:0.82rem; color:var(--ink-mute); }
 <div class="container">
 
 <ul class="years"><li><a href="/draft/2026/">2026</a></li><li><a href="/draft/2025/">2025</a></li><li><a href="/draft/2024/">2024</a></li><li><a href="/draft/2023/">2023</a></li><li><a href="/draft/2022/">2022</a></li><li><a href="/draft/2021/">2021</a></li><li><a href="/draft/2020/">2020</a></li><li><a href="/draft/2019/">2019</a></li><li><a href="/draft/2018/">2018</a></li><li><a href="/draft/2017/">2017</a></li><li><a href="/draft/2016/">2016</a></li><li><a href="/draft/2015/">2015</a></li><li><a href="/draft/2014/">2014</a></li><li><a href="/draft/2013/">2013</a></li><li><a href="/draft/2012/">2012</a></li><li><a href="/draft/2011/">2011</a></li><li><a href="/draft/2010/">2010</a></li><li><a href="/draft/2009/">2009</a></li><li><a href="/draft/2008/">2008</a></li><li><a href="/draft/2007/">2007</a></li><li><span>2006</span></li><li><a href="/draft/2005/">2005</a></li></ul>
+<a class="now-box" href="/draft/2026/"><b>2026年ドラフトの指名結果はこちら</b><span>12球団の1位指名と、球団ごとの全指名選手（支配下・育成）</span></a>
 <p class="lead">2006年のドラフト会議で指名された102人（うち育成12人）が、その後どうなったかを一軍の通算成績と簡易WARで振り返ります。成績は2026年シーズン途中までの一軍公式戦の合計です。</p>
 
 
