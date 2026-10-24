@@ -111,6 +111,7 @@ p{ margin:0 0 12px; }
 .row .colors{ grid-area:colors; display:flex; flex-wrap:wrap; gap:2px 10px; font-size:0.8rem; color:var(--ink-sub); }
 .row .colors label{ display:flex; align-items:center; gap:3px; cursor:pointer; }
 .row .colors label:has(input:disabled){ opacity:0.4; }
+.row .colors .ord{ min-width:0.8em; font-size:0.72rem; color:var(--accent); }
 .row .colors i{ display:inline-block; width:12px; height:12px; border-radius:3px; border:1px solid rgba(0,0,0,0.25); }
 .editor .note{ margin:10px 0 0; font-size:0.84rem; color:var(--ink-mute); }
 .editor .reset{ font:inherit; font-size:0.84rem; padding:5px 12px; margin-top:10px; border:1px solid var(--line);
@@ -166,7 +167,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
         <label>見出し <input type="text" id="opt-title" value="スターティングオーダー" maxlength="14"></label>
     </div>
     <div class="rows" id="rows"></div>
-    <p class="note">名前の欄の色は3色まで選べます（複数でツートン・スリートーン）。守備位置を変えると、色はその守備位置の色になります。入力した内容はこのブラウザに保存されます。</p>
+    <p class="note">名前の欄の色は3色まで選べます（複数でツートン・スリートーン）。色は選んだ順に左から並び、色の横の数字がその順番です（メインの守備位置の色を先に選んでください）。守備位置を変えても、色はそのままです。入力した内容はこのブラウザに保存されます。</p>
     <button type="button" class="reset" id="btnReset">初期値に戻す</button>
 </div>
 
@@ -866,16 +867,6 @@ function invalidate() {
    入力欄
    ============================================================ */
 var rowsEl = document.getElementById("rows");
-function orderColors(keys, pos) {
-    /* 投手の色 → 守備位置の色 → 残り、の順に並べる（能力画像ジェネレーターと同じ考え方） */
-    var main = POS_COLOR[pos];
-    var out = [];
-    ["red", "pink"].forEach(function (k) { if (keys.indexOf(k) >= 0) out.push(k); });
-    if (main && keys.indexOf(main) >= 0 && out.indexOf(main) < 0) out.push(main);
-    ["water", "yellow", "green"].forEach(function (k) { if (keys.indexOf(k) >= 0 && out.indexOf(k) < 0) out.push(k); });
-    return out.slice(0, NAME_COLOR_MAX);
-}
-
 function buildRows() {
     rowsEl.innerHTML = "";
     state.rows.forEach(function (r, i) {
@@ -892,7 +883,7 @@ function buildRows() {
             '<select class="cd" aria-label="' + label + '番の調子">' + CONDITIONS.map(function (c) { return '<option value="' + c.key + '">' + c.label + '</option>'; }).join("") + '</select>' +
             '<input type="text" class="st" maxlength="30" placeholder="成績・説明（例：.285 12本 45点）" aria-label="' + label + '番の成績・説明">' +
             '<div class="colors">' + COLOR_KEYS.map(function (k) {
-                return '<label><input type="checkbox" value="' + k + '"><i style="background:' + NAME_PLATE_COLORS[k] + '"></i>' + COLOR_LABELS[k] + '</label>';
+                return '<label><input type="checkbox" value="' + k + '"><i style="background:' + NAME_PLATE_COLORS[k] + '"></i>' + COLOR_LABELS[k] + '<b class="ord"></b></label>';
             }).join("") + '</div>';
         var nm = div.querySelector(".nm"), ps = div.querySelector(".ps"), cd = div.querySelector(".cd");
         var boxes = Array.prototype.slice.call(div.querySelectorAll(".colors input"));
@@ -900,7 +891,12 @@ function buildRows() {
         nm.value = r.name; ps.value = r.pos; cd.value = r.cond; st.value = r.stat || "";
         st.addEventListener("input", function () { r.stat = st.value; invalidate(); });
         function syncBoxes() {
-            boxes.forEach(function (b) { b.checked = r.colors.indexOf(b.value) >= 0; });
+            boxes.forEach(function (b) {
+                var n = r.colors.indexOf(b.value);
+                b.checked = n >= 0;
+                /* 選んだ順（＝左からの並び）を、色の横に小さく出す */
+                b.parentNode.querySelector(".ord").textContent = n >= 0 && r.colors.length > 1 ? String(n + 1) : "";
+            });
             var full = r.colors.length >= NAME_COLOR_MAX;
             boxes.forEach(function (b) { b.disabled = full && !b.checked; });
         }
@@ -908,14 +904,17 @@ function buildRows() {
         nm.addEventListener("input", function () { r.name = nm.value; invalidate(); });
         cd.addEventListener("change", function () { r.cond = cd.value; save(); });
         ps.addEventListener("change", function () {
+            /* 名前の欄の色は、その選手が守れる位置（メインが左）を表すので、今日の守備位置を変えても変えない。
+               （内野手が今日は外野、のようなときに、色が外野の緑に変わってしまわないように）。色が無いときだけ入れる */
             r.pos = ps.value;
-            r.colors = [POS_COLOR[r.pos] || "yellow"];
+            if (!r.colors.length) r.colors = [POS_COLOR[r.pos] || "yellow"];
             syncBoxes(); invalidate();
         });
         boxes.forEach(function (b) {
             b.addEventListener("change", function () {
-                var keys = boxes.filter(function (x) { return x.checked; }).map(function (x) { return x.value; });
-                r.colors = orderColors(keys, r.pos);
+                /* 色は選んだ順に左から並べる（メインが内野で今日は外野、のようなときも、先に選んだ色が左） */
+                if (b.checked) { if (r.colors.indexOf(b.value) < 0 && r.colors.length < NAME_COLOR_MAX) r.colors = r.colors.concat([b.value]); }
+                else r.colors = r.colors.filter(function (k) { return k !== b.value; });
                 syncBoxes(); invalidate();
             });
         });
