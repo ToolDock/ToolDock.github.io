@@ -24,7 +24,7 @@ window.CATEGORY_NAMES = {
    id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
    1件は1行で書く（build_index.py が1行ずつ読む） */
 window.UPDATES = [
-  { date: "2026-10-24", id: "order", kind: "update", text: "成績・説明を1行ずつ書ける欄を追加。調子の顔を消して、成績だけの表にもできます" },
+  { date: "2026-10-24", id: "order", kind: "update", text: "成績・説明を1行ずつ書ける欄と、打順を▲▼で入れ替える機能を追加。調子の顔を消して、成績だけの表にもできます" },
   { date: "2026-10-23", id: "order", kind: "new", text: "パワプロ風のスタメン画像ジェネレーターを公開。動く調子くん付きでGIFアニメ・動画にもできます" },
   { date: "2026-10-23", id: "milestone", kind: "update", text: "シーズン終了に合わせて、2026年に達成した記録の一覧と、2027年に達成が近い記録の見込みを追加" },
   { date: "2026-10-23", id: "geneki-draft", kind: "new", text: "現役ドラフト答え合わせを公開。移籍した49人の移籍前と移籍後を、一軍の成績と簡易WARで比べます" },
