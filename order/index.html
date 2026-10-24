@@ -60,6 +60,9 @@ p{ margin:0 0 12px; }
 /* ── 画像と入力を横に並べる（スマホでは縦） ── */
 .workspace{ display:grid; grid-template-columns:minmax(0, 400px) minmax(0, 1fr); gap:20px; align-items:start; }
 @media (max-width:820px){ .workspace{ grid-template-columns:minmax(0, 1fr); } }
+.workspace.wide{ grid-template-columns:minmax(0, 1fr); }
+.workspace.wide .card-wrap{ position:static; }
+.workspace.wide .export{ max-width:560px; margin-left:auto; margin-right:auto; }
 
 .card-wrap{ background:#fff; border:1px solid var(--line); padding:16px; }
 @media (min-width:821px){ .card-wrap{ position:sticky; top:12px; } }
@@ -89,9 +92,12 @@ p{ margin:0 0 12px; }
 .options input[type="text"]{ font:inherit; font-size:0.9rem; padding:5px 8px; border:1px solid var(--line); border-radius:var(--r-ctl); width:13em; }
 
 .rows{ display:flex; flex-direction:column; gap:8px; }
-.row{ display:grid; grid-template-columns:28px minmax(0, 1fr) 76px 84px; grid-template-areas:"no name pos cond" "no colors colors colors";
+.row{ display:grid; grid-template-columns:28px minmax(0, 1fr) 76px 84px; grid-template-areas:"no name pos cond" "no colors colors colors" "no stat stat stat";
       gap:4px 6px; align-items:center; padding:8px; border:1px solid var(--line-soft); background:var(--tint); }
 .row.off{ display:none; }
+.row .st{ grid-area:stat; display:none; }
+.rows.with-stats .row .st{ display:block; }
+.rows.no-face .row .cd{ visibility:hidden; }
 .row .no{ grid-area:no; font-weight:800; font-size:1.1rem; text-align:center; color:var(--ink-sub); }
 .row input[type="text"], .row select{ font:inherit; font-size:0.95rem; padding:6px 7px; border:1px solid var(--line);
     border-radius:var(--r-ctl); background:#fff; color:var(--ink); width:100%; min-width:0; }
@@ -150,6 +156,8 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <div class="editor">
     <h3>オーダーを入力</h3>
     <div class="options">
+        <label><input type="checkbox" id="opt-face" checked> 調子の顔を出す</label>
+        <label><input type="checkbox" id="opt-stats"> 成績・説明の欄を出す</label>
         <label><input type="checkbox" id="opt-pitcher" checked> 投手（P）の欄を出す</label>
         <label>見出し <input type="text" id="opt-title" value="スターティングオーダー" maxlength="14"></label>
     </div>
@@ -179,6 +187,8 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <li>1番から9番まで、選手名と守備位置を入力します。指名打者は「DH」を選びます</li>
 <li>調子（絶好調・好調・普通・不調・絶不調）を選ぶと、顔の色と表情、動き方が変わります</li>
 <li>名前の欄の色は、守備位置に合わせて自動で変わります。複数のポジションを守れる選手は、色を足してツートンにできます</li>
+<li>「成績・説明の欄を出す」にチェックを入れると、守備位置の右に1行の欄が出ます。「.285 12本 45点」のような成績のほか、「チームの4番」「好きな食べ物」など、自由な説明も書けます</li>
+<li>調子の顔がいらないときは「調子の顔を出す」のチェックを外します（成績だけの表にできます）</li>
 <li>先発投手を出さないときは「投手（P）の欄を出す」のチェックを外します</li>
 <li>保存する形式（静止画・GIFアニメ・動画）を選び、PCは「ダウンロード」、スマートフォンは「共有して保存」で保存します</li>
 </ol>
@@ -245,11 +255,22 @@ A. 作れます。<a href="/nouryoku/">能力画像ジェネレーター（野�
 /* ============================================================
    描画の大きさ（論理座標）。画面とPNGは2倍、GIFは1.5倍で描く
    ============================================================ */
-var W = 372, H = 640;
+var W = 372, H = 640;        // W は applyLayout() が、表示する欄に合わせて決め直す
 var ROW_Y0 = 62, ROW_STEP = 57, ROW_H = 46;
 var PLATE = { x: 58, w: 196, r: 12 };
 var FACE = { cx: 279, r: 18 };
 var BADGE = { x: 302, w: 40, h: 44 };
+var STATS = { x: 352, w: 270 };   // 成績・説明の欄
+
+/* 欄の並び：数字・名前・（調子の顔）・守備位置・（成績・説明）。出さない欄のぶんは左に詰める */
+function applyLayout() {
+    var x = PLATE.x + PLATE.w;
+    if (state.showFace) { FACE.cx = x + 25; x += 48; } else { x += 10; }
+    BADGE.x = x;
+    x += BADGE.w;
+    if (state.showStats) { STATS.x = x + 10; x = STATS.x + STATS.w; }
+    W = x + 30;
+}
 var LOOP_MS = 2000;          // 調子くんの動きの1周
 var GIF_FRAMES = 20;         // 1周を20コマ（100ミリ秒ずつ）。画面も同じコマ数でカクカク動かす
 
@@ -285,21 +306,24 @@ var COND_BY_KEY = {};
 CONDITIONS.forEach(function (c) { COND_BY_KEY[c.key] = c; });
 
 var DEFAULT_ROWS = [
-    { name: "獅白", pos: "右", cond: "zekko", colors: ["green"] },
-    { name: "猫又", pos: "DH", cond: "kocho", colors: ["green"] },
-    { name: "白銀", pos: "二", cond: "zekko", colors: ["yellow", "water"] },
-    { name: "天音", pos: "一", cond: "futsu", colors: ["yellow", "water"] },
-    { name: "戌神", pos: "三", cond: "kocho", colors: ["yellow"] },
-    { name: "轟", pos: "遊", cond: "zekko", colors: ["yellow", "green"] },
-    { name: "大空", pos: "左", cond: "fucho", colors: ["green", "yellow"] },
-    { name: "風真", pos: "中", cond: "futsu", colors: ["green", "yellow"] },
-    { name: "博衣", pos: "捕", cond: "zeffu", colors: ["water", "yellow"] },
-    { name: "兎田", pos: "投", cond: "kocho", colors: ["red"] }
+    { name: "獅白", pos: "右", cond: "zekko", colors: ["green"], stat: ".301 12本 48点 15盗" },
+    { name: "猫又", pos: "DH", cond: "kocho", colors: ["green"], stat: ".288 18本 62点" },
+    { name: "白銀", pos: "二", cond: "zekko", colors: ["yellow", "water"], stat: ".276 9本 41点" },
+    { name: "天音", pos: "一", cond: "futsu", colors: ["yellow", "water"], stat: ".265 25本 78点" },
+    { name: "戌神", pos: "三", cond: "kocho", colors: ["yellow"], stat: ".292 21本 70点" },
+    { name: "轟", pos: "遊", cond: "zekko", colors: ["yellow", "green"], stat: ".254 6本 30点 22盗" },
+    { name: "大空", pos: "左", cond: "fucho", colors: ["green", "yellow"], stat: ".281 14本 55点" },
+    { name: "風真", pos: "中", cond: "futsu", colors: ["green", "yellow"], stat: ".263 4本 27点 31盗" },
+    { name: "博衣", pos: "捕", cond: "zeffu", colors: ["water", "yellow"], stat: ".238 7本 33点" },
+    { name: "兎田", pos: "投", cond: "kocho", colors: ["red"], stat: "10勝4敗 防御率2.45" }
 ];
 var STORAGE_KEY = "tooldock:order:v1";
 
 function clone(o) { return JSON.parse(JSON.stringify(o)); }
-var state = { rows: clone(DEFAULT_ROWS), pitcher: true, title: "スターティングオーダー" };
+function defaultState() {
+    return { rows: clone(DEFAULT_ROWS), pitcher: true, title: "スターティングオーダー", showFace: true, showStats: false };
+}
+var state = defaultState();
 
 /* ============================================================
    描画の部品
@@ -384,6 +408,28 @@ function drawName(ctx, y, name) {
     ctx.translate(cx, cy);
     ctx.scale(sx, 1);
     ctx.fillText(name, 0, 0);
+    ctx.restore();
+}
+
+/* 成績・説明の欄：白地に水色の枠、青い字で1行。入らなければ横を縮める */
+function drawStats(ctx, y, text) {
+    var x = STATS.x, w = STATS.w, h = ROW_H - 4, yy = y + 2;
+    rr(ctx, x, yy, w, h, 10);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#BCE3F1";
+    ctx.stroke();
+    if (!text) return;
+    ctx.font = "700 22px " + FONT_NAME;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#3370C0";
+    var maxW = w - 24, tw = ctx.measureText(text).width;
+    ctx.save();
+    ctx.translate(x + 12, yy + h / 2 + 1);
+    ctx.scale(Math.min(1, maxW / Math.max(1, tw)), 1);
+    ctx.fillText(text, 0, 0);
     ctx.restore();
 }
 
@@ -713,10 +759,12 @@ function visibleRows() {
     return rows;
 }
 function canvasHeight() {
+    applyLayout();
     return state.pitcher ? H : H - ROW_STEP;
 }
 
 function drawStatic(ctx) {
+    applyLayout();
     var h = canvasHeight();
     ctx.clearRect(0, 0, W, h);
     /* 背景は白。GIFは透明を扱いにくいので、透明にはしない */
@@ -753,10 +801,12 @@ function drawStatic(ctx) {
         drawPlate(ctx, y, v.r.colors);
         drawName(ctx, y, v.r.name);
         drawBadge(ctx, y, v.r.pos);
+        if (state.showStats) drawStats(ctx, y, v.r.stat || "");
     });
 }
 
 function drawFaces(ctx, t) {
+    if (!state.showFace) return;
     visibleRows().forEach(function (v, i) {
         drawFace(ctx, ROW_Y0 + i * ROW_STEP + ROW_H / 2, v.r.cond, t);
     });
@@ -767,8 +817,8 @@ var staticCache = { scale: 0, canvas: null, dirty: true };
 function staticLayer(scale) {
     if (!staticCache.dirty && staticCache.scale === scale) return staticCache.canvas;
     var cv = document.createElement("canvas");
-    cv.width = Math.round(W * scale);
     cv.height = Math.round(canvasHeight() * scale);
+    cv.width = Math.round(W * scale);
     var ctx = cv.getContext("2d");
     ctx.scale(scale, scale);
     drawStatic(ctx);
@@ -791,7 +841,8 @@ function drawFrame(canvas, scale, t) {
 var view = document.getElementById("orderCanvas");
 var VIEW_SCALE = 2;
 function resizeView() {
-    var w = Math.round(W * VIEW_SCALE), h = Math.round(canvasHeight() * VIEW_SCALE);
+    var h = Math.round(canvasHeight() * VIEW_SCALE), w = Math.round(W * VIEW_SCALE);
+    view.style.maxWidth = W + "px";
     if (view.width !== w || view.height !== h) { view.width = w; view.height = h; }
 }
 var t0 = performance.now();
@@ -831,12 +882,15 @@ function buildRows() {
             '<input type="text" class="nm" maxlength="10" aria-label="' + label + '番の選手名">' +
             '<select class="ps" aria-label="' + label + '番の守備位置">' + POSITIONS.map(function (p) { return '<option>' + p + '</option>'; }).join("") + '</select>' +
             '<select class="cd" aria-label="' + label + '番の調子">' + CONDITIONS.map(function (c) { return '<option value="' + c.key + '">' + c.label + '</option>'; }).join("") + '</select>' +
+            '<input type="text" class="st" maxlength="30" placeholder="成績・説明（例：.285 12本 45点）" aria-label="' + label + '番の成績・説明">' +
             '<div class="colors">' + COLOR_KEYS.map(function (k) {
                 return '<label><input type="checkbox" value="' + k + '"><i style="background:' + NAME_PLATE_COLORS[k] + '"></i>' + COLOR_LABELS[k] + '</label>';
             }).join("") + '</div>';
         var nm = div.querySelector(".nm"), ps = div.querySelector(".ps"), cd = div.querySelector(".cd");
         var boxes = Array.prototype.slice.call(div.querySelectorAll(".colors input"));
-        nm.value = r.name; ps.value = r.pos; cd.value = r.cond;
+        var st = div.querySelector(".st");
+        nm.value = r.name; ps.value = r.pos; cd.value = r.cond; st.value = r.stat || "";
+        st.addEventListener("input", function () { r.stat = st.value; invalidate(); });
         function syncBoxes() {
             boxes.forEach(function (b) { b.checked = r.colors.indexOf(b.value) >= 0; });
             var full = r.colors.length >= NAME_COLOR_MAX;
@@ -861,6 +915,20 @@ function buildRows() {
     });
 }
 
+function syncModeClasses() {
+    rowsEl.classList.toggle("with-stats", !!state.showStats);
+    rowsEl.classList.toggle("no-face", !state.showFace);
+    /* 成績の欄を出すと画像が横に長くなるので、画像の下に入力を並べる */
+    document.querySelector(".workspace").classList.toggle("wide", !!state.showStats);
+}
+document.getElementById("opt-face").addEventListener("change", function (e) {
+    state.showFace = e.target.checked;
+    syncModeClasses(); invalidate();
+});
+document.getElementById("opt-stats").addEventListener("change", function (e) {
+    state.showStats = e.target.checked;
+    syncModeClasses(); invalidate();
+});
 document.getElementById("opt-pitcher").addEventListener("change", function (e) {
     state.pitcher = e.target.checked;
     rowsEl.children[9].classList.toggle("off", !state.pitcher);
@@ -872,7 +940,7 @@ document.getElementById("opt-title").addEventListener("input", function (e) {
 });
 /* 初期値に戻す（2回押し。js/two-step.js） */
 twoStepButton(document.getElementById("btnReset"), function () {
-    state = { rows: clone(DEFAULT_ROWS), pitcher: true, title: "スターティングオーダー" };
+    state = defaultState();
     applyStateToForm();
     invalidate();
 }, "もう一度押すと、初期値に戻します");
@@ -883,13 +951,22 @@ function save() {
 function load() {
     try {
         var s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        if (s && Array.isArray(s.rows) && s.rows.length === 10) state = s;
+        if (s && Array.isArray(s.rows) && s.rows.length === 10) {
+            /* 前の版で保存した内容には、調子の顔・成績の欄の設定が無い */
+            if (s.showFace === undefined) s.showFace = true;
+            if (s.showStats === undefined) s.showStats = false;
+            s.rows.forEach(function (r) { if (r.stat === undefined) r.stat = ""; });
+            state = s;
+        }
     } catch (e) { /* 壊れていれば初期値 */ }
 }
 function applyStateToForm() {
     document.getElementById("opt-pitcher").checked = state.pitcher;
+    document.getElementById("opt-face").checked = state.showFace;
+    document.getElementById("opt-stats").checked = state.showStats;
     document.getElementById("opt-title").value = state.title;
     buildRows();
+    syncModeClasses();
 }
 
 /* ============================================================
@@ -909,7 +986,7 @@ function fileBase() {
 
 function makePng() {
     var cv = document.createElement("canvas");
-    cv.width = Math.round(W * 2); cv.height = Math.round(canvasHeight() * 2);
+    cv.height = Math.round(canvasHeight() * 2); cv.width = Math.round(W * 2);
     drawFrame(cv, 2, null);
     return new Promise(function (resolve) {
         cv.toBlob(function (b) { resolve({ blob: b, name: fileBase() + ".png", type: "image/png" }); }, "image/png");
@@ -920,7 +997,7 @@ function makeGif() {
     var scale = 1.5;
     return import("/js/vendor/gifenc.esm.js").then(function (m) {
         var cv = document.createElement("canvas");
-        cv.width = Math.round(W * scale); cv.height = Math.round(canvasHeight() * scale);
+        cv.height = Math.round(canvasHeight() * scale); cv.width = Math.round(W * scale);
         var ctx = cv.getContext("2d", { willReadFrequently: true });
         var frames = [];
         for (var k = 0; k < GIF_FRAMES; k++) {
