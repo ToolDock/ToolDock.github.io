@@ -314,22 +314,29 @@ var COND_BY_KEY = {};
 CONDITIONS.forEach(function (c) { COND_BY_KEY[c.key] = c; });
 
 var DEFAULT_ROWS = [
-    { name: "獅白", pos: "右", cond: "zekko", colors: ["green"], stat: ".301 12本 48点 15盗" },
-    { name: "猫又", pos: "DH", cond: "kocho", colors: ["green"], stat: ".288 18本 62点" },
-    { name: "白銀", pos: "二", cond: "zekko", colors: ["yellow", "water"], stat: ".276 9本 41点" },
-    { name: "天音", pos: "一", cond: "futsu", colors: ["yellow", "water"], stat: ".265 25本 78点" },
-    { name: "戌神", pos: "三", cond: "kocho", colors: ["yellow"], stat: ".292 21本 70点" },
-    { name: "轟", pos: "遊", cond: "zekko", colors: ["yellow", "green"], stat: ".254 6本 30点 22盗" },
-    { name: "大空", pos: "左", cond: "fucho", colors: ["green", "yellow"], stat: ".281 14本 55点" },
-    { name: "風真", pos: "中", cond: "futsu", colors: ["green", "yellow"], stat: ".263 4本 27点 31盗" },
-    { name: "博衣", pos: "捕", cond: "zeffu", colors: ["water", "yellow"], stat: ".238 7本 33点" },
-    { name: "兎田", pos: "投", cond: "kocho", colors: ["red"], stat: "10勝4敗 防御率2.45" }
+    { name: "獅白", pos: "右", colors: ["green"], stat: ".351 12本 68点 35盗" },
+    { name: "大空", pos: "中", colors: ["green", "yellow"], stat: ".281 28本 95点 13盗" },
+    { name: "白銀", pos: "二", colors: ["yellow", "water"], stat: ".276 49本 121点 1盗" },
+    { name: "星街", pos: "DH", colors: ["red", "pink", "green"], stat: ".265 45本 118点 0盗" },
+    { name: "戌神", pos: "三", colors: ["yellow"], stat: ".312 41本 112点 4盗" },
+    { name: "風真", pos: "一", colors: ["yellow", "green"], stat: ".303 32本 117点 31盗" },
+    { name: "轟", pos: "遊", colors: ["yellow", "green"], stat: ".314 22本 90点 22盗" },
+    { name: "猫又", pos: "一", colors: ["green", "yellow"], stat: ".322 4本 62点 32盗" },
+    { name: "博衣", pos: "捕", colors: ["water", "yellow"], stat: ".258 17本 53点 3盗" },
+    { name: "兎田", pos: "投", colors: ["red"], stat: "16勝4敗 防御率1.85" }
 ];
+/* 初期値の調子は、開くたび（初期値に戻すたび）にランダムに決める */
+function randomRows() {
+    return clone(DEFAULT_ROWS).map(function (r) {
+        r.cond = CONDITIONS[Math.floor(Math.random() * CONDITIONS.length)].key;
+        return r;
+    });
+}
 var STORAGE_KEY = "tooldock:order:v1";
 
 function clone(o) { return JSON.parse(JSON.stringify(o)); }
 function defaultState() {
-    return { rows: clone(DEFAULT_ROWS), pitcher: true, title: "スターティングオーダー", showFace: true, showStats: false };
+    return { rows: randomRows(), pitcher: true, title: "スターティングオーダー", showFace: true, showStats: false };
 }
 var state = defaultState();
 
