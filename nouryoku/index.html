@@ -1071,8 +1071,8 @@ function renderCard() {
     var teamColor = document.getElementById("p-teamcolor").value;
     var pos = document.getElementById("p-pos").value;
     var subpos = document.getElementById("p-subpos").value;
-    /* 実機は「外ー三」のように、メインの守備位置のあとに「ー」とサブポジションを
-       少し小さく並べる。入力に「ー」などが入っていても1つにまとめる */
+    /* メインの守備位置のあとに、サブポジションを少し小さく並べる。
+       間の「ー」は「一（一塁）」と見分けにくいので入れない。入力に「ー」などが入っていても取り除く */
     var subClean = subpos.replace(/[ー－\-‐・、,\s]/g, "");
     var number = (document.getElementById("p-number") || { value: "" }).value.trim();
     var plateColors = buildNamePlateColors();
@@ -1191,7 +1191,7 @@ function renderCard() {
         /* 守備位置 */
         labelPill(L.posLabel.x, L.posLabel.y, L.posLabel.w, L.posLabel.h, labelVal("label-pos", "守備位置"), 17) +
         '<text data-fit="' + (L.posValue.w - 10) + '" x="' + L.posValue.x + '" y="' + (L.posValue.y + L.posValue.h / 2 + 9) + '" font-size="27" font-weight="800" fill="#3370C0" font-family="&quot;M PLUS 1p&quot;,&quot;Hiragino Kaku Gothic ProN&quot;,sans-serif">' + esc(pos) +
-            (subClean ? '<tspan dx="8" font-size="21" font-weight="700" fill="#5A7598">ー</tspan><tspan dx="7" font-size="21" font-weight="700" fill="#5A7598">' + esc(subClean) + '</tspan>' : '') + '</text>' +
+            (subClean ? '<tspan dx="12" font-size="21" font-weight="700" fill="#5A7598">' + esc(subClean) + '</tspan>' : '') + '</text>' +
 
         /* 成績・フォーム・投打（2段のパネル） */
         '<rect x="' + L.bioRow1.x + '" y="' + L.bioRow1.y + '" width="' + L.bioRow1.w + '" height="' + L.bioRow1.h + '" rx="14" fill="#ffffff" stroke="#BCE3F1" stroke-width="4"/>' +
