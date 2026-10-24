@@ -98,7 +98,11 @@ p{ margin:0 0 12px; }
 .row .st{ grid-area:stat; display:none; }
 .rows.with-stats .row .st{ display:block; }
 .rows.no-face .row .cd{ visibility:hidden; }
-.row .no{ grid-area:no; font-weight:800; font-size:1.1rem; text-align:center; color:var(--ink-sub); }
+.row .no{ grid-area:no; display:flex; flex-direction:column; align-items:center; gap:2px;
+           font-weight:800; font-size:1.1rem; text-align:center; color:var(--ink-sub); }
+.row .no button{ font:inherit; font-size:0.7rem; line-height:1; width:26px; padding:5px 0; border:1px solid var(--line);
+                 border-radius:4px; background:#fff; color:var(--ink-sub); cursor:pointer; }
+.row .no button:disabled{ opacity:0.3; cursor:default; }
 .row input[type="text"], .row select{ font:inherit; font-size:0.95rem; padding:6px 7px; border:1px solid var(--line);
     border-radius:var(--r-ctl); background:#fff; color:var(--ink); width:100%; min-width:0; }
 .row .nm{ grid-area:name; }
@@ -185,6 +189,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <h2>使い方</h2>
 <ol>
 <li>1番から9番まで、選手名と守備位置を入力します。指名打者は「DH」を選びます</li>
+<li>打順は、番号の下の▲▼で入れ替えられます。名前・守備位置・調子・色・成績が、まとめて動きます</li>
 <li>調子（絶好調・好調・普通・不調・絶不調）を選ぶと、顔の色と表情、動き方が変わります</li>
 <li>名前の欄の色は、守備位置に合わせて自動で変わります。複数のポジションを守れる選手は、色を足してツートンにできます</li>
 <li>「成績・説明の欄を出す」にチェックを入れると、守備位置の右に1行の欄が出ます。「.285 12本 45点」のような成績のほか、「チームの4番」「好きな食べ物」など、自由な説明も書けます</li>
@@ -878,7 +883,10 @@ function buildRows() {
         var div = document.createElement("div");
         div.className = "row" + (i === 9 && !state.pitcher ? " off" : "");
         div.innerHTML =
-            '<span class="no">' + label + '</span>' +
+            '<span class="no">' + label +
+                (i < 9 ? '<button type="button" class="mv-up" aria-label="' + label + '番を1つ上へ"' + (i === 0 ? ' disabled' : '') + '>▲</button>' +
+                         '<button type="button" class="mv-down" aria-label="' + label + '番を1つ下へ"' + (i === 8 ? ' disabled' : '') + '>▼</button>' : '') +
+            '</span>' +
             '<input type="text" class="nm" maxlength="10" aria-label="' + label + '番の選手名">' +
             '<select class="ps" aria-label="' + label + '番の守備位置">' + POSITIONS.map(function (p) { return '<option>' + p + '</option>'; }).join("") + '</select>' +
             '<select class="cd" aria-label="' + label + '番の調子">' + CONDITIONS.map(function (c) { return '<option value="' + c.key + '">' + c.label + '</option>'; }).join("") + '</select>' +
@@ -909,6 +917,19 @@ function buildRows() {
                 var keys = boxes.filter(function (x) { return x.checked; }).map(function (x) { return x.value; });
                 r.colors = orderColors(keys, r.pos);
                 syncBoxes(); invalidate();
+            });
+        });
+        /* 打順の入れ替え：その選手の名前・守備位置・調子・色・成績を、まとめて上下の打順と入れ替える */
+        Array.prototype.forEach.call(div.querySelectorAll(".mv-up, .mv-down"), function (b) {
+            b.addEventListener("click", function () {
+                var j = b.classList.contains("mv-up") ? i - 1 : i + 1;
+                if (j < 0 || j > 8) return;
+                var tmp = state.rows[i]; state.rows[i] = state.rows[j]; state.rows[j] = tmp;
+                buildRows();
+                invalidate();
+                /* 続けて同じ選手を動かせるよう、動いた先のボタンにフォーカスを移す */
+                var moved = rowsEl.children[j].querySelector(b.classList.contains("mv-up") ? ".mv-up" : ".mv-down");
+                if (moved && !moved.disabled) moved.focus();
             });
         });
         rowsEl.appendChild(div);
