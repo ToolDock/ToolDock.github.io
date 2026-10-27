@@ -24,6 +24,7 @@ window.CATEGORY_NAMES = {
    id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
    1件は1行で書く（build_index.py が1行ずつ読む） */
 window.UPDATES = [
+  { date: "2026-10-27", id: "player", kind: "update", text: "全選手のページに、入団から移籍・キャリアハイ・タイトル・通算までをまとめた「経歴と成績のまとめ」を追加" },
   { date: "2026-10-24", id: "order", kind: "update", text: "成績・説明を1行ずつ書ける欄と、打順を▲▼で入れ替える機能を追加。調子の顔を消して、成績だけの表にもできます" },
   { date: "2026-10-23", id: "order", kind: "new", text: "パワプロ風のスタメン画像ジェネレーターを公開。動く調子くん付きでGIFアニメ・動画にもできます" },
   { date: "2026-10-23", id: "milestone", kind: "update", text: "シーズン終了に合わせて、2026年に達成した記録の一覧と、2027年に達成が近い記録の見込みを追加" },

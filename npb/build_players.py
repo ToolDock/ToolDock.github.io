@@ -486,6 +486,127 @@ def trend_html(bat, pit, kind):
             f'<span>（{cond}）</span></figcaption></figure></div>')
 
 
+STORY_MIN_PA = 100      # 経歴のまとめで「キャリアハイ」に数える最低の打席
+STORY_MIN_OUTS = 90     # 同じく最低のアウト数（30回）
+
+
+def _row_avg(r):
+    return r["h"] / r["ab"] if r.get("ab") else None
+
+
+def _row_era(r):
+    return 9 * r["er"] / (r["outs"] / 3) if r.get("outs") else None
+
+
+def _pit_line(r):
+    """1シーズンの投手成績を短く（先発は勝敗、救援はセーブ・ホールド）"""
+    era = _row_era(r)
+    sh = "・".join(x for x in (f"{r['sv']}セーブ" if r["sv"] else "", f"{r['hld']}ホールド" if r["hld"] else "") if x)
+    if r["g"] and r["outs"] / r["g"] < 12:          # 1登板あたり4回未満なら救援
+        s = f"{r['g']}登板で{r['w']}勝{r['l']}敗" + (f"・{sh}" if sh else "")
+    else:
+        s = f"{r['w']}勝{r['l']}敗"
+    return s + (f"・防御率{f2(era)}" if era is not None else "")
+
+
+def _bat_line(r):
+    avg = _row_avg(r)
+    return (f"{r['g']}試合で打率{f3(avg)}・{r['hr']}本塁打・{r['rbi']}打点"
+            + (f"・{r['sb']}盗塁" if r["sb"] >= 10 else ""))
+
+
+def _merge_years(rows):
+    """同じ年に2球団でプレーした年（移籍の年）は1行にまとめる"""
+    out = {}
+    for r in rows:
+        if r["y"] in out:
+            m = out[r["y"]]
+            for k, v in r.items():
+                if isinstance(v, (int, float)) and k not in ("y", "war", "woba", "wrcp", "fip"):
+                    m[k] = (m.get(k) or 0) + v
+            if r.get("war") is not None:
+                m["war"] = (m.get("war") or 0) + r["war"]
+        else:
+            out[r["y"]] = dict(r)
+    return [out[y] for y in sorted(out)]
+
+
+def career_story(name, kind, bat, pit, picks, prof, person, titles, war, first, last, cur, cur_year, summary):
+    """選手ページの頭に置く「経歴と成績のまとめ」。成績・在籍・ドラフト・タイトルのデータから文章を組み立てる
+    （表だけのページにしないため。どの選手でも、その選手の数字だけで書く）"""
+    S = []
+    # 入団（ドラフト）
+    origin = (prof.get("経歴") or "").split(" - ")[-1].strip()
+    signed = sorted((p for p in picks if not p["unsigned"]), key=lambda p: p["year"])
+    join_year = None
+    if signed:
+        pk = signed[0]
+        join_year = pk["year"]
+        S.append((f"{origin}から" if origin else "") + f"{pk['year']}年のドラフト{'育成' if pk['ikusei'] else ''}"
+                 f"{bd.pick_label(pk)}指名で{pk['team']}に入団。")
+    elif prof.get("ドラフト"):
+        m = re.match(r"(\d{4})年", prof["ドラフト"])
+        join_year = int(m.group(1)) if m else None
+        team0 = sorted(person["spans"])[0][1] if person["spans"] else ""
+        S.append((f"{origin}から" if origin else "") + f"{prof['ドラフト']}で{team0}に入団。")
+    # 一軍初出場
+    if join_year and first == join_year + 1:
+        S.append(f"1年目の{first}年から一軍の試合に出場した。")
+    elif join_year and first > join_year + 1:
+        S.append(f"プロ{first - join_year}年目の{first}年に一軍初出場。")
+    else:
+        S.append(f"一軍初出場は{first}年。")
+    # 移籍
+    seq = []
+    for y, team, _ in sorted(person["spans"]):
+        f = franchise(team)
+        if not seq or seq[-1][1] != f:
+            seq.append((y, f))
+    if len(seq) > 1:
+        moves = "、".join(f"{y}年に{t}" for y, t in seq[1:4])
+        S.append(f"{seq[0][1]}から、{moves}へ移籍した。" if len(seq) <= 4 else f"{seq[0][1]}から、{moves}などへ移籍した。")
+    # キャリアハイ
+    if kind == "p":
+        rows = [r for r in _merge_years(pit) if r["outs"] >= STORY_MIN_OUTS]
+        if rows:
+            calc = [r for r in rows if r["src"] == "calc" and r.get("war") is not None]
+            best = max(calc, key=lambda r: r["war"]) if calc else max(rows, key=lambda r: (r["w"] + r["sv"] + r["hld"] * 0.5))
+            S.append(f"最も活躍したのは{best['y']}年で、{_pit_line(best)}"
+                     + (f"（簡易WAR {f1(best['war'])}）" if best.get("war") is not None and best["src"] == "calc" else "") + "。")
+    else:
+        rows = [r for r in _merge_years(bat) if r["pa"] >= STORY_MIN_PA]
+        if rows:
+            calc = [r for r in rows if r["src"] == "calc" and r.get("war") is not None]
+            best = max(calc, key=lambda r: r["war"]) if calc else max(rows, key=lambda r: (r["h"] + 3 * r["hr"]))
+            S.append(f"最も活躍したのは{best['y']}年で、{_bat_line(best)}"
+                     + (f"（簡易WAR {f1(best['war'])}）" if best.get("war") is not None and best["src"] == "calc" else "") + "。")
+    best_y = best["y"] if rows else None
+    # タイトル
+    if titles:
+        parts = [f"{y}年に{'・'.join(t['title'] for t in titles[y])}" for y in sorted(titles)[:3]]
+        S.append("、".join(parts) + ("など" if len(titles) > 3 else "") + "のタイトルを獲得している。")
+    # 通算
+    tot = re.sub(r"(?<![0-9])0(セーブ|ホールド)", "", summary.removeprefix("通算"))
+    S.append(f"{first}〜{last}年の一軍通算は{tot}" + (f"で、簡易WARは{'2005年以降で' if first < 2005 else '通算'}{f1(war)}。" if war else "。"))
+    # 最新の年
+    lastrows = [r for r in (_merge_years(pit) if kind == "p" else _merge_years(bat)) if r["y"] == last]
+    if lastrows and last != best_y:
+        r = lastrows[0]
+        line = _pit_line(r) if kind == "p" else _bat_line(r)
+        if kind == "p" and r["outs"] < 30:
+            line = f"{r['g']}登板"
+        if kind != "p" and r["pa"] < 30:
+            line = f"{r['g']}試合の出場"
+        S.append(f"{last}年は{line}。")
+    gone = bool(cur_year and not cur and last < cur_year)     # いまの選手名簿に無く、最近の出場も無い
+    if lastrows and last == best_y:
+        S.append(f"最後の一軍出場となった{last}年がキャリアハイだった。" if gone else f"キャリアハイは最新の{last}年。")
+    elif gone:
+        S.append(f"一軍での最後の出場は{last}年。")
+    text = "".join(S)
+    return (f'<div class="story"><h2>{esc(name)}の経歴と成績のまとめ</h2><p>{esc(text)}</p></div>', text)
+
+
 def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_of_text, final, related="", fld=None,
                   cur=None, cur_year=None, titles=None):
     """cur：球団の選手一覧で、いま在籍している球団と育成か (球団, 育成か)。退団・引退していれば None。
@@ -598,6 +719,9 @@ def render_player(pid, person, display_name, seen, bat, pit, picks, profile, as_
             + "</dl>"]
     if title_html:
         body.insert(2, title_html)
+    story_html, _ = career_story(name, kind, bat if show_bat or kind != "p" else [], pit, picks, prof, person, titles,
+                                 war, first, last, cur, cur_year, summary)
+    body.insert(2, story_html)
     if trend:
         body.append(trend)
     if pit:
