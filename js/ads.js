@@ -34,6 +34,10 @@
 
   if (!CLIENT) return;
 
+  /* 本文の無い案内のページ（運営者情報・お問い合わせ・プライバシーポリシー・カテゴリ一覧）には広告を置かない */
+  const NO_AD_PATHS = ["/about/", "/contact/", "/privacy/", "/category/"];
+  if (NO_AD_PATHS.indexOf(location.pathname) >= 0) return;
+
   function pushAd() {
     (window.adsbygoogle = window.adsbygoogle || []).push({});
   }
