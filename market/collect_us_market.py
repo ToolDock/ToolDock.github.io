@@ -137,13 +137,13 @@ def _http():
     return _session
 
 
-def fetch_chart(symbol, rng, interval, retries=4, period1=None):
+def fetch_chart(symbol, rng, interval, retries=4, period1=None, period2=None):
     """Yahoo chart APIを叩く。連続アクセスすると429が返るので指数バックオフで粘る。
-    period1（UNIX秒）を渡すと、range の代わりにその日から今までを取る"""
+    period1（UNIX秒）を渡すと、range の代わりにその日から period2（省略で今）までを取る"""
     url = f"{YAHOO_HOST}/v8/finance/chart/{requests.utils.quote(symbol)}"
     params = {"range": rng, "interval": interval}
     if period1 is not None:
-        params = {"period1": int(period1), "period2": int(time.time()), "interval": interval}
+        params = {"period1": int(period1), "period2": int(period2 or time.time()), "interval": interval}
     last = None
     for attempt in range(retries):
         res = _http().get(url, params=params, timeout=30)
@@ -262,6 +262,16 @@ def refresh_monthly(symbol):
             rows[month] = value          # 同じ月が2つ返ることがある（月末の途中の足）。後のほうを使う
     if not rows:
         raise RuntimeError(f"{symbol}: 月足が空")
+    # Yahooの月足は1985年1月から（^GSPC・^TNX）。日足はもっと前からあるので、
+    # 最初の月の前の月（1985年1月に始めた人の起点＝1984年12月末）の終値は、日足の最後の値で補う
+    first = min(rows)
+    if first > MONTHLY_FROM:
+        try:
+            prev = _month_close_from_daily(symbol, first)
+            if prev:
+                rows[prev[0]] = prev[1]
+        except Exception as e:
+            print(f"  {symbol:9s} 前の月の終値（日足） 取れず: {e}")
     conn = get_connection()
     conn.executemany(
         "INSERT OR REPLACE INTO market_monthly (symbol, month, close) VALUES (?,?,?)",
@@ -269,6 +279,20 @@ def refresh_monthly(symbol):
     conn.commit()
     conn.close()
     return len(rows)
+
+
+def _month_close_from_daily(symbol, month):
+    """month（'YYYY-MM'）の前の月の、最後の日足の終値を (月, 終値) で返す。無ければ None"""
+    year, mon = int(month[:4]), int(month[5:7]) - 1
+    if mon == 0:
+        year, mon = year - 1, 12
+    prev = f"{year:04d}-{mon:02d}"
+    start = datetime(year, mon, 1, tzinfo=timezone.utc)
+    end = datetime(int(month[:4]), int(month[5:7]), 1, tzinfo=timezone.utc)
+    result = fetch_chart(symbol, "max", "1d", period1=start.timestamp(), period2=end.timestamp())
+    closes = [(datetime.fromtimestamp(t, timezone.utc).date().isoformat()[:7], c) for t, c in _series(result)]
+    closes = [c for m, c in closes if m == prev]
+    return (prev, closes[-1]) if closes else None
 
 
 def refresh_monthlies(symbols=None, pause=0.8, verbose=False):
