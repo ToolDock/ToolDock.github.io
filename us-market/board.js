@@ -180,7 +180,7 @@
   }
 
   /* 投資を始めた日から。始めた日が日足の範囲（約1年）にあれば日足、5年以内なら週足、
-     それより前（2000年から）は、週足の前に月足（月末の終値）をつないで使う。
+     それより前（1985年から）は、週足の前に月足（月末の終値）をつないで使う。
      起点は「始めた日の終値」（その日が休みなら、その前の最後の終値。月足の期間は前の月末）。
      データより前の日は、持っている最初の日から（span にそう書く） */
   function has(s) { return s && s.dates && s.dates.length; }
@@ -1166,7 +1166,7 @@
         label.appendChild(sel);
         return sel;
       }
-      var y0 = Number((first || "2000-01-01").slice(0, 4)), y1 = Number((last || "2000-12-31").slice(0, 4));
+      var y0 = Number((first || "1985-01-01").slice(0, 4)), y1 = Number((last || "2000-12-31").slice(0, 4));
       var ySel = makeSel("年", y0, y1, "年"), mSel = makeSel("月", 1, 12, "月"), dSel = makeSel("日", 1, 31, "日");
       dateInput = ySel;     /* 「投資を始めた日から」を日付が無いまま押したら、ここへ案内する */
       function pad(n) { return (n < 10 ? "0" : "") + n; }
