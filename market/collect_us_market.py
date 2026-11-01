@@ -95,6 +95,14 @@ def init_tables():
         )
     """)
     cur.execute("""
+        CREATE TABLE IF NOT EXISTS market_monthly (
+            symbol TEXT,
+            month TEXT,     -- YYYY-MM
+            close REAL,     -- その月の最後の終値
+            PRIMARY KEY (symbol, month)
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS heatmap (
             symbol TEXT PRIMARY KEY,
             session TEXT,
@@ -218,6 +226,46 @@ def refresh_daily(symbol, rng=DAILY_RANGE):
     conn.commit()
     conn.close()
     return len(rows)
+
+
+# 月足を取る最初の月。「あなたが投資を始めた日」は、この月から選べる
+MONTHLY_FROM = "2000-01"
+
+
+def refresh_monthly(symbol):
+    """月足（2000年から）を取得して保存する。「あなたが投資を始めた日」が5年より前のとき用。
+
+    日足は5年ぶんしか取らないので、それより前は月ごとの終値で描く。1銘柄1リクエスト。
+    いまの月の足は途中の値なので、ビルドのときに落とす（build_static.history_payload）。
+    """
+    result = fetch_chart(symbol, "max", "1mo")
+    offset = result["meta"].get("gmtoffset") or 0
+    rows = {}
+    for stamp, value in _series(result):
+        month = datetime.fromtimestamp(stamp + offset, timezone.utc).date().isoformat()[:7]
+        if month >= MONTHLY_FROM:
+            rows[month] = value          # 同じ月が2つ返ることがある（月末の途中の足）。後のほうを使う
+    if not rows:
+        raise RuntimeError(f"{symbol}: 月足が空")
+    conn = get_connection()
+    conn.executemany(
+        "INSERT OR REPLACE INTO market_monthly (symbol, month, close) VALUES (?,?,?)",
+        [(symbol, m, v) for m, v in rows.items()])
+    conn.commit()
+    conn.close()
+    return len(rows)
+
+
+def refresh_monthlies(symbols=None, pause=0.8, verbose=False):
+    """タイルの銘柄（VIXは除く）の月足。取れなくても本体は成り立つので、失敗は警告だけ"""
+    for symbol in (symbols or [s for s in SYMBOLS if s != "^VIX"]):
+        try:
+            count = refresh_monthly(symbol)
+            if verbose:
+                print(f"  {symbol:9s} 月足 {count}件")
+        except Exception as e:
+            print(f"  {symbol:9s} 月足 失敗（本体には影響しません）: {e}")
+        time.sleep(pause)
 
 
 def refresh_dailies(symbols=DAILY_SYMBOLS, pause=0.8, verbose=False):
@@ -360,6 +408,7 @@ def refresh_all(verbose=False):
     init_tables()
     failed = refresh_market(verbose=verbose)
     failed += refresh_dailies(verbose=verbose)
+    refresh_monthlies(verbose=verbose)
     try:
         refresh_fear_greed()
     except Exception as e:
@@ -386,6 +435,9 @@ if __name__ == "__main__":
 
     print("■ 日足（期間切り替えと円建てS&P500に使う）")
     failures += refresh_dailies(verbose=True)
+
+    print("■ 月足（2000年から。「あなたが投資を始めた日」用）")
+    refresh_monthlies(verbose=True)
 
     print("■ Fear & Greed")
     try:

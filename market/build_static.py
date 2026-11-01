@@ -112,10 +112,27 @@ def history_payload(symbol, digits, session=None, close=None):
     )
 
 
+def monthly_payload(symbol, digits, before):
+    """2000年からの月ごとの終値。「あなたが投資を始めた日」が週足（5年）より前のときに使う。
+
+    日付はその月の末日にする（月足の終値は月末の値。始めた日の前の最後の終値を探すとき、
+    月初の日付だと1か月ずれる）。いまの月は途中の値なので、before（今日の月）より前だけ残す。
+    """
+    rows = [(m, v) for m, v in um.load_monthly(symbol) if m < before]
+    if len(rows) < 12:
+        return None
+    def month_end(m):
+        y, mo = int(m[:4]), int(m[5:7])
+        nxt = date(y + (mo == 12), mo % 12 + 1, 1)
+        return (nxt - timedelta(days=1)).isoformat()
+    return {"dates": [month_end(m) for m, _ in rows], "values": [_round(v, digits) for _, v in rows]}
+
+
 def tile_payload(tile):
     change_text, sign = um.format_change(tile)
     daily, weekly = history_payload(tile["symbol"], tile["digits"],
                                     tile["session"], tile["price"])
+    monthly = monthly_payload(tile["symbol"], tile["digits"], (tile["session"] or "")[:7] or "9999-99")
     return {
         "symbol": tile["symbol"],
         "slug": slug(tile["symbol"]),
@@ -143,6 +160,8 @@ def tile_payload(tile):
         # 取れていなければ null で、その期間のボタンはブラウザ側が引っ込める
         "daily": daily,
         "weekly": weekly,
+        # 2000年からの月ごとの終値（「あなたが投資を始めた日」が5年より前のとき）
+        "monthly": monthly,
     }
 
 
