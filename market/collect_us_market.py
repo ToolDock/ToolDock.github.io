@@ -245,10 +245,12 @@ def refresh_monthly(symbol):
     # 始まりの日を period1 で指定すると、2000年から返る
     start = int(datetime(int(MONTHLY_FROM[:4]), int(MONTHLY_FROM[5:7]), 1, tzinfo=timezone.utc).timestamp())
     result = fetch_chart(symbol, "max", "1mo", period1=start)
-    offset = result["meta"].get("gmtoffset") or 0
     rows = {}
     for stamp, value in _series(result):
-        month = datetime.fromtimestamp(stamp + offset, timezone.utc).date().isoformat()[:7]
+        # 月足の時刻は「その月の1日の0時（取引所の時刻）」。gmtoffset はいまの時差（冬時間）なので、
+        # 夏時間の月に当てると前の月の末日になり、月が1つずれていた（2026-11-01）。
+        # 1日の昼（UTC）に寄せて月を決めれば、時差がどちらでも、その月に入る
+        month = datetime.fromtimestamp(stamp + 12 * 3600, timezone.utc).date().isoformat()[:7]
         if month >= MONTHLY_FROM:
             rows[month] = value          # 同じ月が2つ返ることがある（月末の途中の足）。後のほうを使う
     if not rows:
