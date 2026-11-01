@@ -1141,8 +1141,14 @@
         row.tiles.forEach(function (tile) {
           var w = tile.weekly, d = tile.daily, m = tile.monthly;
           if (w && w.dates && w.dates.length && (!first || w.dates[0] < first)) { first = w.dates[0]; }
-          /* 月足は月末の日付なので、その月の1日から選べるようにする */
-          if (m && m.dates && m.dates.length && (!first || m.dates[0].slice(0, 8) + "01" < first)) { first = m.dates[0].slice(0, 8) + "01"; }
+          /* 月足は月末の日付で、最初の月末の終値は、その翌日から始めた人の起点になる。
+             なので選べるのは、最初の月末の翌日から（1999年12月末 → 2000年1月1日） */
+          if (m && m.dates && m.dates.length) {
+            var d0 = new Date(m.dates[0] + "T00:00:00Z");
+            d0.setUTCDate(d0.getUTCDate() + 1);
+            var mfirst = d0.toISOString().slice(0, 10);
+            if (!first || mfirst < first) { first = mfirst; }
+          }
           var ds = d && d.dates && d.dates.length ? d.dates : (w && w.dates) || [];
           if (ds.length && ds[ds.length - 1] > last) { last = ds[ds.length - 1]; }
         });

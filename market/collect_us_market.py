@@ -231,8 +231,9 @@ def refresh_daily(symbol, rng=DAILY_RANGE):
     return len(rows)
 
 
-# 月足を取る最初の月。「あなたが投資を始めた日」は、この月から選べる
-MONTHLY_FROM = "2000-01"
+# 月足を取る最初の月。「あなたが投資を始めた日」は2000年1月1日から選べるので、
+# 起点（始めた日の前の月末の終値）になる1999年12月から取る
+MONTHLY_FROM = "1999-12"
 
 
 def refresh_monthly(symbol):
