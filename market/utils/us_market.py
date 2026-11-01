@@ -318,7 +318,7 @@ def load_daily(symbol, days=400):
 
 
 def load_monthly(symbol):
-    """月足の終値（2000年から）を古い順に [(YYYY-MM, close)] で返す。無ければ空"""
+    """月足の終値（1985年から）を古い順に [(YYYY-MM, close)] で返す。無ければ空"""
     conn = _conn()
     try:
         rows = conn.execute(

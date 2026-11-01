@@ -231,19 +231,20 @@ def refresh_daily(symbol, rng=DAILY_RANGE):
     return len(rows)
 
 
-# 月足を取る最初の月。「あなたが投資を始めた日」は2000年1月1日から選べるので、
-# 起点（始めた日の前の月末の終値）になる1999年12月から取る
-MONTHLY_FROM = "1999-12"
+# 月足を取る最初の月。「あなたが投資を始めた日」は1985年1月1日から選べるので、
+# 起点（始めた日の前の月末の終値）になる1984年12月から取る。
+# それより後に始まった指標（NASDAQ100・SOX・ドル円・ゴールド・BTC など）は、Yahooにある最初の月から
+MONTHLY_FROM = "1984-12"
 
 
 def refresh_monthly(symbol):
-    """月足（2000年から）を取得して保存する。「あなたが投資を始めた日」が5年より前のとき用。
+    """月足（1985年から）を取得して保存する。「あなたが投資を始めた日」が5年より前のとき用。
 
     日足は5年ぶんしか取らないので、それより前は月ごとの終値で描く。1銘柄1リクエスト。
     いまの月の足は途中の値なので、ビルドのときに落とす（build_static.history_payload）。
     """
     # range=max だと、^GSPC が108か月ぶん（約9年）しか返らなかった（2026-11-01）。
-    # 始まりの日を period1 で指定すると、2000年から返る
+    # 始まりの日を period1 で指定すると、その月から返る
     start = int(datetime(int(MONTHLY_FROM[:4]), int(MONTHLY_FROM[5:7]), 1, tzinfo=timezone.utc).timestamp())
     result = fetch_chart(symbol, "max", "1mo", period1=start)
     rows = {}
@@ -445,7 +446,7 @@ if __name__ == "__main__":
     print("■ 日足（期間切り替えと円建てS&P500に使う）")
     failures += refresh_dailies(verbose=True)
 
-    print("■ 月足（2000年から。「あなたが投資を始めた日」用）")
+    print("■ 月足（1985年から。「あなたが投資を始めた日」用）")
     refresh_monthlies(verbose=True)
 
     print("■ Fear & Greed")

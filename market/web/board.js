@@ -180,7 +180,7 @@
   }
 
   /* 投資を始めた日から。始めた日が日足の範囲（約1年）にあれば日足、5年以内なら週足、
-     それより前（2000年から）は、週足の前に月足（月末の終値）をつないで使う。
+     それより前（1985年から）は、週足の前に月足（月末の終値）をつないで使う。
      起点は「始めた日の終値」（その日が休みなら、その前の最後の終値。月足の期間は前の月末）。
      データより前の日は、持っている最初の日から（span にそう書く） */
   function has(s) { return s && s.dates && s.dates.length; }
@@ -1134,7 +1134,7 @@
       host.appendChild(button);
     });
 
-    /* 投資を始めた日。選べるのは、データのある最初の日（2000年1月1日）から最新の日まで */
+    /* 投資を始めた日。選べるのは、データのある最初の日（1985年1月1日）から最新の日まで */
     if (usable.some(function (def) { return def.key === "start"; })) {
       var first = "", last = "";
       rows.forEach(function (row) {
@@ -1142,7 +1142,7 @@
           var w = tile.weekly, d = tile.daily, m = tile.monthly;
           if (w && w.dates && w.dates.length && (!first || w.dates[0] < first)) { first = w.dates[0]; }
           /* 月足は月末の日付で、最初の月末の終値は、その翌日から始めた人の起点になる。
-             なので選べるのは、最初の月末の翌日から（1999年12月末 → 2000年1月1日） */
+             なので選べるのは、最初の月末の翌日から（1984年12月末 → 1985年1月1日） */
           if (m && m.dates && m.dates.length) {
             var d0 = new Date(m.dates[0] + "T00:00:00Z");
             d0.setUTCDate(d0.getUTCDate() + 1);
@@ -1154,7 +1154,7 @@
         });
       });
       /* 日付は年・月・日のプルダウンで選ぶ。<input type="date"> だと、スマートフォンの日付の画面では
-         min が効かず、和暦で白雉（650年）までさかのぼれてしまった。年はデータのある年だけ並べる */
+         min が効かず、和暦で白雉（650年）までさかのぼれてしまった。年はデータのある年（1985年〜）だけ並べる */
       var label = document.createElement("div");
       label.className = "range-date";
       label.innerHTML = '<span>あなたが投資を始めた日</span>';
@@ -1166,7 +1166,7 @@
         label.appendChild(sel);
         return sel;
       }
-      var y0 = Number((first || "2000-01-01").slice(0, 4)), y1 = Number((last || "2000-12-31").slice(0, 4));
+      var y0 = Number((first || "1985-01-01").slice(0, 4)), y1 = Number((last || "2000-12-31").slice(0, 4));
       var ySel = makeSel("年", y0, y1, "年"), mSel = makeSel("月", 1, 12, "月"), dSel = makeSel("日", 1, 31, "日");
       dateInput = ySel;     /* 「投資を始めた日から」を日付が無いまま押したら、ここへ案内する */
       function pad(n) { return (n < 10 ? "0" : "") + n; }
