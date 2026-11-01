@@ -317,6 +317,20 @@ def load_daily(symbol, days=400):
     return out[-days:] if days else out
 
 
+def load_monthly(symbol):
+    """月足の終値（2000年から）を古い順に [(YYYY-MM, close)] で返す。無ければ空"""
+    conn = _conn()
+    try:
+        rows = conn.execute(
+            "SELECT month, close FROM market_monthly WHERE symbol=? ORDER BY month", (symbol,)
+        ).fetchall()
+    except Exception:
+        return []
+    finally:
+        conn.close()
+    return [(r["month"], r["close"]) for r in rows if r["close"] is not None]
+
+
 def load_fg_history(days=400):
     """Fear & Greed の日次履歴を古い順に返す。CNNのヒストリカルを保存したもの。"""
     conn = _conn()

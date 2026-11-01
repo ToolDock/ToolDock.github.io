@@ -179,13 +179,31 @@
     };
   }
 
-  /* 投資を始めた日から。始めた日が日足の範囲（約1年）にあれば日足、それより前なら週足を使う。
-     起点は「始めた日の終値」（その日が休みなら、その前の最後の終値）。
-     週足より前の日は、持っている最初の日から（span にそう書く） */
+  /* 投資を始めた日から。始めた日が日足の範囲（約1年）にあれば日足、5年以内なら週足、
+     それより前（2000年から）は、週足の前に月足（月末の終値）をつないで使う。
+     起点は「始めた日の終値」（その日が休みなら、その前の最後の終値。月足の期間は前の月末）。
+     データより前の日は、持っている最初の日から（span にそう書く） */
+  function has(s) { return s && s.dates && s.dates.length; }
+  function startSeries(tile) {
+    var daily = tile.daily, weekly = tile.weekly, monthly = tile.monthly;
+    if (has(daily) && startDate >= daily.dates[0]) { return daily; }
+    if (has(weekly) && (startDate >= weekly.dates[0] || !has(monthly))) { return weekly; }
+    if (!has(monthly)) { return null; }
+    if (!has(weekly)) { return monthly; }
+    var head = 0;
+    while (head < monthly.dates.length && monthly.dates[head] < weekly.dates[0]) { head++; }
+    /* 図の横軸は点の並び順なので、月足と週足をそのままつなぐと、週足の5年だけ横に間延びする。
+       つなぐときは週足も月ごと（その月の最後の週）に間引いて、間隔をそろえる */
+    var dates = monthly.dates.slice(0, head), values = monthly.values.slice(0, head);
+    for (var i = 0; i < weekly.dates.length; i++) {
+      var lastOfMonth = i === weekly.dates.length - 1 || weekly.dates[i + 1].slice(0, 7) !== weekly.dates[i].slice(0, 7);
+      if (lastOfMonth) { dates.push(weekly.dates[i]); values.push(weekly.values[i]); }
+    }
+    return { dates: dates, values: values };
+  }
   function startView(tile) {
     if (!startDate) { return null; }
-    var daily = tile.daily, weekly = tile.weekly;
-    var series = daily && daily.dates && daily.dates.length && startDate >= daily.dates[0] ? daily : weekly;
+    var series = startSeries(tile);
     if (!series || !series.dates || series.dates.length < 2) { return null; }
     var dates = series.dates;
     if (startDate >= dates[dates.length - 1]) { return null; }
@@ -200,7 +218,7 @@
       base: series.values[i],
       last: series.values[series.values.length - 1],
       span: (clipped ? dates[0] + "（データはこの日から）" : startDate + "（投資を始めた日）") + " 〜 " + dates[dates.length - 1],
-      tickKey: years > 2 ? "5y" : (years > 0.25 ? "ytd" : "1m")
+      tickKey: years > 10 ? "long" : (years > 2 ? "5y" : (years > 0.25 ? "ytd" : "1m"))
     };
   }
 
@@ -232,7 +250,10 @@
       var text = null;
 
       if (typeof label === "string" && label.length === 10) {
-        if (key === "5y") {
+        if (key === "long") {
+          unit = label.slice(0, 4);                       /* 10年を超えるときは、5年ごとにだけ字を置く */
+          text = Number(unit) % 5 === 0 ? unit : "";
+        } else if (key === "5y") {
           unit = label.slice(0, 4);                       /* 年ごと */
           text = unit;
         } else if (key === "1m") {
@@ -1118,8 +1139,10 @@
       var first = "", last = "";
       rows.forEach(function (row) {
         row.tiles.forEach(function (tile) {
-          var w = tile.weekly, d = tile.daily;
+          var w = tile.weekly, d = tile.daily, m = tile.monthly;
           if (w && w.dates && w.dates.length && (!first || w.dates[0] < first)) { first = w.dates[0]; }
+          /* 月足は月末の日付なので、その月の1日から選べるようにする */
+          if (m && m.dates && m.dates.length && (!first || m.dates[0].slice(0, 8) + "01" < first)) { first = m.dates[0].slice(0, 8) + "01"; }
           var ds = d && d.dates && d.dates.length ? d.dates : (w && w.dates) || [];
           if (ds.length && ds[ds.length - 1] > last) { last = ds[ds.length - 1]; }
         });
