@@ -112,7 +112,7 @@ def history_payload(symbol, digits, session=None, close=None):
     )
 
 
-def monthly_payload(symbol, digits, before):
+def monthly_history(symbol, digits, before):
     """2000年からの月ごとの終値。「あなたが投資を始めた日」が週足（5年）より前のときに使う。
 
     日付はその月の末日にする（月足の終値は月末の値。始めた日の前の最後の終値を探すとき、
@@ -132,7 +132,7 @@ def tile_payload(tile):
     change_text, sign = um.format_change(tile)
     daily, weekly = history_payload(tile["symbol"], tile["digits"],
                                     tile["session"], tile["price"])
-    monthly = monthly_payload(tile["symbol"], tile["digits"], (tile["session"] or "")[:7] or "9999-99")
+    monthly = monthly_history(tile["symbol"], tile["digits"], (tile["session"] or "")[:7] or "9999-99")
     return {
         "symbol": tile["symbol"],
         "slug": slug(tile["symbol"]),
