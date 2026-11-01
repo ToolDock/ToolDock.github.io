@@ -137,10 +137,13 @@ def _http():
     return _session
 
 
-def fetch_chart(symbol, rng, interval, retries=4):
-    """Yahoo chart APIを叩く。連続アクセスすると429が返るので指数バックオフで粘る。"""
+def fetch_chart(symbol, rng, interval, retries=4, period1=None):
+    """Yahoo chart APIを叩く。連続アクセスすると429が返るので指数バックオフで粘る。
+    period1（UNIX秒）を渡すと、range の代わりにその日から今までを取る"""
     url = f"{YAHOO_HOST}/v8/finance/chart/{requests.utils.quote(symbol)}"
     params = {"range": rng, "interval": interval}
+    if period1 is not None:
+        params = {"period1": int(period1), "period2": int(time.time()), "interval": interval}
     last = None
     for attempt in range(retries):
         res = _http().get(url, params=params, timeout=30)
@@ -238,7 +241,10 @@ def refresh_monthly(symbol):
     日足は5年ぶんしか取らないので、それより前は月ごとの終値で描く。1銘柄1リクエスト。
     いまの月の足は途中の値なので、ビルドのときに落とす（build_static.history_payload）。
     """
-    result = fetch_chart(symbol, "max", "1mo")
+    # range=max だと、^GSPC が108か月ぶん（約9年）しか返らなかった（2026-11-01）。
+    # 始まりの日を period1 で指定すると、2000年から返る
+    start = int(datetime(int(MONTHLY_FROM[:4]), int(MONTHLY_FROM[5:7]), 1, tzinfo=timezone.utc).timestamp())
+    result = fetch_chart(symbol, "max", "1mo", period1=start)
     offset = result["meta"].get("gmtoffset") or 0
     rows = {}
     for stamp, value in _series(result):
