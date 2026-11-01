@@ -244,8 +244,13 @@ def refresh_monthly(symbol):
     いまの月の足は途中の値なので、ビルドのときに落とす（build_static.history_payload）。
     """
     # range=max だと、^GSPC が108か月ぶん（約9年）しか返らなかった（2026-11-01）。
-    # 始まりの日を period1 で指定すると、その月から返る
-    start = int(datetime(int(MONTHLY_FROM[:4]), int(MONTHLY_FROM[5:7]), 1, tzinfo=timezone.utc).timestamp())
+    # 始まりの日を period1 で指定すると、その月から返る。
+    # ただし1日が休みの月（1984年12月1日は土曜）から頼むと、その月を飛ばして翌月から返った（2026-11-01）。
+    # 1か月前から頼み、MONTHLY_FROM より前の月は下で捨てる
+    year, mon = int(MONTHLY_FROM[:4]), int(MONTHLY_FROM[5:7]) - 1
+    if mon == 0:
+        year, mon = year - 1, 12
+    start = int(datetime(year, mon, 1, tzinfo=timezone.utc).timestamp())
     result = fetch_chart(symbol, "max", "1mo", period1=start)
     rows = {}
     for stamp, value in _series(result):
