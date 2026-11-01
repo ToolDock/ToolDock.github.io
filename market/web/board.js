@@ -186,8 +186,9 @@
   function has(s) { return s && s.dates && s.dates.length; }
   function startSeries(tile) {
     var daily = tile.daily, weekly = tile.weekly, monthly = tile.monthly;
-    if (has(daily) && startDate >= daily.dates[0]) { return daily; }
-    if (has(weekly) && (startDate >= weekly.dates[0] || !has(monthly))) { return weekly; }
+    /* 起点は始めた日より前の終値なので、始めた日がその系列の最初の日より後のときだけ使える */
+    if (has(daily) && startDate > daily.dates[0]) { return daily; }
+    if (has(weekly) && (startDate > weekly.dates[0] || !has(monthly))) { return weekly; }
     if (!has(monthly)) { return null; }
     if (!has(weekly)) { return monthly; }
     var head = 0;
@@ -207,10 +208,12 @@
     if (!series || !series.dates || series.dates.length < 2) { return null; }
     var dates = series.dates;
     if (startDate >= dates[dates.length - 1]) { return null; }
-    /* 始めた日以前の最後の値を起点にする */
+    /* 始めた日より前の最後の終値を起点にする。始めた日の値動きも含めるため（年初来が前の年の
+       最後の終値から測るのと同じ）。始めた日の終値を起点にしていたころは、1月2日に始めても
+       年初来と騰落率が合わなかった（2026-11-02） */
     var i = 0;
-    while (i + 1 < dates.length && dates[i + 1] <= startDate) { i++; }
-    var clipped = startDate < dates[0];
+    while (i + 1 < dates.length && dates[i + 1] < startDate) { i++; }
+    var clipped = startDate <= dates[0];
     var years = (Date.parse(dates[dates.length - 1]) - Date.parse(clipped ? dates[0] : startDate)) / (365.25 * 86400000);
     return {
       labels: dates.slice(i),
