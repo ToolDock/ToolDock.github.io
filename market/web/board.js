@@ -1134,7 +1134,7 @@
       host.appendChild(button);
     });
 
-    /* 投資を始めた日。選べるのは、データのある最初の日（2000年1月1日）から最新の日まで */
+    /* 投資を始めた日。選べるのは、データのある最初の日（1985年1月1日）から最新の日まで */
     if (usable.some(function (def) { return def.key === "start"; })) {
       var first = "", last = "";
       rows.forEach(function (row) {
@@ -1142,7 +1142,7 @@
           var w = tile.weekly, d = tile.daily, m = tile.monthly;
           if (w && w.dates && w.dates.length && (!first || w.dates[0] < first)) { first = w.dates[0]; }
           /* 月足は月末の日付で、最初の月末の終値は、その翌日から始めた人の起点になる。
-             なので選べるのは、最初の月末の翌日から（1999年12月末 → 2000年1月1日） */
+             なので選べるのは、最初の月末の翌日から（1984年12月末 → 1985年1月1日） */
           if (m && m.dates && m.dates.length) {
             var d0 = new Date(m.dates[0] + "T00:00:00Z");
             d0.setUTCDate(d0.getUTCDate() + 1);
@@ -1154,7 +1154,7 @@
         });
       });
       /* 日付は年・月・日のプルダウンで選ぶ。<input type="date"> だと、スマートフォンの日付の画面では
-         min が効かず、和暦で白雉（650年）までさかのぼれてしまった。年はデータのある年だけ並べる */
+         min が効かず、和暦で白雉（650年）までさかのぼれてしまった。年はデータのある年（1985年〜）だけ並べる */
       var label = document.createElement("div");
       label.className = "range-date";
       label.innerHTML = '<span>あなたが投資を始めた日</span>';
