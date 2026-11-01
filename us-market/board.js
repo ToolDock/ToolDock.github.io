@@ -1125,7 +1125,7 @@
       button.addEventListener("click", function () {
         /* 日付がまだ無いときは、入力欄へ案内する */
         if (def.key === "start" && !startDate) {
-          if (dateInput) { dateInput.focus(); if (dateInput.showPicker) { try { dateInput.showPicker(); } catch (e) {} } }
+          if (dateInput) { dateInput.focus(); }
           return;
         }
         if (range === def.key) { return; }
@@ -1134,7 +1134,7 @@
       host.appendChild(button);
     });
 
-    /* 投資を始めた日。選べるのは、週足を持っている最初の日から最新の日まで */
+    /* 投資を始めた日。選べるのは、データのある最初の日（2000年1月1日）から最新の日まで */
     if (usable.some(function (def) { return def.key === "start"; })) {
       var first = "", last = "";
       rows.forEach(function (row) {
@@ -1153,22 +1153,47 @@
           if (ds.length && ds[ds.length - 1] > last) { last = ds[ds.length - 1]; }
         });
       });
-      var label = document.createElement("label");
+      /* 日付は年・月・日のプルダウンで選ぶ。<input type="date"> だと、スマートフォンの日付の画面では
+         min が効かず、和暦で白雉（650年）までさかのぼれてしまった。年はデータのある年だけ並べる */
+      var label = document.createElement("div");
       label.className = "range-date";
-      label.innerHTML = "あなたが投資を始めた日 ";
-      dateInput = document.createElement("input");
-      dateInput.type = "date";
-      dateInput.value = startDate;
-      if (first) { dateInput.min = first; }
-      if (last) { dateInput.max = last; }
-      dateInput.addEventListener("change", function () {
-        var v = dateInput.value;
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) { return; }
+      label.innerHTML = '<span>あなたが投資を始めた日</span>';
+      function makeSel(name, from, to, unit) {
+        var sel = document.createElement("select");
+        sel.setAttribute("aria-label", "投資を始めた" + name);
+        sel.innerHTML = '<option value="">' + name + '</option>';
+        for (var v = from; v <= to; v++) { sel.innerHTML += '<option value="' + v + '">' + v + unit + '</option>'; }
+        label.appendChild(sel);
+        return sel;
+      }
+      var y0 = Number((first || "2000-01-01").slice(0, 4)), y1 = Number((last || "2000-12-31").slice(0, 4));
+      var ySel = makeSel("年", y0, y1, "年"), mSel = makeSel("月", 1, 12, "月"), dSel = makeSel("日", 1, 31, "日");
+      dateInput = ySel;     /* 「投資を始めた日から」を日付が無いまま押したら、ここへ案内する */
+      function pad(n) { return (n < 10 ? "0" : "") + n; }
+      function showDate(v) {
+        ySel.value = v ? String(Number(v.slice(0, 4))) : "";
+        mSel.value = v ? String(Number(v.slice(5, 7))) : "";
+        dSel.value = v ? String(Number(v.slice(8, 10))) : "";
+      }
+      showDate(startDate);
+      function onPick() {
+        if (!ySel.value || !mSel.value || !dSel.value) { return; }
+        var y = Number(ySel.value), m = Number(mSel.value);
+        var dim = new Date(Date.UTC(y, m, 0)).getUTCDate();          /* その月の日数（2月30日などを丸める） */
+        var v = y + "-" + pad(m) + "-" + pad(Math.min(Number(dSel.value), dim));
+        if (first && v < first) { v = first; }                       /* データより前・未来は、端に寄せる */
+        if (last && v >= last) {
+          /* 最新の日やそれより後を選んだら、最新の日の前日に寄せる（同じ日からでは値動きが無い） */
+          var dl = new Date(last + "T00:00:00Z");
+          dl.setUTCDate(dl.getUTCDate() - 1);
+          v = dl.toISOString().slice(0, 10);
+        }
+        showDate(v);
         startDate = v;
         saveStore(STORE_START, v);
         select("start");
-      });
-      label.appendChild(dateInput);
+      }
+      [ySel, mSel, dSel].forEach(function (sel) { sel.addEventListener("change", onPick); });
       host.appendChild(label);
     }
   }
