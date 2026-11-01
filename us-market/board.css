@@ -110,6 +110,24 @@ body {
 
 .range:hover { border-color: #9fb0c4; color: var(--text); }
 
+/* 投資を始めた日（日付の入力） */
+.range-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .82rem;
+  color: var(--text-muted);
+}
+.range-date input {
+  font: inherit;
+  font-size: .85rem;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+
 .range[aria-pressed="true"] {
   background: var(--text);
   border-color: var(--text);

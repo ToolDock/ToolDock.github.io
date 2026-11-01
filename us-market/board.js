@@ -110,10 +110,24 @@
     { key: "1m",  label: "1ヶ月", series: "daily",  origin: "1ヶ月前" },
     { key: "ytd", label: "年初来", series: "daily",  origin: "昨年末" },
     { key: "1y",  label: "1年",   series: "daily",  origin: "1年前" },
-    { key: "5y",  label: "5年",   series: "weekly", origin: "5年前" }
+    { key: "5y",  label: "5年",   series: "weekly", origin: "5年前" },
+    /* あなたが投資を始めた日から。日付は下の入力欄で決め、このブラウザに保存する。
+       系列は日付しだいで日足か週足を選ぶ（viewOf） */
+    { key: "start", label: "投資を始めた日から", series: "weekly", origin: "投資を始めた日" }
   ];
 
-  var range = "1d";
+  /* 期間の選択と、投資を始めた日は、このブラウザに覚えておく（次に開いたときもそのまま） */
+  var STORE_RANGE = "tooldock:us-market:range";
+  var STORE_START = "tooldock:us-market:start";
+  function loadStore(key) {
+    try { return localStorage.getItem(key) || ""; } catch (e) { return ""; }
+  }
+  function saveStore(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) { /* 保存できなくても動く */ }
+  }
+  var startDate = /^\d{4}-\d{2}-\d{2}$/.test(loadStore(STORE_START)) ? loadStore(STORE_START) : "";
+  var range = loadStore(STORE_RANGE) || "1d";
+  if (range === "start" && !startDate) { range = "1d"; }
 
   function rangeDef(key) {
     for (var i = 0; i < RANGES.length; i++) {
@@ -145,6 +159,8 @@
       };
     }
 
+    if (key === "start") { return startView(tile); }
+
     var series = tile[rangeDef(key).series];
     if (!series || !series.dates || series.dates.length < 2) { return null; }
 
@@ -160,6 +176,31 @@
       base: i > 0 ? series.values[i - 1] : series.values[i],
       last: series.values[series.values.length - 1],
       span: dates[i] + " 〜 " + dates[dates.length - 1]
+    };
+  }
+
+  /* 投資を始めた日から。始めた日が日足の範囲（約1年）にあれば日足、それより前なら週足を使う。
+     起点は「始めた日の終値」（その日が休みなら、その前の最後の終値）。
+     週足より前の日は、持っている最初の日から（span にそう書く） */
+  function startView(tile) {
+    if (!startDate) { return null; }
+    var daily = tile.daily, weekly = tile.weekly;
+    var series = daily && daily.dates && daily.dates.length && startDate >= daily.dates[0] ? daily : weekly;
+    if (!series || !series.dates || series.dates.length < 2) { return null; }
+    var dates = series.dates;
+    if (startDate >= dates[dates.length - 1]) { return null; }
+    /* 始めた日以前の最後の値を起点にする */
+    var i = 0;
+    while (i + 1 < dates.length && dates[i + 1] <= startDate) { i++; }
+    var clipped = startDate < dates[0];
+    var years = (Date.parse(dates[dates.length - 1]) - Date.parse(clipped ? dates[0] : startDate)) / (365.25 * 86400000);
+    return {
+      labels: dates.slice(i),
+      values: series.values.slice(i),
+      base: series.values[i],
+      last: series.values[series.values.length - 1],
+      span: (clipped ? dates[0] + "（データはこの日から）" : startDate + "（投資を始めた日）") + " 〜 " + dates[dates.length - 1],
+      tickKey: years > 2 ? "5y" : (years > 0.25 ? "ytd" : "1m")
     };
   }
 
@@ -345,7 +386,7 @@
       ticks.autoSkip = true;
       ticks.maxTicksLimit = 7;
     } else {
-      var marks = axisTicks(view.labels || [], range);
+      var marks = axisTicks(view.labels || [], view.tickKey || range);
       ticks.autoSkip = false;
       ticks.callback = function (value, index) { return marks[index] || ""; };
     }
@@ -1042,23 +1083,65 @@
     if (usable.length < 2) { host.hidden = true; return; }
 
     host.innerHTML = "";
+    var dateInput = null;
+
+    function select(key) {
+      range = key;
+      saveStore(STORE_RANGE, key);
+      [].forEach.call(host.querySelectorAll(".range"), function (other) {
+        other.setAttribute("aria-pressed", String(other.dataset.range === range));
+      });
+      renderRows(rows);
+    }
+
     usable.forEach(function (def) {
       var button = document.createElement("button");
       button.type = "button";
-      button.className = "range";
+      button.className = "range" + (def.key === "start" ? " range--start" : "");
       button.dataset.range = def.key;
       button.textContent = def.label;
       button.setAttribute("aria-pressed", String(def.key === range));
       button.addEventListener("click", function () {
+        /* 日付がまだ無いときは、入力欄へ案内する */
+        if (def.key === "start" && !startDate) {
+          if (dateInput) { dateInput.focus(); if (dateInput.showPicker) { try { dateInput.showPicker(); } catch (e) {} } }
+          return;
+        }
         if (range === def.key) { return; }
-        range = def.key;
-        [].forEach.call(host.querySelectorAll(".range"), function (other) {
-          other.setAttribute("aria-pressed", String(other.dataset.range === range));
-        });
-        renderRows(rows);
+        select(def.key);
       });
       host.appendChild(button);
     });
+
+    /* 投資を始めた日。選べるのは、週足を持っている最初の日から最新の日まで */
+    if (usable.some(function (def) { return def.key === "start"; })) {
+      var first = "", last = "";
+      rows.forEach(function (row) {
+        row.tiles.forEach(function (tile) {
+          var w = tile.weekly, d = tile.daily;
+          if (w && w.dates && w.dates.length && (!first || w.dates[0] < first)) { first = w.dates[0]; }
+          var ds = d && d.dates && d.dates.length ? d.dates : (w && w.dates) || [];
+          if (ds.length && ds[ds.length - 1] > last) { last = ds[ds.length - 1]; }
+        });
+      });
+      var label = document.createElement("label");
+      label.className = "range-date";
+      label.innerHTML = "あなたが投資を始めた日 ";
+      dateInput = document.createElement("input");
+      dateInput.type = "date";
+      dateInput.value = startDate;
+      if (first) { dateInput.min = first; }
+      if (last) { dateInput.max = last; }
+      dateInput.addEventListener("change", function () {
+        var v = dateInput.value;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) { return; }
+        startDate = v;
+        saveStore(STORE_START, v);
+        select("start");
+      });
+      label.appendChild(dateInput);
+      host.appendChild(label);
+    }
   }
 
   function renderYenSpx(data, series) {
