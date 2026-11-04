@@ -944,7 +944,8 @@ function zenkakuDigits(s) {
    5文字以上になったら詰めて表示する。両端までは広げない。 */
 function nameFitAttr(name, maxW) {
     var len = Array.from(name).length;
-    var spread = { 2: 0.62, 3: 0.75, 4: 0.85 }[len];
+    /* 4文字は、0.85 だと字の幅（30px×4）より狭く、字が小さくなって間が無かった。少しだけ間を空ける */
+    var spread = { 2: 0.62, 3: 0.75, 4: 0.93 }[len];
     return spread ? 'data-justify="' + Math.round(maxW * spread) + '" data-full="1"' : 'data-fit="' + maxW + '"';
 }
 
