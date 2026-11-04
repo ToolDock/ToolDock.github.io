@@ -24,6 +24,7 @@ window.CATEGORY_NAMES = {
    id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
    1件は1行で書く（build_index.py が1行ずつ読む） */
 window.UPDATES = [
+  { date: "2026-11-04", id: "nouryoku", kind: "update", text: "4文字の選手名の字の間を少しだけ空けて、読みやすく（能力画像の野手・投手、スタメン画像も同じ）" },
   { date: "2026-11-04", id: "order", kind: "update", text: "いまの内容を1〜15番の枠に登録し、選ぶだけで切り替えられる「プリセット」を追加" },
   { date: "2026-11-02", id: "us-market", kind: "fix", text: "「投資を始めた日から」の騰落率を、始めた日の前の終値から測るように修正（年初来と同じ起点）" },
   { date: "2026-11-01", id: "us-market", kind: "update", text: "「あなたが投資を始めた日」（1985年から）を入れると、その日から今日までの値動きと騰落率を表示。日付はブラウザに保存されます" },
