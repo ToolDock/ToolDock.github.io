@@ -117,6 +117,16 @@ p{ margin:0 0 12px; }
 .editor .reset{ font:inherit; font-size:0.84rem; padding:5px 12px; margin-top:10px; border:1px solid var(--line);
     border-radius:var(--r-ctl); background:#fff; color:var(--ink-sub); cursor:pointer; }
 
+.presets{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin:0 0 14px; padding:10px 12px;
+    border:1px solid var(--line); border-radius:var(--r-ctl); background:#fafafa; font-size:0.86rem; color:var(--ink-sub); }
+.presets .grp{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.presets select{ font:inherit; font-size:0.86rem; padding:5px 6px; border:1px solid var(--line); border-radius:var(--r-ctl);
+    background:#fff; color:var(--ink); max-width:16em; }
+.presets button{ font:inherit; font-size:0.84rem; padding:5px 12px; border:1px solid var(--line); border-radius:var(--r-ctl);
+    background:#fff; color:var(--ink-sub); cursor:pointer; }
+.presets .msg{ flex-basis:100%; margin:0; font-size:0.8rem; color:var(--ink-mute); }
+.presets .msg:empty{ display:none; }
+
 .tool-article{ margin-top:34px; }
 .tool-article .note{ font-size:0.86rem; color:var(--ink-mute); }
 footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); border-top:1px solid var(--line-soft); padding-top:14px; }
@@ -160,6 +170,14 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 
 <div class="editor">
     <h3>オーダーを入力</h3>
+    <div class="presets">
+        <div class="grp"><label for="presetLoad">プリセット</label>
+            <select id="presetLoad"></select></div>
+        <div class="grp"><label for="presetSlot">登録先</label>
+            <select id="presetSlot"></select>
+            <button type="button" id="btnPresetSave">いまの内容を登録</button></div>
+        <p class="msg" id="presetMsg" aria-live="polite"></p>
+    </div>
     <div class="options">
         <label><input type="checkbox" id="opt-face" checked> 調子の顔を出す</label>
         <label><input type="checkbox" id="opt-stats"> 成績・説明の欄を出す</label>
@@ -196,6 +214,7 @@ footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); bo
 <li>「成績・説明の欄を出す」にチェックを入れると、守備位置の右に1行の欄が出ます。「.285 12本 45点」のような成績のほか、「チームの4番」「好きな食べ物」など、自由な説明も書けます</li>
 <li>調子の顔がいらないときは「調子の顔を出す」のチェックを外します（成績だけの表にできます）</li>
 <li>先発投手を出さないときは「投手（P）の欄を出す」のチェックを外します</li>
+<li>よく使うオーダーは、「いまの内容を登録」で1〜15番の枠に登録できます。「プリセット」で番号を選ぶと、登録した内容（調子・色・見出し・欄の設定も）に切り替わります</li>
 <li>保存する形式（静止画・GIFアニメ・動画）を選び、PCは「ダウンロード」、スマートフォンは「共有して保存」で保存します</li>
 </ol>
 
@@ -226,7 +245,7 @@ A. 「GIFアニメ」か「動画」を選んで保存し、そのまま投稿�
 <p><strong>Q. 保存した画像の大きさは？</strong><br>
 A. 静止画（PNG）は744×1280ピクセル、GIFアニメは558×960ピクセル、動画は744×1280ピクセルです。</p>
 <p><strong>Q. 入力した内容は保存されますか？</strong><br>
-A. ブラウザ内（localStorage）に保存され、次にこのページを開いたときに元に戻ります。サーバーには送信されません。</p>
+A. ブラウザ内（localStorage）に保存され、次にこのページを開いたときに元に戻ります。1〜15番のプリセットも同じように保存されます。サーバーには送信されません。</p>
 <p><strong>Q. 選手の能力の画像も作れますか？</strong><br>
 A. 作れます。<a href="/nouryoku/">能力画像ジェネレーター（野手）</a>と<a href="/nouryoku-pitcher/">投手版</a>をどうぞ。</p>
 </article>
@@ -977,18 +996,109 @@ twoStepButton(document.getElementById("btnReset"), function () {
 function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* 保存できなくても使える */ }
 }
+/* 保存してあった内容を、いまの版の形にそろえる。使えなければ null */
+function normalizeState(s) {
+    if (!s || !Array.isArray(s.rows) || s.rows.length !== 10) return null;
+    /* 前の版で保存した内容には、調子の顔・成績の欄の設定が無い */
+    if (s.showFace === undefined) s.showFace = true;
+    if (s.showStats === undefined) s.showStats = false;
+    s.rows.forEach(function (r) { if (r.stat === undefined) r.stat = ""; });
+    return s;
+}
 function load() {
     try {
-        var s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        if (s && Array.isArray(s.rows) && s.rows.length === 10) {
-            /* 前の版で保存した内容には、調子の顔・成績の欄の設定が無い */
-            if (s.showFace === undefined) s.showFace = true;
-            if (s.showStats === undefined) s.showStats = false;
-            s.rows.forEach(function (r) { if (r.stat === undefined) r.stat = ""; });
-            state = s;
-        }
+        var s = normalizeState(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"));
+        if (s) state = s;
     } catch (e) { /* 壊れていれば初期値 */ }
 }
+
+/* ============================================================
+   プリセット（1〜15番の枠）。このブラウザに保存する
+   ============================================================ */
+var PRESET_KEY = "tooldock:order:presets:v1";
+var PRESET_MAX = 15;
+var presets = [];
+function loadPresets() {
+    presets = [];
+    try {
+        var a = JSON.parse(localStorage.getItem(PRESET_KEY) || "[]");
+        if (Array.isArray(a)) presets = a.slice(0, PRESET_MAX);
+    } catch (e) { /* 壊れていれば空 */ }
+    while (presets.length < PRESET_MAX) presets.push(null);
+}
+function savePresets() {
+    try { localStorage.setItem(PRESET_KEY, JSON.stringify(presets)); return true; } catch (e) { return false; }
+}
+/* 枠の名前：番号と、1〜3番の選手名 */
+function presetLabel(i) {
+    var p = presets[i];
+    if (!p || !p.state) return (i + 1) + "　（空き）";
+    var names = p.state.rows.slice(0, 3).map(function (r) { return r.name || "―"; }).join("・");
+    return (i + 1) + "　" + names + "…";
+}
+var presetLoadEl = document.getElementById("presetLoad");
+var presetSlotEl = document.getElementById("presetSlot");
+var presetMsgEl = document.getElementById("presetMsg");
+var btnPresetSave = document.getElementById("btnPresetSave");
+function renderPresets() {
+    var slot = presetSlotEl.value;
+    presetLoadEl.innerHTML = "";
+    var head = document.createElement("option");
+    head.value = ""; head.textContent = "番号を選ぶと切り替わります";
+    presetLoadEl.appendChild(head);
+    presetSlotEl.innerHTML = "";
+    for (var i = 0; i < PRESET_MAX; i++) {
+        var o = document.createElement("option");
+        o.value = String(i); o.textContent = presetLabel(i);
+        o.disabled = !presets[i];
+        presetLoadEl.appendChild(o);
+        var o2 = document.createElement("option");
+        o2.value = String(i); o2.textContent = presetLabel(i);
+        presetSlotEl.appendChild(o2);
+    }
+    if (slot) presetSlotEl.value = slot;
+}
+presetLoadEl.addEventListener("change", function () {
+    var i = Number(presetLoadEl.value);
+    var p = presetLoadEl.value === "" ? null : presets[i];
+    var s = p && normalizeState(clone(p.state));
+    if (!s) return;
+    state = s;
+    applyStateToForm();
+    invalidate();
+    presetSlotEl.value = String(i);        // 呼び出した枠に、そのまま上書きで登録し直せるように
+    disarmPresetSave();
+    presetMsgEl.textContent = (i + 1) + "番を呼び出しました";
+    presetLoadEl.value = "";               // 同じ番号をもう一度選んでも、呼び出し直せるように
+});
+/* 登録。空きの枠はすぐ登録し、登録済みの枠は2回押しで上書きする（js/two-step.js と同じ見た目） */
+var presetArmed = null;
+function disarmPresetSave() {
+    if (presetArmed) clearTimeout(presetArmed.timer);
+    presetArmed = null;
+    btnPresetSave.textContent = "いまの内容を登録";
+    btnPresetSave.style.color = btnPresetSave.style.borderColor = btnPresetSave.style.fontWeight = "";
+}
+presetSlotEl.addEventListener("change", disarmPresetSave);
+btnPresetSave.addEventListener("click", function () {
+    var i = Number(presetSlotEl.value);
+    if (presets[i] && !(presetArmed && presetArmed.slot === i)) {
+        disarmPresetSave();
+        presetArmed = { slot: i, timer: setTimeout(disarmPresetSave, 4000) };
+        btnPresetSave.textContent = "もう一度押すと、" + (i + 1) + "番を上書きします";
+        btnPresetSave.style.color = btnPresetSave.style.borderColor = "#dc2626";
+        btnPresetSave.style.fontWeight = "700";
+        return;
+    }
+    disarmPresetSave();
+    presets[i] = { state: clone(state), saved: new Date().toISOString() };
+    if (!savePresets()) {
+        presetMsgEl.textContent = "このブラウザでは保存できませんでした（プライベートモードなど）";
+        return;
+    }
+    renderPresets();
+    presetMsgEl.textContent = (i + 1) + "番に登録しました";
+});
 function applyStateToForm() {
     document.getElementById("opt-pitcher").checked = state.pitcher;
     document.getElementById("opt-face").checked = state.showFace;
@@ -1177,6 +1287,8 @@ document.getElementById("btnX").addEventListener("click", function () {
    はじめに
    ============================================================ */
 load();
+loadPresets();
+renderPresets();
 applyStateToForm();
 requestAnimationFrame(tick);
 /* 文字はWebフォントで描くので、読み込みが終わったら描き直す */
