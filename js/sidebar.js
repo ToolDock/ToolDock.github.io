@@ -98,7 +98,8 @@
         width: 300px;
         box-sizing: border-box;
         padding: 24px 20px 40px;
-        overflow-y: auto;
+        /* 中身はページのスクロールに合わせて動かす（下の followScroll）。レール単独ではスクロールさせない */
+        overflow: hidden;
         border-left: 1px solid ${dark ? "rgba(255,255,255,0.14)" : "#d8d6cf"};
         background: ${dark ? "rgba(255,255,255,0.04)" : "#ffffff"};
         z-index: 5;
@@ -346,6 +347,54 @@
     return wrap;
   }
 
+  /* ---- ページのスクロールに合わせてレールを動かす ----
+     ページを下へスクロールすると、レールの中身も同じだけ上へ動き、
+     レールの最後まで見えたらそこで止まる（それ以上はページだけが動く）。
+     ページのほうが短くてレールの最後まで届かないときは、ページの最後でレールの最後が見えるよう、割合で動かす */
+
+  function followScroll(rail, mq) {
+    let queued = false;
+
+    const sync = () => {
+      queued = false;
+      if (!mq.matches) return;
+
+      const railMax = rail.scrollHeight - rail.clientHeight;
+      if (railMax <= 0) {
+        rail.scrollTop = 0;
+        return;
+      }
+
+      const pageMax = document.documentElement.scrollHeight - window.innerHeight;
+      const y = Math.max(0, window.scrollY);
+
+      rail.scrollTop = pageMax > 0 && pageMax < railMax
+        ? y * railMax / pageMax
+        : Math.min(y, railMax);
+    };
+
+    const request = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(sync);
+    };
+
+    window.addEventListener("scroll", request, { passive: true });
+    window.addEventListener("resize", request);
+
+    /* 広告が入ってレールの中身が伸びたときも合わせ直す（広告の枠は js/ads.js があとから先頭に足す） */
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(request);
+      for (const child of rail.children) ro.observe(child);
+      new MutationObserver(records => {
+        for (const r of records) for (const n of r.addedNodes) if (n.nodeType === 1) ro.observe(n);
+        request();
+      }).observe(rail, { childList: true });
+    }
+
+    request();
+  }
+
   /* ---- 配置の切り替え ---- */
 
   function mount() {
@@ -373,6 +422,8 @@
     mq.addEventListener("change", place);
 
     document.body.appendChild(rail);
+
+    followScroll(rail, mq);
 
     /* 関連ツールの直前に置く。無ければ末尾 */
     const related = document.getElementById("related-tools");
