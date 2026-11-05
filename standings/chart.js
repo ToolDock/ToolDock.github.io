@@ -94,6 +94,9 @@
       });
       fig.textContent = "";
       fig.appendChild(svg);
+      // 枠の縦横の比を、描いたグラフに合わせる。CSS の比（広い画面は5:3）のままだと、
+      // グラフの幅が560px未満で縦長に描いたとき（iPadの縦向きなど）に、下が枠で切れていた（2026-11-06）
+      fig.style.aspectRatio = W + " / " + H;
       c.parts = parts; c.teams = teams; c.board = board; c.X = X; c.Y = Y; c.gap = fs + 1;
       charts.push(c);
     });
