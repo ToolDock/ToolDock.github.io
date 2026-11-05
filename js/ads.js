@@ -54,8 +54,9 @@
 
     style.textContent = `
       /* 右レールの先頭の枠。レールの中身は幅260pxほど */
+      /* 300×250 を入れるため、レールの左右の余白（20px）まで広げて幅300pxにする */
       .td-ad-rail {
-        margin: 0 0 22px;
+        margin: 0 -20px 22px;
         text-align: center;
       }
 
@@ -147,7 +148,7 @@
   /* ---- ページ末尾の枠 ---- */
 
   /* ---- 右レールの先頭の枠 ----
-     大きさは幅いっぱい×高さ250pxに決める。data-ad-format="auto" に任せると、
+     大きさは 300×250 に決める（AdSense のユニットも固定 300×250）。data-ad-format="auto" に任せると、
      縦に長い広告（幅240×高さ900ほど）が来て、レールが広告で埋まった（2026-11-05）。
      レスポンシブのユニットは、ins に幅と高さを書き data-ad-format を外すと、その大きさに収まる広告になる。
      レールは js/sidebar.js が作る。狭い画面ではレールが隠れ、中身は本文の下に移るが、
@@ -170,7 +171,7 @@
       box.innerHTML = `
         <div class="td-ad-label">スポンサーリンク</div>
         <ins class="adsbygoogle"
-             style="display:block;width:100%;height:250px"
+             style="display:inline-block;width:300px;height:250px"
              data-ad-client="${CLIENT}"
              data-ad-slot="${SLOT_RAIL}"></ins>
       `;
