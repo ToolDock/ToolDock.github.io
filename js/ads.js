@@ -27,6 +27,10 @@
   /* 番号が空の枠は出さない */
   const SLOT_STICKY = "2304525201";   /* 「下のバー」ユニット（固定 320×50） */
   const SLOT_END = "8286258434";      /* 「ページ末尾」ユニット */
+  const SLOT_RAIL = "3354505118";     /* 「右の列」ユニット（レスポンシブ）。右レールの先頭 */
+
+  /* 右レールが出る幅（js/sidebar.js の WIDE と揃える） */
+  const RAIL_WIDE = "(min-width: 1200px)";
 
   /* 下のバーを出し始めるスクロール量 */
   const STICKY_AFTER = 600;
@@ -49,6 +53,18 @@
     const style = document.createElement("style");
 
     style.textContent = `
+      /* 右レールの先頭の枠。レールの中身は幅260pxほど */
+      .td-ad-rail {
+        margin: 0 0 22px;
+        text-align: center;
+      }
+
+      /* 広告が来なかった枠は、見出しごと隠す */
+      .td-ad-end:has(ins[data-ad-status="unfilled"]),
+      .td-ad-rail:has(ins[data-ad-status="unfilled"]) {
+        display: none;
+      }
+
       .td-ad-end {
         max-width: 1000px;
         margin: 32px auto 0;
@@ -129,6 +145,51 @@
   }
 
   /* ---- ページ末尾の枠 ---- */
+
+  /* ---- 右レールの先頭の枠 ----
+     レールは js/sidebar.js が作る。狭い画面ではレールが隠れ、中身は本文の下に移るが、
+     そこにはページ末尾の枠があるので、この枠はレールが出ているときだけ置く。
+     隠れた場所で push すると幅0で失敗するので、狭い画面で開いたときは、広げたときに初めて置く */
+
+  function mountRailSlot() {
+    const rail = document.querySelector(".td-rail");
+    if (!rail) return;
+
+    const mq = window.matchMedia(RAIL_WIDE);
+
+    const mount = () => {
+      if (rail.querySelector(".td-ad-rail")) return;
+
+      const box = document.createElement("div");
+
+      box.className = "td-ad-rail";
+
+      box.innerHTML = `
+        <div class="td-ad-label">スポンサーリンク</div>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="${CLIENT}"
+             data-ad-slot="${SLOT_RAIL}"
+             data-ad-format="auto"
+             data-full-width-responsive="false"></ins>
+      `;
+
+      rail.insertBefore(box, rail.firstChild);
+
+      pushAd();
+    };
+
+    if (mq.matches) {
+      mount();
+    } else {
+      const onChange = () => {
+        if (!mq.matches) return;
+        mq.removeEventListener("change", onChange);
+        mount();
+      };
+      mq.addEventListener("change", onChange);
+    }
+  }
 
   function mountEndSlot() {
     const box = document.createElement("div");
@@ -234,6 +295,7 @@
     injectStyle();
     if (SLOT_END) mountEndSlot();
     if (SLOT_STICKY) mountStickySlot();
+    if (SLOT_RAIL) mountRailSlot();
   }
 
   if (document.readyState === "loading") {
