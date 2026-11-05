@@ -25,7 +25,7 @@
   const UNITS_ENABLED = true;
 
   /* 番号が空の枠は出さない */
-  const SLOT_STICKY = "";
+  const SLOT_STICKY = "2304525201";   /* 「下のバー」ユニット（固定 320×50） */
   const SLOT_END = "8286258434";      /* 「ページ末尾」ユニット */
 
   /* 下のバーを出し始めるスクロール量 */
@@ -106,6 +106,17 @@
         background: #cbd5e1;
       }
 
+      /* 下のバーが出ている間は、右下の「Top」ボタンをバーの上に逃がす（バーの × が隠れないように） */
+      .td-pagetop {
+        transition: opacity 0.2s, visibility 0.2s, bottom 0.25s ease-out;
+      }
+
+      @media (max-width: 1299px) {
+        body.td-adbar-on .td-pagetop {
+          bottom: 82px;
+        }
+      }
+
       /* 右レールが出ている画面では、レールの下に潜り込ませない */
       @media (min-width: 1300px) {
         .td-ad-sticky {
@@ -168,6 +179,7 @@
 
     bar.querySelector(".td-ad-close").addEventListener("click", () => {
       bar.classList.remove("shown");
+      document.body.classList.remove("td-adbar-on");
 
       try { sessionStorage.setItem(DISMISS_KEY, "1"); } catch (e) { /* 保存できなくても動作に影響はない */ }
 
@@ -178,6 +190,7 @@
     const onScroll = () => {
       if (window.scrollY > STICKY_AFTER) {
         bar.classList.add("shown");
+        document.body.classList.add("td-adbar-on");
         window.removeEventListener("scroll", onScroll);
       }
     };
