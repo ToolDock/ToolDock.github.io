@@ -13,8 +13,9 @@
 
   const ORIGIN = "https://tooldock.github.io";
 
-  /* 表示に使う閾値。この幅未満では本文の下に置く */
-  const WIDE = "(min-width: 1300px)";
+  /* 表示に使う閾値。この幅未満では本文の下に置く。
+     1300px だと、1920px の画面を150%に拡大しているノートPC（幅1280px）で出ず、右側が空いていた */
+  const WIDE = "(min-width: 1200px)";
 
   /* 「人気のページ」に出す件数。
      並び順は tool-data.js の popularity（Search Console の上位の順）で決める。
@@ -197,7 +198,14 @@
       /* 広い画面では右端に固定し、本文側に余白を作って重なりを防ぐ。
          基本ルールより後に置くことで確実に上書きする */
       @media ${WIDE} {
+        /* 本文の幅（style.css の max-width:900px）は、右レールの余白の外側で数える（content-box）。
+           ページ側で * { box-sizing:border-box } にしていると、余白300pxが900pxの中に食い込み、
+           本文が600pxに縮んでいた。あわせて、レールより左の場所の真ん中に寄せる
+           （ページ側の margin:0 で左に寄ったままになり、右側が大きく空いていた。2026-11-05） */
         body {
+          box-sizing: content-box !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
           padding-right: 300px !important;
         }
 
@@ -211,7 +219,7 @@
       }
 
       /* 狭い画面では横に並べて場所を取りすぎないようにする */
-      @media (max-width: 1299px) {
+      @media (max-width: 1199px) {
         .td-rail-inline .td-box ul,
         .td-rail-inline .td-box ol {
           display: grid;
