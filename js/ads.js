@@ -10,8 +10,8 @@
    ここから動的に差し込む方式では検出されない。
    このファイルが受け持つのは広告枠の描画だけ。
 
-   承認されたら UNITS_ENABLED を true にし、AdSense で作成した
-   広告ユニットのスロットIDを SLOT_STICKY / SLOT_END に入れる。
+   AdSense で作成した広告ユニットのスロットIDを SLOT_STICKY / SLOT_END に入れる。
+   直したら js/head.js の PARTS_VERSION を1つ上げる。
 ========================= */
 
 (() => {
@@ -21,11 +21,12 @@
   /* 各HTMLに書いてある番号と揃えること */
   const CLIENT = "ca-pub-8349615939902537";
 
-  /* 広告の枠を出すかどうか。承認後に true にする */
-  const UNITS_ENABLED = false;
+  /* 広告の枠を出すかどうか（2026-11-05 承認） */
+  const UNITS_ENABLED = true;
 
+  /* 番号が空の枠は出さない */
   const SLOT_STICKY = "";
-  const SLOT_END = "";
+  const SLOT_END = "8286258434";      /* 「ページ末尾」ユニット */
 
   /* 下のバーを出し始めるスクロール量 */
   const STICKY_AFTER = 600;
@@ -192,8 +193,8 @@
     if (!UNITS_ENABLED) return;
 
     injectStyle();
-    mountEndSlot();
-    mountStickySlot();
+    if (SLOT_END) mountEndSlot();
+    if (SLOT_STICKY) mountStickySlot();
   }
 
   if (document.readyState === "loading") {
