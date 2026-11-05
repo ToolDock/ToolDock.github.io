@@ -334,7 +334,7 @@ function addJsonLd(data){
 ========================= */
 
 {
-  const PARTS_VERSION = 14;
+  const PARTS_VERSION = 15;
 
   const parts = [
     "/js/sidebar.js",
