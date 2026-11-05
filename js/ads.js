@@ -186,12 +186,38 @@
       setTimeout(() => bar.remove(), 300);
     });
 
+    /* 広告が入ったときだけ出す。AdSense は枠に data-ad-status="filled" / "unfilled" を書く。
+       入る前から出していると、中が空の白い帯が本文を隠していた（2026-11-05） */
+    const ins = bar.querySelector("ins");
+    let filled = false;
+    let scrolled = false;
+
+    const show = () => {
+      if (!filled || !scrolled || !bar.isConnected) return;
+      bar.classList.add("shown");
+      document.body.classList.add("td-adbar-on");
+    };
+
+    const onStatus = () => {
+      const status = ins.getAttribute("data-ad-status");
+      if (status === "filled") {
+        filled = true;
+        show();
+      } else if (status === "unfilled") {
+        bar.remove();                 /* 広告が来なかったときは、帯ごと片付ける */
+        document.body.classList.remove("td-adbar-on");
+      }
+    };
+
+    new MutationObserver(onStatus).observe(ins, { attributes: true, attributeFilter: ["data-ad-status"] });
+    onStatus();
+
     /* ある程度読み進めてから出す */
     const onScroll = () => {
       if (window.scrollY > STICKY_AFTER) {
-        bar.classList.add("shown");
-        document.body.classList.add("td-adbar-on");
+        scrolled = true;
         window.removeEventListener("scroll", onScroll);
+        show();
       }
     };
 
