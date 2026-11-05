@@ -111,14 +111,14 @@
         transition: opacity 0.2s, visibility 0.2s, bottom 0.25s ease-out;
       }
 
-      @media (max-width: 1299px) {
+      @media (max-width: 1199px) {
         body.td-adbar-on .td-pagetop {
           bottom: 82px;
         }
       }
 
       /* 右レールが出ている画面では、レールの下に潜り込ませない */
-      @media (min-width: 1300px) {
+      @media (min-width: 1200px) {
         .td-ad-sticky {
           right: 300px;
         }
