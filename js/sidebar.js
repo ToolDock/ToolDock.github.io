@@ -100,7 +100,8 @@
         padding: 24px 20px 40px;
         /* 中身はページのスクロールに合わせて動かす（下の followScroll）。レール単独ではスクロールさせない */
         overflow: hidden;
-        border-left: 1px solid ${dark ? "rgba(255,255,255,0.14)" : "#d8d6cf"};
+        /* 左の線は枠線ではなく影で描く。枠線だと中の幅が299pxになり、300×250の広告（js/ads.js）が入らない */
+        box-shadow: inset 1px 0 0 ${dark ? "rgba(255,255,255,0.14)" : "#d8d6cf"};
         background: ${dark ? "rgba(255,255,255,0.04)" : "#ffffff"};
         z-index: 5;
       }
