@@ -147,6 +147,9 @@
   /* ---- ページ末尾の枠 ---- */
 
   /* ---- 右レールの先頭の枠 ----
+     大きさは幅いっぱい×高さ250pxに決める。data-ad-format="auto" に任せると、
+     縦に長い広告（幅240×高さ900ほど）が来て、レールが広告で埋まった（2026-11-05）。
+     レスポンシブのユニットは、ins に幅と高さを書き data-ad-format を外すと、その大きさに収まる広告になる。
      レールは js/sidebar.js が作る。狭い画面ではレールが隠れ、中身は本文の下に移るが、
      そこにはページ末尾の枠があるので、この枠はレールが出ているときだけ置く。
      隠れた場所で push すると幅0で失敗するので、狭い画面で開いたときは、広げたときに初めて置く */
@@ -167,11 +170,9 @@
       box.innerHTML = `
         <div class="td-ad-label">スポンサーリンク</div>
         <ins class="adsbygoogle"
-             style="display:block"
+             style="display:block;width:100%;height:250px"
              data-ad-client="${CLIENT}"
-             data-ad-slot="${SLOT_RAIL}"
-             data-ad-format="auto"
-             data-full-width-responsive="false"></ins>
+             data-ad-slot="${SLOT_RAIL}"></ins>
       `;
 
       rail.insertBefore(box, rail.firstChild);
