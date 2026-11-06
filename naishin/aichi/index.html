@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>愛知県 内申点・校内順位の計算【2027年公立高校入試】志望校の方式（Ⅰ〜Ⅴ）で合計と必要な当日点が分かる</title>
+<meta name="description" content="愛知県公立高校の一般選抜（令和9年度・2027年）の評定得点（90点満点）と、校内順位を決める数値を計算する無料ツール。県教育委員会の資料から全日制199学科の決定方式（Ⅰ〜Ⅴ）と面接の有無を収録。目標の点数に必要な学力検査の点数（110点満点）も逆算できます。">
+<link rel="canonical" href="https://tooldock.github.io/naishin/aichi/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="愛知県 内申点・校内順位の計算【2027年公立高校入試】志望校の方式（Ⅰ〜Ⅴ）で合計と必要な当日点が分かる | ToolDock">
+<meta property="og:description" content="愛知県公立高校の一般選抜（令和9年度・2027年）の評定得点（90点満点）と、校内順位を決める数値を計算する無料ツール。県教育委員会の資料から全日制199学科の決定方式（Ⅰ〜Ⅴ）と面接の有無を収録。目標の点数に必要な学力検査の点数（110点満点）も逆算できます。">
+<meta property="og:url" content="https://tooldock.github.io/naishin/aichi/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/naishin-aichi.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "naishin-aichi"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="愛知県,内申点,計算,評定得点,校内順位,方式,公立高校,一般選抜,入試,2027,令和9年度,90点,110点,高校受験,旭丘,明和,岡崎,時習館">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:28px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+h2.sec{ margin:24px 0 10px; font-size:1.1rem; padding-bottom:4px; border-bottom:2px solid var(--c); }
+.school{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.school input, .school select{ font:inherit; font-size:1rem; padding:7px 9px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; }
+.school input{ width:10em; }
+.school select{ min-width:16em; max-width:100%; }
+.info{ margin-top:10px; padding:10px 12px; background:var(--surface-2); font-size:.9rem; }
+.info b{ font-size:1rem; }
+
+table.grade{ border-collapse:collapse; width:100%; font-size:.95rem; }
+table.grade th, table.grade td{ border-bottom:1px solid var(--line-soft); padding:5px 4px; text-align:center; }
+table.grade th{ font-size:.82rem; color:#3a3d42; font-weight:700; }
+table.grade td:first-child{ font-weight:700; text-align:left; white-space:nowrap; }
+table.grade select, table.grade input{ font:inherit; font-size:1rem; padding:4px 2px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; text-align:center; width:3.6em; }
+table.grade tr.total td{ font-weight:800; border-top:1px solid var(--ink); }
+.quick{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 0; font-size:.85rem; align-items:center; }
+.quick button{ font:inherit; font-size:.82rem; padding:4px 10px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; cursor:pointer; }
+.two{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+@media (max-width:700px){ .two{ grid-template-columns:1fr; } }
+.two > div{ min-width:0; }
+
+.result{ margin:22px 0 0; padding:18px; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 5%, #fff); }
+.kpis{ display:flex; flex-wrap:wrap; gap:8px 28px; }
+.kpi .k{ font-size:.85rem; }
+.kpi .v{ font-size:1.8rem; font-weight:800; color:var(--c); font-variant-numeric:tabular-nums; line-height:1.3; }
+.kpi .v small{ font-size:.9rem; color:#3a3d42; font-weight:700; }
+.calc{ margin:10px 0 0; font-size:.86rem; color:#3a3d42; }
+.goal{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-size:.95rem; }
+.goal input{ font:inherit; width:6em; padding:4px 6px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
+.goal .ans{ font-weight:800; color:var(--c); }
+.goal .ans.ng{ color:#b42318; }
+.note{ font-size:.82rem; color:#5c6470; margin:12px 0 0; }
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:18px; }
+    table.grade select, table.grade input{ width:3.1em; }
+}
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=study">学習</a> <span class="bc-sep">›</span> <span>愛知県 内申点・校内順位の計算（2027年入試）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "学習", "item": "https://tooldock.github.io/category/?cat=study"}, {"@type": "ListItem", "position": 3, "name": "愛知県 内申点・校内順位の計算（2027年入試）", "item": "https://tooldock.github.io/naishin/aichi/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="container">
+
+<div class="td-banner">
+    <h1>愛知県 内申点・校内順位の計算（2027年公立高校入試）</h1>
+    <p>中3の通知表と当日点の見込みを入れると、評定得点（90点満点）と、志望校の方式（Ⅰ〜Ⅴ）で計算した校内順位の数値が出ます。目標の点数に必要な当日点も逆算できます。愛知県教育委員会の「令和9年度 一般選抜における校内順位の決定方式」によります。</p>
+</div>
+
+<h2 class="sec">1. 志望校（一般選抜・全日制）</h2>
+<div class="school">
+    <input type="search" id="q" placeholder="学校名で絞り込み" aria-label="学校名で絞り込み">
+    <select id="school" aria-label="志望校"></select>
+</div>
+<div class="info" id="info"></div>
+
+<div class="two">
+<div>
+<h2 class="sec">2. 中3の通知表（評定）</h2>
+<table class="grade" id="grade">
+<thead><tr><th>教科</th><th>評定</th></tr></thead>
+<tbody></tbody>
+</table>
+<div class="quick">まとめて入れる：
+    <button type="button" data-fill="3">全部3</button>
+    <button type="button" data-fill="4">全部4</button>
+    <button type="button" data-fill="5">全部5</button>
+</div>
+</div>
+
+<div>
+<h2 class="sec">3. 学力検査（当日点の見込み）</h2>
+<table class="grade" id="exam">
+<thead><tr><th>教科</th><th>点数（22点満点）</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+
+<section class="result" aria-live="polite">
+    <div class="kpis">
+        <div class="kpi"><div class="k">評定得点（90点満点）</div><div class="v" id="hyotei"></div></div>
+        <div class="kpi"><div class="k">学力検査（110点満点）</div><div class="v" id="gakuryoku"></div></div>
+        <div class="kpi"><div class="k">校内順位の数値</div><div class="v" id="total"></div></div>
+    </div>
+    <p class="calc" id="calc"></p>
+    <div class="goal">
+        目標の数値 <input type="number" id="target" min="0" max="310" step="0.5" value=""> に必要な学力検査は
+        <span class="ans" id="need"></span>
+        <p class="calc" id="weight"></p>
+    </div>
+</section>
+<p class="note">この数値は合格を約束するものではありません。県は「方式で得られた数値を基礎資料とした上で、総合的に」校内順位を決めるとしていて、学校ごとの合格者の得点も公表していません。目標は塾や模試の資料などをもとにご自身で入れてください。推薦選抜・特色選抜・定時制は含みません。入力はこのブラウザの中だけに保存されます。</p>
+
+</div>
+
+<article class="tool-article">
+
+<h2>愛知県の一般選抜の計算のしかた</h2>
+<div class="table-scroll">
+<table>
+<tbody>
+<tr><th>評定得点</th><td>中3の9教科の評定の合計を2倍（90点満点）</td></tr>
+<tr><th>学力検査合計得点</th><td>国語・数学・社会・理科・英語、各22点の合計（110点満点）</td></tr>
+<tr><th>校内順位</th><td>学校ごとに選んだ方式（Ⅰ〜Ⅴ）で出した数値をもとに、総合的に決める</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>校内順位の決定方式（Ⅰ〜Ⅴ）</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>方式</th><th>計算</th><th>満点</th></tr></thead>
+<tbody>
+<tr><th>Ⅰ</th><td>評定得点 ＋ 学力検査</td><td>90 ＋ 110 ＝ 200</td></tr>
+<tr><th>Ⅱ</th><td>評定得点×1.5 ＋ 学力検査</td><td>135 ＋ 110 ＝ 245</td></tr>
+<tr><th>Ⅲ</th><td>評定得点 ＋ 学力検査×1.5</td><td>90 ＋ 165 ＝ 255</td></tr>
+<tr><th>Ⅳ</th><td>評定得点×2 ＋ 学力検査</td><td>180 ＋ 110 ＝ 290</td></tr>
+<tr><th>Ⅴ</th><td>評定得点 ＋ 学力検査×2</td><td>90 ＋ 220 ＝ 310</td></tr>
+</tbody>
+</table>
+</div>
+<p>旭丘・明和・岡崎・時習館などの普通科は方式Ⅴ（当日点を2倍）が多く、専門学科は方式Ⅰが多くなっています。2027年の入試では、春日井工科・一宮工科・稲沢緑風館・常滑・豊田南・三谷水産の7学科が方式を変えました。</p>
+
+<h2>内申1つは、当日点の何点分？</h2>
+<p>評定を1つ上げると評定得点は2点上がります。方式Ⅰなら当日点2点分、方式Ⅴなら当日点1点分、方式Ⅳなら当日点4点分です。学力検査は1教科22点なので、1点の重みが大きい入試です。</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 中1・中2の成績は入りますか？</strong><br>
+A. 一般選抜の評定得点は中3の評定（9教科×5×2＝90点）で計算します。</p>
+<p><strong>Q. 面接はありますか？</strong><br>
+A. 2027年の一般選抜で面接を行うのは、守山・春日井工科・日進・内海・松平・加茂丘・足助・安城農林・渥美農業の一部の学科だけです。志望校を選ぶと表示されます。</p>
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. このブラウザの中だけに保存されます。サーバーには送信されません。</p>
+
+<h2>出典</h2>
+<p class="note">愛知県教育委員会「令和9年度愛知県公立高等学校入学者選抜（全日制課程）一般選抜における各高等学校の面接実施の有無及び校内順位の決定方式について」（2026年7月7日）。全日制の一般選抜を行う199の学校・学科を収録しています。</p>
+
+</article>
+
+<script>
+"use strict";
+(function () {
+    var SCHOOLS = [{"n":"旭丘","d":"普通","m":0,"t":5},{"n":"旭丘","d":"美術","m":0,"t":1},{"n":"明和","d":"普通","m":0,"t":5},{"n":"明和","d":"音楽","m":0,"t":5},{"n":"千種","d":"普通","m":0,"t":5},{"n":"千種","d":"国際教養","m":0,"t":5},{"n":"守山","d":"普通","m":1,"t":1},{"n":"緑丘","d":"総合","m":0,"t":1},{"n":"愛知総合工科","d":"工業","m":0,"t":1},{"n":"愛知商業","d":"商業","m":0,"t":1},{"n":"瑞陵","d":"普通","m":0,"t":5},{"n":"瑞陵","d":"食物","m":0,"t":3},{"n":"瑞陵","d":"理数","m":0,"t":5},{"n":"惟信","d":"普通・未来探究科","m":0,"t":3},{"n":"松蔭","d":"普通","m":0,"t":5},{"n":"昭和","d":"普通","m":0,"t":5},{"n":"名古屋西","d":"普通","m":0,"t":5},{"n":"熱田","d":"普通","m":0,"t":5},{"n":"中村","d":"普通","m":0,"t":5},{"n":"南陽","d":"総合","m":0,"t":2},{"n":"鳴海","d":"普通","m":0,"t":3},{"n":"天白","d":"普通","m":0,"t":5},{"n":"名古屋南","d":"普通","m":0,"t":5},{"n":"名古屋工科","d":"工業","m":0,"t":1},{"n":"中川青和","d":"キャリアビジネス","m":0,"t":4},{"n":"瀬戸","d":"普通","m":0,"t":1},{"n":"瀬戸西","d":"普通","m":0,"t":3},{"n":"瀬戸北総合","d":"総合","m":0,"t":1},{"n":"瀬戸工科","d":"工業","m":0,"t":1},{"n":"春日井","d":"普通","m":0,"t":5},{"n":"春日井西","d":"普通","m":0,"t":1},{"n":"春日井東","d":"普通","m":0,"t":3},{"n":"高蔵寺","d":"普通","m":0,"t":3},{"n":"春日井南","d":"普通","m":0,"t":3},{"n":"春日井工科","d":"工業","m":1,"t":4},{"n":"春日井泉","d":"商業","m":0,"t":2},{"n":"春日井泉","d":"生活文化","m":0,"t":2},{"n":"旭野","d":"普通","m":0,"t":5},{"n":"豊明","d":"普通","m":0,"t":1},{"n":"日進","d":"普通","m":1,"t":2},{"n":"日進西","d":"普通","m":0,"t":1},{"n":"長久手","d":"普通","m":0,"t":3},{"n":"東郷","d":"普通","m":0,"t":1},{"n":"犬山","d":"普通","m":0,"t":2},{"n":"犬山","d":"総合ビジネス","m":0,"t":2},{"n":"犬山総合","d":"総合","m":0,"t":2},{"n":"尾北","d":"普通","m":0,"t":3},{"n":"尾北","d":"国際教養","m":0,"t":3},{"n":"江南","d":"普通","m":0,"t":5},{"n":"古知野","d":"商業","m":0,"t":2},{"n":"古知野","d":"生活文化","m":0,"t":2},{"n":"古知野","d":"福祉","m":0,"t":2},{"n":"小牧","d":"普通","m":0,"t":3},{"n":"小牧南","d":"普通","m":0,"t":5},{"n":"小牧工科","d":"工業","m":0,"t":4},{"n":"岩倉総合","d":"総合","m":0,"t":1},{"n":"新川","d":"普通","m":0,"t":5},{"n":"西春","d":"普通","m":0,"t":5},{"n":"丹羽","d":"普通","m":0,"t":3},{"n":"一宮","d":"普通","m":0,"t":5},{"n":"一宮","d":"ファッション創造","m":0,"t":1},{"n":"一宮西","d":"普通","m":0,"t":5},{"n":"一宮北","d":"普通","m":0,"t":3},{"n":"一宮南","d":"普通","m":0,"t":5},{"n":"一宮興道","d":"普通","m":0,"t":5},{"n":"木曽川","d":"普通","m":0,"t":3},{"n":"木曽川","d":"総合ビジネス","m":0,"t":1},{"n":"一宮工科","d":"工業","m":0,"t":4},{"n":"一宮起工科","d":"工業","m":0,"t":4},{"n":"一宮商業","d":"商業","m":0,"t":1},{"n":"津島","d":"普通","m":0,"t":5},{"n":"津島","d":"国際探究","m":0,"t":5},{"n":"津島東","d":"普通","m":0,"t":3},{"n":"津島北翔","d":"普通","m":0,"t":1},{"n":"津島北翔","d":"商業","m":0,"t":1},{"n":"津島北翔","d":"福祉","m":0,"t":1},{"n":"稲沢緑風館","d":"普通","m":0,"t":4},{"n":"稲沢緑風館","d":"農業","m":0,"t":4},{"n":"杏和","d":"総合","m":0,"t":1},{"n":"佐屋","d":"農業","m":0,"t":4},{"n":"佐屋","d":"家庭","m":0,"t":4},{"n":"愛西工科","d":"工業","m":0,"t":1},{"n":"美和","d":"普通・地域探究科","m":0,"t":3},{"n":"五条","d":"普通","m":0,"t":5},{"n":"半田","d":"普通","m":0,"t":5},{"n":"半田東","d":"普通","m":0,"t":5},{"n":"半田工科","d":"工業","m":0,"t":4},{"n":"半田農業","d":"農業","m":0,"t":1},{"n":"半田商業","d":"商業","m":0,"t":4},{"n":"常滑","d":"普通","m":0,"t":1},{"n":"常滑","d":"工業","m":0,"t":1},{"n":"横須賀","d":"普通","m":0,"t":5},{"n":"東海南","d":"普通","m":0,"t":5},{"n":"東海樟風","d":"総合情報","m":0,"t":4},{"n":"大府","d":"普通","m":0,"t":3},{"n":"大府","d":"生活文化","m":0,"t":1},{"n":"大府東","d":"普通","m":0,"t":1},{"n":"桃陵","d":"ヒューマンケア","m":0,"t":1},{"n":"桃陵","d":"衛生看護","m":0,"t":1},{"n":"知多翔洋","d":"総合","m":0,"t":1},{"n":"阿久比","d":"普通","m":0,"t":5},{"n":"東浦","d":"普通","m":0,"t":1},{"n":"内海","d":"普通","m":1,"t":1},{"n":"武豊","d":"普通","m":0,"t":1},{"n":"豊田西","d":"普通","m":0,"t":5},{"n":"豊田東","d":"総合","m":0,"t":1},{"n":"衣台","d":"普通","m":0,"t":1},{"n":"豊田北","d":"普通","m":0,"t":5},{"n":"豊田南","d":"普通","m":0,"t":5},{"n":"豊田","d":"普通","m":0,"t":3},{"n":"豊野","d":"普通","m":0,"t":3},{"n":"松平","d":"普通","m":1,"t":1},{"n":"松平","d":"ライフコーディネート","m":1,"t":2},{"n":"加茂丘","d":"普通","m":1,"t":2},{"n":"足助","d":"普通","m":1,"t":2},{"n":"足助","d":"観光","m":1,"t":2},{"n":"豊田工科","d":"工業","m":0,"t":2},{"n":"猿投農林","d":"農業","m":0,"t":1},{"n":"三好","d":"普通","m":0,"t":1},{"n":"三好","d":"スポーツ科学","m":0,"t":1},{"n":"岡崎","d":"普通","m":0,"t":5},{"n":"岡崎北","d":"普通","m":0,"t":5},{"n":"岡崎北","d":"理数","m":0,"t":5},{"n":"岡崎東","d":"総合","m":0,"t":1},{"n":"岡崎西","d":"普通","m":0,"t":5},{"n":"岩津","d":"普通","m":0,"t":2},{"n":"岩津","d":"家庭","m":0,"t":2},{"n":"岡崎工科","d":"工業","m":0,"t":4},{"n":"岡崎商業","d":"商業","m":0,"t":4},{"n":"幸田","d":"普通","m":0,"t":1},{"n":"碧南","d":"普通","m":0,"t":3},{"n":"碧南","d":"総合ビジネス","m":0,"t":1},{"n":"碧南工科","d":"工業","m":0,"t":1},{"n":"刈谷","d":"普通","m":0,"t":5},{"n":"刈谷北","d":"普通","m":0,"t":5},{"n":"刈谷北","d":"国際探究","m":0,"t":5},{"n":"刈谷工科","d":"工業","m":0,"t":1},{"n":"安城","d":"普通","m":0,"t":3},{"n":"安城","d":"生活文化","m":0,"t":1},{"n":"安城東","d":"普通","m":0,"t":5},{"n":"安城南","d":"普通","m":0,"t":1},{"n":"安城農林","d":"農業","m":1,"t":1},{"n":"西尾","d":"普通","m":0,"t":5},{"n":"西尾東","d":"普通","m":0,"t":3},{"n":"鶴城丘","d":"総合","m":0,"t":3},{"n":"一色","d":"普通","m":0,"t":1},{"n":"一色","d":"生活デザイン","m":0,"t":4},{"n":"吉良","d":"普通","m":0,"t":1},{"n":"吉良","d":"生活文化","m":0,"t":2},{"n":"知立東","d":"普通","m":0,"t":5},{"n":"知立","d":"総合","m":0,"t":1},{"n":"高浜","d":"普通","m":0,"t":2},{"n":"高浜","d":"福祉","m":0,"t":2},{"n":"時習館","d":"普通","m":0,"t":5},{"n":"豊橋東","d":"普通","m":0,"t":5},{"n":"豊丘","d":"普通","m":0,"t":5},{"n":"豊丘","d":"生活文化","m":0,"t":3},{"n":"豊橋南","d":"普通","m":0,"t":3},{"n":"豊橋南","d":"生活デザイン","m":0,"t":1},{"n":"豊橋西","d":"総合","m":0,"t":1},{"n":"豊橋工科","d":"工業","m":0,"t":4},{"n":"豊橋商業","d":"商業","m":0,"t":2},{"n":"成章","d":"普通","m":0,"t":3},{"n":"成章","d":"総合ビジネス","m":0,"t":1},{"n":"成章","d":"生活文化","m":0,"t":1},{"n":"福江","d":"普通","m":0,"t":1},{"n":"渥美農業","d":"農業","m":1,"t":1},{"n":"国府","d":"普通","m":0,"t":5},{"n":"国府","d":"総合ビジネス","m":0,"t":2},{"n":"御津あおば","d":"普通","m":0,"t":1},{"n":"小坂井","d":"普通","m":0,"t":3},{"n":"豊川工科","d":"工業","m":0,"t":4},{"n":"宝陵","d":"衛生看護","m":0,"t":1},{"n":"宝陵","d":"福祉","m":0,"t":1},{"n":"蒲郡","d":"総合","m":0,"t":1},{"n":"蒲郡東","d":"普通","m":0,"t":1},{"n":"三谷水産","d":"水産","m":0,"t":1},{"n":"新城有教館","d":"総合（文理系）","m":0,"t":3},{"n":"新城有教館","d":"総合（専門系）","m":0,"t":1},{"n":"新城有教館 作手校舎","d":"人と自然","m":0,"t":2},{"n":"田口","d":"普通","m":0,"t":4},{"n":"田口","d":"林業","m":0,"t":4},{"n":"市立菊里","d":"普通","m":0,"t":5},{"n":"市立菊里","d":"音楽","m":0,"t":5},{"n":"市立向陽","d":"普通","m":0,"t":5},{"n":"市立向陽","d":"国際科学","m":0,"t":5},{"n":"市立桜台","d":"普通","m":0,"t":5},{"n":"市立桜台","d":"ファッション文化","m":0,"t":1},{"n":"市立北","d":"普通","m":0,"t":3},{"n":"市立緑","d":"普通","m":0,"t":3},{"n":"市立富田","d":"普通","m":0,"t":3},{"n":"市立山田","d":"普通","m":0,"t":3},{"n":"市立名東","d":"普通","m":0,"t":5},{"n":"市立名東","d":"国際英語","m":0,"t":5},{"n":"市立西陵","d":"総合","m":0,"t":3},{"n":"市立名古屋商業","d":"商業","m":0,"t":3},{"n":"市立若宮商業","d":"未来ビジネス","m":0,"t":2},{"n":"市立工業","d":"工業","m":0,"t":1},{"n":"市立工芸","d":"工業","m":0,"t":1}];
+    var W = { 1: [1, 1], 2: [1.5, 1], 3: [1, 1.5], 4: [2, 1], 5: [1, 2] };
+    var ROMAN = ["", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ"];
+    var SUBJ = ["国", "社", "数", "理", "英", "音", "美", "保体", "技家"];
+    var EXAM = ["国", "数", "社", "理", "英"];
+    var LABEL = { 国: "国語", 社: "社会", 数: "数学", 理: "理科", 英: "英語", 音: "音楽", 美: "美術", 保体: "保健体育", 技家: "技術・家庭" };
+    var STORE = "tooldock:naishin-aichi:v1";
+    var $ = function (id) { return document.getElementById(id); };
+    var r1 = function (x) { return Math.round(x * 10) / 10; };
+
+    var gtb = $("grade").querySelector("tbody");
+    SUBJ.forEach(function (s) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + LABEL[s] + '</td><td><select data-k="g" data-s="' + s + '"></select></td>';
+        var sel = tr.querySelector("select");
+        for (var v = 5; v >= 1; v--) { var o = document.createElement("option"); o.value = o.textContent = v; if (v === 3) o.selected = true; sel.appendChild(o); }
+        gtb.appendChild(tr);
+    });
+    var tot = document.createElement("tr"); tot.className = "total";
+    tot.innerHTML = '<td>評定合計</td><td id="tH"></td>';
+    gtb.appendChild(tot);
+
+    var etb = $("exam").querySelector("tbody");
+    EXAM.forEach(function (s) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + LABEL[s] + '</td><td><input type="number" min="0" max="22" step="1" value="13" data-k="ex" data-s="' + s + '"></td>';
+        etb.appendChild(tr);
+    });
+
+    function label(e) { return e.n + (e.d === "普通" ? "" : "（" + e.d + "）"); }
+    function fillSchools(q) {
+        var sel = $("school"), cur = sel.value; sel.textContent = "";
+        SCHOOLS.forEach(function (e, idx) {
+            if (q && label(e).indexOf(q) < 0) return;
+            var o = document.createElement("option"); o.value = idx; o.textContent = label(e); sel.appendChild(o);
+        });
+        if (cur && sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
+    }
+    function el(k, s) { return document.querySelector('[data-k="' + k + '"][data-s="' + s + '"]'); }
+
+    function render() {
+        var e = SCHOOLS[Number($("school").value)] || SCHOOLS[0];
+        var h = W[e.t][0], g = W[e.t][1], max = 90 * h + 110 * g;
+        $("info").innerHTML = "<b>" + e.n + "</b>　" + e.d + (/[科）]$/.test(e.d) ? "" : "科") +
+            "<br>方式 " + ROMAN[e.t] + "：評定得点" + (h !== 1 ? "×" + h : "") + "（" + 90 * h + "点）＋ 学力検査" + (g !== 1 ? "×" + g : "") + "（" + 110 * g + "点）＝ " + max + "点満点" +
+            "<br>面接：" + (e.m ? "あり" : "なし");
+
+        var sum = 0;
+        SUBJ.forEach(function (s) { sum += Number(el("g", s).value); });
+        $("tH").textContent = sum;
+        var H = sum * 2, G = 0;
+        EXAM.forEach(function (s) { G += Math.max(0, Math.min(22, Number(el("ex", s).value) || 0)); });
+        var total = H * h + G * g;
+        $("hyotei").innerHTML = H + "<small> / 90</small>";
+        $("gakuryoku").innerHTML = G + "<small> / 110</small>";
+        $("total").innerHTML = r1(total) + "<small> / " + max + "</small>";
+        $("calc").textContent = "評定得点 " + H + (h !== 1 ? " × " + h + " ＝ " + r1(H * h) : "") + "　＋　学力検査 " + G + (g !== 1 ? " × " + g + " ＝ " + r1(G * g) : "");
+
+        var target = $("target"); target.max = max; if (target.value === "") target.placeholder = r1(total);
+        var goal = Number(target.value || target.placeholder);
+        var need = (goal - H * h) / g;
+        var ans = $("need"); ans.classList.remove("ng");
+        if (need <= 0) ans.textContent = "0点でも届きます";
+        else if (need > 110 + 1e-9) { ans.textContent = "満点でも届きません"; ans.classList.add("ng"); }
+        else ans.textContent = "5教科で合計 " + Math.ceil(need - 1e-9) + "点（1教科平均 約" + r1(Math.ceil(need - 1e-9) / 5) + "点）";
+
+        $("weight").textContent = "この学校では、評定1つで数値が" + r1(2 * h) + "点、当日点で" + r1(2 * h / g) + "点分動きます。";
+
+        try {
+            var st = { school: $("school").value, target: target.value, v: {} };
+            document.querySelectorAll("[data-k]").forEach(function (x) { st.v[x.dataset.k + ":" + x.dataset.s] = x.value; });
+            localStorage.setItem(STORE, JSON.stringify(st));
+        } catch (er) { /* 保存できなくても使える */ }
+    }
+
+    fillSchools("");
+    try {
+        var st = JSON.parse(localStorage.getItem(STORE) || "null");
+        if (st) {
+            if (st.school) $("school").value = st.school;
+            if (st.target) $("target").value = st.target;
+            Object.keys(st.v || {}).forEach(function (k) { var p = k.split(":"); var x = el(p[0], p[1]); if (x) x.value = st.v[k]; });
+        }
+    } catch (er) { /* 壊れていれば初期値 */ }
+
+    $("q").addEventListener("input", function () { fillSchools($("q").value.trim()); render(); });
+    document.querySelectorAll(".quick button").forEach(function (bt) {
+        bt.addEventListener("click", function () { document.querySelectorAll('#grade select').forEach(function (s) { s.value = bt.dataset.fill; }); render(); });
+    });
+    document.querySelector(".container").addEventListener("input", function (ev) { if (ev.target.id !== "q") render(); });
+    document.querySelector(".container").addEventListener("change", render);
+    render();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "愛知県の公立高校入試の評定得点は何点満点ですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "中3の9教科の評定の合計を2倍した90点満点です。" }
+    },
+    {
+      "@type": "Question",
+      "name": "愛知県の校内順位の決定方式Ⅰ〜Ⅴとは？",
+      "acceptedAnswer": { "@type": "Answer", "text": "評定得点（90点）と学力検査合計得点（110点）の扱い方で、Ⅰは両方そのまま、Ⅱは評定得点×1.5、Ⅲは学力検査×1.5、Ⅳは評定得点×2、Ⅴは学力検査×2です。どれを使うかは高校ごとに決まっています。" }
+    },
+    {
+      "@type": "Question",
+      "name": "愛知県の学力検査は何点満点ですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "国語・数学・社会・理科・英語の各22点、合計110点満点です。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/gpa/" class="related-tool-card"><h3>GPA計算ツール（目標から逆算）</h3><p>科目の単位と成績から学期・通算のGPAを計算。目標のGPAに必要な平均と、Sがあと何単位必要かを逆算できます。</p></a>
+<a href="/naishin/kanagawa/" class="related-tool-card"><h3>神奈川県 内申点・S値計算（2027年入試）</h3><p>志望校の比率で内申点・S1値・S2値を計算し、目標のS値に必要な当日点も逆算できるツール。普通科109校の選考基準を収録。</p></a>
+<a href="/naishin/osaka/" class="related-tool-card"><h3>大阪府 内申点・総合点計算（2027年入試）</h3><p>中1〜中3の評定から内申点（450点）を出し、志望校の倍率タイプで総合点（900点）を計算。目標に必要な当日点も逆算。全日制124校を収録。</p></a>
+<a href="/naishin/tokyo/" class="related-tool-card"><h3>東京都 内申点・換算内申計算（2027年都立入試）</h3><p>中3の評定から換算内申・調査書点を出し、当日点とスピーキングテストを足した総合得点（1020点）と、目標に必要な当日点を計算。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
