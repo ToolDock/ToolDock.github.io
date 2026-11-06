@@ -414,7 +414,8 @@
     const mq = window.matchMedia(WIDE);
 
     const place = () => {
-      if (mq.matches) rail.appendChild(content);
+      /* 広告の枠（js/ads.js）がレールの一番下にあれば、その手前に入れる */
+      if (mq.matches) rail.insertBefore(content, rail.querySelector(".td-ad-rail-end"));
       else inline.appendChild(content);
     };
 

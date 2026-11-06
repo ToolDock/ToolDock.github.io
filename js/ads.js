@@ -61,6 +61,11 @@
         text-align: center;
       }
 
+      /* レールの一番下の枠。レールは最後まで見えたら止まるので、そこからページの最後まで映り続ける */
+      .td-ad-rail.td-ad-rail-end {
+        margin: 22px -20px 0;
+      }
+
       /* 広告が来なかった枠は隠し、1つも来なければ見出しごと隠す */
       .td-ad-end ins[data-ad-status="unfilled"] {
         display: none !important;
@@ -187,12 +192,11 @@
 
     const mq = window.matchMedia(RAIL_WIDE);
 
-    const mount = () => {
-      if (rail.querySelector(".td-ad-rail")) return;
-
+    /* 先頭と一番下の2か所。同じユニットを2回使う（一番下は、レールが止まってから映り続ける） */
+    const make = (extra) => {
       const box = document.createElement("div");
 
-      box.className = "td-ad-rail";
+      box.className = "td-ad-rail" + (extra ? " " + extra : "");
 
       box.innerHTML = `
         <div class="td-ad-label">スポンサーリンク</div>
@@ -202,8 +206,16 @@
              data-ad-slot="${SLOT_RAIL}"></ins>
       `;
 
-      rail.insertBefore(box, rail.firstChild);
+      return box;
+    };
 
+    const mount = () => {
+      if (rail.querySelector(".td-ad-rail")) return;
+
+      rail.insertBefore(make(""), rail.firstChild);
+      rail.appendChild(make("td-ad-rail-end"));   /* js/sidebar.js は、レールの中身をこの枠の手前に入れる */
+
+      pushAd();
       pushAd();
     };
 
