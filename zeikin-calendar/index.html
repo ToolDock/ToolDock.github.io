@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>税金の締め切りカレンダー【2026〜2027年】年末調整・ふるさと納税・確定申告の期限一覧</title>
+<meta name="description" content="年末調整、ふるさと納税（12月31日・ワンストップ特例は1月10日）、確定申告（2027年2月16日〜3月15日）など、個人の税金と書類の締め切りを時期順にまとめた一覧。会社員・副業・個人事業主で絞り込め、締め切りまでの残り日数も分かります。">
+<link rel="canonical" href="https://tooldock.github.io/zeikin-calendar/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="税金の締め切りカレンダー【2026〜2027年】年末調整・ふるさと納税・確定申告の期限一覧 | ToolDock">
+<meta property="og:description" content="年末調整、ふるさと納税（12月31日・ワンストップ特例は1月10日）、確定申告（2027年2月16日〜3月15日）など、個人の税金と書類の締め切りを時期順にまとめた一覧。会社員・副業・個人事業主で絞り込め、締め切りまでの残り日数も分かります。">
+<meta property="og:url" content="https://tooldock.github.io/zeikin-calendar/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/zeikin-calendar.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "zeikin-calendar"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="確定申告 期限,確定申告 2027,年末調整 締め切り,ふるさと納税 期限,ワンストップ特例 期限,消費税 申告期限,予定納税,納期の特例,法定調書,税金 締め切り,カレンダー">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:28px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+.filters{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 6px; }
+.filters button{
+    font:inherit; font-size:.92rem; padding:7px 14px; cursor:pointer;
+    border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; color:var(--ink);
+}
+.filters button[aria-pressed="true"]{ background:var(--c); border-color:var(--c); color:#fff; font-weight:700; }
+.opts{ display:flex; gap:8px; align-items:center; font-size:.88rem; margin:6px 0 18px; cursor:pointer; }
+.opts input{ accent-color:var(--c); }
+
+.next{
+    padding:14px 16px; margin:0 0 20px; border-left:6px solid var(--c);
+    background:color-mix(in srgb, var(--c) 7%, #fff);
+}
+.next .when{ font-size:.85rem; color:#3a3d42; }
+.next .ttl{ font-weight:800; font-size:1.1rem; }
+.next .days{ font-weight:800; color:var(--c); }
+
+.month{ margin:22px 0 6px; font-size:1.02rem; font-weight:800; padding-bottom:4px; border-bottom:2px solid var(--c); }
+.items{ list-style:none; margin:0; padding:0; }
+.items li{
+    display:grid; grid-template-columns:7.5em 1fr auto; gap:2px 14px;
+    padding:11px 2px; border-bottom:1px solid var(--line-soft);
+}
+.items .date{ font-weight:800; font-variant-numeric:tabular-nums; }
+.items .date small{ display:block; font-weight:400; font-size:.75rem; color:#5c6470; }
+.items .ttl{ font-weight:700; }
+.items .who{ display:inline-block; margin:0 0 0 6px; padding:0 5px; font-size:.72rem; font-weight:700; border:1px solid #9a9890; color:#5c6470; }
+.items .left{ font-size:.82rem; font-weight:700; white-space:nowrap; text-align:right; color:var(--c); }
+.items .left.soon{ color:#b42318; }
+.items .desc{ grid-column:2 / 4; font-size:.88rem; color:#3a3d42; }
+.items li.past{ opacity:.45; }
+.items li.past .left{ color:#5c6470; }
+.empty{ color:#5c6470; font-size:.9rem; }
+.note{ font-size:.82rem; color:#5c6470; margin:14px 0 0; }
+
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:18px; }
+    .items li{ grid-template-columns:6em 1fr; }
+    .items .left{ grid-column:2; text-align:left; }
+    .items .desc{ grid-column:1 / 3; }
+}
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=tax">税金</a> <span class="bc-sep">›</span> <span>税金の締め切りカレンダー（2026〜2027年）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "税金", "item": "https://tooldock.github.io/category/?cat=tax"}, {"@type": "ListItem", "position": 3, "name": "税金の締め切りカレンダー（2026〜2027年）", "item": "https://tooldock.github.io/zeikin-calendar/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="container">
+
+<div class="td-banner">
+    <h1>税金の締め切りカレンダー（2026〜2027年）</h1>
+    <p>年末調整・ふるさと納税・確定申告など、個人の税金と書類の締め切りを時期順にまとめました。立場で絞り込めて、締め切りまでの残り日数も出ます。</p>
+</div>
+
+<div class="filters" role="group" aria-label="立場で絞り込む">
+    <button type="button" data-who="all" aria-pressed="true">すべて</button>
+    <button type="button" data-who="emp" aria-pressed="false">会社員・パート</button>
+    <button type="button" data-who="side" aria-pressed="false">確定申告をする人</button>
+    <button type="button" data-who="biz" aria-pressed="false">個人事業主・フリーランス</button>
+</div>
+<label class="opts"><input type="checkbox" id="hidePast" checked> 過ぎた締め切りを隠す</label>
+
+<div class="next" id="next" aria-live="polite"></div>
+<div id="list"></div>
+
+<p class="note">締め切りが土曜・日曜・祝日にあたるときは、次の平日に延びたあとの日付を書いています（ふるさと納税のワンストップ特例は、自治体に1月10日までに届くように送ってください）。市区町村・都道府県の税金の期限は、お住まいの地域によって違うことがあります。</p>
+
+</div>
+
+<article class="tool-article">
+
+<h2>このカレンダーについて</h2>
+<p>個人にかかわる主な税金の締め切りを、2026年11月から2027年11月まで、時期順に並べています。「確定申告をする人」には、副業の所得が20万円を超える人、医療費控除やふるさと納税（6自治体以上）で税金を取り戻す人、年金を受け取っている人などが入ります。</p>
+
+<h2>確定申告の期限（2026年分）</h2>
+<p>2026年分の所得税の確定申告は、<strong>2027年2月16日（火）から3月15日（月）まで</strong>です。納める税金がある人は、3月15日までに納付します。税金が戻ってくるだけの人（還付申告）は、2027年1月1日から5年間提出できます。</p>
+
+<h2>ふるさと納税の期限</h2>
+<p>2026年の所得税・住民税から差し引くには、<strong>2026年12月31日まで</strong>に寄附を済ませます。確定申告をしない会社員などがワンストップ特例を使うときは、申請書を<strong>2027年1月10日まで</strong>に寄附先の自治体へ届けます（2027年は日曜日なので、早めに送るのが安全です）。</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 年末調整の書類の締め切りはいつですか？</strong><br>
+A. 勤め先が決めます。11月中旬〜12月上旬が多いです。2026年分は「特定親族特別控除申告書」が加わり、19〜22歳の子のアルバイト収入が多い家庭は、この書類で控除を受けます。</p>
+<p><strong>Q. 確定申告の期限に遅れたらどうなりますか？</strong><br>
+A. 納める税金がある場合は、無申告加算税や延滞税がかかることがあります。遅れても、気づいた時点でできるだけ早く申告してください。税金が戻るだけの申告（還付申告）は、5年以内なら期限を気にせず提出できます。</p>
+<p><strong>Q. 締め切りが土日にあたるときは？</strong><br>
+A. 国税の申告・納付の期限が土曜・日曜・祝日にあたるときは、次の平日が期限になります。このページの日付は、延びたあとの日付です。</p>
+
+<h2>免責事項</h2>
+<p class="note">主な期限をまとめた目安です。個人の状況（事業の内容、課税事業者かどうか、自治体の決まりなど）によって必要な手続きや期限は変わります。実際の期限は、国税庁・お住まいの市区町村・勤め先の案内でご確認ください。</p>
+
+</article>
+
+<script>
+"use strict";
+(function () {
+    /* who: emp（会社員・パート）／side（確定申告をする人）／biz（個人事業主・フリーランス）
+       date: 締め切りの日（期間のものは end を締め切りとし、start は書くだけ）。null は日付が決まっていないもの */
+    var ITEMS = [
+        { month: "2026-11", date: null, when: "勤め先の締め切り", ttl: "年末調整の書類を勤め先に出す", who: ["emp"],
+          desc: "扶養控除等申告書・保険料控除申告書・基礎控除申告書など。2026年分は、19〜22歳の子の収入が多いときに使う「特定親族特別控除申告書」が加わりました。11月中旬〜12月上旬が多いです。" },
+        { month: "2026-12", date: "2026-12-31", ttl: "ふるさと納税（2026年分）の寄附の締め切り", who: ["emp", "side", "biz"],
+          desc: "2026年の税金から差し引くには、12月31日までに寄附（決済）を済ませます。年末はサイトや決済方法ごとの締め切りが早いことがあります。" },
+        { month: "2026-12", date: null, when: "12月の給与", ttl: "年末調整の精算", who: ["emp"],
+          desc: "12月（または翌年1月）の給与で、1年分の所得税が精算され、払いすぎた分が戻るか、足りない分が引かれます。" },
+        { month: "2027-01", date: null, when: "1月1日から", ttl: "還付申告の受付開始（2026年分）", who: ["side"],
+          desc: "医療費控除・住宅ローン控除の1年目・ふるさと納税などで税金が戻るだけの人は、1月から提出できます（5年以内）。" },
+        { month: "2027-01", date: "2027-01-10", ttl: "ふるさと納税ワンストップ特例の申請書（必着）", who: ["emp"],
+          desc: "確定申告をしない人で、寄附先が5自治体以内なら使えます。2027年1月10日は日曜日なので、早めに送りましょう。確定申告をする人は、確定申告でふるさと納税の分も申告します。" },
+        { month: "2027-01", date: "2027-01-20", ttl: "源泉所得税の納付（納期の特例・7〜12月分）", who: ["biz"],
+          desc: "従業員の給与から預かった所得税を、半年分まとめて納める特例を受けている事業者。" },
+        { month: "2027-02", date: "2027-02-01", ttl: "源泉徴収票・法定調書・給与支払報告書の提出", who: ["biz"],
+          desc: "人を雇っている事業者が、税務署・市区町村に出す書類。償却資産の申告（市区町村）も同じ時期です。本来は1月31日ですが、2027年は日曜日なので2月1日（月）。" },
+        { month: "2027-03", date: "2027-03-15", start: "2027-02-16", ttl: "所得税の確定申告・納付（2026年分）", who: ["side", "biz"],
+          desc: "2月16日（火）〜3月15日（月）。納める税金がある人は3月15日までに納付します。贈与税の申告（2月1日〜）も3月15日までです。" },
+        { month: "2027-03", date: "2027-03-15", ttl: "住民税の申告", who: ["side"],
+          desc: "確定申告をしない人で、給与以外の所得がある人など、市区町村に住民税の申告が必要な人。" },
+        { month: "2027-03", date: "2027-03-15", ttl: "青色申告の承認申請（2027年分から）", who: ["biz"],
+          desc: "2027年分から青色申告にする人。1月16日以降に開業した人は、開業から2か月以内です。" },
+        { month: "2027-03", date: "2027-03-31", ttl: "個人事業者の消費税の申告・納付（2026年分）", who: ["biz"],
+          desc: "消費税の課税事業者（インボイスの登録をした人など）。" },
+        { month: "2027-04", date: null, when: "4月中旬〜下旬", ttl: "振替納税の引き落とし", who: ["side", "biz"],
+          desc: "確定申告の税金を口座振替にした人。引き落とし日は国税庁が案内します。" },
+        { month: "2027-05", date: "2027-05-31", ttl: "自動車税（種別割）の納付", who: ["emp", "side", "biz"],
+          desc: "4月1日時点で自動車を持っている人。期限は都道府県によって違うことがあります。" },
+        { month: "2027-06", date: null, when: "6月末が多い", ttl: "住民税の納付（普通徴収・第1期）", who: ["side", "biz"],
+          desc: "給与から引かれない人（個人事業主・年金生活の人など）は、6月・8月・10月・翌1月の4回で納めるのが一般的です。期限は市区町村によって違います。" },
+        { month: "2027-07", date: "2027-07-12", ttl: "源泉所得税の納付（納期の特例・1〜6月分）", who: ["biz"],
+          desc: "本来は7月10日ですが、2027年は土曜日なので7月12日（月）。" },
+        { month: "2027-08", date: "2027-08-02", ttl: "所得税の予定納税（第1期）", who: ["side", "biz"],
+          desc: "前の年の所得税（予定納税基準額）が15万円以上の人。本来は7月31日ですが、2027年は土曜日なので8月2日（月）。" },
+        { month: "2027-11", date: "2027-11-30", ttl: "所得税の予定納税（第2期）", who: ["side", "biz"],
+          desc: "第1期と同じく、前の年の所得税が15万円以上の人。" }
+    ];
+
+    var WD = "日月火水木金土";
+    function d(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+    function md(s) { var x = d(s); return (x.getMonth() + 1) + "月" + x.getDate() + "日（" + WD[x.getDay()] + "）"; }
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    function daysLeft(s) { return Math.round((d(s) - today) / 86400000); }
+
+    var who = "all";
+    try { who = localStorage.getItem("tooldock:zeikin-calendar:who") || "all"; } catch (e) { /* 保存できなくても使える */ }
+
+    function render() {
+        document.querySelectorAll(".filters button").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.who === who ? "true" : "false"); });
+        var hidePast = document.getElementById("hidePast").checked;
+        var items = ITEMS.filter(function (it) { return who === "all" || it.who.indexOf(who) >= 0; });
+
+        /* いちばん近い締め切り */
+        var upcoming = items.filter(function (it) { return it.date && daysLeft(it.date) >= 0; })
+            .sort(function (a, b) { return d(a.date) - d(b.date); });
+        var next = document.getElementById("next");
+        if (upcoming.length) {
+            var n = upcoming[0], left = daysLeft(n.date);
+            next.innerHTML = '<div class="when">次の締め切り</div><div class="ttl"></div><div><span class="date"></span>　<span class="days"></span></div>';
+            next.querySelector(".ttl").textContent = n.ttl;
+            next.querySelector(".date").textContent = md(n.date);
+            next.querySelector(".days").textContent = left === 0 ? "今日が締め切り" : "あと" + left + "日";
+            next.hidden = false;
+        } else {
+            next.hidden = true;
+        }
+
+        var box = document.getElementById("list"); box.textContent = "";
+        var months = [];
+        items.forEach(function (it) { if (months.indexOf(it.month) < 0) months.push(it.month); });
+        var shown = 0;
+        months.forEach(function (m) {
+            var rows = items.filter(function (it) {
+                if (it.month !== m) return false;
+                var past = it.date ? daysLeft(it.date) < 0 : (m < today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0"));
+                it._past = past;
+                return !(hidePast && past);
+            });
+            if (!rows.length) return;
+            var h = document.createElement("h2"); h.className = "month";
+            h.textContent = m.slice(0, 4) + "年" + (+m.slice(5)) + "月";
+            box.appendChild(h);
+            var ul = document.createElement("ul"); ul.className = "items";
+            rows.forEach(function (it) {
+                var li = document.createElement("li"); if (it._past) li.className = "past";
+                li.innerHTML = '<span class="date"></span><span><span class="ttl"></span><span class="tags"></span></span><span class="left"></span><span class="desc"></span>';
+                var dt = li.querySelector(".date");
+                if (it.date) {
+                    dt.textContent = md(it.date);
+                    if (it.start) { var sm = document.createElement("small"); sm.textContent = md(it.start) + "から"; dt.appendChild(sm); }
+                } else {
+                    dt.textContent = it.when;
+                }
+                li.querySelector(".ttl").textContent = it.ttl;
+                var tags = li.querySelector(".tags");
+                var LABEL = { emp: "会社員", side: "確定申告", biz: "事業者" };
+                it.who.forEach(function (w) { var s = document.createElement("span"); s.className = "who"; s.textContent = LABEL[w]; tags.appendChild(s); });
+                var left = li.querySelector(".left");
+                if (it.date) {
+                    var n = daysLeft(it.date);
+                    left.textContent = n < 0 ? "終了" : n === 0 ? "今日まで" : "あと" + n + "日";
+                    if (n >= 0 && n <= 14) left.classList.add("soon");
+                }
+                li.querySelector(".desc").textContent = it.desc;
+                ul.appendChild(li);
+                shown++;
+            });
+            box.appendChild(ul);
+        });
+        if (!shown) { var p = document.createElement("p"); p.className = "empty"; p.textContent = "表示する締め切りがありません。"; box.appendChild(p); }
+    }
+
+    document.querySelectorAll(".filters button").forEach(function (b) {
+        b.addEventListener("click", function () {
+            who = b.dataset.who;
+            try { localStorage.setItem("tooldock:zeikin-calendar:who", who); } catch (e) { /* 保存できなくても使える */ }
+            render();
+        });
+    });
+    document.getElementById("hidePast").addEventListener("change", render);
+    render();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "年末調整の書類の締め切りはいつですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "勤め先が決めます。11月中旬〜12月上旬が多いです。2026年分は「特定親族特別控除申告書」が加わり、19〜22歳の子のアルバイト収入が多い家庭は、この書類で控除を受けます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "確定申告の期限に遅れたらどうなりますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "納める税金がある場合は、無申告加算税や延滞税がかかることがあります。遅れても、気づいた時点でできるだけ早く申告してください。税金が戻るだけの申告（還付申告）は、5年以内なら期限を気にせず提出できます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "締め切りが土日にあたるときは？",
+      "acceptedAnswer": { "@type": "Answer", "text": "国税の申告・納付の期限が土曜・日曜・祝日にあたるときは、次の平日が期限になります。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/nenshu-kabe/" class="related-tool-card"><h3>年収の壁チェッカー（2026年）</h3><p>年収を入れると、所得税・住民税・扶養・社会保険の「年収の壁」のどれを超えるかが分かるツール。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
