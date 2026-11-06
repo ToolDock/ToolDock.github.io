@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>GPA計算ツール｜目標のGPAに必要な成績を逆算（Sがあと何単位必要か）</title>
+<meta name="description" content="大学のGPAを単位数で重みづけして計算する無料ツール。これまでの累計GPAと今学期の科目を入れると、学期GPAと通算GPAが分かります。目標のGPAを入れれば、残りの単位で平均いくつ必要か、S（秀）をあと何単位取ればいいかを逆算。S・A・B・C・Fや秀・優・良・可・不可など、評価の点数は大学に合わせて変えられます。">
+<link rel="canonical" href="https://tooldock.github.io/gpa/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="GPA計算ツール｜目標のGPAに必要な成績を逆算（Sがあと何単位必要か） | ToolDock">
+<meta property="og:description" content="大学のGPAを単位数で重みづけして計算する無料ツール。これまでの累計GPAと今学期の科目を入れると、学期GPAと通算GPAが分かります。目標のGPAを入れれば、残りの単位で平均いくつ必要か、S（秀）をあと何単位取ればいいかを逆算。S・A・B・C・Fや秀・優・良・可・不可など、評価の点数は大学に合わせて変えられます。">
+<meta property="og:url" content="https://tooldock.github.io/gpa/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/gpa.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "gpa"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="GPA,計算,GPA計算,大学,目標,逆算,単位,秀,優,良,可,S,A,B,C,奨学金,留学,平均">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:28px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+h2.sec{ margin:24px 0 10px; font-size:1.1rem; padding-bottom:4px; border-bottom:2px solid var(--c); }
+.ctl{ font:inherit; font-size:1rem; padding:6px 8px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; }
+.row{ display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; }
+.row label{ display:flex; gap:6px; align-items:center; }
+.num{ width:5.5em; text-align:right; }
+table.scale{ border-collapse:collapse; margin-top:10px; font-size:.95rem; }
+table.scale th, table.scale td{ border:1px solid var(--line-soft); padding:4px 8px; text-align:center; }
+table.scale th{ background:var(--surface-2); font-weight:700; min-width:3em; }
+table.scale input{ width:3.6em; text-align:center; font:inherit; padding:3px; border:1px solid var(--line-input); border-radius:var(--r-ctl); }
+.small{ font-size:.85rem; color:#5c6470; }
+
+table.courses{ border-collapse:collapse; width:100%; font-size:.95rem; }
+table.courses th, table.courses td{ border-bottom:1px solid var(--line-soft); padding:5px 4px; text-align:center; }
+table.courses th{ font-size:.82rem; color:#3a3d42; font-weight:700; }
+table.courses td.name{ width:100%; }
+table.courses td.name input{ width:100%; box-sizing:border-box; }
+table.courses input, table.courses select{ font:inherit; font-size:1rem; padding:4px 4px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; }
+table.courses input.cr{ width:3.4em; text-align:center; }
+table.courses select{ min-width:5em; }
+table.courses button.del{ font:inherit; border:none; background:none; color:#8a8f98; cursor:pointer; font-size:1.1rem; padding:2px 6px; }
+.btns{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.btns button{ font:inherit; font-size:.85rem; padding:5px 12px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; cursor:pointer; }
+
+.result{ margin:22px 0 0; padding:18px; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 5%, #fff); }
+.kpis{ display:flex; flex-wrap:wrap; gap:8px 32px; }
+.kpi .k{ font-size:.85rem; }
+.kpi .v{ font-size:1.8rem; font-weight:800; color:var(--c); font-variant-numeric:tabular-nums; line-height:1.3; }
+.kpi .v small{ font-size:.85rem; color:#3a3d42; font-weight:700; }
+.calc{ margin:8px 0 0; font-size:.86rem; color:#3a3d42; }
+.goal{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-size:.95rem; }
+.goal .ans{ font-weight:800; color:var(--c); font-size:1.1rem; }
+.goal .ans.ng{ color:#b42318; }
+.goal ul{ margin:6px 0 0; padding-left:1.3em; }
+.goal li{ margin:2px 0; }
+.note{ font-size:.82rem; color:#5c6470; margin:12px 0 0; }
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:18px; }
+    table.courses th.nm, table.courses td.name{ min-width:6em; }
+    table.scale th, table.scale td{ padding:4px 3px; }
+    table.scale th{ min-width:0; }
+    table.scale input{ width:2.6em; }
+}
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=study">学習</a> <span class="bc-sep">›</span> <span>GPA計算ツール（目標から逆算）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "学習", "item": "https://tooldock.github.io/category/?cat=study"}, {"@type": "ListItem", "position": 3, "name": "GPA計算ツール（目標から逆算）", "item": "https://tooldock.github.io/gpa/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="container">
+
+<div class="td-banner">
+    <h1>GPA計算ツール（目標から逆算）</h1>
+    <p>科目の単位と成績を入れると、学期のGPAと通算のGPAが出ます。目標のGPAを入れれば、残りの単位で平均いくつ必要か、S（秀）をあと何単位取ればいいかが分かります。</p>
+</div>
+
+<h2 class="sec">1. 成績の付け方</h2>
+<div class="row">
+    <label>評価の名前
+        <select class="ctl" id="preset">
+            <option value="sa">S・A・B・C・F</option>
+            <option value="yu">秀・優・良・可・不可</option>
+            <option value="ad">A・B・C・D・F</option>
+        </select>
+    </label>
+    <label><input type="checkbox" id="incF" checked> 不合格もGPAの計算に入れる</label>
+</div>
+<table class="scale" id="scale"><tbody><tr id="scaleHead"></tr><tr id="scalePts"></tr></tbody></table>
+<p class="small">点数（GP）は大学によって違います。履修要項や成績表の説明に合わせて書き換えてください。</p>
+
+<h2 class="sec">2. これまでの成績（分かれば）</h2>
+<div class="row">
+    <label>累計GPA <input type="number" class="ctl num" id="prevGpa" min="0" max="5" step="0.01" placeholder="例 2.85"></label>
+    <label>その単位数 <input type="number" class="ctl num" id="prevCr" min="0" step="0.5" placeholder="例 62"></label>
+</div>
+<p class="small">成績表に出ている累計のGPAと、GPAの対象になった単位数です。1年生の前期などで、まだ無ければ空のままで大丈夫です。</p>
+
+<h2 class="sec">3. 今学期の科目</h2>
+<table class="courses" id="courses">
+<thead><tr><th class="nm">科目（メモ）</th><th>単位</th><th>成績</th><th></th></tr></thead>
+<tbody></tbody>
+</table>
+<div class="btns">
+    <button type="button" id="add">＋ 科目を足す</button>
+    <button type="button" id="add5">＋ 2単位を5科目</button>
+    <button type="button" id="clear">ぜんぶ消す</button>
+</div>
+<p class="small">成績がまだ出ていない科目は「未定」にしておくと、目標の逆算に使います。</p>
+
+<section class="result" aria-live="polite">
+    <div class="kpis">
+        <div class="kpi"><div class="k">今学期のGPA</div><div class="v" id="term"></div></div>
+        <div class="kpi"><div class="k">通算のGPA</div><div class="v" id="total"></div></div>
+    </div>
+    <p class="calc" id="calc"></p>
+    <div class="goal">
+        <div class="row">
+            <label>目標のGPA <input type="number" class="ctl num" id="target" min="0" max="5" step="0.01" placeholder="例 3.00"></label>
+            <label>これから取る単位 <input type="number" class="ctl num" id="remain" min="0" step="0.5"></label>
+        </div>
+        <p style="margin:10px 0 0">必要な成績：<span class="ans" id="need"></span></p>
+        <ul id="combo"></ul>
+        <p class="calc" id="range"></p>
+    </div>
+</section>
+<p class="note">表示は小数第3位を四捨五入しています（切り捨てる大学もあります）。履修を取り消した科目、認定科目、「合・否」だけの科目は、ふつうGPAに入らないので入れないでください。入力はこのブラウザの中だけに保存され、送信はされません。</p>
+
+</div>
+
+<article class="tool-article">
+
+<h2>GPAの計算のしかた</h2>
+<p>GPA（Grade Point Average）は、科目ごとの成績を点数（GP）に直し、単位数で重みをつけて平均したものです。</p>
+<div class="table-scroll">
+<table>
+<tbody>
+<tr><th>計算式</th><td>GPA ＝（各科目の GP × 単位数 の合計）÷（GPAの対象になる単位数の合計）</td></tr>
+<tr><th>よくある点数</th><td>S（秀）＝4、A（優）＝3、B（良）＝2、C（可）＝1、F（不可）＝0</td></tr>
+<tr><th>例</th><td>2単位のS、2単位のA、4単位のB → （4×2 ＋ 3×2 ＋ 2×4）÷ 8 ＝ 2.75</td></tr>
+</tbody>
+</table>
+</div>
+<p>多くの大学では不合格（F・不可）も単位数に入るので、落とした科目はGPAを大きく下げます。逆に、成績が出る前に履修を取り消した科目は計算に入りません。</p>
+
+<h2>目標のGPAから逆算するには</h2>
+<p>目標のGPAに、これまでとこれからの単位数の合計を掛けると、必要な「GP×単位」の合計が出ます。そこからこれまでの分を引き、これから取る単位数で割ったものが、残りの科目で必要な平均です。たとえば累計2.80（60単位）から、あと20単位で3.00にするには、（3.00×80 − 2.80×60）÷ 20 ＝ 3.60 で、Sを12単位・Aを8単位取る計算になります。</p>
+<p>単位が積み上がるほど、GPAは動きにくくなります。上げたいなら、早い学年のうちに取りこぼしを減らすのが効きます。</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 大学のGPAと合いません。</strong><br>
+A. 点数の付け方（A+ がある、S が 4.3 など）、不合格を入れるか、小数の扱い（四捨五入か切り捨てか）が大学で違います。「1. 成績の付け方」を履修要項に合わせて直してみてください。</p>
+<p><strong>Q. 学期のGPAと通算のGPAの違いは？</strong><br>
+A. 学期のGPAはその学期の科目だけ、通算（累計）のGPAは入学からのすべての科目で計算します。奨学金や留学の選考ではどちらを使うか決まっているので、募集要項を確かめてください。</p>
+<p><strong>Q. 1単位の科目や、0.5単位の科目もありますか？</strong><br>
+A. あります。単位の欄には小数も入れられます。</p>
+
+</article>
+
+<script>
+"use strict";
+(function () {
+    var LABELS = { sa: ["S", "A", "B", "C", "F"], yu: ["秀", "優", "良", "可", "不可"], ad: ["A", "B", "C", "D", "F"] };
+    var STORE = "tooldock:gpa:v1";
+    var $ = function (id) { return document.getElementById(id); };
+    var f2 = function (x) { return (Math.round(x * 100 + 1e-9) / 100).toFixed(2); };
+    var st = { preset: "sa", pts: [4, 3, 2, 1, 0], incF: true, prevGpa: "", prevCr: "", target: "", remain: "", rows: [] };
+    try { var sv = JSON.parse(localStorage.getItem(STORE) || "null"); if (sv && Array.isArray(sv.rows)) st = Object.assign(st, sv); } catch (e) { /* 初期値で使う */ }
+    if (!st.rows.length) for (var i = 0; i < 6; i++) st.rows.push({ n: "", c: 2, g: -1 });
+
+    function save() { try { localStorage.setItem(STORE, JSON.stringify(st)); } catch (e) { /* 保存できなくても使える */ } }
+    function labels() { return LABELS[st.preset] || LABELS.sa; }
+
+    function drawScale() {
+        var L = labels();
+        $("scaleHead").innerHTML = "<th>成績</th>" + L.map(function (l) { return "<th>" + l + "</th>"; }).join("");
+        $("scalePts").innerHTML = "<th>点数</th>" + st.pts.map(function (p, i) { return '<td><input type="number" step="0.1" min="0" max="5" data-pt="' + i + '" value="' + p + '"></td>'; }).join("");
+    }
+    function drawRows() {
+        var L = labels(), tb = $("courses").querySelector("tbody");
+        tb.textContent = "";
+        st.rows.forEach(function (r, i) {
+            var tr = document.createElement("tr");
+            var opts = '<option value="-1">未定</option>' + L.map(function (l, j) { return '<option value="' + j + '"' + (r.g === j ? " selected" : "") + ">" + l + "</option>"; }).join("");
+            tr.innerHTML = '<td class="name"><input type="text" data-r="' + i + '" data-f="n" placeholder="科目' + (i + 1) + '"></td>' +
+                '<td><input type="number" class="cr" min="0" step="0.5" data-r="' + i + '" data-f="c"></td>' +
+                '<td><select data-r="' + i + '" data-f="g">' + opts + "</select></td>" +
+                '<td><button type="button" class="del" data-del="' + i + '" aria-label="この科目を消す">×</button></td>';
+            tr.querySelector('[data-f="n"]').value = r.n;
+            tr.querySelector('[data-f="c"]').value = r.c;
+            tb.appendChild(tr);
+        });
+    }
+
+    function calc() {
+        var P = st.pts.map(Number), L = labels(), top = P[0];
+        var pg = parseFloat(st.prevGpa), pc = parseFloat(st.prevCr);
+        var C0 = pg >= 0 && pc > 0 ? pc : 0, P0 = C0 ? pg * pc : 0;
+        var Pd = 0, Cd = 0, undecided = 0;
+        st.rows.forEach(function (r) {
+            var c = parseFloat(r.c); if (!(c > 0)) return;
+            if (r.g < 0) { undecided += c; return; }
+            if (r.g === 4 && !st.incF) return;
+            Pd += P[r.g] * c; Cd += c;
+        });
+        $("term").innerHTML = Cd ? f2(Pd / Cd) + "<small>（" + Cd + "単位）</small>" : "<small>成績を入れてください</small>";
+        $("total").innerHTML = C0 + Cd ? f2((P0 + Pd) / (C0 + Cd)) + "<small>（" + (C0 + Cd) + "単位）</small>" : "<small>—</small>";
+        $("calc").textContent = Cd ? "今学期：GP×単位の合計 " + Math.round(Pd * 100) / 100 + " ÷ " + Cd + "単位" + (C0 ? "　／　通算：（" + f2(pg) + "×" + C0 + " ＋ " + Math.round(Pd * 100) / 100 + "）÷ " + (C0 + Cd) + "単位" : "") : "";
+
+        var remEl = $("remain"); remEl.placeholder = undecided || 20;
+        var R = parseFloat(st.remain || remEl.placeholder), T = parseFloat(st.target);
+        var need = $("need"), combo = $("combo"), range = $("range");
+        need.classList.remove("ng"); combo.textContent = ""; range.textContent = "";
+        if (!(R > 0)) { need.textContent = "これから取る単位を入れてください"; return; }
+        var lowest = st.incF ? P[4] : P[3];
+        range.textContent = "残りの" + R + "単位が全部" + L[0] + "なら " + f2((P0 + Pd + R * top) / (C0 + Cd + R)) + "、全部" + L[2] + "なら " + f2((P0 + Pd + R * P[2]) / (C0 + Cd + R)) + " になります。";
+        if (!(T >= 0)) { need.textContent = "目標のGPAを入れてください"; return; }
+        var g = (T * (C0 + Cd + R) - (P0 + Pd)) / R;
+        if (g > top + 1e-9) { need.textContent = "全部" + L[0] + "でも届きません（平均 " + f2(g) + " が必要）"; need.classList.add("ng"); return; }
+        if (g <= lowest + 1e-9) { need.textContent = "どんな成績でも届きます"; return; }
+        need.textContent = "残りの" + R + "単位で、平均 " + f2(g) + " 以上";
+        var lines = [];
+        [2, 1, 0].forEach(function (hi) {
+            for (var lo = hi + 1; lo <= 3; lo++) {
+                if (!(P[lo] < g - 1e-9 && g <= P[hi] + 1e-9)) continue;
+                var k = Math.ceil((g - P[lo]) * R / (P[hi] - P[lo]) - 1e-9);
+                if (k > R) continue;
+                lines.push(L[hi] + " を " + k + "単位以上、残り " + (R - k) + "単位は " + L[lo] + (k % 2 === 0 ? "（2単位の科目なら " + L[hi] + " が" + k / 2 + "つ）" : ""));
+            }
+        });
+        lines.slice(0, 4).forEach(function (t) { var li = document.createElement("li"); li.textContent = t; combo.appendChild(li); });
+    }
+
+    function render() { drawScale(); drawRows(); sync(); }
+    function sync() {
+        $("preset").value = st.preset; $("incF").checked = st.incF;
+        $("prevGpa").value = st.prevGpa; $("prevCr").value = st.prevCr; $("target").value = st.target; $("remain").value = st.remain;
+        calc();
+    }
+
+    document.querySelector(".container").addEventListener("input", function (e) {
+        var t = e.target;
+        if (t.dataset.pt) st.pts[Number(t.dataset.pt)] = parseFloat(t.value) || 0;
+        else if (t.dataset.r) { var r = st.rows[Number(t.dataset.r)]; r[t.dataset.f] = t.dataset.f === "g" ? Number(t.value) : t.value; }
+        else if (t.id === "prevGpa" || t.id === "prevCr" || t.id === "target" || t.id === "remain") st[t.id] = t.value;
+        else if (t.id === "incF") st.incF = t.checked;
+        else if (t.id === "preset") { st.preset = t.value; render(); save(); return; }
+        calc(); save();
+    });
+    document.querySelector(".container").addEventListener("change", function (e) {
+        if (e.target.id === "incF") { st.incF = e.target.checked; calc(); save(); }
+        if (e.target.id === "preset") { st.preset = e.target.value; render(); save(); }
+        if (e.target.dataset.f === "g") { st.rows[Number(e.target.dataset.r)].g = Number(e.target.value); calc(); save(); }
+    });
+    document.querySelector(".container").addEventListener("click", function (e) {
+        var t = e.target;
+        if (t.dataset.del) { st.rows.splice(Number(t.dataset.del), 1); }
+        else if (t.id === "add") st.rows.push({ n: "", c: 2, g: -1 });
+        else if (t.id === "add5") for (var i = 0; i < 5; i++) st.rows.push({ n: "", c: 2, g: -1 });
+        else if (t.id === "clear") st.rows = [{ n: "", c: 2, g: -1 }];
+        else return;
+        drawRows(); calc(); save();
+    });
+    render();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "GPAはどうやって計算しますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "科目ごとの成績を点数（GP）に直し、GP×単位数を合計して、GPAの対象になる単位数の合計で割ります。S（秀）＝4、A（優）＝3、B（良）＝2、C（可）＝1、F（不可）＝0とする大学が多いです。" }
+    },
+    {
+      "@type": "Question",
+      "name": "目標のGPAに必要な成績はどう逆算しますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "目標のGPA×（これまでとこれからの単位数の合計）から、これまでのGP×単位の合計を引き、これから取る単位数で割ると、残りの科目で必要な平均の点数が出ます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "大学のGPAと計算が合わないのはなぜですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "点数の付け方、不合格の科目を入れるかどうか、小数の扱い（四捨五入か切り捨てか）が大学によって違うためです。履修要項に合わせて設定してください。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/naishin/kanagawa/" class="related-tool-card"><h3>神奈川県 内申点・S値計算（2027年入試）</h3><p>志望校の比率で内申点・S1値・S2値を計算し、目標のS値に必要な当日点も逆算できるツール。普通科109校の選考基準を収録。</p></a>
+<a href="/naishin/tokyo/" class="related-tool-card"><h3>東京都 内申点・換算内申計算（2027年都立入試）</h3><p>中3の評定から換算内申・調査書点を出し、当日点とスピーキングテストを足した総合得点（1020点）と、目標に必要な当日点を計算。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
