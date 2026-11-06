@@ -60,8 +60,12 @@
         text-align: center;
       }
 
-      /* 広告が来なかった枠は、見出しごと隠す */
-      .td-ad-end:has(ins[data-ad-status="unfilled"]),
+      /* 広告が来なかった枠は隠し、1つも来なければ見出しごと隠す */
+      .td-ad-end ins[data-ad-status="unfilled"] {
+        display: none !important;
+      }
+
+      .td-ad-end:not(:has(ins:not([data-ad-status="unfilled"]))),
       .td-ad-rail:has(ins[data-ad-status="unfilled"]) {
         display: none;
       }
@@ -70,6 +74,14 @@
         max-width: 1000px;
         margin: 32px auto 0;
         text-align: center;
+      }
+
+      /* 300×250 を、広い画面では2つ横に、狭い画面では1つ */
+      .td-ad-end .td-ad-pair {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
       }
 
       .td-ad-label {
@@ -199,14 +211,17 @@
 
     box.className = "td-ad-end";
 
+    /* 300×250。横いっぱいのレスポンシブだと、PCで横1400×縦500pxほどの大きな枠になり、
+       文字だけの広告で埋まりがちだった（2026-11-06）。並べて入る幅（640px）があれば2つ並べる */
+    const unit = () => `
+      <ins class="adsbygoogle"
+           style="display:inline-block;width:300px;height:250px"
+           data-ad-client="${CLIENT}"
+           data-ad-slot="${SLOT_END}"></ins>`;
+
     box.innerHTML = `
       <div class="td-ad-label">スポンサーリンク</div>
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="${CLIENT}"
-           data-ad-slot="${SLOT_END}"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
+      <div class="td-ad-pair">${unit()}</div>
     `;
 
     const related = document.getElementById("related-tools");
@@ -217,7 +232,12 @@
       document.body.appendChild(box);
     }
 
-    pushAd();
+    /* 幅は置いてから測る（ページごとに本文の幅が違うため） */
+    const pair = box.querySelector(".td-ad-pair");
+    const count = pair.clientWidth >= 640 ? 2 : 1;
+    if (count === 2) pair.insertAdjacentHTML("beforeend", unit());
+
+    for (let n = 0; n < count; n++) pushAd();
   }
 
   /* ---- 下から出るバー ---- */
