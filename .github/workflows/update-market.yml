@@ -8,8 +8,16 @@ name: 昨日の米国株を更新
 
 on:
   schedule:
-    # 米国市場が引けたあと。UTC 22:00 = 日本時間 翌07:00
-    - cron: "0 22 * * 1-5"
+    # 米国市場が引けたあと（UTC 21:00 / 夏時間は 20:00）。日本時間の朝 6:47〜11:47 に1時間おきに6回。
+    # GitHub の予約は混むと数時間遅れる（07:00 の予約が毎回 9〜12時に動いていた。2026-11）。
+    # 毎時0分は特に混むので47分にし、何度か予約しておけば、どれかが朝のうちに動く。
+    # 2回目からは、すでに最新の日の値になっていればコミットしない（下の「新しい日か確かめる」）
+    - cron: "47 21 * * 1-5"    # 日本時間 06:47
+    - cron: "47 22 * * 1-5"    # 07:47
+    - cron: "47 23 * * 1-5"    # 08:47
+    - cron: "47 0 * * 2-6"     # 09:47（UTC では翌日なので曜日が1つずれる）
+    - cron: "47 1 * * 2-6"     # 10:47
+    - cron: "47 2 * * 2-6"     # 11:47
   workflow_dispatch: {}      # 手動実行も可能にしておく
 
 concurrency:
@@ -38,6 +46,11 @@ jobs:
       - name: 依存をインストール
         run: pip install -r "$SRC_DIR/requirements.txt"
 
+      - name: いまの日付を控える
+        id: before
+        run: |
+          echo "session=$(python3 -c "import json;print(json.load(open('$OUT_DIR/market.json')).get('session',''))" 2>/dev/null)" >> "$GITHUB_OUTPUT"
+
       - name: データを取得してビルド
         working-directory: ${{ env.SRC_DIR }}
         run: |
@@ -46,7 +59,22 @@ jobs:
             --strict \
             --out "${{ github.workspace }}/${{ env.OUT_DIR }}"
 
+      - name: 新しい日か確かめる
+        # 予約で動いたとき、取れた日が前と同じなら（もう更新済み、または米国が休場）、何もしない。
+        # 手動で動かしたときは、同じ日でも作り直す
+        id: fresh
+        run: |
+          after=$(python3 -c "import json;print(json.load(open('$OUT_DIR/market.json')).get('session',''))")
+          echo "前: ${{ steps.before.outputs.session }} / 今: $after"
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$after" = "${{ steps.before.outputs.session }}" ]; then
+            echo "同じ日のまま。更新しません。"
+            git checkout -- "$OUT_DIR"
+            git clean -fdq -- "$OUT_DIR"
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: SNSの共有カード（OGP）とパンくずをHTMLに書き込む
+        if: steps.fresh.outputs.skip != '1'
         # 作り直したページにはOGPが無いので書き足す（SNSはJavaScriptを動かさないため）
         run: python scripts/static_html.py "$OUT_DIR"
 
@@ -60,4 +88,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$OUT_DIR"
           git commit -m "chore: 米国市場ダッシュボードを更新 ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+          # プロ野球データの更新などと重なって main が先に進んでいても押せるように、取り込んでから押す
+          git pull --rebase -q origin main
           git push
