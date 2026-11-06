@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>大阪府 内申点・総合点計算【2027年公立高校入試】志望校の倍率タイプで900点満点の合計と必要な当日点が分かる</title>
+<meta name="description" content="大阪府公立高校の一般選抜（令和9年度・2027年3月）の内申点（450点満点）と総合点（900点満点）を計算する無料ツール。府教育委員会の資料から全日制124校の倍率タイプ（Ⅰ〜Ⅴ）と問題の種類（A・B・C）を収録。英検などの読み替えにも対応し、目標の総合点に必要な当日点も逆算できます。">
+<link rel="canonical" href="https://tooldock.github.io/naishin/osaka/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="大阪府 内申点・総合点計算【2027年公立高校入試】志望校の倍率タイプで900点満点の合計と必要な当日点が分かる | ToolDock">
+<meta property="og:description" content="大阪府公立高校の一般選抜（令和9年度・2027年3月）の内申点（450点満点）と総合点（900点満点）を計算する無料ツール。府教育委員会の資料から全日制124校の倍率タイプ（Ⅰ〜Ⅴ）と問題の種類（A・B・C）を収録。英検などの読み替えにも対応し、目標の総合点に必要な当日点も逆算できます。">
+<meta property="og:url" content="https://tooldock.github.io/naishin/osaka/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/naishin-osaka.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "naishin-osaka"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="大阪府,内申点,計算,総合点,倍率タイプ,公立高校,一般選抜,入試,2027,令和9年度,450点,900点,英検,読み替え,高校受験,北野,天王寺,茨木">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:28px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+h2.sec{ margin:24px 0 10px; font-size:1.1rem; padding-bottom:4px; border-bottom:2px solid var(--c); }
+.school{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.school input, .school select{ font:inherit; font-size:1rem; padding:7px 9px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; }
+.school input{ width:10em; }
+.school select{ min-width:16em; max-width:100%; }
+.info{ margin-top:10px; padding:10px 12px; background:var(--surface-2); font-size:.9rem; }
+.info b{ font-size:1rem; }
+
+table.grade{ border-collapse:collapse; width:100%; font-size:.95rem; }
+table.grade th, table.grade td{ border-bottom:1px solid var(--line-soft); padding:5px 3px; text-align:center; }
+table.grade th{ font-size:.82rem; color:#3a3d42; font-weight:700; }
+table.grade td:first-child{ font-weight:700; text-align:left; white-space:nowrap; }
+table.grade select, table.grade input{ font:inherit; font-size:1rem; padding:4px 2px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; text-align:center; width:3.4em; }
+table.grade td.sum{ font-variant-numeric:tabular-nums; color:#3a3d42; }
+table.grade tr.total td{ font-weight:800; border-top:1px solid var(--ink); }
+.quick{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 0; font-size:.85rem; align-items:center; }
+.quick button{ font:inherit; font-size:.82rem; padding:4px 10px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; cursor:pointer; }
+.two{ display:grid; grid-template-columns:1.25fr 1fr; gap:18px; }
+@media (max-width:760px){ .two{ grid-template-columns:1fr; } }
+.two > div{ min-width:0; }
+.eiken{ margin-top:10px; font-size:.92rem; }
+.eiken select{ font:inherit; padding:4px 6px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; max-width:100%; }
+
+.result{ margin:22px 0 0; padding:18px; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 5%, #fff); }
+.kpis{ display:flex; flex-wrap:wrap; gap:8px 28px; }
+.kpi .k{ font-size:.85rem; }
+.kpi .v{ font-size:1.8rem; font-weight:800; color:var(--c); font-variant-numeric:tabular-nums; line-height:1.3; }
+.kpi .v small{ font-size:.9rem; color:#3a3d42; font-weight:700; }
+.calc{ margin:10px 0 0; font-size:.86rem; color:#3a3d42; }
+.goal{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-size:.95rem; }
+.goal input{ font:inherit; width:6em; padding:4px 6px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
+.goal .ans{ font-weight:800; color:var(--c); }
+.goal .ans.ng{ color:#b42318; }
+.note{ font-size:.82rem; color:#5c6470; margin:12px 0 0; }
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:18px; }
+    table.grade select, table.grade input{ width:2.7em; padding:4px 0; }
+    table.grade th, table.grade td{ padding:5px 2px; }
+    .eiken select{ width:100%; }
+}
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=study">学習</a> <span class="bc-sep">›</span> <span>大阪府 内申点・総合点計算（2027年入試）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "学習", "item": "https://tooldock.github.io/category/?cat=study"}, {"@type": "ListItem", "position": 3, "name": "大阪府 内申点・総合点計算（2027年入試）", "item": "https://tooldock.github.io/naishin/osaka/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="container">
+
+<div class="td-banner">
+    <h1>大阪府 内申点・総合点計算（2027年公立高校入試）</h1>
+    <p>中1〜中3の通知表と当日点の見込みを入れると、内申点（450点満点）と、志望校の倍率タイプで計算した総合点（900点満点）が出ます。目標の総合点に必要な当日点も逆算できます。大阪府教育委員会の「令和9年度 入学者選抜実施要項」によります。</p>
+</div>
+
+<h2 class="sec">1. 志望校（一般選抜・全日制）</h2>
+<div class="school">
+    <input type="search" id="q" placeholder="学校名で絞り込み" aria-label="学校名で絞り込み">
+    <select id="school" aria-label="志望校"></select>
+</div>
+<div class="info" id="info"></div>
+
+<div class="two">
+<div>
+<h2 class="sec">2. 通知表（評定）</h2>
+<table class="grade" id="grade">
+<thead><tr><th>教科</th><th>中1<br>×2</th><th>中2<br>×2</th><th>中3<br>×6</th><th>点</th></tr></thead>
+<tbody></tbody>
+</table>
+<div class="quick">まとめて入れる：
+    <button type="button" data-fill="3">全部3</button>
+    <button type="button" data-fill="4">全部4</button>
+    <button type="button" data-fill="5">全部5</button>
+    <button type="button" data-copy="1">中1・中2を中3と同じに</button>
+</div>
+</div>
+
+<div>
+<h2 class="sec">3. 学力検査（当日点の見込み）</h2>
+<table class="grade" id="exam">
+<thead><tr><th>教科</th><th>点数（90点満点）</th></tr></thead>
+<tbody></tbody>
+</table>
+<div class="eiken">英語資格（外部検定）：<br>
+    <select id="eiken">
+        <option value="0">使わない</option>
+        <option value="0.8">80％（英検2級・IELTS 5.0・TOEFL iBT 40〜49）</option>
+        <option value="0.9">90％（IELTS 5.5・TOEFL iBT 50〜59）</option>
+        <option value="1">100％（英検準1級以上・IELTS 6.0以上・TOEFL iBT 60以上）</option>
+    </select>
+</div>
+</div>
+</div>
+
+<section class="result" aria-live="polite">
+    <div class="kpis">
+        <div class="kpi"><div class="k">内申点（450点満点）</div><div class="v" id="naishin"></div></div>
+        <div class="kpi"><div class="k">学力検査（450点満点）</div><div class="v" id="gakuryoku"></div></div>
+        <div class="kpi"><div class="k">総合点（900点満点）</div><div class="v" id="total"></div></div>
+    </div>
+    <p class="calc" id="calc"></p>
+    <div class="goal">
+        目標の総合点 <input type="number" id="target" min="0" max="900" step="1" value=""> 点に必要な学力検査は
+        <span class="ans" id="need"></span>
+        <p class="calc" id="weight"></p>
+    </div>
+</section>
+<p class="note">総合点は合格を約束する点数ではありません。府教育委員会は学校ごとの合格者の得点を公表していないので、目標は塾や模試の資料などをもとにご自身で入れてください。全日制の一般選抜の計算です（特別選抜・定時制・二次選抜は含みません）。入力はこのブラウザの中だけに保存されます。</p>
+
+</div>
+
+<article class="tool-article">
+
+<h2>大阪府の一般選抜の総合点の出し方</h2>
+<div class="table-scroll">
+<table>
+<tbody>
+<tr><th>学力検査</th><td>国・数・英・社・理の5教科、各90点の合計（450点満点）</td></tr>
+<tr><th>内申点（調査書）</th><td>9教科の評定を、中3は6倍、中1・中2は2倍して合計（1教科50点、450点満点）</td></tr>
+<tr><th>総合点</th><td>学力検査と内申点に、学校ごとの倍率タイプの倍率をかけて足す（900点満点）</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>倍率タイプ（Ⅰ〜Ⅴ）</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>タイプ</th><th>学力検査</th><th>内申点</th><th>満点の内訳</th></tr></thead>
+<tbody>
+<tr><th>Ⅰ</th><td>×1.4</td><td>×0.6</td><td>630点 ＋ 270点</td></tr>
+<tr><th>Ⅱ</th><td>×1.2</td><td>×0.8</td><td>540点 ＋ 360点</td></tr>
+<tr><th>Ⅲ</th><td>×1.0</td><td>×1.0</td><td>450点 ＋ 450点</td></tr>
+<tr><th>Ⅳ</th><td>×0.8</td><td>×1.2</td><td>360点 ＋ 540点</td></tr>
+<tr><th>Ⅴ</th><td>×0.6</td><td>×1.4</td><td>270点 ＋ 630点</td></tr>
+</tbody>
+</table>
+</div>
+<p>北野・天王寺などの文理学科はすべてタイプⅠで、当日点の比重がいちばん大きくなります。</p>
+
+<h2>合格者の決め方（ボーダーゾーン）</h2>
+<p>総合点の高い順に並べ、募集人員の90％までは総合点で合格が決まります。90％から110％までの人は「ボーダーゾーン」になり、自己申告書と調査書の「活動/行動の記録」も見て合格者が決まります。</p>
+
+<h2>英語資格（外部検定）の読み替え</h2>
+<p>英検・IELTS・TOEFL iBT のスコアを、英語の満点（90点）に対する割合（80％・90％・100％）に読み替えます。当日の英語の点数と比べて高いほうが使われるので、当日に失敗しても下がりません。たとえば英検2級なら、英語は最低でも72点になります。</p>
+
+<h2>内申1つは、当日点の何点分？</h2>
+<p>中3の評定を1上げると内申点は6点、中1・中2なら2点上がります。総合点への影響は倍率タイプで変わり、タイプⅠなら中3の1つは3.6点（当日点で約2.6点分）、タイプⅢなら6点（当日点で6点分）です。中3の成績の重みは中1・中2の3倍です。</p>
+
+<h2>問題の種類（A・B・C）</h2>
+<p>国語・数学・英語は、学校ごとにA（基礎的問題）・B（標準的問題）・C（発展的問題）のどれを使うかが決まっています。社会・理科は共通です。このツールは、選んだ学校の問題の種類で取れそうな点数を入れる前提です。</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 中1・中2の成績も入りますか？</strong><br>
+A. 入ります。中1・中2は2倍、中3は6倍です。9教科すべてが同じ重みで、実技教科も5教科と同じです。</p>
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. このブラウザの中だけに保存されます。サーバーには送信されません。</p>
+
+<h2>出典</h2>
+<p class="note">大阪府教育委員会「令和9年度大阪府公立高等学校入学者選抜実施要項」（一般入学者選抜、全般的事項、学力検査問題の種類並びに学力検査の成績及び調査書の評定にかける倍率のタイプ）、「令和9年度 大阪府公立高等学校入学者選抜 配点等」。全日制の課程の一般入学者選抜を行う124校を収録しています。</p>
+
+</article>
+
+<script>
+"use strict";
+(function () {
+    var SCHOOLS = [{"n":"東淀川","d":"普通科","p":"BBB","t":2},{"n":"旭","d":"普通科・国際文化科","p":"BBB","t":2},{"n":"桜宮","d":"普通科","p":"BBB","t":3},{"n":"東","d":"普通科・理数科・英語科","p":"BBB","t":1},{"n":"汎愛","d":"普通科","p":"BBB","t":3},{"n":"清水谷","d":"普通科","p":"CBB","t":1},{"n":"夕陽丘","d":"普通科","p":"CBB","t":1},{"n":"港","d":"普通科","p":"BBB","t":3},{"n":"阿倍野","d":"普通科","p":"BBB","t":1},{"n":"東住吉","d":"普通科","p":"BBB","t":1},{"n":"阪南","d":"普通科","p":"BBB","t":1},{"n":"池田","d":"普通科","p":"CCC","t":1},{"n":"渋谷","d":"普通科","p":"BBB","t":2},{"n":"桜塚","d":"普通科","p":"BBB","t":1},{"n":"豊島","d":"普通科","p":"BBB","t":2},{"n":"刀根山","d":"普通科","p":"BBB","t":1},{"n":"箕面","d":"普通科・グローバル科","p":"BBB","t":1},{"n":"茨木西","d":"普通科","p":"BBB","t":2},{"n":"北摂つばさ","d":"普通科","p":"BBB","t":2},{"n":"吹田","d":"普通科","p":"BBB","t":2},{"n":"吹田東","d":"普通科","p":"BBB","t":2},{"n":"北千里","d":"普通科","p":"BBB","t":1},{"n":"山田","d":"普通科","p":"BBB","t":1},{"n":"三島","d":"普通科","p":"CCB","t":1},{"n":"高槻北","d":"普通科","p":"BBB","t":2},{"n":"芥川","d":"普通科","p":"BBB","t":2},{"n":"阿武野","d":"普通科","p":"BAA","t":2},{"n":"大冠","d":"普通科","p":"BBB","t":2},{"n":"摂津","d":"普通科","p":"BBB","t":2},{"n":"寝屋川","d":"普通科","p":"CCB","t":1},{"n":"西寝屋川","d":"普通科","p":"BAA","t":3},{"n":"北かわち皐が丘","d":"普通科","p":"BBB","t":3},{"n":"枚方","d":"普通科・国際文化科","p":"BBB","t":1},{"n":"長尾","d":"普通科","p":"BAB","t":3},{"n":"牧野","d":"普通科","p":"BBB","t":1},{"n":"香里丘","d":"普通科","p":"BBB","t":1},{"n":"枚方津田","d":"普通科","p":"BBB","t":3},{"n":"いちりつ","d":"普通科・理数科・英語科","p":"BBB","t":1},{"n":"守口東","d":"普通科","p":"BBB","t":3},{"n":"野崎","d":"普通科","p":"AAA","t":3},{"n":"緑風冠","d":"普通科","p":"BBB","t":2},{"n":"交野","d":"普通科","p":"BBB","t":2},{"n":"布施","d":"普通科","p":"BBB","t":1},{"n":"花園","d":"普通科・国際文化科","p":"BBB","t":2},{"n":"みどり清朋","d":"普通科","p":"BBB","t":2},{"n":"山本","d":"普通科","p":"BBB","t":2},{"n":"八尾","d":"普通科","p":"CCC","t":1},{"n":"八尾翠翔","d":"普通科","p":"BBB","t":2},{"n":"大塚","d":"普通科","p":"BBB","t":3},{"n":"河南","d":"普通科","p":"BBB","t":1},{"n":"富田林","d":"普通科","p":"CCC","t":1},{"n":"金剛","d":"普通科","p":"BBB","t":3},{"n":"長野","d":"普通科・国際文化科","p":"BBB","t":2},{"n":"藤井寺","d":"普通科","p":"BBB","t":2},{"n":"登美丘","d":"普通科","p":"BBB","t":1},{"n":"泉陽","d":"普通科","p":"CCC","t":1},{"n":"金岡","d":"普通科","p":"BBB","t":2},{"n":"東百舌鳥","d":"普通科","p":"BBB","t":1},{"n":"堺西","d":"普通科","p":"BBB","t":2},{"n":"堺上","d":"普通科","p":"BBB","t":3},{"n":"泉大津","d":"普通科","p":"BBB","t":2},{"n":"信太","d":"普通科","p":"AAA","t":4},{"n":"高石","d":"普通科","p":"BBB","t":1},{"n":"和泉","d":"普通科・グローバル科","p":"CCC","t":1},{"n":"久米田","d":"普通科","p":"BBB","t":1},{"n":"佐野","d":"普通科・国際文化科","p":"CBB","t":1},{"n":"日根野","d":"普通科","p":"BBB","t":1},{"n":"貝塚南","d":"普通科","p":"BBB","t":2},{"n":"りんくう翔南","d":"普通科","p":"AAA","t":4},{"n":"東大阪市立日新","d":"普通科・商業科・英語科","p":"BBB","t":3},{"n":"市岡","d":"普通科（単位制）","p":"BBB","t":1},{"n":"大阪府教育センター附属","d":"普通科（単位制）","p":"BBB","t":3},{"n":"槻の木","d":"普通科（単位制）","p":"BBB","t":1},{"n":"鳳","d":"普通科（単位制）","p":"CBC","t":1},{"n":"春日丘","d":"文理探究科","p":"CCC","t":1},{"n":"狭山","d":"文理探究科","p":"BBB","t":1},{"n":"園芸","d":"フラワーファクトリ科・環境緑化科・バイオサイエンス科","p":"BAA","t":4},{"n":"農芸","d":"ハイテク農芸科・資源動物科・食品加工科","p":"BBB","t":3},{"n":"東淀工業","d":"機械工学科・電気工学科・理工学科","p":"AAA","t":3},{"n":"淀川工科","d":"工業に関する学科","p":"BBB","t":3},{"n":"都島工業","d":"工業に関する学科","p":"BBB","t":3},{"n":"泉尾工業","d":"工業に関する学科","p":"AAA","t":3},{"n":"今宮工科","d":"工業に関する学科","p":"BAA","t":2},{"n":"茨木工科","d":"工業に関する学科","p":"AAA","t":3},{"n":"東大阪みらい工科","d":"工業に関する学科","p":"BBB","t":3},{"n":"藤井寺工科","d":"工業に関する学科","p":"AAA","t":3},{"n":"堺工科","d":"工業に関する学科","p":"AAA","t":3},{"n":"佐野工科","d":"工業に関する学科","p":"AAA","t":3},{"n":"堺市立堺","d":"サイエンス創造科など","p":"BBB","t":2},{"n":"淀商業","d":"商業科・福祉ボランティア科","p":"BAA","t":3},{"n":"鶴見商業","d":"商業科","p":"BAA","t":4},{"n":"住吉商業","d":"商業科","p":"AAA","t":4},{"n":"岸和田市立産業","d":"商業科・情報科","p":"BBB","t":3},{"n":"大阪ビジネスフロンティア","d":"グローバルビジネス科","p":"BBB","t":3},{"n":"住吉","d":"総合科学科・国際文化科","p":"CBC","t":1},{"n":"千里","d":"総合科学科・国際文化科","p":"CCC","t":1},{"n":"泉北","d":"総合科学科・国際文化科","p":"BBB","t":1},{"n":"北野","d":"文理学科","p":"CCC","t":1},{"n":"大手前","d":"文理学科","p":"CCC","t":1},{"n":"高津","d":"文理学科","p":"CCC","t":1},{"n":"天王寺","d":"文理学科","p":"CCC","t":1},{"n":"豊中","d":"文理学科","p":"CCC","t":1},{"n":"茨木","d":"文理学科","p":"CCC","t":1},{"n":"四條畷","d":"文理学科","p":"CCC","t":1},{"n":"生野","d":"文理学科","p":"CCC","t":1},{"n":"三国丘","d":"文理学科","p":"CCC","t":1},{"n":"岸和田","d":"文理学科","p":"CCC","t":1},{"n":"桜和","d":"教育文理学科","p":"CBB","t":2},{"n":"柴島","d":"総合学科","p":"BBB","t":3},{"n":"咲くやこの花","d":"総合学科・食物文化科","p":"BBB","t":2},{"n":"今宮","d":"総合学科","p":"CBB","t":1},{"n":"東住吉総合","d":"総合学科","p":"BBB","t":3},{"n":"千里青雲","d":"総合学科","p":"BBB","t":1},{"n":"福井","d":"総合学科","p":"AAA","t":4},{"n":"枚方なぎさ","d":"総合学科","p":"BBB","t":2},{"n":"芦間","d":"総合学科","p":"BBB","t":2},{"n":"門真なみはや","d":"総合学科","p":"BBB","t":3},{"n":"枚岡樟風","d":"総合学科","p":"AAA","t":4},{"n":"八尾北","d":"総合学科","p":"BBB","t":4},{"n":"松原","d":"総合学科","p":"BAA","t":4},{"n":"堺東","d":"総合学科","p":"BBB","t":1},{"n":"成美","d":"総合学科","p":"AAA","t":3},{"n":"伯太","d":"総合学科","p":"BAA","t":3},{"n":"貝塚","d":"総合学科","p":"BBB","t":2}];
+    var RATE = { 1: [1.4, 0.6], 2: [1.2, 0.8], 3: [1.0, 1.0], 4: [0.8, 1.2], 5: [0.6, 1.4] };
+    var ROMAN = ["", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ"];
+    var SUBJ = ["国", "社", "数", "理", "英", "音", "美", "保体", "技家"];
+    var EXAM = ["国", "数", "英", "社", "理"];
+    var LABEL = { 国: "国語", 社: "社会", 数: "数学", 理: "理科", 英: "英語", 音: "音楽", 美: "美術", 保体: "保健体育", 技家: "技術・家庭" };
+    var KIND = { A: "A（基礎）", B: "B（標準）", C: "C（発展）" };
+    var STORE = "tooldock:naishin-osaka:v1";
+    var $ = function (id) { return document.getElementById(id); };
+    var r1 = function (x) { return Math.round(x * 10) / 10; };
+
+    var gtb = $("grade").querySelector("tbody");
+    SUBJ.forEach(function (s) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + LABEL[s] + "</td>" + [1, 2, 3].map(function (y) { return '<td><select data-k="g' + y + '" data-s="' + s + '"></select></td>'; }).join("") + '<td class="sum" data-sum="' + s + '"></td>';
+        tr.querySelectorAll("select").forEach(function (sel) {
+            for (var v = 5; v >= 1; v--) { var o = document.createElement("option"); o.value = o.textContent = v; if (v === 3) o.selected = true; sel.appendChild(o); }
+        });
+        gtb.appendChild(tr);
+    });
+    var tot = document.createElement("tr"); tot.className = "total";
+    tot.innerHTML = '<td>合計</td><td></td><td></td><td></td><td id="tN"></td>';
+    gtb.appendChild(tot);
+
+    var etb = $("exam").querySelector("tbody");
+    EXAM.forEach(function (s) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + LABEL[s] + '<span data-kind="' + s + '"></span></td><td><input type="number" min="0" max="90" step="1" value="54" data-k="ex" data-s="' + s + '"></td>';
+        etb.appendChild(tr);
+    });
+
+    function label(e) { return e.n + (e.d === "普通科" ? "" : "（" + e.d + "）"); }
+    function fillSchools(q) {
+        var sel = $("school"), cur = sel.value; sel.textContent = "";
+        SCHOOLS.forEach(function (e, idx) {
+            if (q && label(e).indexOf(q) < 0) return;
+            var o = document.createElement("option"); o.value = idx; o.textContent = label(e); sel.appendChild(o);
+        });
+        if (cur && sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
+    }
+    function el(k, s) { return document.querySelector('[data-k="' + k + '"][data-s="' + s + '"]'); }
+
+    function render() {
+        var e = SCHOOLS[Number($("school").value)] || SCHOOLS[0];
+        var rt = RATE[e.t], a = rt[0], b = rt[1];
+        $("info").innerHTML = "<b>" + e.n + "</b>　" + e.d + "<br>倍率タイプ " + ROMAN[e.t] + "：学力検査×" + a.toFixed(1) + "（" + r1(450 * a) + "点）＋ 内申点×" + b.toFixed(1) + "（" + r1(450 * b) + "点）" +
+            "<br>問題の種類：国語 " + KIND[e.p[0]] + "・数学 " + KIND[e.p[1]] + "・英語 " + KIND[e.p[2]];
+        var pk = { 国: e.p[0], 数: e.p[1], 英: e.p[2] };
+        document.querySelectorAll("[data-kind]").forEach(function (sp) { var k = pk[sp.dataset.kind]; sp.textContent = k ? "（" + k + "）" : ""; });
+
+        var N = 0;
+        SUBJ.forEach(function (s) {
+            var v = Number(el("g1", s).value) * 2 + Number(el("g2", s).value) * 2 + Number(el("g3", s).value) * 6;
+            N += v; document.querySelector('[data-sum="' + s + '"]').textContent = v;
+        });
+        $("tN").textContent = N;
+
+        var G = 0, rate = Number($("eiken").value), engNote = "";
+        EXAM.forEach(function (s) {
+            var x = Math.max(0, Math.min(90, Number(el("ex", s).value) || 0));
+            if (s === "英" && rate && 90 * rate > x) { engNote = "（英語は読み替えの " + 90 * rate + "点を使用）"; x = 90 * rate; }
+            G += x;
+        });
+        var total = G * a + N * b;
+        $("naishin").innerHTML = N + "<small> / 450</small>";
+        $("gakuryoku").innerHTML = G + "<small> / 450</small>";
+        $("total").innerHTML = r1(total) + "<small> / 900</small>";
+        $("calc").textContent = "学力検査 " + G + " × " + a.toFixed(1) + " ＝ " + r1(G * a) + "　＋　内申点 " + N + " × " + b.toFixed(1) + " ＝ " + r1(N * b) + engNote;
+
+        var target = $("target"); if (target.value === "") target.placeholder = Math.round(total);
+        var goal = Number(target.value || target.placeholder);
+        var need = (goal - N * b) / a;
+        var ans = $("need"); ans.classList.remove("ng");
+        if (need <= 0) ans.textContent = "0点でも届きます";
+        else if (need > 450 + 1e-9) { ans.textContent = "満点でも届きません"; ans.classList.add("ng"); }
+        else ans.textContent = "5教科で合計 約" + Math.ceil(need - 1e-9) + "点（1教科平均 約" + Math.ceil(need / 5 - 1e-9) + "点）" + (rate ? "※英語は読み替え後の点数で数えます" : "");
+
+        $("weight").textContent = "この学校では、中3の評定1つで総合点が" + r1(6 * b) + "点（当日点で約" + r1(6 * b / a) + "点分）、中1・中2の評定1つで" + r1(2 * b) + "点（約" + r1(2 * b / a) + "点分）動きます。";
+
+        try {
+            var st = { school: $("school").value, eiken: $("eiken").value, target: target.value, v: {} };
+            document.querySelectorAll("[data-k]").forEach(function (x) { st.v[x.dataset.k + ":" + x.dataset.s] = x.value; });
+            localStorage.setItem(STORE, JSON.stringify(st));
+        } catch (er) { /* 保存できなくても使える */ }
+    }
+
+    fillSchools("");
+    try {
+        var st = JSON.parse(localStorage.getItem(STORE) || "null");
+        if (st) {
+            if (st.school) $("school").value = st.school;
+            if (st.eiken) $("eiken").value = st.eiken;
+            if (st.target) $("target").value = st.target;
+            Object.keys(st.v || {}).forEach(function (k) { var p = k.split(":"); var x = el(p[0], p[1]); if (x) x.value = st.v[k]; });
+        }
+    } catch (er) { /* 壊れていれば初期値 */ }
+
+    $("q").addEventListener("input", function () { fillSchools($("q").value.trim()); render(); });
+    document.querySelectorAll(".quick button").forEach(function (bt) {
+        bt.addEventListener("click", function () {
+            if (bt.dataset.copy) SUBJ.forEach(function (s) { el("g1", s).value = el("g2", s).value = el("g3", s).value; });
+            else document.querySelectorAll('#grade select').forEach(function (s) { s.value = bt.dataset.fill; });
+            render();
+        });
+    });
+    document.querySelector(".container").addEventListener("input", function (ev) { if (ev.target.id !== "q") render(); });
+    document.querySelector(".container").addEventListener("change", render);
+    render();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "大阪府の公立高校入試の内申点は何点満点ですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "9教科の評定を、中3は6倍、中1・中2は2倍して合計した450点満点です（1教科50点）。" }
+    },
+    {
+      "@type": "Question",
+      "name": "大阪府の一般選抜の総合点はどう計算しますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "学力検査（450点満点）と内申点（450点満点）に、学校ごとに決まった倍率タイプ（Ⅰ〜Ⅴ）の倍率をかけて足します。総合点は900点満点です。たとえばタイプⅠは学力検査×1.4、内申点×0.6です。" }
+    },
+    {
+      "@type": "Question",
+      "name": "英検は大阪府の公立高校入試で使えますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "使えます。英検準1級以上は英語の満点の100％、英検2級は80％に読み替え、当日の英語の点数と比べて高いほうが使われます。IELTSとTOEFL iBTも対象です。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/gpa/" class="related-tool-card"><h3>GPA計算ツール（目標から逆算）</h3><p>科目の単位と成績から学期・通算のGPAを計算。目標のGPAに必要な平均と、Sがあと何単位必要かを逆算できます。</p></a>
+<a href="/naishin/kanagawa/" class="related-tool-card"><h3>神奈川県 内申点・S値計算（2027年入試）</h3><p>志望校の比率で内申点・S1値・S2値を計算し、目標のS値に必要な当日点も逆算できるツール。普通科109校の選考基準を収録。</p></a>
+<a href="/naishin/tokyo/" class="related-tool-card"><h3>東京都 内申点・換算内申計算（2027年都立入試）</h3><p>中3の評定から換算内申・調査書点を出し、当日点とスピーキングテストを足した総合得点（1020点）と、目標に必要な当日点を計算。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
