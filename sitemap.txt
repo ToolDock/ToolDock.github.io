@@ -56,6 +56,7 @@ https://tooldock.github.io/us-market/
 https://tooldock.github.io/war/
 https://tooldock.github.io/whichcheap/
 https://tooldock.github.io/yukosuji/
+https://tooldock.github.io/zeikin-calendar/
 https://tooldock.github.io/draft/2005/
 https://tooldock.github.io/draft/2006/
 https://tooldock.github.io/draft/2007/
