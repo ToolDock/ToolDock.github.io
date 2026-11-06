@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>神奈川県 内申点・S値計算【2027年入試】志望校の比率で合計点と必要な当日点が分かる</title>
+<meta name="description" content="神奈川県公立高校入試（令和9年度・2027年2月）の内申点（135点満点）とS1値・S2値を計算する無料ツール。県教育委員会の選考基準から普通科109校の比率（4:6・5:5など）・重点化・特色検査を収録。目標のS値に必要な学力検査の点数や、内申1点が当日点の何点分かも分かります。">
+<link rel="canonical" href="https://tooldock.github.io/naishin/kanagawa/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="神奈川県 内申点・S値計算【2027年入試】志望校の比率で合計点と必要な当日点が分かる | ToolDock">
+<meta property="og:description" content="神奈川県公立高校入試（令和9年度・2027年2月）の内申点（135点満点）とS1値・S2値を計算する無料ツール。県教育委員会の選考基準から普通科109校の比率（4:6・5:5など）・重点化・特色検査を収録。目標のS値に必要な学力検査の点数や、内申1点が当日点の何点分かも分かります。">
+<meta property="og:url" content="https://tooldock.github.io/naishin/kanagawa/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/naishin-kanagawa.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "naishin-kanagawa"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="神奈川県,内申点,計算,S値,S1値,S2値,公立高校,入試,2027,令和9年度,比率,換算,135点,高校受験,横浜翠嵐,湘南,柏陽">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:28px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+h2.sec{ margin:24px 0 10px; font-size:1.1rem; padding-bottom:4px; border-bottom:2px solid var(--c); }
+.school{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.school input, .school select{ font:inherit; font-size:1rem; padding:7px 9px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; }
+.school input{ width:10em; }
+.school select{ min-width:16em; max-width:100%; }
+.info{ margin-top:10px; padding:10px 12px; background:var(--surface-2); font-size:.9rem; }
+.info b{ font-size:1rem; }
+.info .warn{ color:#9a3412; }
+
+table.grade{ border-collapse:collapse; width:100%; font-size:.95rem; }
+table.grade th, table.grade td{ border-bottom:1px solid var(--line-soft); padding:5px 4px; text-align:center; }
+table.grade th{ font-size:.82rem; color:#3a3d42; font-weight:700; }
+table.grade td:first-child{ font-weight:700; text-align:left; white-space:nowrap; }
+table.grade select, table.grade input{ font:inherit; font-size:1rem; padding:4px 2px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; text-align:center; width:3.6em; }
+table.grade td.sum{ font-variant-numeric:tabular-nums; color:#3a3d42; }
+table.grade tr.total td{ font-weight:800; border-top:1px solid var(--ink); }
+.quick{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 0; font-size:.85rem; align-items:center; }
+.quick button{ font:inherit; font-size:.82rem; padding:4px 10px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; cursor:pointer; }
+.two{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+@media (max-width:700px){ .two{ grid-template-columns:1fr; } }
+.tok{ margin-top:10px; font-size:.92rem; }
+.tok input{ font:inherit; width:5em; padding:4px 6px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
+
+.result{ margin:22px 0 0; padding:18px; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 5%, #fff); }
+.kpis{ display:flex; flex-wrap:wrap; gap:8px 28px; }
+.kpi .k{ font-size:.85rem; }
+.kpi .v{ font-size:1.8rem; font-weight:800; color:var(--c); font-variant-numeric:tabular-nums; line-height:1.3; }
+.kpi .v small{ font-size:.9rem; color:#3a3d42; font-weight:700; }
+.calc{ margin:10px 0 0; font-size:.86rem; color:#3a3d42; }
+.goal{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-size:.95rem; }
+.goal input{ font:inherit; width:6em; padding:4px 6px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
+.goal .ans{ font-weight:800; color:var(--c); }
+.goal .ans.ng{ color:#b42318; }
+.note{ font-size:.82rem; color:#5c6470; margin:12px 0 0; }
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:18px; }
+    table.grade select, table.grade input{ width:3.1em; }
+}
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=study">学習</a> <span class="bc-sep">›</span> <span>神奈川県 内申点・S値計算（2027年入試）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "学習", "item": "https://tooldock.github.io/category/?cat=study"}, {"@type": "ListItem", "position": 3, "name": "神奈川県 内申点・S値計算（2027年入試）", "item": "https://tooldock.github.io/naishin/kanagawa/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="container">
+
+<div class="td-banner">
+    <h1>神奈川県 内申点・S値計算（2027年入試）</h1>
+    <p>志望校を選んで通知表の評定と当日点の見込みを入れると、内申点・S1値・S2値が出ます。目標のS値に必要な当日点も逆算できます。比率は県教育委員会の「令和9年度 選考基準」（普通科109校）によります。</p>
+</div>
+
+<h2 class="sec">1. 志望校</h2>
+<div class="school">
+    <input type="search" id="q" placeholder="学校名で絞り込み" aria-label="学校名で絞り込み">
+    <select id="school" aria-label="志望校"></select>
+</div>
+<div class="info" id="info"></div>
+
+<div class="two">
+<div>
+<h2 class="sec">2. 通知表（中2・中3の評定）</h2>
+<table class="grade" id="grade">
+<thead><tr><th>教科</th><th>中2</th><th>中3</th><th>主体的な<br>態度（中3）</th><th>中2＋<br>中3×2</th></tr></thead>
+<tbody></tbody>
+</table>
+<div class="quick">まとめて入れる：
+    <button type="button" data-fill="3">全部3</button>
+    <button type="button" data-fill="4">全部4</button>
+    <button type="button" data-fill="5">全部5</button>
+</div>
+</div>
+
+<div>
+<h2 class="sec">3. 学力検査（当日点の見込み）</h2>
+<table class="grade" id="exam">
+<thead><tr><th>教科</th><th>点数（100点満点）</th></tr></thead>
+<tbody></tbody>
+</table>
+<div class="tok" id="tokBox">特色検査の得点の見込み（100点満点に換算）：<input type="number" id="tok" min="0" max="100" step="1" value="60"> 点</div>
+</div>
+</div>
+
+<section class="result" aria-live="polite">
+    <div class="kpis">
+        <div class="kpi"><div class="k">内申点（135点満点）</div><div class="v" id="naishin"></div></div>
+        <div class="kpi"><div class="k">S1値（第1次選考）</div><div class="v" id="s1"></div></div>
+        <div class="kpi"><div class="k">S2値（第2次選考）</div><div class="v" id="s2"></div></div>
+    </div>
+    <p class="calc" id="calc"></p>
+    <div class="goal">
+        目標のS1値 <input type="number" id="target" min="0" step="1" value=""> に必要な学力検査は
+        <span class="ans" id="need"></span>
+        <p class="calc" id="weight"></p>
+    </div>
+</section>
+<p class="note">S値は合格を約束する点数ではありません。県は学校ごとの合格者のS値を公表していないので、目標のS値は、塾や模試の資料などをもとにご自身で入れてください。計算は県の実施要領のとおり、a・b・c・dを小数第3位で四捨五入しています。</p>
+
+</div>
+
+<article class="tool-article">
+
+<h2>神奈川県の公立高校入試（共通選抜）のしくみ</h2>
+<div class="table-scroll">
+<table>
+<tbody>
+<tr><th>内申点（a）</th><td>中2の9教科の評定の合計＋中3の9教科の評定の合計×2（135点満点）を、100点満点に換算します。</td></tr>
+<tr><th>学力検査（b）</th><td>英・国・数・理・社の5教科（各100点、合計500点）を、100点満点に換算します。</td></tr>
+<tr><th>主体的に学習に取り組む態度（c）</th><td>中3の各教科の評価をA＝3・B＝2・C＝1として合計（27点満点）し、100点満点に換算します。第2次選考だけで使います。</td></tr>
+<tr><th>特色検査（d）</th><td>自己表現検査・面接・実技検査など。実施する学校だけ、100点満点に換算して加えます。</td></tr>
+<tr><th>第1次選考</th><td>S1値＝a×f＋b×g（＋d×i）。定員の90％までを、S1値の高い順に決めます。fとgは学校ごとに決まり、合わせて10です（5：5、4：6など）。</td></tr>
+<tr><th>第2次選考</th><td>S2値＝b×g＋c×h（＋d×i）。残りの10％を、内申点を使わずに決めます。</td></tr>
+</tbody>
+</table>
+</div>
+<p>学校によっては、特定の教科の点数を1.2倍〜2倍にする「重点化」があります。このツールは、選考基準に書かれた重点化も計算に入れています。</p>
+
+<h2>内申点1点は、当日点の何点分？</h2>
+<p>比率が5：5の学校では、中3の評定を1上げると内申点は2点上がり、当日点（500点満点）に直すと約7点分になります。内申の比率が高い学校ほど、評定1つの重みが大きくなります。結果の欄に、選んだ学校での目安を出しています。</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 2027年の入試日はいつですか？</strong><br>
+A. 共通選抜の学力検査は、2027年2月16日（火）の予定です。</p>
+<p><strong>Q. 中1の成績は入りますか？</strong><br>
+A. 入りません。中2と中3（中3は2倍）の評定だけを使います。</p>
+<p><strong>Q. 面接はありますか？</strong><br>
+A. 2024年の入試から、全員に行う面接はなくなりました。一部の学校が、特色検査として面接や自己表現検査を行います。</p>
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. このブラウザの中だけに保存されます。サーバーには送信されません。</p>
+
+<h2>出典</h2>
+<p class="note">神奈川県教育委員会「令和9年度神奈川県公立高等学校入学者選抜 選考基準（共通選抜・全日制）」「令和9年度 神奈川県公立高等学校の入学者の募集及び選抜 実施要領」。普通科（単位制の普通科を含む。クリエイティブスクール・専門コースを除く）の比率・重点化・特色検査の有無を収録しています。専門学科は今後追加予定です。特色検査の内容や、細かな選考の方法は、各校の資料でご確認ください。</p>
+
+</article>
+
+<script>
+"use strict";
+(function () {
+    var SCHOOLS = [{"n":"鶴見","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"横浜翠嵐","t":"自己表現","s":"英国数理社","f":3,"g":7,"i":3,"g2":8,"h":2,"i2":2},{"n":"城郷","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"港北","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"新羽","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":8,"h":2,"i2":0},{"n":"岸根","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"霧が丘","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"白山","t":"","s":"英国数理社","f":7,"g":3,"i":0,"g2":5,"h":5,"i2":0},{"n":"市ケ尾","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0,"j":{"j1":{"c":[{"pick":["音","美","保体","技家"],"n":1,"m":2}]}},"jt":["[調] 音,美,保体,技・家のうち点数の高い1教科(×2)",""]},{"n":"元石川","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"川和","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":1,"g2":7,"h":3,"i2":1},{"n":"荏田","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":6,"h":4,"i2":0,"j":{"j1":{"c":[{"pick":["音","美","保体","技家"],"n":1,"m":2}]},"j2":{"c":[{"pick":["音","美","保体","技家"],"n":1,"m":2}]}},"jt":["[調] 音,美,保体,技・家のうち点数の高い1教科(×2)","[調] 音,美,保体,技・家のうち点数の高い1教科(×2)"]},{"n":"新栄","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"希望ケ丘","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":1,"g2":8,"h":2,"i2":1},{"n":"二俣川","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"旭・横浜旭陵","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"松陽","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"横浜瀬谷","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"横浜平沼","t":"自己表現","s":"英国数理社","f":5,"g":5,"i":1,"g2":8,"h":2,"i2":2},{"n":"光陵","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":1,"g2":8,"h":2,"i2":1},{"n":"保土ケ谷","t":"","s":"英国数理社","f":7,"g":3,"i":0,"g2":7,"h":3,"i2":0},{"n":"舞岡","t":"面接","s":"英国数理社","f":5,"g":5,"i":3,"g2":7,"h":3,"i2":5},{"n":"上矢部","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"金井","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"横浜南陵","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"柏陽","t":"自己表現","s":"英国数理社","f":3,"g":7,"i":2,"g2":8,"h":2,"i2":2},{"n":"横浜緑ケ丘","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":2,"g2":8,"h":2,"i2":2},{"n":"横浜立野","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"横浜氷取沢","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"横浜市立桜丘","t":"","s":"英国数理社","f":3,"g":7,"i":0,"g2":8,"h":2,"i2":0},{"n":"横浜市立金沢","t":"","s":"英国数理社","f":3,"g":7,"i":0,"g2":8,"h":2,"i2":0,"j":{"j1":{"g":[{"s":["英"],"m":1.5},{"s":["数"],"m":1.2}]},"j2":{"c":[{"s":["英"],"m":1.5},{"s":["数"],"m":1.2}],"g":[{"s":["英"],"m":1.5},{"s":["数"],"m":1.2}]}},"jt":["[学] 英(×1.5),数(×1.2)","[調] 英(×1.5),数(×1.2) [学] 英(×1.5),数(×1.2)"]},{"n":"新城","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"住吉","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"川崎北","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"多摩","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":2,"g2":8,"h":2,"i2":2},{"n":"生田","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"百合丘","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"生田東","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"菅","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"麻生","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"川崎市立橘","t":"面接","s":"英国数理社","f":4,"g":6,"i":2,"g2":8,"h":2,"i2":3},{"n":"川崎市立高津","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":6,"h":4,"i2":0},{"n":"川崎市立幸","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":5,"h":5,"i2":0},{"n":"横須賀","t":"自己表現","s":"英国数理社","f":3,"g":7,"i":1,"g2":8,"h":2,"i2":1,"j":{"j1":{"c":[{"s":["国","数","英"],"m":2}]}},"jt":["[調] 国,数,英(×2)",""]},{"n":"横須賀大津","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":6,"h":4,"i2":0,"j":{"j1":{"g":[{"s":["英"],"m":1.2}]}},"jt":["[学] 英(×1.2)",""]},{"n":"追浜","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"津久井浜","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"逗子葉山","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"鎌倉","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":1,"g2":8,"h":2,"i2":1},{"n":"七里ガ浜","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"大船","t":"","s":"英国数理社","f":3,"g":7,"i":0,"g2":8,"h":2,"i2":0,"j":{"j1":{"g":[{"s":["英"],"m":1.5},{"pick":["国","数"],"n":1,"m":1.5}]}},"jt":["[学] 英(×1.5)、国,数のうち点数の高い1教科(×1.5)",""]},{"n":"湘南","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":2,"g2":8,"h":2,"i2":2},{"n":"藤沢西","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":6,"h":4,"i2":0},{"n":"湘南台","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"茅ケ崎","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"茅ケ崎北陵","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":1,"g2":8,"h":2,"i2":1},{"n":"鶴嶺","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":7,"h":3,"i2":0},{"n":"茅ケ崎西浜","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":8,"h":2,"i2":0},{"n":"寒川","t":"","s":"英国数理社","f":7,"g":3,"i":0,"g2":5,"h":5,"i2":0},{"n":"平塚江南","t":"自己表現","s":"英国数理社","f":3,"g":7,"i":1,"g2":8,"h":2,"i2":1},{"n":"高浜","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":7,"h":3,"i2":0},{"n":"大磯","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"二宮","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":6,"h":4,"i2":0},{"n":"秦野","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"秦野曽屋","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":8,"h":2,"i2":0},{"n":"伊勢原","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"伊志田","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"小田原東","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":7,"h":3,"i2":0},{"n":"西湘","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"足柄","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"山北","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":7,"h":3,"i2":0,"j":{"j2":{"c":[{"pick":["音","美","保体","技家"],"n":2,"m":2}]}},"jt":["","[調] 音,美,保体,技・家のうち点数の高い2教科(×2)"]},{"n":"厚木","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":2,"g2":7,"h":3,"i2":2},{"n":"厚木王子","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"厚木北","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":8,"h":2,"i2":0},{"n":"厚木西","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":7,"h":3,"i2":0},{"n":"海老名","t":"","s":"英国数理社","f":3,"g":7,"i":0,"g2":8,"h":2,"i2":0},{"n":"有馬","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0,"j":{"j1":{"c":[{"s":["英"],"m":1.2}]},"j2":{"g":[{"s":["英"],"m":2}]}},"jt":["[調] 英(×1.2)","[学] 英(×2)"]},{"n":"愛川","t":"面接","s":"英国数理社","f":6,"g":4,"i":2,"g2":5,"h":5,"i2":2},{"n":"大和","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":1,"g2":8,"h":2,"i2":2},{"n":"大和南","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"大和西","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0,"j":{"j1":{"c":[{"s":["英"],"m":2}]}},"jt":["[調] 英(×2)",""]},{"n":"座間","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"綾瀬","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":7,"h":3,"i2":0},{"n":"綾瀬西","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":7,"h":3,"i2":0},{"n":"麻溝台","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"上鶴間","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"上溝","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0,"j":{"j2":{"g":[{"s":["英"],"m":2},{"pick":["国","数"],"n":1,"m":2}]}},"jt":["","[学] 英(×2)、国,数のうち点数の高い1教科(×2)"]},{"n":"相模原","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":1,"g2":8,"h":2,"i2":2},{"n":"上溝南","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"橋本","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"相模田名","t":"","s":"英国数理社","f":7,"g":3,"i":0,"g2":8,"h":2,"i2":0},{"n":"津久井","t":"自己表現","s":"英国数","f":6,"g":4,"i":3,"g2":6,"h":4,"i2":3},{"n":"横浜緑園（単位制）","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"横浜桜陽・永谷（単位制）","t":"面接","s":"英国数理社","f":6,"g":4,"i":2,"g2":8,"h":2,"i2":5},{"n":"横浜清陵（単位制）","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":7,"h":3,"i2":0},{"n":"横浜栄（単位制）","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0},{"n":"川崎（単位制）","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"大師（単位制）","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0,"j":{"j1":{"c":[{"pick":["音","美","保体","技家"],"n":1,"m":2}]}},"jt":["[調] 音,美,保体,技・家のうち点数の高い1教科(×2)",""]},{"n":"三浦初声（単位制）","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":6,"h":4,"i2":0},{"n":"藤沢清流・深沢（単位制）","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0,"j":{"j1":{"c":[{"pick":"all","n":1,"m":2}]}},"jt":["[調] 点数の高い1教科(×2)",""]},{"n":"平塚湘風（単位制）","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":7,"h":3,"i2":0},{"n":"小田原（単位制）","t":"自己表現","s":"英国数理社","f":4,"g":6,"i":2,"g2":8,"h":2,"i2":2},{"n":"厚木清南（単位制）","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":7,"h":3,"i2":0},{"n":"相模原城山（単位制）","t":"","s":"英国数理社","f":6,"g":4,"i":0,"g2":7,"h":3,"i2":0},{"n":"相模原弥栄（単位制）","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0},{"n":"横浜市立東（単位制）","t":"","s":"英国数理社","f":4,"g":6,"i":0,"g2":8,"h":2,"i2":0,"j":{"j1":{"g":[{"s":["英"],"m":1.5}]},"j2":{"g":[{"s":["英"],"m":1.5}]}},"jt":["[学] 英(×1.5)","[学] 英(×1.5)"]},{"n":"神奈川総合（単位制・個性化コース）","t":"","s":"英国数理社","f":3,"g":7,"i":0,"g2":8,"h":2,"i2":0,"j":{"j1":{"g":[{"pick":"all","n":1,"m":2}]},"j2":{"g":[{"pick":"all","n":1,"m":2}]}},"jt":["[学] 点数の高い1教科(×2)","[学] 点数の高い1教科(×2)"]},{"n":"神奈川総合（単位制・国際文化コース）","t":"自己表現","s":"英国数＋理社から1教科","f":4,"g":6,"i":2,"g2":8,"h":2,"i2":2,"j":{"j1":{"g":[{"s":["英"],"m":2}]},"j2":{"g":[{"s":["英"],"m":2}]}},"jt":["[学] 英(×2)","[学] 英(×2)"]},{"n":"横浜市立戸塚（単位制・一般コース）","t":"","s":"英国数理社","f":5,"g":5,"i":0,"g2":8,"h":2,"i2":0}];
+    var SUBJ9 = ["国", "社", "数", "理", "英", "音", "美", "保体", "技家"];
+    var LABEL = { 国: "国語", 社: "社会", 数: "数学", 理: "理科", 英: "英語", 音: "音楽", 美: "美術", 保体: "保健体育", 技家: "技術・家庭" };
+    var EXAM5 = ["英", "国", "数", "理", "社"];
+    var STORE = "tooldock:naishin-kanagawa:v1";
+    var $ = function (id) { return document.getElementById(id); };
+    var r2 = function (x) { return Math.round(x * 100) / 100; };
+
+    /* 入力欄を作る */
+    var gtb = $("grade").querySelector("tbody");
+    SUBJ9.forEach(function (s) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + LABEL[s] + "</td>" +
+            '<td><select data-k="g2" data-s="' + s + '"></select></td>' +
+            '<td><select data-k="g3" data-s="' + s + '"></select></td>' +
+            '<td><select data-k="att" data-s="' + s + '"><option>A</option><option selected>B</option><option>C</option></select></td>' +
+            '<td class="sum" data-sum="' + s + '"></td>';
+        tr.querySelectorAll('select[data-k="g2"], select[data-k="g3"]').forEach(function (sel) {
+            for (var v = 5; v >= 1; v--) { var o = document.createElement("option"); o.value = o.textContent = v; if (v === 3) o.selected = true; sel.appendChild(o); }
+        });
+        gtb.appendChild(tr);
+    });
+    var tot = document.createElement("tr"); tot.className = "total";
+    tot.innerHTML = '<td>合計</td><td id="t2"></td><td id="t3"></td><td></td><td id="tA"></td>';
+    gtb.appendChild(tot);
+
+    var etb = $("exam").querySelector("tbody");
+    EXAM5.forEach(function (s) {
+        var tr = document.createElement("tr"); tr.dataset.s = s;
+        tr.innerHTML = "<td>" + LABEL[s] + '</td><td><input type="number" min="0" max="100" step="1" value="60" data-k="ex" data-s="' + s + '"></td>';
+        etb.appendChild(tr);
+    });
+
+    /* 学校の一覧 */
+    function fillSchools(q) {
+        var sel = $("school"), cur = sel.value;
+        sel.textContent = "";
+        SCHOOLS.forEach(function (e, idx) {
+            if (q && e.n.indexOf(q) < 0) return;
+            var o = document.createElement("option"); o.value = idx;
+            o.textContent = e.n + "（" + e.f + "：" + e.g + (e.i ? "：" + e.i : "") + "）";
+            sel.appendChild(o);
+        });
+        if (cur && sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
+    }
+
+    function val(k, s) { var el = document.querySelector('[data-k="' + k + '"][data-s="' + s + '"]'); return el ? el.value : null; }
+
+    /* 重点化の係数：rules を教科ごとの係数にする。pick は、その中で点数の高い n 教科 */
+    function weights(subjects, values, rules) {
+        var w = {}; subjects.forEach(function (s) { w[s] = 1; });
+        (rules || []).forEach(function (r) {
+            if (r.s) r.s.forEach(function (s) { if (s in w) w[s] = r.m; });
+            if (r.pick) {
+                var pool = (r.pick === "all" ? subjects : r.pick).filter(function (s) { return s in w && w[s] === 1; });
+                pool.sort(function (a, b) { return values[b] - values[a]; });
+                pool.slice(0, r.n).forEach(function (s) { w[s] = r.m; });
+            }
+        });
+        return w;
+    }
+    function scaled(subjects, values, max, rules) {
+        var w = weights(subjects, values, rules), num = 0, den = 0;
+        subjects.forEach(function (s) { num += values[s] * w[s]; den += max * w[s]; });
+        return { v: den ? r2(num / den * 100) : 0, w: w, den: den };
+    }
+
+    function examSubjects(e) {
+        if (e.s === "英国数") return ["英", "国", "数"];
+        if (e.s.indexOf("から1教科") >= 0) return ["英", "国", "数", "理"];   // 理か社の選んだ1教科を「理」の欄に入れる
+        return EXAM5;
+    }
+
+    function render() {
+        var e = SCHOOLS[Number($("school").value)] || SCHOOLS[0];
+        var subjects = examSubjects(e);
+
+        /* 学校の情報 */
+        var info = "<b>" + e.n + "</b>　第1次 内申：学力" + (e.i ? "：特色" : "") + "＝" + e.f + "：" + e.g + (e.i ? "：" + e.i : "") +
+            "　／　第2次 学力：主体的な態度" + (e.i2 ? "：特色" : "") + "＝" + e.g2 + "：" + e.h + (e.i2 ? "：" + e.i2 : "") +
+            "<br>学力検査：" + e.s + "　特色検査：" + (e.t || "なし");
+        if (e.jt) info += '<br><span class="warn">重点化　第1次：' + (e.jt[0] || "なし") + "　第2次：" + (e.jt[1] || "なし") + "</span>";
+        $("info").innerHTML = info;
+        etb.querySelectorAll("tr").forEach(function (tr) {
+            tr.hidden = subjects.indexOf(tr.dataset.s) < 0;
+            if (tr.dataset.s === "理") tr.firstChild.textContent = e.s.indexOf("から1教科") >= 0 ? "理科か社会（選んだ1教科）" : "理科";
+        });
+        $("tokBox").hidden = !(e.i || e.i2);
+
+        /* 評定 */
+        var A = {}, C = {}, s2 = 0, s3 = 0;
+        SUBJ9.forEach(function (s) {
+            var g2 = Number(val("g2", s)), g3 = Number(val("g3", s));
+            A[s] = g2 + g3 * 2; s2 += g2; s3 += g3;
+            C[s] = { A: 3, B: 2, C: 1 }[val("att", s)];
+            document.querySelector('[data-sum="' + s + '"]').textContent = A[s];
+        });
+        var naishin = s2 + s3 * 2;
+        $("t2").textContent = s2; $("t3").textContent = s3; $("tA").textContent = naishin;
+
+        var B = {}; subjects.forEach(function (s) { B[s] = Math.max(0, Math.min(100, Number(val("ex", s)) || 0)); });
+        var d = (e.i || e.i2) ? r2(Math.max(0, Math.min(100, Number($("tok").value) || 0))) : 0;
+
+        var j1 = (e.j && e.j.j1) || {}, j2 = (e.j && e.j.j2) || {};
+        var a = scaled(SUBJ9, A, 15, j1.c), b1 = scaled(subjects, B, 100, j1.g);
+        var b2 = scaled(subjects, B, 100, j2.g), c = scaled(SUBJ9, C, 3, j2.c);
+        var S1 = r2(a.v * e.f + b1.v * e.g + d * e.i), S1max = 100 * (e.f + e.g + e.i);
+        var S2 = r2(b2.v * e.g2 + c.v * e.h + d * e.i2), S2max = 100 * (e.g2 + e.h + e.i2);
+
+        $("naishin").innerHTML = naishin + "<small> / 135</small>";
+        $("s1").innerHTML = S1.toFixed(2) + "<small> / " + S1max + "</small>";
+        $("s2").innerHTML = S2.toFixed(2) + "<small> / " + S2max + "</small>";
+        $("calc").textContent = "a（内申）" + a.v.toFixed(2) + "　b（学力）" + b1.v.toFixed(2) + (e.j && (j1.g || j2.g) ? "（第2次 " + b2.v.toFixed(2) + "）" : "") +
+            "　c（主体的な態度）" + c.v.toFixed(2) + ((e.i || e.i2) ? "　d（特色）" + d.toFixed(2) : "");
+
+        /* 目標のS1値に必要な学力検査 */
+        var target = $("target"); if (target.value === "") target.placeholder = Math.round(S1);
+        var goal = Number(target.value || target.placeholder);
+        var needB = (goal - a.v * e.f - d * e.i) / e.g;          // 必要な b（100点満点）
+        var ans = $("need"); ans.classList.remove("ng");
+        var full = subjects.length * 100;
+        if (needB <= 0) ans.textContent = "0点でも届きます";
+        else if (needB > 100) { ans.textContent = "満点でも届きません（内申点などを上げる必要があります）"; ans.classList.add("ng"); }
+        else ans.textContent = "合計 約" + Math.ceil(needB / 100 * full) + "点 / " + full + "点（1教科平均 約" + Math.ceil(needB) + "点）";
+
+        /* 内申1点の重み：中3の評定を1上げる（A が2増える）と、当日点の何点分か */
+        var da = 2 / (a.den || 135) * 100 * e.f;                   // S1の増え方
+        var eqB = da / e.g / 100 * full;
+        $("weight").textContent = "この学校では、中3の評定を1つ上げると、当日点（" + full + "点満点）で約" + (Math.round(eqB * 10) / 10) + "点分です" +
+            (e.j && j1.c ? "（重点化した教科は、さらに大きくなります）" : "") + "。";
+
+        try {
+            var st = { school: $("school").value, tok: $("tok").value, target: target.value, v: {} };
+            document.querySelectorAll("[data-k]").forEach(function (el) { st.v[el.dataset.k + ":" + el.dataset.s] = el.value; });
+            localStorage.setItem(STORE, JSON.stringify(st));
+        } catch (er) { /* 保存できなくても使える */ }
+    }
+
+    fillSchools("");
+    try {
+        var st = JSON.parse(localStorage.getItem(STORE) || "null");
+        if (st) {
+            if (st.school) $("school").value = st.school;
+            if (st.tok) $("tok").value = st.tok;
+            if (st.target) $("target").value = st.target;
+            Object.keys(st.v || {}).forEach(function (k) { var p = k.split(":"); var el = document.querySelector('[data-k="' + p[0] + '"][data-s="' + p[1] + '"]'); if (el) el.value = st.v[k]; });
+        }
+    } catch (er) { /* 壊れていれば初期値 */ }
+
+    $("q").addEventListener("input", function () { fillSchools($("q").value.trim()); render(); });
+    document.querySelectorAll(".quick button").forEach(function (bt) {
+        bt.addEventListener("click", function () {
+            document.querySelectorAll('select[data-k="g2"], select[data-k="g3"]').forEach(function (s) { s.value = bt.dataset.fill; });
+            render();
+        });
+    });
+    document.querySelector(".container").addEventListener("input", function (ev) { if (ev.target.id !== "q") render(); });
+    document.querySelector(".container").addEventListener("change", render);
+    render();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "神奈川県の内申点は何点満点ですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "中2の9教科の評定の合計と、中3の9教科の評定の合計の2倍を足した135点満点です。選考では100点満点に換算して使います。" }
+    },
+    {
+      "@type": "Question",
+      "name": "2027年の神奈川県公立高校入試の学力検査はいつですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "共通選抜の学力検査は、2027年2月16日（火）の予定です。" }
+    },
+    {
+      "@type": "Question",
+      "name": "中1の成績は内申点に入りますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "入りません。中2と中3（中3は2倍）の評定だけを使います。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
