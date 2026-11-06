@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>東京都 内申点・換算内申計算【2027年都立高校入試】総合得点1020点と必要な当日点が分かる</title>
+<meta name="description" content="都立高校入試（令和9年度・2027年）の換算内申（65点満点）・調査書点（300点）・総合得点（1020点）を計算する無料ツール。学力検査700点・調査書点300点・スピーキングテスト（ESAT-J）20点。北園・武蔵野北・深沢の「7:3と10:0の高いほう」や、外国語コースの傾斜配点にも対応。目標の総合得点に必要な当日点も逆算できます。">
+<link rel="canonical" href="https://tooldock.github.io/naishin/tokyo/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="東京都 内申点・換算内申計算【2027年都立高校入試】総合得点1020点と必要な当日点が分かる | ToolDock">
+<meta property="og:description" content="都立高校入試（令和9年度・2027年）の換算内申（65点満点）・調査書点（300点）・総合得点（1020点）を計算する無料ツール。学力検査700点・調査書点300点・スピーキングテスト（ESAT-J）20点。北園・武蔵野北・深沢の「7:3と10:0の高いほう」や、外国語コースの傾斜配点にも対応。目標の総合得点に必要な当日点も逆算できます。">
+<meta property="og:url" content="https://tooldock.github.io/naishin/tokyo/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/naishin-tokyo.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "naishin-tokyo"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="東京都,都立高校,内申点,換算内申,計算,調査書点,総合得点,1020点,ESAT-J,スピーキングテスト,入試,2027,令和9年度,高校受験,日比谷,西,国立">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:28px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+h2.sec{ margin:24px 0 10px; font-size:1.1rem; padding-bottom:4px; border-bottom:2px solid var(--c); }
+.school{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.school input, .school select{ font:inherit; font-size:1rem; padding:7px 9px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; }
+.school input{ width:10em; }
+.school select{ min-width:16em; max-width:100%; }
+.info{ margin-top:10px; padding:10px 12px; background:var(--surface-2); font-size:.9rem; }
+.info b{ font-size:1rem; }
+.info .warn{ color:#9a3412; }
+
+table.grade{ border-collapse:collapse; width:100%; font-size:.95rem; }
+table.grade th, table.grade td{ border-bottom:1px solid var(--line-soft); padding:5px 4px; text-align:center; }
+table.grade th{ font-size:.82rem; color:#3a3d42; font-weight:700; }
+table.grade td:first-child{ font-weight:700; text-align:left; white-space:nowrap; }
+table.grade select, table.grade input{ font:inherit; font-size:1rem; padding:4px 2px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; text-align:center; width:3.6em; }
+table.grade td.sum{ font-variant-numeric:tabular-nums; color:#3a3d42; }
+table.grade tr.total td{ font-weight:800; border-top:1px solid var(--ink); }
+.quick{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 0; font-size:.85rem; align-items:center; }
+.quick button{ font:inherit; font-size:.82rem; padding:4px 10px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; cursor:pointer; }
+.two{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+@media (max-width:700px){ .two{ grid-template-columns:1fr; } }
+.esat{ margin-top:10px; font-size:.92rem; }
+.esat select{ font:inherit; padding:4px 6px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; }
+
+.result{ margin:22px 0 0; padding:18px; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 5%, #fff); }
+.kpis{ display:flex; flex-wrap:wrap; gap:8px 28px; }
+.kpi .k{ font-size:.85rem; }
+.kpi .v{ font-size:1.8rem; font-weight:800; color:var(--c); font-variant-numeric:tabular-nums; line-height:1.3; }
+.kpi .v small{ font-size:.9rem; color:#3a3d42; font-weight:700; }
+.calc{ margin:10px 0 0; font-size:.86rem; color:#3a3d42; }
+.goal{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-size:.95rem; }
+.goal input{ font:inherit; width:6em; padding:4px 6px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
+.goal .ans{ font-weight:800; color:var(--c); }
+.goal .ans.ng{ color:#b42318; }
+.note{ font-size:.82rem; color:#5c6470; margin:12px 0 0; }
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:18px; }
+    table.grade select, table.grade input{ width:3.1em; }
+}
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=study">学習</a> <span class="bc-sep">›</span> <span>東京都 内申点・換算内申計算（2027年都立入試）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "学習", "item": "https://tooldock.github.io/category/?cat=study"}, {"@type": "ListItem", "position": 3, "name": "東京都 内申点・換算内申計算（2027年都立入試）", "item": "https://tooldock.github.io/naishin/tokyo/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="container">
+
+<div class="td-banner">
+    <h1>東京都 内申点・換算内申計算（2027年都立高校入試）</h1>
+    <p>中3の通知表と当日点の見込みを入れると、換算内申・調査書点・総合得点（1020点満点）が出ます。目標の総合得点に必要な当日点も逆算できます。東京都教育委員会の「令和9年度 入学者選抜実施要綱」によります。</p>
+</div>
+
+<h2 class="sec">1. 志望校</h2>
+<div class="school">
+    <input type="search" id="q" placeholder="学校名で絞り込み" aria-label="学校名で絞り込み">
+    <select id="school" aria-label="志望校"></select>
+</div>
+<div class="info" id="info"></div>
+
+<div class="two">
+<div>
+<h2 class="sec">2. 中3の通知表（評定）</h2>
+<table class="grade" id="grade">
+<thead><tr><th>教科</th><th>評定</th><th>換算</th></tr></thead>
+<tbody></tbody>
+</table>
+<div class="quick">まとめて入れる：
+    <button type="button" data-fill="3">全部3</button>
+    <button type="button" data-fill="4">全部4</button>
+    <button type="button" data-fill="5">全部5</button>
+</div>
+</div>
+
+<div>
+<h2 class="sec">3. 学力検査（当日点の見込み）</h2>
+<table class="grade" id="exam">
+<thead><tr><th>教科</th><th>点数（100点満点）</th></tr></thead>
+<tbody></tbody>
+</table>
+<div class="esat">スピーキングテスト（ESAT-J）の結果：
+    <select id="esat">
+        <option value="20">A（20点）</option>
+        <option value="16" selected>B（16点）</option>
+        <option value="12">C（12点）</option>
+        <option value="8">D（8点）</option>
+        <option value="4">E（4点）</option>
+        <option value="0">F（0点）</option>
+    </select>
+</div>
+</div>
+</div>
+
+<section class="result" aria-live="polite">
+    <div class="kpis">
+        <div class="kpi"><div class="k">換算内申（65点満点）</div><div class="v" id="kansan"></div></div>
+        <div class="kpi"><div class="k">調査書点（300点満点）</div><div class="v" id="chosa"></div></div>
+        <div class="kpi"><div class="k">総合得点（1020点満点）</div><div class="v" id="total"></div></div>
+    </div>
+    <p class="calc" id="calc"></p>
+    <div class="goal">
+        目標の総合得点 <input type="number" id="target" min="0" max="1020" step="1" value=""> 点に必要な学力検査は
+        <span class="ans" id="need"></span>
+        <p class="calc" id="weight"></p>
+    </div>
+</section>
+<p class="note">総合得点は合格を約束する点数ではありません。都教育委員会は学校ごとの合格者の得点を公表していないので、目標は塾や模試の資料などをもとにご自身で入れてください。第一次募集・分割前期募集（全日制）の計算です。推薦入試・第二次募集（6：4）は含みません。</p>
+
+</div>
+
+<article class="tool-article">
+
+<h2>都立高校入試（第一次募集）の計算のしかた</h2>
+<div class="table-scroll">
+<table>
+<tbody>
+<tr><th>換算内申</th><td>中3の評定だけを使います。学力検査を行う5教科（国・数・英・社・理）は1倍、実技4教科（音・美・保体・技家）は2倍にして足します（65点満点）。</td></tr>
+<tr><th>調査書点</th><td>換算内申 × 300 ÷ 65（300点満点）</td></tr>
+<tr><th>学力検査の得点</th><td>5教科の合計（500点満点）× 1.4（700点満点）</td></tr>
+<tr><th>スピーキングテスト</th><td>ESAT-J の結果を A＝20点・B＝16点・C＝12点・D＝8点・E＝4点・F＝0点にします。</td></tr>
+<tr><th>総合得点</th><td>学力検査の得点（700）＋ 調査書点（300）＋ スピーキングテスト（20）＝ 1020点満点</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>2027年入試で気をつけること</h2>
+<p><strong>7：3と10：0の高いほうを使う学校</strong>：北園・武蔵野北・深沢では、受検者ごとに「学力検査7：調査書3」と「学力検査10：調査書0（学力検査だけ）」の両方で計算し、高いほうが使われます。当日点が内申より強い人に有利な方式です。<br>
+<strong>傾斜配点</strong>：深川・小平の外国語コースは英語2倍、松が谷の外国語コースは国語・英語2倍で計算してから700点に換算します。<br>
+<strong>自校作成問題</strong>：日比谷・戸山・青山・西・八王子東・立川・国立・新宿・墨田川・国分寺は、国・数・英が学校独自の問題です（計算方法は同じ）。</p>
+
+<h2>内申1つは、当日点の何点分？</h2>
+<p>5教科の評定を1上げると調査書点は約4.6点、実技4教科なら約9.2点上がります。学力検査（1点＝1.4点）に直すと、5教科は約3.3点分、実技4教科は約6.6点分です。実技4教科は2倍で数えるので、内申を上げるなら実技が効きます。</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 中1・中2の成績は入りますか？</strong><br>
+A. 都立高校の一般入試（第一次募集）では、中3の評定だけを使います。</p>
+<p><strong>Q. スピーキングテストを受けていないとどうなりますか？</strong><br>
+A. 都内の公立中学校の生徒で、やむを得ない理由で受けられなかった人などは、英語の学力検査の点数が近い受検者の結果から「仮の結果」が出されます。</p>
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. このブラウザの中だけに保存されます。サーバーには送信されません。</p>
+
+<h2>出典</h2>
+<p class="note">東京都教育委員会「令和9年度東京都立高等学校入学者選抜実施要綱」「令和9年度入学者選抜実施方法一覧（普通教育を主とする学科、コース・進学重視型単位制・単位制）」「学力検査問題を自校で作成する高校一覧」。全日制の普通科と、単位制・外国語コースを収録しています（エンカレッジスクール・専門学科・総合学科は含みません）。</p>
+
+</article>
+
+<script>
+"use strict";
+(function () {
+    var SCHOOLS = [{"n":"日比谷","j":1},{"n":"三田"},{"n":"戸山","j":1},{"n":"竹早"},{"n":"向丘"},{"n":"上野"},{"n":"日本橋"},{"n":"本所"},{"n":"城東"},{"n":"東"},{"n":"深川"},{"n":"大崎"},{"n":"小山台"},{"n":"八潮"},{"n":"駒場"},{"n":"目黒"},{"n":"大森"},{"n":"田園調布"},{"n":"雪谷"},{"n":"桜町"},{"n":"千歳丘"},{"n":"松原"},{"n":"青山","j":1},{"n":"広尾"},{"n":"鷺宮"},{"n":"武蔵丘"},{"n":"杉並"},{"n":"豊多摩"},{"n":"西","j":1},{"n":"豊島"},{"n":"文京"},{"n":"竹台"},{"n":"板橋"},{"n":"大山"},{"n":"北園","t":1},{"n":"高島"},{"n":"井草"},{"n":"石神井"},{"n":"田柄"},{"n":"練馬"},{"n":"光丘"},{"n":"青井"},{"n":"足立"},{"n":"足立新田"},{"n":"足立西"},{"n":"江北"},{"n":"淵江"},{"n":"葛飾野"},{"n":"南葛飾"},{"n":"江戸川"},{"n":"葛西南"},{"n":"小岩"},{"n":"小松川"},{"n":"篠崎"},{"n":"紅葉川"},{"n":"片倉"},{"n":"八王子北"},{"n":"八王子東","j":1},{"n":"富士森"},{"n":"松が谷"},{"n":"立川","j":1},{"n":"武蔵野北","t":1},{"n":"多摩"},{"n":"府中"},{"n":"府中西"},{"n":"府中東"},{"n":"昭和"},{"n":"拝島"},{"n":"神代"},{"n":"調布北"},{"n":"調布南"},{"n":"小川"},{"n":"成瀬"},{"n":"野津田"},{"n":"町田"},{"n":"山崎"},{"n":"小金井北"},{"n":"小平"},{"n":"小平西"},{"n":"小平南"},{"n":"日野"},{"n":"日野台"},{"n":"南平"},{"n":"東村山西"},{"n":"国立","j":1},{"n":"福生"},{"n":"狛江"},{"n":"東大和"},{"n":"東大和南"},{"n":"清瀬"},{"n":"久留米西"},{"n":"武蔵村山"},{"n":"羽村"},{"n":"五日市"},{"n":"田無"},{"n":"保谷"},{"n":"永山"},{"n":"大島"},{"n":"新島"},{"n":"神津"},{"n":"三宅"},{"n":"八丈"},{"n":"小笠原"},{"n":"新宿（単位制）","j":1},{"n":"墨田川（単位制）","j":1},{"n":"国分寺（単位制）","j":1},{"n":"忍岡（単位制）"},{"n":"美原（単位制）"},{"n":"深沢（単位制）","t":1},{"n":"芦花（単位制）"},{"n":"飛鳥（単位制）"},{"n":"板橋有徳（単位制）"},{"n":"大泉桜（単位制）"},{"n":"翔陽（単位制）"},{"n":"上水（単位制）"},{"n":"深川（外国語コース）","k":{"英":2}},{"n":"松が谷（外国語コース）","k":{"国":2,"英":2}},{"n":"小平（外国語コース）","k":{"英":2}}];
+    var MAIN = ["国", "社", "数", "理", "英"], SUB = ["音", "美", "保体", "技家"];
+    var LABEL = { 国: "国語", 社: "社会", 数: "数学", 理: "理科", 英: "英語", 音: "音楽", 美: "美術", 保体: "保健体育", 技家: "技術・家庭" };
+    var STORE = "tooldock:naishin-tokyo:v1";
+    var $ = function (id) { return document.getElementById(id); };
+    var r1 = function (x) { return Math.round(x * 10) / 10; };
+
+    var gtb = $("grade").querySelector("tbody");
+    MAIN.concat(SUB).forEach(function (s) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + LABEL[s] + (SUB.indexOf(s) >= 0 ? "（×2）" : "") + '</td><td><select data-k="g" data-s="' + s + '"></select></td><td class="sum" data-sum="' + s + '"></td>';
+        var sel = tr.querySelector("select");
+        for (var v = 5; v >= 1; v--) { var o = document.createElement("option"); o.value = o.textContent = v; if (v === 3) o.selected = true; sel.appendChild(o); }
+        gtb.appendChild(tr);
+    });
+    var tot = document.createElement("tr"); tot.className = "total";
+    tot.innerHTML = '<td>換算内申</td><td></td><td id="tK"></td>';
+    gtb.appendChild(tot);
+
+    var etb = $("exam").querySelector("tbody");
+    ["英", "国", "数", "理", "社"].forEach(function (s) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + LABEL[s] + '<span data-kei="' + s + '"></span></td><td><input type="number" min="0" max="100" step="1" value="60" data-k="ex" data-s="' + s + '"></td>';
+        etb.appendChild(tr);
+    });
+
+    function fillSchools(q) {
+        var sel = $("school"), cur = sel.value; sel.textContent = "";
+        SCHOOLS.forEach(function (e, idx) {
+            if (q && e.n.indexOf(q) < 0) return;
+            var o = document.createElement("option"); o.value = idx; o.textContent = e.n; sel.appendChild(o);
+        });
+        if (cur && sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
+    }
+    function val(k, s) { var el = document.querySelector('[data-k="' + k + '"][data-s="' + s + '"]'); return el ? el.value : null; }
+
+    function render() {
+        var e = SCHOOLS[Number($("school").value)] || SCHOOLS[0];
+        var kei = e.k || {};
+
+        var info = "<b>" + e.n + "</b>　学力検査：調査書＝7：3（700点：300点）＋スピーキングテスト20点";
+        if (e.t) info += '<br><span class="warn">7：3と10：0（学力検査だけで1000点）の両方で計算し、高いほうを使います。</span>';
+        if (e.k) info += '<br><span class="warn">傾斜配点：' + Object.keys(kei).map(function (s) { return LABEL[s] + "×" + kei[s]; }).join("・") + "</span>";
+        if (e.j) info += "<br>国・数・英は自校作成問題です。";
+        $("info").innerHTML = info;
+        document.querySelectorAll("[data-kei]").forEach(function (sp) { var m = kei[sp.dataset.kei]; sp.textContent = m ? "（×" + m + "）" : ""; });
+
+        var K = 0;
+        MAIN.concat(SUB).forEach(function (s) {
+            var g = Number(val("g", s)), v = SUB.indexOf(s) >= 0 ? g * 2 : g;
+            K += v; document.querySelector('[data-sum="' + s + '"]').textContent = v;
+        });
+        $("tK").textContent = K;
+        var chosa = K * 300 / 65;
+
+        var num = 0, den = 0;
+        ["英", "国", "数", "理", "社"].forEach(function (s) {
+            var w = kei[s] || 1, x = Math.max(0, Math.min(100, Number(val("ex", s)) || 0));
+            num += x * w; den += 100 * w;
+        });
+        var raw = num / den * 500;                      // 傾斜をかけたあと500点満点に直した値（傾斜なしなら素点の合計）
+        var gaku = num / den * 700;
+        var esat = Number($("esat").value);
+        var t73 = gaku + chosa, t100 = num / den * 1000;
+        var useTen = e.t && t100 > t73;
+        var total = (useTen ? t100 : t73) + esat;
+
+        $("kansan").innerHTML = K + "<small> / 65</small>";
+        $("chosa").innerHTML = r1(chosa) + "<small> / 300</small>";
+        $("total").innerHTML = r1(total) + "<small> / 1020</small>";
+        $("calc").textContent = "学力検査 " + r1(gaku) + " / 700（5教科" + (e.k ? "・傾斜後を500点に直して " : " ") + r1(raw) + "点）＋ 調査書点 " + r1(chosa) + " ＋ スピーキング " + esat +
+            (e.t ? "　／　10：0なら " + r1(t100) + " ＋ " + esat + "（" + (useTen ? "こちらを採用" : "7：3を採用") + "）" : "");
+
+        var target = $("target"); if (target.value === "") target.placeholder = Math.round(total);
+        var goal = Number(target.value || target.placeholder);
+        var need73 = (goal - esat - chosa) / 700;           // 必要な得点率
+        var need = e.t ? Math.min(need73, (goal - esat) / 1000) : need73;
+        var ans = $("need"); ans.classList.remove("ng");
+        if (need <= 0) ans.textContent = "0点でも届きます";
+        else if (need > 1) { ans.textContent = "満点でも届きません"; ans.classList.add("ng"); }
+        else ans.textContent = "5教科で合計 約" + Math.ceil(need * 500 - 1e-9) + "点（1教科平均 約" + Math.ceil(need * 100 - 1e-9) + "点）" + (e.k ? "※傾斜をかける前の平均の目安" : "");
+
+        $("weight").textContent = "5教科の評定を1つ上げると当日点で約" + r1(300 / 65 / 1.4) + "点分、実技4教科なら約" + r1(600 / 65 / 1.4) + "点分です。";
+
+        try {
+            var st = { school: $("school").value, esat: $("esat").value, target: target.value, v: {} };
+            document.querySelectorAll("[data-k]").forEach(function (el) { st.v[el.dataset.k + ":" + el.dataset.s] = el.value; });
+            localStorage.setItem(STORE, JSON.stringify(st));
+        } catch (er) { /* 保存できなくても使える */ }
+    }
+
+    fillSchools("");
+    try {
+        var st = JSON.parse(localStorage.getItem(STORE) || "null");
+        if (st) {
+            if (st.school) $("school").value = st.school;
+            if (st.esat) $("esat").value = st.esat;
+            if (st.target) $("target").value = st.target;
+            Object.keys(st.v || {}).forEach(function (k) { var p = k.split(":"); var el = document.querySelector('[data-k="' + p[0] + '"][data-s="' + p[1] + '"]'); if (el) el.value = st.v[k]; });
+        }
+    } catch (er) { /* 壊れていれば初期値 */ }
+
+    $("q").addEventListener("input", function () { fillSchools($("q").value.trim()); render(); });
+    document.querySelectorAll(".quick button").forEach(function (bt) {
+        bt.addEventListener("click", function () { document.querySelectorAll('select[data-k="g"]').forEach(function (s) { s.value = bt.dataset.fill; }); render(); });
+    });
+    document.querySelector(".container").addEventListener("input", function (ev) { if (ev.target.id !== "q") render(); });
+    document.querySelector(".container").addEventListener("change", render);
+    render();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "都立高校の換算内申は何点満点ですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "中3の評定で、5教科は1倍、実技4教科は2倍にして足した65点満点です。選考では300点満点の調査書点に換算します。" }
+    },
+    {
+      "@type": "Question",
+      "name": "都立高校入試の総合得点は何点満点ですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "学力検査の得点700点、調査書点300点、スピーキングテスト（ESAT-J）20点の、合わせて1020点満点です（第一次募集・全日制の場合）。" }
+    },
+    {
+      "@type": "Question",
+      "name": "中1・中2の成績は入りますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "都立高校の一般入試（第一次募集）では、中3の評定だけを使います。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/naishin/kanagawa/" class="related-tool-card"><h3>神奈川県 内申点・S値計算（2027年入試）</h3><p>志望校の比率で内申点・S1値・S2値を計算し、目標のS値に必要な当日点も逆算できるツール。普通科109校の選考基準を収録。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
