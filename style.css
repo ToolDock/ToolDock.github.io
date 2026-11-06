@@ -40,6 +40,7 @@
    野球は黒（緑や青は特定の球団・リーグを思わせるため） */
 :root[data-cat="life"],     .c-life     { --c: #c2410c; }
 :root[data-cat="finance"],  .c-finance  { --c: #15803d; }
+:root[data-cat="tax"],      .c-tax      { --c: #0e7490; }
 :root[data-cat="work"],     .c-work     { --c: #1d4ed8; }
 :root[data-cat="math"],     .c-math     { --c: #6d28d9; }
 :root[data-cat="game"],     .c-game     { --c: #bf0000; }

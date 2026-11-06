@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>年収の壁チェッカー【2026年】178万・136万・130万…いくらまで働ける？</title>
+<meta name="description" content="年収を入れると、所得税・住民税・親や配偶者の扶養・社会保険の「年収の壁」のどれを超えるかが分かる無料ツール。2026年（令和8年）の178万円・136万円・119万円・130万円（19〜22歳は150万円）に対応。106万円の壁の撤廃後の社会保険にも対応しています。">
+<link rel="canonical" href="https://tooldock.github.io/nenshu-kabe/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="年収の壁チェッカー【2026年】178万・136万・130万…いくらまで働ける？ | ToolDock">
+<meta property="og:description" content="年収を入れると、所得税・住民税・親や配偶者の扶養・社会保険の「年収の壁」のどれを超えるかが分かる無料ツール。2026年（令和8年）の178万円・136万円・119万円・130万円（19〜22歳は150万円）に対応。106万円の壁の撤廃後の社会保険にも対応しています。">
+<meta property="og:url" content="https://tooldock.github.io/nenshu-kabe/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/nenshu-kabe.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "nenshu-kabe"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="年収の壁,178万円の壁,136万円の壁,130万円の壁,150万円の壁,106万円の壁,扶養,扶養控除,配偶者控除,特定親族特別控除,パート,アルバイト,学生,2026年,令和8年">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:28px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+.panel h2{ margin:0 0 12px; font-size:1.15rem; }
+.form{ display:grid; gap:16px; }
+.field > .label{ display:block; font-weight:700; font-size:.95rem; margin-bottom:6px; }
+.choices{ display:flex; flex-wrap:wrap; gap:8px; }
+.choices label{
+    display:flex; align-items:center; gap:6px; cursor:pointer;
+    padding:8px 12px; border:1px solid var(--line-input); border-radius:var(--r-ctl);
+    background:#fff; font-size:.95rem;
+}
+.choices label:has(input:checked){ border-color:var(--c); background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
+.choices input{ margin:0; accent-color:var(--c); }
+.income{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.income input[type="number"]{
+    width:7.5em; font:inherit; font-size:1.3rem; font-weight:700; padding:6px 10px;
+    border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right;
+}
+.income input[type="range"]{ flex:1; min-width:180px; accent-color:var(--c); }
+.check{ display:flex; gap:8px; align-items:flex-start; font-size:.95rem; cursor:pointer; }
+.check input{ margin-top:6px; accent-color:var(--c); }
+.hint{ font-size:.82rem; color:#5c6470; margin:4px 0 0; }
+
+/* 結果 */
+.result{ margin-top:26px; }
+.headline{
+    padding:14px 16px; border-left:6px solid var(--c);
+    background:color-mix(in srgb, var(--c) 7%, #fff); font-size:1.02rem;
+}
+.headline strong{ font-size:1.15rem; }
+.line{ position:relative; margin:30px 6px 64px; height:10px; background:#e6e4de; border-radius:5px; }
+.line .fill{ position:absolute; left:0; top:0; bottom:0; background:var(--c); border-radius:5px; }
+.line .tick{ position:absolute; top:-6px; width:2px; height:22px; background:#1c1d1f; }
+.line .tick span{
+    position:absolute; top:24px; transform:translateX(-50%); white-space:nowrap;
+    font-size:.72rem; font-weight:700; color:#1c1d1f;
+}
+.line .tick.alt span{ top:40px; }
+.line .tick.passed{ background:#b42318; }
+.line .tick.passed span{ color:#b42318; }
+.line .me{
+    position:absolute; top:-30px; transform:translateX(-50%);
+    font-size:.78rem; font-weight:700; color:var(--c); white-space:nowrap;
+}
+.walls{ list-style:none; margin:0; padding:0; border-top:1px solid var(--line); }
+.walls li{
+    display:grid; grid-template-columns:6.5em 1fr auto; gap:4px 14px; align-items:start;
+    padding:12px 4px; border-bottom:1px solid var(--line-soft);
+}
+.walls .amt{ font-weight:800; font-size:1.1rem; font-variant-numeric:tabular-nums; }
+.walls .what{ font-weight:700; }
+.walls .who{ display:inline-block; margin-left:6px; padding:0 6px; font-size:.75rem; font-weight:700; border:1px solid currentColor; }
+.walls .desc{ grid-column:2 / 4; font-size:.9rem; color:#3a3d42; }
+.walls .state{ font-size:.85rem; font-weight:700; white-space:nowrap; text-align:right; }
+.walls li.passed .state{ color:#b42318; }
+.walls li.passed .amt{ color:#b42318; }
+.walls li.ok .state{ color:#15803d; }
+.walls li.always .state{ color:var(--c); }
+.note{ font-size:.82rem; color:#5c6470; margin:12px 0 0; }
+
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:18px; }
+    .walls li{ grid-template-columns:5.2em 1fr; }
+    .walls .state{ grid-column:2; text-align:left; }
+    .walls .desc{ grid-column:1 / 3; }
+}
+
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; }
+.tool-article td.num{ white-space:nowrap; font-weight:700; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=tax">税金</a> <span class="bc-sep">›</span> <span>年収の壁チェッカー（2026年）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "税金", "item": "https://tooldock.github.io/category/?cat=tax"}, {"@type": "ListItem", "position": 3, "name": "年収の壁チェッカー（2026年）", "item": "https://tooldock.github.io/nenshu-kabe/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="container">
+
+<div class="td-banner">
+    <h1>年収の壁チェッカー（2026年）</h1>
+    <p>年収を入れると、所得税・住民税・扶養・社会保険の「壁」のどれを超えるかが分かります。2026年（令和8年）に働いて得る給与が対象です。</p>
+</div>
+
+<section class="panel" aria-label="入力">
+    <div class="form">
+        <div class="field">
+            <span class="label">あなたは</span>
+            <div class="choices" id="role">
+                <label><input type="radio" name="role" value="child" checked>親の扶養に入っている</label>
+                <label><input type="radio" name="role" value="spouse">配偶者（夫・妻）の扶養に入っている</label>
+                <label><input type="radio" name="role" value="self">扶養に入っていない</label>
+            </div>
+        </div>
+
+        <div class="field">
+            <span class="label">年齢（2026年12月31日の時点）</span>
+            <div class="choices" id="age">
+                <label><input type="radio" name="age" value="u16">15歳以下</label>
+                <label><input type="radio" name="age" value="16">16〜18歳</label>
+                <label><input type="radio" name="age" value="19" checked>19〜22歳</label>
+                <label><input type="radio" name="age" value="23">23〜59歳</label>
+                <label><input type="radio" name="age" value="60">60歳以上</label>
+            </div>
+        </div>
+
+        <div class="field">
+            <span class="label">年収（給与・アルバイト代の、税金などが引かれる前の総額）</span>
+            <div class="income">
+                <input type="number" id="incomeNum" min="0" max="500" step="1" value="120" inputmode="numeric" aria-label="年収（万円）"> <span>万円</span>
+                <input type="range" id="incomeRange" min="0" max="250" step="1" value="120" aria-label="年収（万円）">
+            </div>
+            <p class="hint">税金の壁は通勤手当を除いた額、社会保険の扶養は通勤手当も含めた額で判定します。</p>
+        </div>
+
+        <div class="field">
+            <label class="check"><input type="checkbox" id="shaho">
+                <span>勤め先で<b>週20時間以上</b>働いていて、勤め先の従業員が<b>51人以上</b>（または社会保険に入れる勤め先）。昼間の学生は除きます</span></label>
+            <p class="hint">当てはまると、年収に関係なく勤め先の健康保険・厚生年金に入ります（2026年10月から。いわゆる「106万円の壁」は撤廃）。</p>
+        </div>
+    </div>
+</section>
+
+<section class="result" aria-live="polite">
+    <div class="headline" id="headline"></div>
+    <div class="line" id="line" aria-hidden="true"></div>
+    <ul class="walls" id="walls"></ul>
+    <p class="note">金額は給与収入だけの場合の目安です。税金は2026年・2027年に得る給与（所得税は令和8・9年分、住民税は令和9・10年度分）の決まりで判定しています。住民税の金額は、お住まいの市区町村によって数万円低いことがあります。</p>
+</section>
+
+</div>
+
+<article class="tool-article">
+
+<h2>2026年の「年収の壁」一覧</h2>
+<p>給与だけで働く人の場合の目安です。税金の壁は「超えると、その分にだけ税金がかかる」もので、超えた瞬間に手取りが大きく減るわけではありません。手取りが大きく変わりやすいのは、社会保険の扶養（130万円・150万円）です。</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>年収</th><th>壁</th><th>超えるとどうなる</th></tr></thead>
+<tbody>
+<tr><td class="num">週20時間</td><td>社会保険への加入</td><td>勤め先の従業員が51人以上などの条件で、年収に関係なく勤め先の社会保険に入ります。2026年10月に月8.8万円（年106万円）の条件はなくなりました。昼間の学生は対象外です。</td></tr>
+<tr><td class="num">119万円</td><td>住民税</td><td>本人に住民税がかかり始めます（市区町村によっては112万円ほどから）。</td></tr>
+<tr><td class="num">130万円</td><td>社会保険の扶養</td><td>家族の健康保険の扶養から外れ、自分で国民健康保険・国民年金などに入ります。19〜22歳は150万円、60歳以上は180万円です。</td></tr>
+<tr><td class="num">136万円</td><td>扶養控除・配偶者控除</td><td>16〜18歳・23歳以上の子は、親の扶養控除がなくなります。配偶者は「配偶者特別控除」に切り替わり、169万円までは同じ額のままです。</td></tr>
+<tr><td class="num">159万円</td><td>特定親族特別控除</td><td>19〜22歳の子は、親の控除（63万円）が159万円を超えると段階的に減り、197万円を超えるとなくなります。</td></tr>
+<tr><td class="num">178万円</td><td>所得税</td><td>本人に所得税がかかり始めます。</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>「106万円の壁」はどうなった？</h2>
+<p>2026年10月1日に、社会保険に入る条件のうち「月の賃金が8.8万円以上（年約106万円）」がなくなりました。いまは、勤め先の従業員数などの条件を満たす職場で<strong>週20時間以上</strong>働くと、年収に関係なく勤め先の健康保険・厚生年金に入ります。保険料は自分で払うことになりますが、将来の年金が増え、病気やけがで休んだときの手当も受けられます。</p>
+
+<h2>19〜22歳の学生の場合</h2>
+<p>親の税金の控除は、子の年収が136万円を超えても「特定親族特別控除」に切り替わり、159万円までは今までと同じ63万円です。そのため、税金の面では159万円まではほぼ気にしなくて大丈夫です。気をつけたいのは、親の健康保険の扶養（19〜22歳は150万円未満）のほうです。</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 「103万円の壁」はもうないのですか？</strong><br>
+A. 所得税の壁は、2025年に160万円、2026年に178万円へ引き上げられました。親の扶養控除の線も136万円に上がっています。</p>
+<p><strong>Q. 年収は1月〜12月の合計ですか？</strong><br>
+A. 税金の壁は1月〜12月に支払われた給与の合計です。社会保険の扶養（130万円・150万円）は、これから1年間に得る見込みの年収で判断されます。2026年4月からは、労働契約の内容（時給・時間）をもとに判断されるようになりました。</p>
+<p><strong>Q. 交通費は年収に入りますか？</strong><br>
+A. 税金の壁では、通勤手当は（決められた上限までは）年収に入りません。社会保険の扶養の判定では、通勤手当も年収に入ります。</p>
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. このブラウザの中だけに保存されます。サーバーには送信されません。</p>
+
+<h2>免責事項</h2>
+<p class="note">給与収入だけがある場合の目安です。ほかの所得がある場合、配偶者や親の所得が高い場合（配偶者控除は本人の合計所得が900万円以下などの条件があります）、勤め先の健康保険組合の決まりによって、結果は変わります。実際の判断は、勤め先・税務署・お住まいの市区町村・加入している健康保険にご確認ください。</p>
+
+</article>
+
+<script>
+"use strict";
+(function () {
+    var STORE = "tooldock:nenshu-kabe:v1";
+    var $ = function (id) { return document.getElementById(id); };
+    var num = $("incomeNum"), range = $("incomeRange"), shaho = $("shaho");
+
+    function val(name) { var el = document.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : ""; }
+    function setVal(name, v) { var el = document.querySelector('input[name="' + name + '"][value="' + v + '"]'); if (el) el.checked = true; }
+
+    try {
+        var s = JSON.parse(localStorage.getItem(STORE) || "null");
+        if (s) { setVal("role", s.role); setVal("age", s.age); num.value = range.value = s.income; shaho.checked = !!s.shaho; }
+    } catch (e) { /* 保存できなくても使える */ }
+
+    /* 壁の一覧。cmp は「この金額を超えたら」（gt）か「この金額以上なら」（ge）か */
+    function walls(role, age, shahoOn) {
+        var w = [];
+        if (shahoOn) {
+            w.push({ amt: null, what: "勤め先の社会保険に入る", who: "あなた",
+                desc: "週20時間以上などの条件を満たすので、年収に関係なく勤め先の健康保険・厚生年金に入ります。保険料は給与から引かれ、家族の社会保険の扶養からは外れます。" });
+        }
+        w.push({ amt: 119, cmp: "gt", what: "住民税がかかる", who: "あなた",
+            desc: "本人に住民税がかかり始めます（翌年の6月ごろから）。市区町村によっては112万円ほどからかかります。" });
+        w.push({ amt: 178, cmp: "gt", what: "所得税がかかる", who: "あなた",
+            desc: "本人に所得税がかかり始めます。超えた分にだけかかるので、超えてすぐに手取りが大きく減ることはありません。" });
+
+        if (role === "child") {
+            if (age === "19") {
+                w.push({ amt: 136, cmp: "gt", what: "親の控除の種類が変わる", who: "親",
+                    desc: "親の「特定扶養控除」が「特定親族特別控除」に切り替わります。控除の額（63万円）は変わらないので、親の税金は増えません。" });
+                w.push({ amt: 159, cmp: "gt", what: "親の控除が減り始める", who: "親",
+                    desc: "特定親族特別控除が段階的に減り、親の所得税・住民税が少しずつ増えます。" });
+                w.push({ amt: 197, cmp: "gt", what: "親の控除がなくなる", who: "親",
+                    desc: "特定親族特別控除がなくなります。" });
+            } else if (age === "u16") {
+                /* 16歳未満は扶養控除の対象外なので、税金の扶養の壁は無い */
+            } else {
+                w.push({ amt: 136, cmp: "gt", what: "親の扶養控除がなくなる", who: "親",
+                    desc: "親の扶養控除（16〜18歳・23歳以上は38万円）がなくなり、親の所得税・住民税が増えます。" });
+            }
+        }
+        if (role === "spouse") {
+            w.push({ amt: 136, cmp: "gt", what: "配偶者控除から配偶者特別控除へ", who: "配偶者",
+                desc: "配偶者の控除が「配偶者特別控除」に切り替わります。169万円までは控除の額（38万円）が変わらないので、配偶者の税金は増えません。" });
+            w.push({ amt: 169, cmp: "gt", what: "配偶者の控除が減り始める", who: "配偶者",
+                desc: "配偶者特別控除が段階的に減り、配偶者の所得税・住民税が少しずつ増えます。" });
+            w.push({ amt: 207, cmp: "gt", what: "配偶者の控除がなくなる", who: "配偶者",
+                desc: "配偶者特別控除がなくなります。" });
+        }
+        if ((role === "child" || role === "spouse") && !shahoOn) {
+            var amt = age === "19" ? 150 : (age === "60" ? 180 : 130);
+            w.push({ amt: amt, cmp: "ge", what: "社会保険の扶養から外れる", who: "あなた",
+                desc: (role === "child" ? "親" : "配偶者") + "の健康保険の扶養から外れ、自分で国民健康保険などに入ります" +
+                    (role === "spouse" && age !== "60" ? "（国民年金も自分で払います）" : "") + "。保険料の分、手取りが大きく減りやすい壁です。" +
+                    (age === "19" ? "19〜22歳は150万円未満が扶養の目安です。" : "") +
+                    (age === "60" ? "60歳以上は180万円未満が扶養の目安です。" : "") });
+        }
+        return w;
+    }
+
+    function fmt(n) { return Math.round(n * 10) / 10 + "万円"; }
+
+    function render() {
+        var income = Math.max(0, Number(num.value) || 0);
+        var role = val("role"), age = val("age"), shahoOn = shaho.checked;
+        try { localStorage.setItem(STORE, JSON.stringify({ role: role, age: age, income: income, shaho: shahoOn })); } catch (e) { /* 保存できなくても使える */ }
+
+        var list = walls(role, age, shahoOn).sort(function (a, b) { return (a.amt == null ? -1 : a.amt) - (b.amt == null ? -1 : b.amt); });
+        list.forEach(function (w) {
+            if (w.amt == null) { w.state = "always"; return; }
+            var over = w.cmp === "ge" ? income >= w.amt : income > w.amt;
+            w.state = over ? "passed" : "ok";
+        });
+
+        /* 見出し：次の壁まであといくら */
+        var next = list.filter(function (w) { return w.state === "ok"; })[0];
+        var passed = list.filter(function (w) { return w.state === "passed"; });
+        var h = "年収 <strong>" + fmt(income) + "</strong> は、";
+        h += passed.length ? "<strong>" + passed.length + "つ</strong>の壁を超えています。" : "どの壁も超えていません。";
+        if (next) {
+            h += "次の壁は <strong>" + next.amt + "万円</strong>" + (next.cmp === "ge" ? "（以上で）" : "") + "の「" + next.what + "」で、" +
+                (next.amt - income > 0 ? "あと <strong>" + fmt(next.amt - income) + "</strong>です。" : "<strong>ちょうど上限</strong>です（1円でも超えると当てはまります）。");
+        }
+        $("headline").innerHTML = h;
+
+        /* 数直線 */
+        var max = Math.max(220, Math.ceil((income + 20) / 10) * 10);
+        var line = $("line"); line.textContent = "";
+        var pct = function (v) { return Math.min(100, v / max * 100) + "%"; };
+        var fill = document.createElement("div"); fill.className = "fill"; fill.style.width = pct(income); line.appendChild(fill);
+        var lastX = -1e9, alt = false;
+        list.filter(function (w) { return w.amt != null; }).forEach(function (w) {
+            var t = document.createElement("div");
+            var x = w.amt / max * 100;
+            alt = x - lastX < 9 ? !alt : false;      // 近い壁は名前を上下に互い違いにする
+            lastX = x;
+            t.className = "tick" + (w.state === "passed" ? " passed" : "") + (alt ? " alt" : "");
+            t.style.left = pct(w.amt);
+            var s = document.createElement("span"); s.textContent = w.amt + "万"; t.appendChild(s);
+            line.appendChild(t);
+        });
+        var me = document.createElement("div"); me.className = "me"; me.style.left = pct(income); me.textContent = "あなた ▼"; line.appendChild(me);
+
+        /* 一覧 */
+        var ul = $("walls"); ul.textContent = "";
+        list.forEach(function (w) {
+            var li = document.createElement("li"); li.className = w.state;
+            var state = w.state === "always" ? "当てはまる"
+                : w.state === "passed" ? "超えています"
+                : (w.amt - income > 0 ? "あと" + fmt(w.amt - income) : "ちょうど上限");
+            li.innerHTML = '<span class="amt"></span><span><span class="what"></span><span class="who"></span></span><span class="state"></span><span class="desc"></span>';
+            li.querySelector(".amt").textContent = w.amt == null ? "週20時間" : w.amt + "万円";
+            li.querySelector(".what").textContent = w.what;
+            li.querySelector(".who").textContent = w.who;
+            li.querySelector(".state").textContent = state;
+            li.querySelector(".desc").textContent = w.desc;
+            ul.appendChild(li);
+        });
+
+    }
+
+    num.addEventListener("input", function () { range.value = Math.min(250, Number(num.value) || 0); render(); });
+    range.addEventListener("input", function () { num.value = range.value; render(); });
+    document.querySelectorAll('input[name="role"], input[name="age"]').forEach(function (r) { r.addEventListener("change", render); });
+    shaho.addEventListener("change", render);
+    render();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "「103万円の壁」はもうないのですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "所得税の壁は、2025年に160万円、2026年に178万円へ引き上げられました。親の扶養控除の線も136万円に上がっています。" }
+    },
+    {
+      "@type": "Question",
+      "name": "年収は1月〜12月の合計ですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "税金の壁は1月〜12月に支払われた給与の合計です。社会保険の扶養（130万円・150万円）は、これから1年間に得る見込みの年収で判断されます。2026年4月からは、労働契約の内容（時給・時間）をもとに判断されるようになりました。" }
+    },
+    {
+      "@type": "Question",
+      "name": "交通費は年収に入りますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "税金の壁では、通勤手当は（決められた上限までは）年収に入りません。社会保険の扶養の判定では、通勤手当も年収に入ります。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
