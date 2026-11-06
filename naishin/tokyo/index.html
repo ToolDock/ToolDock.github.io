@@ -154,8 +154,9 @@ table.grade tr.total td{ font-weight:800; border-top:1px solid var(--ink); }
     </div>
     <p class="calc" id="calc"></p>
     <div class="goal">
-        目標の総合得点 <input type="number" id="target" min="0" max="1020" step="1" value=""> 点に必要な学力検査は
-        <span class="ans" id="need"></span>
+        志望校の目標の総合得点 <input type="number" id="target" min="0" max="1020" step="1" value="" placeholder="例 750">
+        <div id="verdict"></div>
+        <p style="margin:6px 0 0">目標に必要な学力検査：<span class="ans" id="need"></span></p>
         <p class="calc" id="weight"></p>
     </div>
 </section>
@@ -199,6 +200,7 @@ A. このブラウザの中だけに保存されます。サーバーには送�
 
 </article>
 
+<script src="/naishin/verdict.js"></script>
 <script>
 "use strict";
 (function () {
@@ -275,17 +277,23 @@ A. このブラウザの中だけに保存されます。サーバーには送�
         $("calc").textContent = "学力検査 " + r1(gaku) + " / 700（5教科" + (e.k ? "・傾斜後を500点に直して " : " ") + r1(raw) + "点）＋ 調査書点 " + r1(chosa) + " ＋ スピーキング " + esat +
             (e.t ? "　／　10：0なら " + r1(t100) + " ＋ " + esat + "（" + (useTen ? "こちらを採用" : "7：3を採用") + "）" : "");
 
-        var target = $("target"); if (target.value === "") target.placeholder = Math.round(total);
-        var goal = Number(target.value || target.placeholder);
+        var target = $("target"), goal = Number(target.value);
         var need73 = (goal - esat - chosa) / 700;           // 必要な得点率
         var need = e.t ? Math.min(need73, (goal - esat) / 1000) : need73;
         var ans = $("need"); ans.classList.remove("ng");
-        if (need <= 0) ans.textContent = "0点でも届きます";
+        if (target.value === "") ans.textContent = "目標を入れると表示します";
+        else if (need <= 0) ans.textContent = "0点でも届きます";
         else if (need > 1) { ans.textContent = "満点でも届きません"; ans.classList.add("ng"); }
         else ans.textContent = "5教科で合計 約" + Math.ceil(need * 500 - 1e-9) + "点（1教科平均 約" + Math.ceil(need * 100 - 1e-9) + "点）" + (e.k ? "※傾斜をかける前の平均の目安" : "");
 
         $("weight").textContent = "5教科の評定を1つ上げると当日点で約" + r1(300 / 65 / 1.4) + "点分、実技4教科なら約" + r1(600 / 65 / 1.4) + "点分です。";
 
+        var rawSum = 0, leftM = 0, leftS = 0;
+        ["英", "国", "数", "理", "社"].forEach(function (s) { rawSum += Math.max(0, Math.min(100, Number(val("ex", s)) || 0)); });
+        MAIN.forEach(function (s) { leftM += 5 - Number(val("g", s)); });
+        SUB.forEach(function (s) { leftS += 5 - Number(val("g", s)); });
+        tdVerdict($("verdict"), { score: total, goal: target.value, dec: 1, exam: { per: (useTen ? 1000 : 700) / den, left: 500 - rawSum, n: 5 },
+            naishin: useTen ? [] : [{ label: "実技4教科の評定", per: 600 / 65, left: leftS }, { label: "5教科の評定", per: 300 / 65, left: leftM }] });
         try {
             var st = { school: $("school").value, esat: $("esat").value, target: target.value, v: {} };
             document.querySelectorAll("[data-k]").forEach(function (el) { st.v[el.dataset.k + ":" + el.dataset.s] = el.value; });

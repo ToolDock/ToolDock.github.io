@@ -155,8 +155,9 @@ table.grade tr.total td{ font-weight:800; border-top:1px solid var(--ink); }
     </div>
     <p class="calc" id="calc"></p>
     <div class="goal">
-        目標の総合点 <input type="number" id="target" min="0" max="900" step="1" value=""> 点に必要な学力検査は
-        <span class="ans" id="need"></span>
+        志望校の目標の総合点 <input type="number" id="target" min="0" max="900" step="1" value="" placeholder="例 600">
+        <div id="verdict"></div>
+        <p style="margin:6px 0 0">目標に必要な学力検査：<span class="ans" id="need"></span></p>
         <p class="calc" id="weight"></p>
     </div>
 </section>
@@ -215,6 +216,7 @@ A. このブラウザの中だけに保存されます。サーバーには送�
 
 </article>
 
+<script src="/naishin/verdict.js"></script>
 <script>
 "use strict";
 (function () {
@@ -287,16 +289,19 @@ A. このブラウザの中だけに保存されます。サーバーには送�
         $("total").innerHTML = r1(total) + "<small> / 900</small>";
         $("calc").textContent = "学力検査 " + G + " × " + a.toFixed(1) + " ＝ " + r1(G * a) + "　＋　内申点 " + N + " × " + b.toFixed(1) + " ＝ " + r1(N * b) + engNote;
 
-        var target = $("target"); if (target.value === "") target.placeholder = Math.round(total);
-        var goal = Number(target.value || target.placeholder);
+        var target = $("target"), goal = Number(target.value);
         var need = (goal - N * b) / a;
         var ans = $("need"); ans.classList.remove("ng");
-        if (need <= 0) ans.textContent = "0点でも届きます";
+        if (target.value === "") ans.textContent = "目標を入れると表示します";
+        else if (need <= 0) ans.textContent = "0点でも届きます";
         else if (need > 450 + 1e-9) { ans.textContent = "満点でも届きません"; ans.classList.add("ng"); }
         else ans.textContent = "5教科で合計 約" + Math.ceil(need - 1e-9) + "点（1教科平均 約" + Math.ceil(need / 5 - 1e-9) + "点）" + (rate ? "※英語は読み替え後の点数で数えます" : "");
 
         $("weight").textContent = "この学校では、中3の評定1つで総合点が" + r1(6 * b) + "点（当日点で約" + r1(6 * b / a) + "点分）、中1・中2の評定1つで" + r1(2 * b) + "点（約" + r1(2 * b / a) + "点分）動きます。";
 
+        var leftK = 0; SUBJ.forEach(function (s) { leftK += 5 - Number(el("g3", s).value); });
+        tdVerdict($("verdict"), { score: total, goal: target.value, dec: 1, exam: { per: a, left: 450 - G, n: 5 },
+            naishin: [{ label: "中3の評定", per: 6 * b, left: leftK }] });
         try {
             var st = { school: $("school").value, eiken: $("eiken").value, target: target.value, v: {} };
             document.querySelectorAll("[data-k]").forEach(function (x) { st.v[x.dataset.k + ":" + x.dataset.s] = x.value; });
