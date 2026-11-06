@@ -27,7 +27,7 @@
   const UPDATES_COUNT = 4;
   const UPDATE_KIND = { new: "NEW", update: "更新", fix: "修正" };
 
-  const CATEGORY_ORDER = ["math", "work", "life", "finance", "game", "baseball"];
+  const CATEGORY_ORDER = ["math", "work", "life", "finance", "tax", "game", "baseball"];
 
   /* ---- 背景の明るさから配色を決める ---- */
 
