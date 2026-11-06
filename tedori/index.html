@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>手取り計算【2026年】年収から手取りを計算｜社会保険料・所得税・住民税の内訳つき</title>
+<meta name="description" content="年収（額面）を入れると、健康保険・厚生年金・雇用保険・子ども・子育て支援金・所得税・住民税を引いた手取りの目安が分かる無料ツール。2026年度の保険料率と、178万円の壁（基礎控除104万円・給与所得控除74万円）に対応。年齢・扶養家族・健康保険の料率も設定できます。">
+<link rel="canonical" href="https://tooldock.github.io/tedori/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="手取り計算【2026年】年収から手取りを計算｜社会保険料・所得税・住民税の内訳つき | ToolDock">
+<meta property="og:description" content="年収（額面）を入れると、健康保険・厚生年金・雇用保険・子ども・子育て支援金・所得税・住民税を引いた手取りの目安が分かる無料ツール。2026年度の保険料率と、178万円の壁（基礎控除104万円・給与所得控除74万円）に対応。年齢・扶養家族・健康保険の料率も設定できます。">
+<meta property="og:url" content="https://tooldock.github.io/tedori/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/tedori.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "tedori"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="手取り,手取り計算,年収,額面,手取り額,社会保険料,所得税,住民税,2026年,令和8年,月収,早見表">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:28px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+.grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:14px 18px; }
+.f label, .f .label{ display:block; font-size:.88rem; font-weight:700; margin-bottom:4px; }
+.f .in{ display:flex; align-items:center; gap:6px; }
+.f input[type="number"], .f select{
+    width:100%; min-width:0; font:inherit; font-size:1rem; padding:7px 9px;
+    border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; text-align:right;
+}
+.f select{ text-align:left; }
+.f .unit{ white-space:nowrap; font-size:.9rem; }
+.f .hint{ font-size:.78rem; color:#5c6470; margin:3px 0 0; }
+.f.salary input[type="number"]{ font-size:1.3rem; font-weight:700; }
+.f.salary input[type="range"]{ width:100%; margin-top:8px; accent-color:var(--c); }
+.check{ display:flex; gap:6px; align-items:center; font-size:.92rem; cursor:pointer; }
+.check input{ accent-color:var(--c); }
+
+.result{
+    margin:22px 0 0; padding:18px; border:2px solid var(--c);
+    background:color-mix(in srgb, var(--c) 5%, #fff);
+}
+.result .row{ display:flex; flex-wrap:wrap; gap:6px 28px; align-items:baseline; }
+.result .k{ font-size:.9rem; }
+.result .v{ font-size:2rem; font-weight:800; color:var(--c); font-variant-numeric:tabular-nums; }
+.result .v.m{ font-size:1.5rem; }
+.bar{ display:flex; height:22px; margin:14px 0 4px; overflow:hidden; border-radius:3px; }
+.bar span{ display:block; height:100%; }
+.legend{ display:flex; flex-wrap:wrap; gap:4px 14px; font-size:.8rem; }
+.legend i{ display:inline-block; width:10px; height:10px; margin-right:4px; vertical-align:-1px; }
+.bd{ width:100%; border-collapse:collapse; margin-top:14px; font-size:.9rem; }
+.bd th, .bd td{ padding:6px 8px; border-bottom:1px solid var(--line-soft); text-align:left; }
+.bd td{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.bd tr.sum th, .bd tr.sum td{ font-weight:800; border-top:1px solid var(--ink); }
+.note{ font-size:.82rem; color:#5c6470; margin:12px 0 0; }
+
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:18px; }
+    .result .v{ font-size:1.6rem; }
+}
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:right; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; text-align:center; }
+.tool-article td:first-child{ text-align:center; font-weight:700; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=tax">税金</a> <span class="bc-sep">›</span> <span>手取り計算（2026年）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "税金", "item": "https://tooldock.github.io/category/?cat=tax"}, {"@type": "ListItem", "position": 3, "name": "手取り計算（2026年）", "item": "https://tooldock.github.io/tedori/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="container">
+
+<div class="td-banner">
+    <h1>手取り計算（2026年）</h1>
+    <p>年収（額面）を入れると、社会保険料・所得税・住民税を引いた手取りの目安が分かります。2026年度の保険料率と、178万円の壁の改正に対応しています。</p>
+</div>
+
+<form id="form" autocomplete="off" onsubmit="return false">
+<div class="grid">
+    <div class="f salary">
+        <label for="salary">年収（額面。給与・賞与の総額）</label>
+        <div class="in"><input type="number" id="salary" min="0" step="1" value="400" inputmode="decimal"><span class="unit">万円</span></div>
+        <input type="range" id="salaryRange" min="0" max="1500" step="10" value="400" aria-label="年収（万円）">
+    </div>
+    <div class="f">
+        <label for="age">年齢</label>
+        <select id="age">
+            <option value="u40">39歳以下</option>
+            <option value="40">40〜64歳（介護保険料あり）</option>
+            <option value="65">65〜69歳</option>
+            <option value="70">70歳以上</option>
+        </select>
+    </div>
+    <div class="f">
+        <label for="kenpo">健康保険の料率（会社と折半する前）</label>
+        <div class="in"><input type="number" id="kenpo" min="0" max="20" step="0.01" value="9.90" inputmode="decimal"><span class="unit">%</span></div>
+        <p class="hint">協会けんぽの2026年度の全国平均。都道府県や健康保険組合で違います。</p>
+    </div>
+    <div class="f">
+        <span class="label">家族</span>
+        <label class="check"><input type="checkbox" id="spouse"> 配偶者を扶養している（年収136万円以下）</label>
+        <div class="in" style="margin-top:6px"><span class="unit">16〜18歳・23歳以上の扶養家族</span><input type="number" id="depGeneral" min="0" max="9" step="1" value="0" style="width:4em"><span class="unit">人</span></div>
+        <div class="in" style="margin-top:6px"><span class="unit">19〜22歳の扶養家族</span><input type="number" id="depSpecial" min="0" max="9" step="1" value="0" style="width:4em"><span class="unit">人</span></div>
+    </div>
+</div>
+</form>
+
+<section class="result" aria-live="polite">
+    <div class="row">
+        <div><div class="k">年間の手取り</div><div class="v" id="yearNet"></div></div>
+        <div><div class="k">月あたり（年収÷12で計算）</div><div class="v m" id="monthNet"></div></div>
+        <div><div class="k">手取りの割合</div><div class="v m" id="ratio"></div></div>
+    </div>
+    <div class="bar" id="bar" aria-hidden="true"></div>
+    <div class="legend" id="legend"></div>
+    <table class="bd" id="bd"></table>
+</section>
+<p class="note">会社員（厚生年金・協会けんぽなどに加入）で、給与だけがある人の目安です。社会保険料は年収を12か月で割った月給から計算しているので、賞与の多い人や、標準報酬月額の区切りによって数千円〜数万円ずれます。住民税は、2026年の収入にかかる分（2027年6月から払う分）です。</p>
+
+</div>
+
+<article class="tool-article">
+
+<h2>年収別の手取り早見表（2026年）</h2>
+<p>39歳以下・扶養なし・協会けんぽの全国平均で計算した目安です。</p>
+<div class="table-scroll">
+<table id="table">
+<thead><tr><th>年収</th><th>社会保険料</th><th>所得税</th><th>住民税</th><th>手取り</th><th>月あたり</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+
+<h2>引かれるもの</h2>
+<p><strong>社会保険料</strong>：健康保険（9.90%の半分）・厚生年金（18.3%の半分）・雇用保険（0.5%）・子ども・子育て支援金（0.23%の半分、2026年4月から）。40〜64歳は介護保険（1.62%の半分）も加わります。<br>
+<strong>所得税</strong>：給与所得控除（年収220万円までは74万円）と基礎控除（所得489万円以下は104万円）などを引いた額に、5〜45%の税率をかけます。<br>
+<strong>住民税</strong>：基礎控除43万円などを引いた額の10%と、均等割（森林環境税を含めて年5,000円）。</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 手取りは年収の何割くらいですか？</strong><br>
+A. 年収300〜600万円の会社員なら、おおむね75〜80%です。年収が上がるほど所得税の税率が上がり、割合は下がっていきます。</p>
+<p><strong>Q. 2026年は手取りが増えますか？</strong><br>
+A. 所得税は、基礎控除などの引き上げで、多くの人が数千円〜数万円下がります（12月の年末調整でまとめて戻ります）。一方で、2026年4月から子ども・子育て支援金が給与から引かれるようになりました。</p>
+<p><strong>Q. 1年目の会社員でも同じですか？</strong><br>
+A. 住民税は前の年の収入にかかるので、働き始めた年は住民税が引かれません。このツールの住民税は、今年の収入にかかる分（翌年から払う分）です。</p>
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. このブラウザの中だけに保存されます。サーバーには送信されません。</p>
+
+<h2>免責事項</h2>
+<p class="note">給与だけがある会社員の目安です。保険料率は2026年度（健康保険・介護・子ども・子育て支援金は協会けんぽ、雇用保険は一般の事業）のものです。生命保険料控除・iDeCo・住宅ローン控除・ふるさと納税などは含めていません。実際の金額は給与明細・源泉徴収票でご確認ください。</p>
+
+</article>
+
+<script>
+"use strict";
+(function () {
+    var STORE = "tooldock:tedori:v1";
+    var IDS = ["salary", "age", "kenpo", "spouse", "depGeneral", "depSpecial"];
+    var $ = function (id) { return document.getElementById(id); };
+
+    /* 2026年度の率（本人の負担分） */
+    var PENSION = 0.0915, KAIGO = 0.0081, SHIEN = 0.00115, KOYO = 0.005;
+    var PENSION_MAX = 650000, PENSION_MIN = 88000, HEALTH_MAX = 1390000, HEALTH_MIN = 58000;
+
+    /* 給与所得控除（2026年分の所得税・2027年度の住民税） */
+    function kyuyo(s) {
+        if (s <= 2200000) return Math.min(s, 740000);
+        var a = s < 6600000 ? Math.floor(s / 4000) * 4000 : s;
+        if (s <= 3600000) return a * 0.3 + 80000;
+        if (s <= 6600000) return a * 0.2 + 440000;
+        if (s <= 8500000) return s * 0.1 + 1100000;
+        return 1950000;
+    }
+    function kisoIncome(x) {                       // 所得税の基礎控除
+        if (x <= 4890000) return 1040000;
+        if (x <= 6550000) return 670000;
+        if (x <= 23500000) return 620000;
+        if (x <= 24000000) return 480000;
+        if (x <= 24500000) return 320000;
+        if (x <= 25000000) return 160000;
+        return 0;
+    }
+    function kisoJumin(x) {                        // 住民税の基礎控除
+        if (x <= 24000000) return 430000;
+        if (x <= 24500000) return 290000;
+        if (x <= 25000000) return 150000;
+        return 0;
+    }
+    function incomeTax(t) {
+        var r = t <= 1950000 ? t * 0.05 : t <= 3300000 ? t * 0.10 - 97500 : t <= 6950000 ? t * 0.20 - 427500
+            : t <= 9000000 ? t * 0.23 - 636000 : t <= 18000000 ? t * 0.33 - 1536000 : t <= 40000000 ? t * 0.40 - 2796000 : t * 0.45 - 4796000;
+        return Math.floor(Math.max(0, r) * 1.021 / 100) * 100;
+    }
+    function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
+
+    function calc(v) {
+        var s = v.salary;
+        var monthly = s / 12;
+        /* 社会保険料（月給から。年収0のときは0） */
+        var health = 0, kaigo = 0, shien = 0, pension = 0;
+        if (s > 0) {
+            var hm = clamp(monthly, HEALTH_MIN, HEALTH_MAX);
+            health = hm * v.kenpo / 100 / 2 * 12;
+            shien = hm * SHIEN * 12;
+            if (v.age === "40") kaigo = hm * KAIGO * 12;
+            if (v.age !== "70") pension = clamp(monthly, PENSION_MIN, PENSION_MAX) * PENSION * 12;
+        }
+        var koyo = s * KOYO;
+        var shaho = Math.round(health + kaigo + shien + pension + koyo);
+
+        var income = Math.max(0, s - kyuyo(s));
+        var tier = income <= 9000000 ? 0 : income <= 9500000 ? 1 : income <= 10000000 ? 2 : -1;
+
+        /* 所得税 */
+        var spouseI = v.spouse && tier >= 0 ? [380000, 260000, 130000][tier] : 0;
+        var depI = v.depGeneral * 380000 + v.depSpecial * 630000;
+        var taxableI = Math.floor(Math.max(0, income - kisoIncome(income) - shaho - spouseI - depI) / 1000) * 1000;
+        var itax = incomeTax(taxableI);
+
+        /* 住民税（所得割10%・均等割5,000円。非課税の線は所得割の全国の基準） */
+        var spouseJ = v.spouse && tier >= 0 ? [330000, 220000, 110000][tier] : 0;
+        var depJ = v.depGeneral * 330000 + v.depSpecial * 450000;
+        var people = 1 + (v.spouse ? 1 : 0) + v.depGeneral + v.depSpecial;
+        var limit = people > 1 ? 350000 * people + 100000 + 320000 : 450000;
+        var jtax = 0;
+        if (income > limit) {
+            var taxableJ = Math.floor(Math.max(0, income - kisoJumin(income) - shaho - spouseJ - depJ) / 1000) * 1000;
+            /* 調整控除：所得税と住民税の人的控除の差（基礎5万・配偶者5万・扶養5万・特定扶養18万）の5% */
+            var diff = 50000 + (spouseJ ? 50000 : 0) + v.depGeneral * 50000 + v.depSpecial * 180000;
+            var adj = income > 25000000 ? 0 : taxableJ <= 2000000 ? Math.min(diff, taxableJ) * 0.05
+                : Math.max(diff - (taxableJ - 2000000), 50000) * 0.05;
+            var shotokuwari = Math.floor(Math.max(0, taxableJ * 0.10 - adj) / 100) * 100;
+            jtax = shotokuwari + 5000;
+        }
+        var net = s - shaho - itax - jtax;
+        return { salary: s, health: Math.round(health), kaigo: Math.round(kaigo), shien: Math.round(shien), pension: Math.round(pension),
+                 koyo: Math.round(koyo), shaho: shaho, itax: itax, jtax: jtax, net: net };
+    }
+
+    function yen(x) { return Math.round(x).toLocaleString("ja-JP") + "円"; }
+    function man(x) { return (Math.round(x / 1000) / 10).toLocaleString("ja-JP") + "万円"; }
+
+    function read() {
+        return {
+            salary: Math.max(0, Number($("salary").value) || 0) * 10000, age: $("age").value,
+            kenpo: Math.max(0, Number($("kenpo").value) || 0), spouse: $("spouse").checked,
+            depGeneral: Math.max(0, Number($("depGeneral").value) || 0), depSpecial: Math.max(0, Number($("depSpecial").value) || 0)
+        };
+    }
+
+    var COLORS = { net: "var(--c)", shaho: "#94a3b8", itax: "#f59e0b", jtax: "#b45309" };
+
+    function render() {
+        var v = read();
+        try { var s = {}; IDS.forEach(function (id) { var el = $(id); s[id] = el.type === "checkbox" ? el.checked : el.value; }); localStorage.setItem(STORE, JSON.stringify(s)); } catch (e) { /* 保存できなくても使える */ }
+        var r = calc(v);
+        $("yearNet").textContent = man(r.net);
+        $("monthNet").textContent = man(r.net / 12);
+        $("ratio").textContent = r.salary ? (Math.round(r.net / r.salary * 1000) / 10) + "%" : "—";
+
+        var bar = $("bar"), legend = $("legend"); bar.textContent = ""; legend.textContent = "";
+        [["net", "手取り", r.net], ["shaho", "社会保険料", r.shaho], ["itax", "所得税", r.itax], ["jtax", "住民税", r.jtax]].forEach(function (p) {
+            if (!r.salary) return;
+            var sp = document.createElement("span"); sp.style.width = (p[2] / r.salary * 100) + "%"; sp.style.background = COLORS[p[0]]; bar.appendChild(sp);
+            var lg = document.createElement("span"); lg.innerHTML = '<i></i>'; lg.querySelector("i").style.background = COLORS[p[0]];
+            lg.appendChild(document.createTextNode(p[1] + " " + man(p[2]))); legend.appendChild(lg);
+        });
+
+        var rows = [
+            ["年収（額面）", yen(r.salary)],
+            ["健康保険", "−" + yen(r.health)],
+            ["介護保険", "−" + yen(r.kaigo)],
+            ["子ども・子育て支援金", "−" + yen(r.shien)],
+            ["厚生年金", "−" + yen(r.pension)],
+            ["雇用保険", "−" + yen(r.koyo)],
+            ["所得税（復興特別所得税を含む）", "−" + yen(r.itax)],
+            ["住民税", "−" + yen(r.jtax)],
+            ["手取り", yen(r.net), "sum"]
+        ];
+        var bd = $("bd"); bd.textContent = "";
+        rows.forEach(function (row) {
+            var tr = document.createElement("tr"); if (row[2]) tr.className = row[2];
+            var th = document.createElement("th"); th.textContent = row[0];
+            var td = document.createElement("td"); td.textContent = row[1];
+            tr.appendChild(th); tr.appendChild(td); bd.appendChild(tr);
+        });
+    }
+
+    /* 早見表 */
+    (function () {
+        var tb = document.querySelector("#table tbody");
+        [100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1500].forEach(function (m) {
+            var r = calc({ salary: m * 10000, age: "u40", kenpo: 9.9, spouse: false, depGeneral: 0, depSpecial: 0 });
+            var tr = document.createElement("tr");
+            [m + "万円", man(r.shaho), man(r.itax), man(r.jtax), man(r.net), man(r.net / 12)].forEach(function (t) {
+                var td = document.createElement("td"); td.textContent = t; tr.appendChild(td);
+            });
+            tb.appendChild(tr);
+        });
+    })();
+
+    try {
+        var s = JSON.parse(localStorage.getItem(STORE) || "null");
+        if (s) IDS.forEach(function (id) { if (s[id] === undefined) return; var el = $(id); if (el.type === "checkbox") el.checked = !!s[id]; else el.value = s[id]; });
+    } catch (e) { /* 壊れていれば初期値 */ }
+    $("salaryRange").value = $("salary").value;
+    $("salary").addEventListener("input", function () { $("salaryRange").value = $("salary").value; });
+    $("salaryRange").addEventListener("input", function () { $("salary").value = $("salaryRange").value; render(); });
+    $("form").addEventListener("input", render);
+    $("form").addEventListener("change", render);
+    render();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "手取りは年収の何割くらいですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "年収300〜600万円の会社員なら、おおむね75〜80%です。年収が上がるほど所得税の税率が上がり、割合は下がっていきます。" }
+    },
+    {
+      "@type": "Question",
+      "name": "2026年は手取りが増えますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "所得税は、基礎控除などの引き上げで、多くの人が数千円〜数万円下がります（12月の年末調整でまとめて戻ります）。一方で、2026年4月から子ども・子育て支援金が給与から引かれるようになりました。" }
+    },
+    {
+      "@type": "Question",
+      "name": "1年目の会社員でも同じですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "住民税は前の年の収入にかかるので、働き始めた年は住民税が引かれません。このツールの住民税は、今年の収入にかかる分（翌年から払う分）です。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/nenshu-kabe/" class="related-tool-card"><h3>年収の壁チェッカー（2026年）</h3><p>年収を入れると、所得税・住民税・扶養・社会保険の「年収の壁」のどれを超えるかが分かるツール。</p></a>
+<a href="/zeikin-calendar/" class="related-tool-card"><h3>税金の締め切りカレンダー（2026〜2027年）</h3><p>年末調整・ふるさと納税・確定申告など、個人の税金と書類の締め切りを時期順にまとめた一覧。</p></a>
+<a href="/nencho/" class="related-tool-card"><h3>年末調整の還付金シミュレーター（2026年分）</h3><p>年収と引かれた所得税・控除を入れると、年末調整で戻る所得税の目安と、178万円の壁などの減税分が分かるツール。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
