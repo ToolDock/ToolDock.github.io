@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>年末調整の還付金シミュレーター【2026年・令和8年分】いくら戻る？178万円の壁の減税分も</title>
+<meta name="description" content="年収と、今年引かれた所得税・社会保険料・各種控除を入れると、2026年（令和8年分）の年末調整で戻る（または追加で引かれる）所得税の目安が分かる無料ツール。基礎控除104万円・給与所得控除74万円など、12月の年末調整でまとめて反映される改正の減税分も出します。">
+<link rel="canonical" href="https://tooldock.github.io/nencho/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="年末調整の還付金シミュレーター【2026年・令和8年分】いくら戻る？178万円の壁の減税分も | ToolDock">
+<meta property="og:description" content="年収と、今年引かれた所得税・社会保険料・各種控除を入れると、2026年（令和8年分）の年末調整で戻る（または追加で引かれる）所得税の目安が分かる無料ツール。基礎控除104万円・給与所得控除74万円など、12月の年末調整でまとめて反映される改正の減税分も出します。">
+<meta property="og:url" content="https://tooldock.github.io/nencho/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/nencho.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "nencho"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="年末調整,還付金,いくら戻る,計算,シミュレーション,2026年,令和8年分,178万円の壁,基礎控除,給与所得控除,特定親族特別控除,配偶者控除,扶養控除">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:28px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+fieldset{ border:1px solid var(--line); margin:0 0 16px; padding:14px 16px 16px; }
+legend{ font-weight:800; padding:0 6px; }
+.grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px 18px; }
+.f label{ display:block; font-size:.88rem; font-weight:700; margin-bottom:4px; }
+.f .in{ display:flex; align-items:center; gap:6px; }
+.f input[type="number"], .f select{
+    width:100%; min-width:0; font:inherit; font-size:1rem; padding:7px 9px;
+    border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; text-align:right;
+}
+.f select{ text-align:left; }
+.f .unit{ white-space:nowrap; font-size:.9rem; }
+.f .hint{ font-size:.78rem; color:#5c6470; margin:3px 0 0; }
+.check{ display:flex; gap:6px; align-items:center; font-size:.85rem; margin-top:4px; cursor:pointer; }
+.check input{ accent-color:var(--c); }
+input:disabled{ background:#f4f3ef; color:#5c6470; }
+
+.result{
+    margin:22px 0 0; padding:18px 18px 14px; border:2px solid var(--c);
+    background:color-mix(in srgb, var(--c) 5%, #fff);
+}
+.result .big{ font-size:1.05rem; }
+.result .big strong{ font-size:2rem; font-variant-numeric:tabular-nums; color:var(--c); }
+.result .big.minus strong{ color:#b42318; }
+.result .sub{ margin:6px 0 0; font-size:.92rem; }
+.result .sub b{ color:var(--c); }
+.bd{ width:100%; border-collapse:collapse; margin-top:14px; font-size:.9rem; }
+.bd th, .bd td{ padding:6px 8px; border-bottom:1px solid var(--line-soft); text-align:left; }
+.bd td{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.bd tr.sum th, .bd tr.sum td{ font-weight:800; border-top:1px solid var(--ink); }
+.note{ font-size:.82rem; color:#5c6470; margin:12px 0 0; }
+
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:18px; }
+    fieldset{ padding:12px; }
+}
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=tax">税金</a> <span class="bc-sep">›</span> <span>年末調整の還付金シミュレーター（2026年分）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "税金", "item": "https://tooldock.github.io/category/?cat=tax"}, {"@type": "ListItem", "position": 3, "name": "年末調整の還付金シミュレーター（2026年分）", "item": "https://tooldock.github.io/nencho/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="container">
+
+<div class="td-banner">
+    <h1>年末調整の還付金シミュレーター（2026年分）</h1>
+    <p>今年の給与と、引かれた所得税・社会保険料・控除を入れると、12月の年末調整で戻る所得税の目安が分かります。2026年は「178万円の壁」などの減税が年末調整でまとめて反映されます。</p>
+</div>
+
+<form id="form" autocomplete="off" onsubmit="return false">
+
+<fieldset>
+    <legend>今年の給与</legend>
+    <div class="grid">
+        <div class="f">
+            <label for="salary">給与・賞与の総額（1〜12月の見込み）</label>
+            <div class="in"><input type="number" id="salary" min="0" step="1" value="400" inputmode="decimal"><span class="unit">万円</span></div>
+            <p class="hint">税金などが引かれる前の額。通勤手当（非課税の分）は除きます。</p>
+        </div>
+        <div class="f">
+            <label for="withheld">今年引かれた所得税の合計</label>
+            <div class="in"><input type="number" id="withheld" min="0" step="100" value="" inputmode="numeric" placeholder="自動で目安"><span class="unit">円</span></div>
+            <p class="hint">給与明細の「所得税」を12月分・賞与分まで足した額。空欄なら、改正前の決まりで引かれていたとして目安を出します。</p>
+        </div>
+        <div class="f">
+            <label for="shaho">社会保険料の合計（健康保険・厚生年金・雇用保険など）</label>
+            <div class="in"><input type="number" id="shaho" min="0" step="100" value="" inputmode="numeric" placeholder="自動で目安"><span class="unit">円</span></div>
+            <p class="hint">空欄なら、給与の15%で計算します（会社員の平均的な割合）。</p>
+        </div>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>家族</legend>
+    <div class="grid">
+        <div class="f">
+            <label for="spouse">配偶者</label>
+            <select id="spouse">
+                <option value="none">いない・控除を受けない</option>
+                <option value="yes">いる（69歳以下）</option>
+                <option value="old">いる（70歳以上）</option>
+            </select>
+        </div>
+        <div class="f">
+            <label for="spouseSalary">配偶者の給与の年収</label>
+            <div class="in"><input type="number" id="spouseSalary" min="0" step="1" value="0" inputmode="decimal"><span class="unit">万円</span></div>
+        </div>
+        <div class="f">
+            <label for="depGeneral">扶養する家族：16〜18歳・23〜69歳</label>
+            <div class="in"><input type="number" id="depGeneral" min="0" max="9" step="1" value="0"><span class="unit">人</span></div>
+            <p class="hint">年収136万円以下の人。15歳以下の子は入りません。</p>
+        </div>
+        <div class="f">
+            <label for="depSpecial">扶養する家族：19〜22歳</label>
+            <div class="in"><input type="number" id="depSpecial" min="0" max="9" step="1" value="0"><span class="unit">人</span></div>
+            <p class="hint">年収136万円以下の人。</p>
+        </div>
+        <div class="f">
+            <label for="relSalary">19〜22歳で年収136万円を超える子の年収</label>
+            <div class="in"><input type="number" id="relSalary" min="0" step="1" value="" inputmode="decimal" placeholder="いなければ空欄"><span class="unit">万円</span></div>
+            <p class="hint">197万円以下なら「特定親族特別控除」を受けられます（1人分）。</p>
+        </div>
+        <div class="f">
+            <label for="depOld">扶養する家族：70歳以上</label>
+            <div class="in"><input type="number" id="depOld" min="0" max="9" step="1" value="0"><span class="unit">人</span></div>
+            <label class="check"><input type="checkbox" id="depOldTogether"> 同居している親・祖父母</label>
+        </div>
+        <div class="f">
+            <label for="single">ひとり親・寡婦</label>
+            <select id="single">
+                <option value="0">当てはまらない</option>
+                <option value="350000">ひとり親</option>
+                <option value="270000">寡婦</option>
+            </select>
+        </div>
+    </div>
+</fieldset>
+
+<fieldset>
+    <legend>保険料・そのほかの控除（年末調整で出した分）</legend>
+    <div class="grid">
+        <div class="f">
+            <label for="life">生命保険料控除の額</label>
+            <div class="in"><input type="number" id="life" min="0" max="120000" step="100" value="0" inputmode="numeric"><span class="unit">円</span></div>
+            <p class="hint">申告書で計算した控除額（最大12万円）。</p>
+        </div>
+        <div class="f">
+            <label for="quake">地震保険料控除の額</label>
+            <div class="in"><input type="number" id="quake" min="0" max="50000" step="100" value="0" inputmode="numeric"><span class="unit">円</span></div>
+        </div>
+        <div class="f">
+            <label for="ideco">iDeCo・小規模企業共済の掛金</label>
+            <div class="in"><input type="number" id="ideco" min="0" step="100" value="0" inputmode="numeric"><span class="unit">円</span></div>
+        </div>
+        <div class="f">
+            <label for="loan">住宅ローン控除の額（2年目以降）</label>
+            <div class="in"><input type="number" id="loan" min="0" step="100" value="0" inputmode="numeric"><span class="unit">円</span></div>
+            <p class="hint">税務署から届いた証明書で計算した額。</p>
+        </div>
+    </div>
+</fieldset>
+
+</form>
+
+<section class="result" aria-live="polite">
+    <div class="big" id="big"></div>
+    <p class="sub" id="sub"></p>
+    <table class="bd" id="bd"></table>
+</section>
+<p class="note">給与だけがある人の目安です。実際の年末調整は、給与所得控除後の金額の表（端数の丸め）や、勤め先での毎月の計算によって数百円〜数千円ずれることがあります。住民税は年末調整とは別なので含めていません。</p>
+
+</div>
+
+<article class="tool-article">
+
+<h2>2026年の年末調整は、戻る額が増えやすい</h2>
+<p>2026年（令和8年分）は、基礎控除が最大104万円、給与所得控除の最低額が74万円に引き上げられました（いわゆる178万円の壁）。ただ、1〜11月の給与から引かれる所得税には、この引き上げが反映されていません。<strong>12月の年末調整でまとめて精算される</strong>ので、例年より多く戻る人が多くなります。このツールの「改正による減税分」は、その差の目安です。</p>
+
+<h2>計算のしかた</h2>
+<div class="table-scroll">
+<table>
+<tbody>
+<tr><th>1. 給与所得</th><td>給与の総額 − 給与所得控除（年収220万円までは74万円、220万円超は収入×30%＋8万円など）</td></tr>
+<tr><th>2. 所得控除</th><td>基礎控除（所得489万円以下は104万円）・社会保険料・生命保険料・地震保険料・iDeCo・配偶者控除・扶養控除・特定親族特別控除・ひとり親控除など</td></tr>
+<tr><th>3. 課税所得</th><td>給与所得 − 所得控除（1,000円未満切り捨て）</td></tr>
+<tr><th>4. 年税額</th><td>課税所得 × 税率（5〜45%）− 住宅ローン控除 → ×102.1%（復興特別所得税）、100円未満切り捨て</td></tr>
+<tr><th>5. 戻る額</th><td>今年引かれた所得税の合計 − 年税額</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 年末調整の還付金はいつ戻りますか？</strong><br>
+A. 多くの勤め先では、12月の給与（または翌年1月の給与）に上乗せして戻ります。勤め先によって時期が違います。</p>
+<p><strong>Q. 「引かれた所得税の合計」が分かりません。</strong><br>
+A. 給与明細の「所得税」の欄を、1月分から12月分（賞与も）まで足した額です。空欄にすると、改正前の決まりで1年分引かれていたとして目安を出します。</p>
+<p><strong>Q. 年末調整で戻らず、追加で引かれることはありますか？</strong><br>
+A. あります。年の途中で扶養の家族が減った、賞与が多かった、などの場合です。結果がマイナスになったときは、その分が12月の給与から引かれる目安です。</p>
+<p><strong>Q. 医療費控除やふるさと納税は入りますか？</strong><br>
+A. 年末調整では受けられないので含めていません。確定申告（またはふるさと納税のワンストップ特例）で別に受けます。</p>
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. このブラウザの中だけに保存されます。サーバーには送信されません。</p>
+
+<h2>免責事項</h2>
+<p class="note">給与所得だけがある人の、所得税の目安です。給与が850万円を超える人の所得金額調整控除、障害者控除、勤労学生控除、前の勤め先の分などは含めていません。実際の金額は、勤め先から受け取る源泉徴収票でご確認ください。</p>
+
+</article>
+
+<script>
+"use strict";
+(function () {
+    var STORE = "tooldock:nencho:v1";
+    var IDS = ["salary", "withheld", "shaho", "spouse", "spouseSalary", "depGeneral", "depSpecial", "relSalary", "depOld", "depOldTogether", "single", "life", "quake", "ideco", "loan"];
+    var $ = function (id) { return document.getElementById(id); };
+
+    /* 2つの決まり。R8 は2026年分（いまの決まり）、R7 は2025年分（11月までの源泉徴収のもとになった決まり） */
+    var RULES = {
+        R8: {
+            kyuyo: function (s) {                        // 給与所得控除（円）
+                if (s <= 2200000) return Math.min(s, 740000);
+                return common(s);
+            },
+            kiso: function (x) {                         // 基礎控除（合計所得 x 円）
+                if (x <= 4890000) return 1040000;
+                if (x <= 6550000) return 670000;
+                return tail(x, 620000);
+            },
+            depLimit: 620000                             // 扶養・配偶者控除を受けられる所得の上限
+        },
+        R7: {
+            kyuyo: function (s) {
+                if (s <= 1900000) return Math.min(s, 650000);
+                return common(s);
+            },
+            kiso: function (x) {
+                if (x <= 1320000) return 950000;
+                if (x <= 3360000) return 880000;
+                if (x <= 4890000) return 680000;
+                if (x <= 6550000) return 630000;
+                return tail(x, 580000);
+            },
+            depLimit: 580000
+        }
+    };
+    /* 給与所得控除の220万円（R7は190万円）を超える部分。660万円未満は、年末調整の表に合わせて4,000円単位に丸めてから計算 */
+    function common(s) {
+        var a = s < 6600000 ? Math.floor(s / 4000) * 4000 : s;
+        if (s <= 3600000) return a * 0.3 + 80000;
+        if (s <= 6600000) return a * 0.2 + 440000;
+        if (s <= 8500000) return s * 0.1 + 1100000;
+        return 1950000;
+    }
+    function tail(x, base) {
+        if (x <= 23500000) return base;
+        if (x <= 24000000) return 480000;
+        if (x <= 24500000) return 320000;
+        if (x <= 25000000) return 160000;
+        return 0;
+    }
+    /* 配偶者特別控除の表（配偶者の所得が95万円を超えたあと）。本人の所得 900万以下・950万以下・1000万以下の順 */
+    var SPECIAL = [
+        [1000000, [360000, 240000, 120000]], [1050000, [310000, 210000, 110000]], [1100000, [260000, 180000, 90000]],
+        [1150000, [210000, 140000, 70000]], [1200000, [160000, 110000, 60000]], [1250000, [110000, 80000, 40000]],
+        [1300000, [60000, 40000, 20000]], [1330000, [30000, 20000, 10000]]
+    ];
+    /* 特定親族特別控除（19〜22歳の子の所得が上限を超えたあと） */
+    var RELATIVE = [[850000, 630000], [900000, 610000], [950000, 510000], [1000000, 410000], [1050000, 310000],
+        [1100000, 210000], [1150000, 110000], [1200000, 60000], [1230000, 30000]];
+
+    function rate(t) {                                   // 所得税（課税所得 t 円）
+        if (t <= 1950000) return t * 0.05;
+        if (t <= 3300000) return t * 0.10 - 97500;
+        if (t <= 6950000) return t * 0.20 - 427500;
+        if (t <= 9000000) return t * 0.23 - 636000;
+        if (t <= 18000000) return t * 0.33 - 1536000;
+        if (t <= 40000000) return t * 0.40 - 2796000;
+        return t * 0.45 - 4796000;
+    }
+
+    function calc(R, v) {
+        var salary = v.salary;
+        var income = Math.max(0, salary - R.kyuyo(salary));                    // 給与所得 = 合計所得
+        var shaho = v.shaho != null ? v.shaho : Math.round(salary * 0.15);
+        var tier = income <= 9000000 ? 0 : income <= 9500000 ? 1 : income <= 10000000 ? 2 : -1;
+
+        var spouse = 0;
+        if (v.spouse !== "none" && tier >= 0) {
+            var si = Math.max(0, v.spouseSalary - R.kyuyo(v.spouseSalary));
+            if (si <= R.depLimit) {
+                spouse = (v.spouse === "old" ? [480000, 320000, 160000] : [380000, 260000, 130000])[tier];
+            } else if (si <= 950000) {
+                spouse = [380000, 260000, 130000][tier];
+            } else {
+                for (var i = 0; i < SPECIAL.length; i++) if (si <= SPECIAL[i][0]) { spouse = SPECIAL[i][1][tier]; break; }
+            }
+        }
+
+        var dep = v.depGeneral * 380000 + v.depSpecial * 630000 + v.depOld * (v.depOldTogether ? 580000 : 480000);
+        var relative = 0;
+        if (v.relSalary != null) {
+            var ri = Math.max(0, v.relSalary - R.kyuyo(v.relSalary));
+            if (ri <= R.depLimit) dep += 630000;                                  // 所得が上限以下なら特定扶養控除
+            else for (var j = 0; j < RELATIVE.length; j++) if (ri <= RELATIVE[j][0]) { relative = RELATIVE[j][1]; break; }
+        }
+
+        var kiso = R.kiso(income);
+        var deductions = kiso + shaho + v.life + v.quake + v.ideco + spouse + dep + relative + v.single;
+        var taxable = Math.floor(Math.max(0, income - deductions) / 1000) * 1000;
+        var base = Math.max(0, Math.floor(rate(taxable)));
+        var afterLoan = Math.max(0, base - v.loan);
+        var tax = Math.floor(afterLoan * 1.021 / 100) * 100;
+        return { income: income, kyuyo: salary - income, kiso: kiso, shaho: shaho, spouse: spouse, dep: dep, relative: relative,
+                 other: v.life + v.quake + v.ideco + v.single, deductions: deductions, taxable: taxable, base: base,
+                 loan: base - afterLoan, tax: tax };
+    }
+
+    function n(id) { var x = $(id).value.trim(); return x === "" ? null : Math.max(0, Number(x) || 0); }
+    function yen(x) { return Math.round(x).toLocaleString("ja-JP") + "円"; }
+
+    function read() {
+        var man = function (id) { var x = n(id); return x == null ? null : Math.round(x * 10000); };
+        return {
+            salary: man("salary") || 0, withheld: n("withheld"), shaho: n("shaho"),
+            spouse: $("spouse").value, spouseSalary: man("spouseSalary") || 0,
+            depGeneral: n("depGeneral") || 0, depSpecial: n("depSpecial") || 0, relSalary: man("relSalary"),
+            depOld: n("depOld") || 0, depOldTogether: $("depOldTogether").checked,
+            single: Number($("single").value) || 0, life: Math.min(120000, n("life") || 0), quake: Math.min(50000, n("quake") || 0),
+            ideco: n("ideco") || 0, loan: n("loan") || 0
+        };
+    }
+
+    function render() {
+        var v = read();
+        $("spouseSalary").disabled = v.spouse === "none";
+        try {
+            var s = {}; IDS.forEach(function (id) { var el = $(id); s[id] = el.type === "checkbox" ? el.checked : el.value; });
+            localStorage.setItem(STORE, JSON.stringify(s));
+        } catch (e) { /* 保存できなくても使える */ }
+
+        var now = calc(RULES.R8, v), old = calc(RULES.R7, v);
+        var guessed = v.withheld == null;
+        var withheld = guessed ? old.tax : v.withheld;
+        var back = withheld - now.tax;
+        var cut = old.tax - now.tax;
+
+        var big = $("big");
+        big.className = "big" + (back < 0 ? " minus" : "");
+        big.innerHTML = back >= 0 ? "年末調整で戻る所得税の目安 <strong></strong>" : "年末調整で追加で引かれる所得税の目安 <strong></strong>";
+        big.querySelector("strong").textContent = yen(Math.abs(back));
+        $("sub").innerHTML = "そのうち、2026年の改正（178万円の壁など）による減税分：<b></b>" +
+            (guessed ? "<br>※「引かれた所得税」が空欄なので、改正前の決まりで1年分引かれていたとして計算しています。" : "");
+        $("sub").querySelector("b").textContent = yen(Math.max(0, cut));
+
+        var rows = [
+            ["給与の総額", yen(v.salary)],
+            ["給与所得控除", "−" + yen(now.kyuyo)],
+            ["給与所得", yen(now.income)],
+            ["基礎控除", "−" + yen(now.kiso)],
+            ["社会保険料" + (v.shaho == null ? "（給与の15%で計算）" : ""), "−" + yen(now.shaho)],
+            ["配偶者控除・配偶者特別控除", "−" + yen(now.spouse)],
+            ["扶養控除・特定親族特別控除", "−" + yen(now.dep + now.relative)],
+            ["生命保険・地震保険・iDeCo・ひとり親など", "−" + yen(now.other)],
+            ["課税所得", yen(now.taxable)],
+            ["所得税（税率をかけた額）", yen(now.base)],
+            ["住宅ローン控除", "−" + yen(now.loan)],
+            ["年税額（復興特別所得税を含む）", yen(now.tax), "sum"],
+            ["今年引かれた所得税" + (guessed ? "（目安）" : ""), yen(withheld)],
+            [back >= 0 ? "戻る額" : "追加で引かれる額", yen(Math.abs(back)), "sum"]
+        ];
+        var bd = $("bd"); bd.textContent = "";
+        rows.forEach(function (r) {
+            var tr = document.createElement("tr"); if (r[2]) tr.className = r[2];
+            var th = document.createElement("th"); th.textContent = r[0];
+            var td = document.createElement("td"); td.textContent = r[1];
+            tr.appendChild(th); tr.appendChild(td); bd.appendChild(tr);
+        });
+    }
+
+    try {
+        var s = JSON.parse(localStorage.getItem(STORE) || "null");
+        if (s) IDS.forEach(function (id) { if (s[id] === undefined) return; var el = $(id); if (el.type === "checkbox") el.checked = !!s[id]; else el.value = s[id]; });
+    } catch (e) { /* 壊れていれば初期値 */ }
+    $("form").addEventListener("input", render);
+    $("form").addEventListener("change", render);
+    render();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "年末調整の還付金はいつ戻りますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "多くの勤め先では、12月の給与（または翌年1月の給与）に上乗せして戻ります。勤め先によって時期が違います。" }
+    },
+    {
+      "@type": "Question",
+      "name": "年末調整で戻らず、追加で引かれることはありますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "あります。年の途中で扶養の家族が減った、賞与が多かった、などの場合です。" }
+    },
+    {
+      "@type": "Question",
+      "name": "医療費控除やふるさと納税は年末調整に入りますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "年末調整では受けられません。確定申告（またはふるさと納税のワンストップ特例）で別に受けます。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/nenshu-kabe/" class="related-tool-card"><h3>年収の壁チェッカー（2026年）</h3><p>年収を入れると、所得税・住民税・扶養・社会保険の「年収の壁」のどれを超えるかが分かるツール。</p></a>
+<a href="/zeikin-calendar/" class="related-tool-card"><h3>税金の締め切りカレンダー（2026〜2027年）</h3><p>年末調整・ふるさと納税・確定申告など、個人の税金と書類の締め切りを時期順にまとめた一覧。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
