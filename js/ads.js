@@ -28,6 +28,7 @@
   const SLOT_STICKY = "2304525201";   /* 「下のバー」ユニット（固定 320×50） */
   const SLOT_END = "8286258434";      /* 「ページ末尾」ユニット */
   const SLOT_RAIL = "3354505118";     /* 「右の列」ユニット（レスポンシブ）。右レールの先頭 */
+  const SLOT_SHARE = "8162823719";    /* 「共有の上」ユニット（レスポンシブ）。「このページを共有」の直前の細い枠 */
 
   /* 右レールが出る幅（js/sidebar.js の WIDE と揃える） */
   const RAIL_WIDE = "(min-width: 1200px)";
@@ -66,7 +67,8 @@
       }
 
       .td-ad-end:not(:has(ins:not([data-ad-status="unfilled"]))),
-      .td-ad-rail:has(ins[data-ad-status="unfilled"]) {
+      .td-ad-rail:has(ins[data-ad-status="unfilled"]),
+      .td-ad-share:has(ins[data-ad-status="unfilled"]) {
         display: none;
       }
 
@@ -82,6 +84,17 @@
         flex-wrap: wrap;
         justify-content: center;
         gap: 20px;
+      }
+
+      /* 「このページを共有」の上の細い枠。共有のボタンと同じく左にそろえる */
+      .td-ad-share {
+        clear: both;
+        margin: 32px 0 0;
+        text-align: left;
+      }
+
+      .td-ad-share .td-ad-label {
+        text-align: left;
       }
 
       .td-ad-label {
@@ -206,6 +219,33 @@
     }
   }
 
+  /* ---- 「このページを共有」の上の細い枠 ----
+     よくある質問の下、共有のボタンの上。大きさは共有のボタンの並び（幅506pxほど）に合わせて 468×60、
+     狭い画面（ボタンが2段になる）では 320×50。目立たせないよう、細いバナーだけにする。
+     共有の欄は js/share.js が作り、このファイルより後に動くので、ひと呼吸おいてから置く */
+
+  function mountShareSlot() {
+    const share = document.querySelector(".td-share");
+    if (!share || document.querySelector(".td-ad-share")) return;
+
+    const box = document.createElement("div");
+    box.className = "td-ad-share";
+    share.parentNode.insertBefore(box, share);
+
+    const wide = box.clientWidth >= 480;
+    const w = wide ? 468 : 320, h = wide ? 60 : 50;
+
+    box.innerHTML = `
+      <div class="td-ad-label">スポンサーリンク</div>
+      <ins class="adsbygoogle"
+           style="display:inline-block;width:${w}px;height:${h}px"
+           data-ad-client="${CLIENT}"
+           data-ad-slot="${SLOT_SHARE}"></ins>
+    `;
+
+    pushAd();
+  }
+
   function mountEndSlot() {
     const box = document.createElement("div");
 
@@ -319,6 +359,7 @@
     if (SLOT_END) mountEndSlot();
     if (SLOT_STICKY) mountStickySlot();
     if (SLOT_RAIL) mountRailSlot();
+    if (SLOT_SHARE) setTimeout(mountShareSlot, 0);
   }
 
   if (document.readyState === "loading") {
