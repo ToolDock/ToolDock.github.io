@@ -46,6 +46,12 @@ def parse_tools():
     return categories, tools
 
 
+def parse_recommended():
+    js = DATA.read_text(encoding="utf-8")
+    m = re.search(r"window\.RECOMMENDED\s*=\s*\[(.*?)\];", js, re.S)
+    return re.findall(r'"([^"]+)"', m.group(1)) if m else []
+
+
 # トップの「最近の更新」に出す数（tool-data.js の UPDATES の新しい順）
 UPDATES_SHOWN = 5
 UPDATE_KIND = {"new": "NEW", "update": "更新", "fix": "修正"}
@@ -118,6 +124,17 @@ def render(categories, tools):
         out.append('  <ul class="tool-grid">')
         for rank, t in enumerate(popular, 1):
             out.append(card(t, rank))
+        out.append("  </ul>")
+        out.append("  </section>")
+
+    by_id = {t["id"]: t for t in tools}
+    recommended = [by_id[i] for i in parse_recommended() if i in by_id]
+    if recommended:
+        out.append('  <section class="cat" id="recommended">')
+        out.append("  <h2>管理人のおすすめ</h2>")
+        out.append('  <ul class="tool-grid">')
+        for t in recommended:
+            out.append(card(t))
         out.append("  </ul>")
         out.append("  </section>")
 

@@ -25,7 +25,12 @@ window.CATEGORY_NAMES = {
    トップの「最近の更新」と、各ページの右レールの「最近の更新」に出す（scripts/build_index.py・js/sidebar.js）。
    id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
    1件は1行で書く（build_index.py が1行ずつ読む） */
+/* 管理人のおすすめ。人気とは関係なく、持ち主がふだん使っているツールを並べた順に出す
+   （トップの「管理人のおすすめ」と、右レールの同じ欄）。入れ替えたら python3 scripts/build_index.py */
+window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
+
 window.UPDATES = [
+  { date: "2026-11-08", id: "nouryoku", kind: "update", text: "トップと右の列に「管理人のおすすめ」を追加。人気とは別に、管理人がふだん使っているツールを並べています" },
   { date: "2026-11-06", id: "naishin-kanagawa", kind: "update", text: "内申点ツール（神奈川・東京・大阪・愛知）で、志望校の目標を入れると「届いています（＋◯の余裕）」「あと◯」と、当日点・内申でそれぞれあといくつ必要かを表示" },
   { date: "2026-11-06", id: "naishin-aichi", kind: "new", text: "愛知県の公立高校入試（2027年）の評定得点と、校内順位を決める数値を志望校の方式（Ⅰ〜Ⅴ）で計算できるツールを公開" },
   { date: "2026-11-06", id: "naishin-osaka", kind: "new", text: "大阪府の公立高校入試（2027年）の内申点・総合点を、志望校の倍率タイプで計算できるツールを公開。英検の読み替えにも対応" },
