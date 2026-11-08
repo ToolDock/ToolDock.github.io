@@ -285,6 +285,20 @@
       `;
     }
 
+    /* 管理人のおすすめ。tool-data.js の RECOMMENDED の順 */
+    const recommended = (window.RECOMMENDED || [])
+      .map(id => tools.find(t => t.id === id))
+      .filter(Boolean);
+
+    if (recommended.length) {
+      html += `
+        <div class="td-box">
+          <h2>管理人のおすすめ</h2>
+          ${linkList(recommended, false)}
+        </div>
+      `;
+    }
+
     /* 最近の更新。トップの「最近の更新」と同じ中身を、新しい順に数件 */
     const updates = (window.UPDATES || [])
       .map(u => ({ u, t: tools.find(t => t.id === u.id) }))
