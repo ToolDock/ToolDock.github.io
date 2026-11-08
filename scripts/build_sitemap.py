@@ -11,6 +11,9 @@
   ならないので、ページごとの中身のハッシュと日付を sitemap-lastmod.json に持っておき、
   ハッシュが変わったときだけ日付を今日にする。「最終更新」の時刻だけの違いは数えない
 - 同じ中身のテキスト形式 sitemap.txt も書く
+- 選手ページ（/player/○○/ の約3,000件）を除いた小さい sitemap-tools.xml も書く。
+  sitemap.xml が Search Console で「取得できませんでした」のままなので、別の名前・小さいファイルで
+  取得できるかを確かめるため（/player/ 一覧そのものは載せる）
 
     python3 scripts/build_sitemap.py
     python3 scripts/build_sitemap.py --check   # ずれていたら終了コード1
@@ -27,6 +30,7 @@ from xml.sax.saxutils import escape
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "sitemap.xml"
 TXT = ROOT / "sitemap.txt"
+TOOLS_OUT = ROOT / "sitemap-tools.xml"
 STATE = ROOT / "sitemap-lastmod.json"
 JST = timezone(timedelta(hours=9))
 SITE = "https://tooldock.github.io"
@@ -93,10 +97,13 @@ def main(argv):
     urls = pages(files)
     mods = lastmods(files)
     xml = render(urls, mods)
+    tool_urls = [u for u in urls if not re.match(re.escape(SITE) + r"/player/[^/]+/", u)]
+    tools_xml = render(tool_urls, mods)
     if "--check" in argv:
         old = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
         old_txt = TXT.read_text(encoding="utf-8") if TXT.exists() else ""
-        if old != xml or old_txt != "\n".join(urls) + "\n":
+        old_tools = TOOLS_OUT.read_text(encoding="utf-8") if TOOLS_OUT.exists() else ""
+        if old != xml or old_txt != "\n".join(urls) + "\n" or old_tools != tools_xml:
             print("sitemap.xml が古い。python3 scripts/build_sitemap.py を実行すること", file=sys.stderr)
             return 1
         print(f"サイトマップは最新（{len(urls)}件）")
@@ -106,7 +113,8 @@ def main(argv):
     # 同じ中身のテキスト形式（1行に1つのURL）。Googleが正式に対応している形式で、
     # Search ConsoleでXMLの送信が「取得できませんでした」になるときの代わりに送れる
     TXT.write_text("\n".join(urls) + "\n", encoding="utf-8")
-    print(f"sitemap.xml・sitemap.txt に {len(urls)}件を書き込み")
+    TOOLS_OUT.write_text(tools_xml, encoding="utf-8")
+    print(f"sitemap.xml・sitemap.txt に {len(urls)}件、sitemap-tools.xml に {len(tool_urls)}件を書き込み")
     return 0
 
 
