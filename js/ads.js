@@ -50,6 +50,20 @@
 
   /* ---- スタイル ---- */
 
+  /* 画面の下端からこの距離まで近づいたら、広告を取りに行く。
+     ページ末尾・共有の上は、開いた時点で読み込むと9割以上が見られないまま終わり、
+     視認可能率が1割を切っていた（2026-11-08）。見られない表示は単価を下げるので、
+     近づいてから読み込む（枠の場所と大きさは先に取っておくので、表示がずれることはない） */
+  const LAZY_MARGIN = "0px 0px 400px 0px";
+
+  function whenNear(el, fn) {
+    if (!("IntersectionObserver" in window)) { fn(); return; }
+    const io = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) { io.disconnect(); fn(); }
+    }, { rootMargin: LAZY_MARGIN });
+    io.observe(el);
+  }
+
   function injectStyle() {
     const style = document.createElement("style");
 
@@ -255,7 +269,7 @@
            data-ad-slot="${SLOT_SHARE}"></ins>
     `;
 
-    pushAd();
+    whenNear(box, pushAd);
   }
 
   function mountEndSlot() {
@@ -289,7 +303,7 @@
     const count = pair.clientWidth >= 640 ? 2 : 1;
     if (count === 2) pair.insertAdjacentHTML("beforeend", unit());
 
-    for (let n = 0; n < count; n++) pushAd();
+    whenNear(box, () => { for (let n = 0; n < count; n++) pushAd(); });
   }
 
   /* ---- 下から出るバー ---- */
