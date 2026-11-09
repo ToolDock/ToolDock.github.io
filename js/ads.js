@@ -24,11 +24,14 @@
   /* 広告の枠を出すかどうか（2026-11-05 承認） */
   const UNITS_ENABLED = true;
 
-  /* 番号が空の枠は出さない */
-  const SLOT_STICKY = "2304525201";   /* 「下のバー」ユニット（固定 320×50）。狭い画面用 */
+  /* 番号が空の枠は出さない。
+     AdSense のユニットはどれもレスポンシブ型（2026-11-09）。ins に幅と高さを書き、data-ad-format を
+     付けないので、実際の大きさはここで決めた大きさになる */
+  const SLOT_STICKY = "2304525201";   /* 「下のバー」ユニット。狭い画面で 320×50 */
   const SLOT_STICKY_BIG = "9370755728"; /* 「下のバー（大）」ユニット。広い画面（iPad・PC）で 728×90 にする */
   const SLOT_END = "8286258434";      /* 「ページ末尾」ユニット */
   const SLOT_RAIL = "3354505118";     /* 「右の列」ユニット（レスポンシブ）。右レールの先頭 */
+  const SLOT_TOP = "7810262044";      /* 「上の帯」ユニット。パンくずのすぐ下、本文の上の横長の枠 */
   const SLOT_SHARE = "8162823719";    /* 「共有の上」ユニット（レスポンシブ）。「このページを共有」の直前の細い枠 */
 
   /* 右レールが出る幅（js/sidebar.js の WIDE と揃える） */
@@ -88,8 +91,20 @@
 
       .td-ad-end:not(:has(ins:not([data-ad-status="unfilled"]))),
       .td-ad-rail:has(ins[data-ad-status="unfilled"]),
-      .td-ad-share:has(ins[data-ad-status="unfilled"]) {
+      .td-ad-share:has(ins[data-ad-status="unfilled"]),
+      .td-ad-top:has(ins[data-ad-status="unfilled"]) {
         display: none;
+      }
+
+      /* ページ上の横長の枠。中央にそろえる */
+      .td-ad-top {
+        margin: 0 auto 14px;
+        text-align: center;
+        line-height: 0;
+      }
+
+      .td-ad-top .td-ad-label {
+        line-height: 1.4;
       }
 
       .td-ad-end {
@@ -199,7 +214,7 @@
   /* ---- ページ末尾の枠 ---- */
 
   /* ---- 右レールの先頭の枠 ----
-     大きさは 300×250 に決める（AdSense のユニットも固定 300×250）。data-ad-format="auto" に任せると、
+     大きさは 300×250 に決める。data-ad-format="auto" に任せると、
      縦に長い広告（幅240×高さ900ほど）が来て、レールが広告で埋まった（2026-11-05）。
      レスポンシブのユニットは、ins に幅と高さを書き data-ad-format を外すと、その大きさに収まる広告になる。
      レールは js/sidebar.js が作る。狭い画面ではレールが隠れ、中身は本文の下に移るが、
@@ -276,6 +291,34 @@
     `;
 
     whenNear(box, pushAd);
+  }
+
+  /* ---- ページ上の帯 ----
+     パンくずのすぐ下（ツールの見出しの上）。開いた瞬間に見える場所なので、すぐ読み込む。
+     広い画面では 728×90、狭い画面では 320×50。枠の高さは先に取っておくので、
+     広告が入ったときにツールの位置がずれることはない（来なかったときは枠ごと隠す）。
+     パンくずの無いページ（トップ・カテゴリ一覧・お問い合わせなど）には置かない */
+
+  function mountTopSlot() {
+    const crumb = document.querySelector("nav.breadcrumb");
+    if (!crumb || document.querySelector(".td-ad-top")) return;
+
+    const box = document.createElement("div");
+    box.className = "td-ad-top";
+    crumb.parentNode.insertBefore(box, crumb.nextSibling);
+
+    const wide = box.clientWidth >= 740;
+    const w = wide ? 728 : 320, h = wide ? 90 : 50;
+
+    box.innerHTML = `
+      <div class="td-ad-label">スポンサーリンク</div>
+      <ins class="adsbygoogle"
+           style="display:inline-block;width:${w}px;height:${h}px"
+           data-ad-client="${CLIENT}"
+           data-ad-slot="${SLOT_TOP}"></ins>
+    `;
+
+    pushAd();
   }
 
   function mountEndSlot() {
@@ -395,6 +438,7 @@
     if (!UNITS_ENABLED) return;
 
     injectStyle();
+    if (SLOT_TOP) mountTopSlot();
     if (SLOT_END) mountEndSlot();
     if (SLOT_STICKY) mountStickySlot();
     if (SLOT_RAIL) mountRailSlot();
