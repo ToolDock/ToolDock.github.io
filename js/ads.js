@@ -32,6 +32,7 @@
   const SLOT_END = "8286258434";      /* 「ページ末尾」ユニット */
   const SLOT_RAIL = "3354505118";     /* 「右の列」ユニット（レスポンシブ）。右レールの先頭 */
   const SLOT_TOP = "7810262044";      /* 「上の帯」ユニット。パンくずのすぐ下、本文の上の横長の枠 */
+  const SLOT_RELATED = "8162823719";  /* 「同じカテゴリのツール」の上の細い枠。いまは「共有の上」と同じユニットを使う */
   const SLOT_SHARE = "8162823719";    /* 「共有の上」ユニット（レスポンシブ）。「このページを共有」の直前の細い枠 */
 
   /* 右レールが出る幅（js/sidebar.js の WIDE と揃える） */
@@ -130,6 +131,7 @@
       .td-ad-end:not(:has(ins:not([data-ad-status="unfilled"]), .td-ad-ph)),
       .td-ad-rail:has(ins[data-ad-status="unfilled"]),
       .td-ad-share:has(ins[data-ad-status="unfilled"]),
+      .td-ad-related:has(ins[data-ad-status="unfilled"]),
       .td-ad-top:has(ins[data-ad-status="unfilled"]) {
         display: none;
       }
@@ -167,6 +169,13 @@
       }
 
       .td-ad-share .td-ad-label {
+        text-align: left;
+      }
+
+      /* 「同じカテゴリのツール」の上の細い枠。共有の上と同じ形 */
+      .td-ad-related {
+        clear: both;
+        margin: 32px 0 0;
         text-align: left;
       }
 
@@ -318,7 +327,12 @@
     box.className = "td-ad-share";
     share.parentNode.insertBefore(box, share);
 
-    /* 幅に応じて 728×90（PC・iPad）／468×60／320×50（スマホ） */
+    fillBanner(box, SLOT_SHARE);
+  }
+
+  /* 細い横長の枠の中身。幅に応じて 728×90（PC・iPad）／468×60／320×50（スマホ）。
+     近づいてから読み込む */
+  function fillBanner(box, slot) {
     const cw = box.clientWidth;
     const [w, h] = cw >= 740 ? [728, 90] : cw >= 480 ? [468, 60] : [320, 50];
 
@@ -327,7 +341,20 @@
       ${placeholder(w, h)}
     `;
 
-    whenNear(box, () => fillPlaceholders(box, SLOT_SHARE));
+    whenNear(box, () => fillPlaceholders(box, slot));
+  }
+
+  /* ---- 「同じカテゴリのツール」の上の細い枠 ----
+     共有の上と同じ形。「同じカテゴリのツール」の欄が無いページには置かない */
+  function mountRelatedSlot() {
+    const related = document.getElementById("related-tools");
+    if (!related || !related.parentNode || document.querySelector(".td-ad-related")) return;
+
+    const box = document.createElement("div");
+    box.className = "td-ad-related";
+    related.parentNode.insertBefore(box, related);
+
+    fillBanner(box, SLOT_RELATED);
   }
 
   /* ---- ページ上の帯 ----
@@ -476,6 +503,7 @@
     if (SLOT_STICKY) mountStickySlot();
     if (SLOT_RAIL) mountRailSlot();
     if (SLOT_SHARE) setTimeout(mountShareSlot, 0);
+    if (SLOT_RELATED) setTimeout(mountRelatedSlot, 0);
   }
 
   if (document.readyState === "loading") {
