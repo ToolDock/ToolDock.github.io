@@ -58,15 +58,53 @@
      ページ末尾・共有の上は、開いた時点で読み込むと9割以上が見られないまま終わり、
      視認可能率が1割を切っていた（2026-11-08）。見られない表示は単価を下げるので、
      近づいてから読み込む（枠の場所と大きさは先に取っておくので、表示がずれることはない） */
-  const LAZY_MARGIN = "0px 0px 400px 0px";
+  const LAZY_PX = 400;
+
+  /* 注意：adsbygoogle.push({}) は「どの枠を埋めるか」を指定できず、ページの中でまだ埋まっていない
+     最初の ins から順に埋める。遅らせる枠の ins を先に置いておくと、ほかの枠（下のバーなど）の push が
+     その枠を先に埋めてしまい、下のバーがページの最後まで来ないと出なかった（2026-11-09）。
+     遅らせる枠は、近づくまで同じ大きさの空の箱（.td-ad-ph）だけを置き、近づいたら ins に差し替えて push する */
+  function placeholder(w, h) {
+    return `<div class="td-ad-ph" data-w="${w}" data-h="${h}" style="display:inline-block;width:${w}px;height:${h}px"></div>`;
+  }
+
+  function fillPlaceholders(box, slot) {
+    const phs = box.querySelectorAll(".td-ad-ph");
+    phs.forEach(ph => {
+      const ins = document.createElement("ins");
+      ins.className = "adsbygoogle";
+      ins.style.cssText = `display:inline-block;width:${ph.dataset.w}px;height:${ph.dataset.h}px`;
+      ins.setAttribute("data-ad-client", CLIENT);
+      ins.setAttribute("data-ad-slot", slot);
+      ph.replaceWith(ins);
+    });
+    phs.forEach(() => pushAd());
+  }
 
   function whenNear(el, fn) {
-    if (!("IntersectionObserver" in window)) { fn(); return; }
-    const io = new IntersectionObserver(entries => {
-      if (entries.some(e => e.isIntersecting)) { io.disconnect(); fn(); }
-    }, { rootMargin: LAZY_MARGIN });
-    io.observe(el);
+    /* IntersectionObserver は「交わる／交わらない」が切り替わったときしか知らせないので、
+       一気に下まで飛ぶと（画面の下→画面の上へ）、一度も知らせが来ない。スクロールのたびに位置を見る */
+    let done = false;
+    const check = () => {
+      if (done || !el.isConnected) return;
+      if (el.getBoundingClientRect().top < window.innerHeight + LAZY_PX) {
+        done = true;
+        window.removeEventListener("scroll", onScroll);
+        window.removeEventListener("resize", onScroll);
+        fn();
+      }
+    };
+    let queued = false;
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; check(); });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    check();
   }
+
 
   function injectStyle() {
     const style = document.createElement("style");
@@ -89,7 +127,7 @@
         display: none !important;
       }
 
-      .td-ad-end:not(:has(ins:not([data-ad-status="unfilled"]))),
+      .td-ad-end:not(:has(ins:not([data-ad-status="unfilled"]), .td-ad-ph)),
       .td-ad-rail:has(ins[data-ad-status="unfilled"]),
       .td-ad-share:has(ins[data-ad-status="unfilled"]),
       .td-ad-top:has(ins[data-ad-status="unfilled"]) {
@@ -286,13 +324,10 @@
 
     box.innerHTML = `
       <div class="td-ad-label">スポンサーリンク</div>
-      <ins class="adsbygoogle"
-           style="display:inline-block;width:${w}px;height:${h}px"
-           data-ad-client="${CLIENT}"
-           data-ad-slot="${SLOT_SHARE}"></ins>
+      ${placeholder(w, h)}
     `;
 
-    whenNear(box, pushAd);
+    whenNear(box, () => fillPlaceholders(box, SLOT_SHARE));
   }
 
   /* ---- ページ上の帯 ----
@@ -330,11 +365,7 @@
 
     /* 300×250。横いっぱいのレスポンシブだと、PCで横1400×縦500pxほどの大きな枠になり、
        文字だけの広告で埋まりがちだった（2026-11-06）。並べて入る幅（640px）があれば2つ並べる */
-    const unit = () => `
-      <ins class="adsbygoogle"
-           style="display:inline-block;width:300px;height:250px"
-           data-ad-client="${CLIENT}"
-           data-ad-slot="${SLOT_END}"></ins>`;
+    const unit = () => placeholder(300, 250);
 
     box.innerHTML = `
       <div class="td-ad-label">スポンサーリンク</div>
@@ -354,7 +385,7 @@
     const count = pair.clientWidth >= 640 ? 2 : 1;
     if (count === 2) pair.insertAdjacentHTML("beforeend", unit());
 
-    whenNear(box, () => { for (let n = 0; n < count; n++) pushAd(); });
+    whenNear(box, () => fillPlaceholders(box, SLOT_END));
   }
 
   /* ---- 下から出るバー ---- */
