@@ -25,7 +25,8 @@
   const UNITS_ENABLED = true;
 
   /* 番号が空の枠は出さない */
-  const SLOT_STICKY = "2304525201";   /* 「下のバー」ユニット（固定 320×50） */
+  const SLOT_STICKY = "2304525201";   /* 「下のバー」ユニット（固定 320×50）。狭い画面用 */
+  const SLOT_STICKY_BIG = "9370755728"; /* 「下のバー（大）」ユニット。広い画面（iPad・PC）で 728×90 にする */
   const SLOT_END = "8286258434";      /* 「ページ末尾」ユニット */
   const SLOT_RAIL = "3354505118";     /* 「右の列」ユニット（レスポンシブ）。右レールの先頭 */
   const SLOT_SHARE = "8162823719";    /* 「共有の上」ユニット（レスポンシブ）。「このページを共有」の直前の細い枠 */
@@ -178,6 +179,11 @@
         }
       }
 
+      /* 大きいバー（728×90）は高さがあるので、どの幅でもその上に逃がす */
+      body.td-adbar-on:has(.td-ad-sticky.big) .td-pagetop {
+        bottom: 122px;
+      }
+
       /* 右レールが出ている画面では、レールの下に潜り込ませない。
          レールの無いページ（トップなど）では、画面の右端まで伸ばす */
       @media (min-width: 1200px) {
@@ -315,11 +321,18 @@
 
     bar.className = "td-ad-sticky";
 
+    /* 横に 728×90 と × ボタンが収まる画面では大きい枠にする。
+       右レールが出る幅（1200px以上）では、バーはレールの左までなので、その分を引いて測る */
+    const avail = window.innerWidth >= 1200 ? window.innerWidth - 300 : window.innerWidth;
+    const big = SLOT_STICKY_BIG && avail >= 790;
+    const [w, h, slot] = big ? [728, 90, SLOT_STICKY_BIG] : [320, 50, SLOT_STICKY];
+    if (big) bar.classList.add("big");
+
     bar.innerHTML = `
       <ins class="adsbygoogle"
-           style="display:inline-block;width:320px;height:50px"
+           style="display:inline-block;width:${w}px;height:${h}px"
            data-ad-client="${CLIENT}"
-           data-ad-slot="${SLOT_STICKY}"></ins>
+           data-ad-slot="${slot}"></ins>
       <button type="button" class="td-ad-close" aria-label="広告を閉じる">×</button>
     `;
 
