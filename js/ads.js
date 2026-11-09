@@ -267,8 +267,9 @@
   }
 
   /* ---- 「このページを共有」の上の細い枠 ----
-     よくある質問の下、共有のボタンの上。大きさは共有のボタンの並び（幅506pxほど）に合わせて 468×60、
-     狭い画面（ボタンが2段になる）では 320×50。目立たせないよう、細いバナーだけにする。
+     よくある質問の下、共有のボタンの上。細い横長のバナーだけにする。
+     PC・iPad（幅740px以上）では 728×90（2026-11-09、468×60 から大きくした）、
+     その間は 468×60、スマホ（ボタンが2段になる）では 320×50。
      共有の欄は js/share.js が作り、このファイルより後に動くので、ひと呼吸おいてから置く */
 
   function mountShareSlot() {
@@ -279,8 +280,9 @@
     box.className = "td-ad-share";
     share.parentNode.insertBefore(box, share);
 
-    const wide = box.clientWidth >= 480;
-    const w = wide ? 468 : 320, h = wide ? 60 : 50;
+    /* 幅に応じて 728×90（PC・iPad）／468×60／320×50（スマホ） */
+    const cw = box.clientWidth;
+    const [w, h] = cw >= 740 ? [728, 90] : cw >= 480 ? [468, 60] : [320, 50];
 
     box.innerHTML = `
       <div class="td-ad-label">スポンサーリンク</div>
