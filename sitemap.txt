@@ -23,6 +23,7 @@ https://tooldock.github.io/kings/
 https://tooldock.github.io/kintoku/
 https://tooldock.github.io/koyuchi/
 https://tooldock.github.io/kuriage/
+https://tooldock.github.io/kyudan-clicker/
 https://tooldock.github.io/magic/
 https://tooldock.github.io/makejson/
 https://tooldock.github.io/matrix/

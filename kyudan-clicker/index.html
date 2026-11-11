@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>球団経営クリッカー｜タップと放置でファンを増やすドット絵の野球ゲーム【無料】</title>
+<meta name="description" content="球場をタップしてバットを振り、ファンを増やしていく無料の野球クリッカーゲーム。集めたファンで応援団・売店・ナイター照明・ドーム球場などを建てると、放置していてもファンが増えていきます。優勝してペナントを集め、次のシーズンへ。ドット絵・ブラウザで遊べて、データは自動で保存されます。">
+<link rel="canonical" href="https://tooldock.github.io/kyudan-clicker/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="球団経営クリッカー｜タップと放置でファンを増やすドット絵の野球ゲーム【無料】 | ToolDock">
+<meta property="og:description" content="球場をタップしてバットを振り、ファンを増やしていく無料の野球クリッカーゲーム。集めたファンで応援団・売店・ナイター照明・ドーム球場などを建てると、放置していてもファンが増えていきます。優勝してペナントを集め、次のシーズンへ。ドット絵・ブラウザで遊べて、データは自動で保存されます。">
+<meta property="og:url" content="https://tooldock.github.io/kyudan-clicker/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/kyudan-clicker.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "kyudan-clicker"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="クリッカーゲーム,放置ゲーム,野球,球団経営,ゲーム,無料,ブラウザ,ドット絵,インクリメンタル">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:980px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:24px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+
+/* ---- ゲーム ---- */
+.kc{ --kc-ink:#1b1f3b; --kc-panel:#fdf6e3; --kc-line:#1b1f3b; --kc-accent:#d7263d; --kc-gold:#f4b400;
+    font-family:"DotGothic16","Noto Sans JP",monospace; color:var(--kc-ink);
+    display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:16px; margin-top:16px; }
+@media (max-width:760px){ .kc{ grid-template-columns:1fr; } }
+.kc *{ box-sizing:border-box; }
+.kc-left{ min-width:0; }
+.kc-count{ background:var(--kc-ink); color:#fff; padding:10px 14px; border:3px solid var(--kc-line); border-bottom:none; }
+.kc-count .big{ font-size:1.9rem; line-height:1.2; letter-spacing:.02em; font-variant-numeric:tabular-nums; }
+.kc-count .big small{ font-size:1rem; margin-left:4px; }
+.kc-count .sub{ font-size:.95rem; color:#c9d1ff; }
+.kc-count .sub .frenzy{ color:var(--kc-gold); }
+.kc-field-wrap{ position:relative; border:3px solid var(--kc-line); background:#000; line-height:0; }
+#field{ width:100%; height:auto; image-rendering:pixelated; image-rendering:crisp-edges; cursor:pointer;
+    touch-action:manipulation; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+.kc-hint{ font-size:.85rem; margin:6px 0 0; color:#5c6470; text-align:center; }
+
+.kc-season{ margin-top:12px; background:var(--kc-panel); border:3px solid var(--kc-line); padding:10px 12px; font-size:.95rem; }
+.kc-season .row{ display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+.kc-season b{ font-weight:400; color:var(--kc-accent); }
+.kc-btn{ font:inherit; font-size:1rem; padding:6px 12px; border:3px solid var(--kc-line); background:#fff; color:var(--kc-ink);
+    cursor:pointer; box-shadow:3px 3px 0 var(--kc-line); }
+.kc-btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--kc-line); }
+.kc-btn:disabled{ opacity:.45; cursor:default; transform:none; box-shadow:3px 3px 0 var(--kc-line); }
+.kc-btn.gold{ background:var(--kc-gold); }
+.kc-season .kc-btn{ margin-top:8px; width:100%; }
+
+.kc-right{ min-width:0; display:flex; flex-direction:column; }
+.kc-tabs{ display:flex; gap:0; border:3px solid var(--kc-line); border-bottom:none; }
+.kc-tabs button{ flex:1; font:inherit; font-size:1rem; padding:8px 4px; background:#e9e3d2; border:none; border-right:3px solid var(--kc-line); cursor:pointer; color:var(--kc-ink); }
+.kc-tabs button:last-child{ border-right:none; }
+.kc-tabs button[aria-selected="true"]{ background:var(--kc-panel); color:var(--kc-accent); }
+.kc-tabs .dot{ display:inline-block; width:8px; height:8px; background:var(--kc-accent); margin-left:4px; vertical-align:middle; }
+.kc-tabs .dot[hidden]{ display:none; }
+.kc-pane{ border:3px solid var(--kc-line); background:var(--kc-panel); padding:8px; flex:1; max-height:560px; overflow:auto; }
+@media (max-width:760px){ .kc-pane{ max-height:none; } }
+.kc-buyamt{ display:flex; gap:6px; align-items:center; font-size:.9rem; margin:0 0 8px; }
+.kc-buyamt button{ font:inherit; padding:2px 10px; border:2px solid var(--kc-line); background:#fff; cursor:pointer; color:var(--kc-ink); }
+.kc-buyamt button[aria-pressed="true"]{ background:var(--kc-ink); color:#fff; }
+
+.kc-item{ display:grid; grid-template-columns:40px 1fr auto; gap:8px; align-items:center; width:100%; text-align:left;
+    font:inherit; color:var(--kc-ink); background:#fff; border:2px solid var(--kc-line); padding:6px 8px; margin:0 0 6px; cursor:pointer; }
+.kc-item:hover:not(:disabled){ background:#fff8d6; }
+.kc-item:disabled{ cursor:default; background:#efe9d8; color:#8a8577; }
+.kc-item.locked .nm{ letter-spacing:.2em; }
+.kc-item img{ width:40px; height:40px; image-rendering:pixelated; }
+.kc-item .nm{ display:block; font-size:1.02rem; line-height:1.25; }
+.kc-item .ds{ display:block; font-size:.8rem; line-height:1.3; color:#5c6470; }
+.kc-item:disabled .ds{ color:#9a9586; }
+.kc-item .cost{ font-size:.92rem; text-align:right; white-space:nowrap; }
+.kc-item .own{ font-size:1.4rem; text-align:right; color:#9a9586; }
+.kc-item.ok .cost{ color:#1b7a2c; }
+.kc-empty{ font-size:.9rem; color:#5c6470; padding:6px; }
+
+.kc-stats{ font-size:.95rem; margin:0; }
+.kc-stats div{ display:flex; justify-content:space-between; border-bottom:1px dashed #b9b2a0; padding:3px 2px; }
+.kc-ach{ display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:6px; margin-top:10px; }
+.kc-ach div{ border:2px solid var(--kc-line); background:#fff; padding:4px 6px; font-size:.82rem; line-height:1.35; }
+.kc-ach div.off{ background:#e9e3d2; color:#9a9586; border-color:#b9b2a0; }
+.kc-ach b{ display:block; font-weight:400; font-size:.92rem; }
+.kc-danger{ margin-top:14px; font-size:.85rem; }
+.kc-danger button{ font:inherit; font-size:.85rem; background:none; border:none; color:#9a3412; text-decoration:underline; cursor:pointer; padding:0; }
+
+.kc-toast{ position:fixed; left:50%; top:16px; transform:translateX(-50%); z-index:50; max-width:92vw;
+    font-family:"DotGothic16","Noto Sans JP",monospace; background:var(--kc-ink,#1b1f3b); color:#fff; border:3px solid #fff;
+    box-shadow:0 0 0 3px #1b1f3b; padding:8px 14px; font-size:.95rem; opacity:0; transition:opacity .25s; pointer-events:none; }
+.kc-toast.show{ opacity:1; }
+
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:14px; }
+    .kc-count .big{ font-size:1.6rem; }
+}
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; }
+.tool-article table:not(:has(thead)) th{ width:30%; white-space:normal; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=game">ゲーム</a> <span class="bc-sep">›</span> <span>球団経営クリッカー</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "ゲーム", "item": "https://tooldock.github.io/category/?cat=game"}, {"@type": "ListItem", "position": 3, "name": "球団経営クリッカー", "item": "https://tooldock.github.io/kyudan-clicker/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="container">
+
+<div class="td-banner">
+    <h1>球団経営クリッカー</h1>
+    <p>球場をタップしてバットを振り、ファンを増やそう。集めたファンで施設を建てると、放置していてもファンが増えていきます。目指せ、日本一の人気球団。</p>
+</div>
+
+<div class="kc" id="kc">
+  <div class="kc-left">
+    <div class="kc-count">
+      <div class="big"><span id="fans">0</span><small>人</small></div>
+      <div class="sub">毎秒 <span id="fps">0</span> 人<span id="frenzy" class="frenzy"></span></div>
+    </div>
+    <div class="kc-field-wrap"><canvas id="field" width="320" height="180" aria-label="球場。タップするとバットを振ります"></canvas></div>
+    <p class="kc-hint">球場をタップ（スペースキー）してバットを振ろう。ときどき飛んでくる「ファンサービス」もタップ！</p>
+    <div class="kc-season">
+      <div class="row"><span>シーズン <b id="season">1</b></span><span>ペナント <b id="flags">0</b> 本（生産 +<span id="flagPct">0</span>%）</span></div>
+      <div class="row"><span>今シーズンの獲得ファン</span><span id="seasonTotal">0</span></div>
+      <button type="button" class="kc-btn gold" id="win" disabled>優勝してシーズンを終える</button>
+    </div>
+  </div>
+
+  <div class="kc-right">
+    <div class="kc-tabs" role="tablist">
+      <button type="button" role="tab" aria-selected="true" data-tab="build">施設</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="up">強化<span class="dot" id="upDot" hidden></span></button>
+      <button type="button" role="tab" aria-selected="false" data-tab="rec">記録</button>
+    </div>
+    <div class="kc-pane" id="pane-build">
+      <div class="kc-buyamt">まとめ買い：
+        <button type="button" data-amt="1" aria-pressed="true">1</button>
+        <button type="button" data-amt="10" aria-pressed="false">10</button>
+        <button type="button" data-amt="100" aria-pressed="false">100</button>
+      </div>
+      <div id="buildings"></div>
+    </div>
+    <div class="kc-pane" id="pane-up" hidden><div id="upgrades"></div></div>
+    <div class="kc-pane" id="pane-rec" hidden>
+      <div class="kc-stats" id="stats"></div>
+      <div class="kc-ach" id="ach"></div>
+      <div class="kc-danger"><button type="button" id="reset">データを消して最初からやり直す</button></div>
+    </div>
+  </div>
+</div>
+<div class="kc-toast" id="toast" role="status" aria-live="polite"></div>
+
+</div>
+
+<article class="tool-article">
+
+<h2>遊び方</h2>
+<div class="table-scroll">
+<table>
+<tbody>
+<tr><th>バットを振る</th><td>球場をタップ（パソコンはクリックかスペースキー）すると、打った分だけファンが増えます。ときどきホームランが出て、10倍のファンが集まります。</td></tr>
+<tr><th>施設を建てる</th><td>ファンを使って、少年野球教室・応援団・売店・ナイター照明・ドーム球場などを建てます。施設は放置していても毎秒ファンを集めてくれます。同じ施設を建てるたびに値段は少しずつ上がります。</td></tr>
+<tr><th>強化する</th><td>バットや施設を強化すると、1回で集まるファンや施設の生産が2倍になります。条件を満たすと「強化」のタブに出てきます。</td></tr>
+<tr><th>ファンサービス</th><td>球場にときどき現れる「ファンサービス」をタップすると、30秒間の生産7倍か、臨時のファンがもらえます。</td></tr>
+<tr><th>優勝する</th><td>たくさんのファンを集めると優勝できます。優勝するとシーズンが終わり、ファンと施設は最初からになりますが、ペナントがもらえ、1本ごとに次のシーズン以降の生産が10%上がります。</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>よくある質問</h2>
+<p><strong>Q. データは保存されますか？</strong><br>
+A. このブラウザの中に自動で保存されます（数秒ごと）。サーバーには送信されません。ブラウザのデータを消したり、別のブラウザ・シークレットモードで開いたりすると引き継がれません。</p>
+<p><strong>Q. 閉じている間もファンは増えますか？</strong><br>
+A. 増えます。次に開いたとき、閉じていた時間（最大8時間）の半分のペースで施設が集めたファンが加わります。開いたまま別のタブを見ている間は、通常のペースで増えます。</p>
+<p><strong>Q. 最初からやり直すには？</strong><br>
+A. 「記録」のタブのいちばん下にある「データを消して最初からやり直す」を押してください。ペナントや実績も消えます。</p>
+<p><strong>Q. 実在の球団や選手は出てきますか？</strong><br>
+A. 出てきません。登場する球場・施設・打者はすべて架空のものです。</p>
+
+</article>
+
+<script>
+"use strict";
+(function () {
+  /* ================= データ ================= */
+  const BUILDINGS = [
+    { id: "school", name: "少年野球教室", desc: "未来のファンを育てる", base: 15, fps: 0.1 },
+    { id: "oendan", name: "応援団", desc: "外野席が盛り上がる", base: 100, fps: 1 },
+    { id: "baiten", name: "売店", desc: "名物グルメで人を呼ぶ", base: 1100, fps: 8 },
+    { id: "farm", name: "二軍球場", desc: "若手の成長を見守るファン", base: 12000, fps: 47 },
+    { id: "scout", name: "スカウト網", desc: "全国のスターを発掘", base: 130000, fps: 260 },
+    { id: "night", name: "ナイター照明", desc: "仕事帰りにも観に来られる", base: 1.4e6, fps: 1400 },
+    { id: "vision", name: "大型ビジョン", desc: "名場面をくり返し流す", base: 2e7, fps: 7800 },
+    { id: "dome", name: "ドーム球場", desc: "雨の日も試合ができる", base: 3.3e8, fps: 44000 },
+    { id: "tv", name: "球団テレビ局", desc: "全試合を生中継", base: 5.1e9, fps: 260000 },
+    { id: "world", name: "世界ツアー", desc: "海の向こうにもファンを", base: 7.5e10, fps: 1.6e6 },
+  ];
+  const TIER = [ { need: 1, mult: 10, label: "Ⅱ" }, { need: 10, mult: 50, label: "Ⅲ" }, { need: 25, mult: 500, label: "Ⅳ" }, { need: 50, mult: 5000, label: "Ⅴ" } ];
+  const UPGRADES = [
+    { id: "bat1", name: "金属バット", desc: "1回で集まるファンが2倍", cost: 100, need: s => s.clicks >= 10, click: 2 },
+    { id: "bat2", name: "打撃コーチ", desc: "1回で集まるファンが2倍", cost: 600, need: s => s.clicks >= 100, click: 2 },
+    { id: "bat3", name: "素振り1000回", desc: "1回で集まるファンが2倍", cost: 15000, need: s => s.clicks >= 500, click: 2 },
+    { id: "swing1", name: "スイング解析", desc: "1回のスイングに、毎秒のファンの1%が加わる", cost: 50000, need: s => fpsBase() >= 50, pct: 0.01 },
+    { id: "swing2", name: "4番打者の心得", desc: "1回のスイングに、毎秒のファンの1%がさらに加わる", cost: 5e6, need: s => fpsBase() >= 2000, pct: 0.01 },
+    { id: "swing3", name: "スター選手の看板", desc: "1回のスイングに、毎秒のファンの2%がさらに加わる", cost: 5e8, need: s => fpsBase() >= 1e5, pct: 0.02 },
+    { id: "hr1", name: "ホームランテラス", desc: "ホームランの出る確率が 2% → 5%", cost: 2e5, need: s => s.hr >= 5, hr: 0.05 },
+    { id: "fs1", name: "ファンクラブ発足", desc: "ファンサービスの出る間隔が短くなる", cost: 7e5, need: s => s.fsHits >= 3, fs: 0.7 },
+  ];
+  BUILDINGS.forEach(b => TIER.forEach((t, i) => UPGRADES.push({
+    id: b.id + "_" + i, name: b.name + "強化" + t.label, desc: b.name + "の生産が2倍",
+    cost: b.base * t.mult, need: s => (s.owned[b.id] || 0) >= t.need, bld: b.id, icon: b.id,
+  })));
+  const ACH = [
+    { id: "c1", name: "プレイボール", desc: "はじめてバットを振る", ok: s => s.clicks >= 1 },
+    { id: "c100", name: "素振り100回", desc: "100回バットを振る", ok: s => s.clicks >= 100 },
+    { id: "c1000", name: "鬼の千本ノック", desc: "1,000回バットを振る", ok: s => s.clicks >= 1000 },
+    { id: "c10000", name: "伝説の打撃練習", desc: "10,000回バットを振る", ok: s => s.clicks >= 10000 },
+    { id: "hr1", name: "初アーチ", desc: "ホームランを打つ", ok: s => s.hr >= 1 },
+    { id: "hr100", name: "ホームラン王", desc: "ホームランを100本打つ", ok: s => s.hr >= 100 },
+    { id: "f1e4", name: "満員の外野席", desc: "通算1万人のファン", ok: s => s.allTime >= 1e4 },
+    { id: "f1e6", name: "地元の誇り", desc: "通算100万人のファン", ok: s => s.allTime >= 1e6 },
+    { id: "f1e8", name: "全国区の人気", desc: "通算1億人のファン", ok: s => s.allTime >= 1e8 },
+    { id: "f1e12", name: "世界の球団", desc: "通算1兆人のファン", ok: s => s.allTime >= 1e12 },
+    { id: "b10", name: "球団設立", desc: "施設を合わせて10", ok: s => totalOwned() >= 10 },
+    { id: "b100", name: "球団グループ", desc: "施設を合わせて100", ok: s => totalOwned() >= 100 },
+    { id: "b400", name: "野球の街", desc: "施設を合わせて400", ok: s => totalOwned() >= 400 },
+    { id: "fs1", name: "神対応", desc: "ファンサービスをタップする", ok: s => s.fsHits >= 1 },
+    { id: "p1", name: "初優勝", desc: "優勝してペナントを手に入れる", ok: s => s.flags >= 1 },
+    { id: "p10", name: "黄金時代", desc: "ペナントを10本集める", ok: s => s.flags >= 10 },
+  ];
+
+  /* ================= 状態と保存 ================= */
+  const KEY = "tooldock:kyudan-clicker:v1";
+  const fresh = () => ({ fans: 0, season: 0, allTime: 0, clicks: 0, hr: 0, fsHits: 0, owned: {}, ups: [], flags: 0, seasonNo: 1,
+    ach: [], playSec: 0, frenzyUntil: 0, saved: Date.now() });
+  let S = fresh();
+  try {
+    const v = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (v && typeof v === "object") S = Object.assign(fresh(), v);
+  } catch (e) { /* 壊れていれば最初から */ }
+  function save() { S.saved = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* 保存できなくても遊べる */ } }
+
+  /* ================= 計算 ================= */
+  const has = id => S.ups.indexOf(id) >= 0;
+  const upById = id => UPGRADES.find(u => u.id === id);
+  const totalOwned = () => BUILDINGS.reduce((a, b) => a + (S.owned[b.id] || 0), 0);
+  const flagMult = () => 1 + 0.1 * S.flags;
+  const frenzyOn = () => Date.now() < S.frenzyUntil;
+  function bMult(id) { let m = 1; S.ups.forEach(u => { const x = upById(u); if (x && x.bld === id) m *= 2; }); return m; }
+  function fpsBase() { return BUILDINGS.reduce((a, b) => a + (S.owned[b.id] || 0) * b.fps * bMult(b.id), 0) * flagMult(); }
+  const fpsNow = () => fpsBase() * (frenzyOn() ? 7 : 1);
+  function clickGain() {
+    let base = 1, pct = 0;
+    S.ups.forEach(u => { const x = upById(u); if (!x) return; if (x.click) base *= x.click; if (x.pct) pct += x.pct; });
+    return (base * flagMult() + fpsBase() * pct) * (frenzyOn() ? 7 : 1);
+  }
+  const hrRate = () => has("hr1") ? 0.05 : 0.02;
+  function cost(b, n) { const k = S.owned[b.id] || 0; return Math.ceil(b.base * Math.pow(1.15, k) * (Math.pow(1.15, n) - 1) / 0.15); }
+  const pennantsFor = all => Math.floor(Math.cbrt(all / 1e6));
+  function gain(n) { S.fans += n; S.season += n; S.allTime += n; }
+
+  const UNITS = [[1e20, "垓"], [1e16, "京"], [1e12, "兆"], [1e8, "億"], [1e4, "万"]];
+  function fmt(v, dec) {
+    if (!isFinite(v)) return "∞";
+    if (v < 1e4) return dec && v < 100 ? (Math.floor(v * 10) / 10).toLocaleString("ja-JP") : Math.floor(v).toLocaleString("ja-JP");
+    if (v >= 1e24) return v.toExponential(2);
+    for (const [u, name] of UNITS) if (v >= u) {
+      const x = v / u, d = x < 10 ? 2 : x < 100 ? 1 : 0;
+      return (Math.floor(x * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d) + name;
+    }
+  }
+
+  /* ================= ドット絵 ================= */
+  const PAL = { k: "#1b1f3b", w: "#ffffff", r: "#d7263d", b: "#2b6cb0", n: "#22306b", y: "#f4b400", o: "#f28c28", g: "#3fa34d",
+    G: "#2d7a38", s: "#f2c39b", t: "#9a6a3c", T: "#5d3a1a", l: "#9ad1ff", p: "#ef6f9a", a: "#9aa0a6", d: "#5f6368", c: "#4dd0e1", v: "#7e57c2", m: "#e8d7a8" };
+  const ICONS = {
+    school: ["..kkkkkk..", ".kwwwwwwk.", "kwrwwwwrwk", "kwwrwwrwwk", "kwwrwwrwwk", "kwwrwwrwwk", "kwwrwwrwwk", "kwrwwwwrwk", ".kwwwwwwk.", "..kkkkkk.."],
+    oendan: [".T........", ".Trrrrrr..", ".Trrwwrrr.", ".Trwwwwrr.", ".Trrwwrrr.", ".Trrrrrr..", ".T........", ".T........", ".T........", "TTT......."],
+    baiten: ["..kkkkkk..", "..kwwwwk..", ".kkkkkkkk.", ".krrrrrrk.", ".krwwwwrk.", ".krrrrrrk.", "..krwwrk..", "..krrrrk..", "...kkkk...", ".........."],
+    farm: ["GGGGGGGGGG", "GggggwgggG", "GgggtttggG", "GggtttttgG", "GgwtttttwG", "GggtttttgG", "GgggtttggG", "GggggwgggG", "GggggggggG", "GGGGGGGGGG"],
+    scout: ["..........", ".kk....kk.", "kddk..kddk", "kddkkkkddk", "klck..klck", "kllk..kllk", "kddk..kddk", ".kk....kk.", "..........", ".........."],
+    night: ["yyyyyyyy..", "ywywywyw..", "yyyyyyyy..", "kkkkkkkk..", "...aa.....", "...aa.....", "...aa.....", "...aa.....", "..aaaa....", ".aaaaaa..."],
+    vision: ["kkkkkkkkkk", "kbbbbbbbbk", "kbwbbbbwbk", "kbbbbbbbbk", "kbwbbbbwbk", "kbbwwwwbbk", "kbbbbbbbbk", "kkkkkkkkkk", "....dd....", "...dddd..."],
+    dome: ["..........", "...aaaa...", ".aawwwwaa.", "awwwwwwwwa", "awwwwwwwwa", "aaaaaaaaaa", "amamamamam", "aaaaaaaaaa", "gggggggggg", "GGGGGGGGGG"],
+    tv: ["..k....k..", "...k..k...", "....kk....", "kkkkkkkkkk", "kcccccccck", "kcwcccccck", "kcccccccck", "kcccccccck", "kkkkkkkkkk", ".kk....kk."],
+    world: ["...kkkk...", ".kkbbggkk.", "kbbbgggbbk", "kbggggbbbk", "kbbgggbbbk", "kbbbbbggbk", "kbbbbgggbk", "kbbbbbgbbk", ".kkbbbbkk.", "...kkkk..."],
+    bat: ["........TT", ".......TtT", "......TtT.", ".....TtT..", "....TtT...", "...TtT....", "..TtT.....", ".kTT......", "kkk.......", ".k........"],
+    star: ["....y.....", "....y.....", "...yyy....", "yyyyyyyyy.", ".yyyyyyy..", "..yyyyy...", "..yy.yy...", ".yy...yy..", ".y.....y..", ".........."],
+    flag: [".T........", ".Tyyyyyyy.", ".Tyrryyyy.", ".Tyrrrryy.", ".Tyyyyyyy.", ".Tyyyy....", ".T........", ".T........", ".T........", "TTT......."],
+  };
+  function iconURL(name) {
+    const rows = ICONS[name] || ICONS.star, n = rows.length, c = document.createElement("canvas");
+    c.width = c.height = n; const x = c.getContext("2d");
+    rows.forEach((row, y) => [...row].forEach((ch, i) => { if (PAL[ch]) { x.fillStyle = PAL[ch]; x.fillRect(i, y, 1, 1); } }));
+    return c.toDataURL();
+  }
+  const ICON_URL = {}; Object.keys(ICONS).forEach(k => ICON_URL[k] = iconURL(k));
+
+  /* 打者（12×20、2コマ）。架空のチーム */
+  const BATTER = [
+    ["....nnnn....", "...nnnnnn...", "...nnssss...", "....sssk....", "....ssss....", ".....ss.....", "...wwwwww.TT", "..wwrwwwwTT.", "..wwrwwwTTw.", "..wwwwwwssw.", "...wwwwwss..", "...wwwwww...", "...nnnnnn...", "...wwwwww...", "...ww..ww...", "...ww..ww...", "...ww..ww...", "...nn..nn...", "..nnn..nnn..", "............"],
+    ["....nnnn....", "...nnnnnn...", "...ssssnn...", "....ksss....", "....ssss....", ".....ss.....", "...wwwwwwss.", "..wwwwrwwss.", "..wwwwrwwwTT", "..wwwwwwwTTT", "...wwwwww.TT", "...wwwwww...", "...nnnnnn...", "...wwwwww...", "..www..ww...", "..ww....ww..", "..ww....ww..", "..nn....nn..", ".nnn....nnn.", "............"],
+  ];
+  /* 投手（10×17、左向き。2コマで構えを揺らす） */
+  const PITCHER = [
+    ["...nnnn...", "..nnnnnn..", "...ssss...", "...ksss...", "...ssss...", "....ss....", "..wwwwww..", ".swwwwwws.", ".swwgwwws.", "..wwwwww..", "..nnnnnn..", "..wwwwww..", "..ww..ww..", "..ww..ww..", "..ww..ww..", "..nn..nn..", ".nnn..nnn."],
+    ["...nnnn...", "..nnnnnn..", "...ssss...", "...ksss...", "...ssss...", "....ss....", "..wwwwww..", "..wwwwwws.", "..wgwwwws.", "..wwwwww..", "..nnnnnn..", "..wwwwww..", "..ww..ww..", ".ww....ww.", ".ww....ww.", ".nn....nn.", "nnn....nnn"],
+  ];
+  function drawSprite(x, rows, px, py, s) {
+    rows.forEach((row, y) => [...row].forEach((ch, i) => { if (PAL[ch]) { x.fillStyle = PAL[ch]; x.fillRect(px + i * s, py + y * s, s, s); } }));
+  }
+
+  /* ================= 球場の描画 ================= */
+  const cv = document.getElementById("field"), cx = cv.getContext("2d");
+  const W = 320, H = 180;
+  let swingT = 0, balls = [], floats = [], sparks = [], fs = null, fsNext = Date.now() + 20000, tick = 0;
+  // 観客席（決まった並びにしておく）
+  const SEATS = [];
+  (function () { let r = 7; for (let y = 34; y < 74; y += 4) for (let x = 2; x < W - 2; x += 4) { r = (r * 9301 + 49297) % 233280; SEATS.push([x, y, r / 233280]); } })();
+  const CROWD = ["#d7263d", "#2b6cb0", "#f4b400", "#ffffff", "#3fa34d", "#ef6f9a", "#f28c28", "#7e57c2"];
+
+  function render() {
+    const o = n => S.owned[n] || 0, night = o("night") > 0, dome = o("dome") > 0;
+    cx.imageSmoothingEnabled = false;
+    // 空
+    const sky = night ? ["#0b1033", "#141c4d", "#1f2a66"] : ["#7cc4ff", "#9ad3ff", "#bfe3ff"];
+    sky.forEach((c, i) => { cx.fillStyle = c; cx.fillRect(0, i * 10, W, 10); });
+    cx.fillStyle = sky[2]; cx.fillRect(0, 30, W, 6);
+    if (night) { cx.fillStyle = "#fff"; [[20, 6], [60, 14], [110, 4], [170, 12], [230, 6], [290, 16], [140, 22]].forEach(([x, y]) => cx.fillRect(x, y, 1, 1)); }
+    else { cx.fillStyle = "#fff"; [[30, 8], [180, 14]].forEach(([x, y]) => { cx.fillRect(x, y, 22, 4); cx.fillRect(x + 4, y - 3, 12, 3); }); }
+    // スタンド
+    cx.fillStyle = "#6b6f80"; cx.fillRect(0, 32, W, 44);
+    for (let y = 34; y < 76; y += 4) { cx.fillStyle = "#585c6c"; cx.fillRect(0, y + 3, W, 1); }
+    const fill = Math.min(1, Math.log10(1 + S.season) / 10);
+    SEATS.forEach(([x, y, r], i) => { if (r < fill) { cx.fillStyle = CROWD[i % CROWD.length]; const bob = (o("oendan") && (i + tick >> 3) % 7 === 0) ? -1 : 0; cx.fillRect(x, y + bob, 2, 2); } });
+    // 応援団の旗
+    if (o("oendan")) { for (let k = 0; k < Math.min(6, o("oendan")); k++) { const x = 250 - k * 22, w = (tick >> 4) % 2; cx.fillStyle = "#5d3a1a"; cx.fillRect(x, 26, 1, 12); cx.fillStyle = k % 2 ? "#f4b400" : "#d7263d"; cx.fillRect(x + 1, 26 + w, 7, 5); } }
+    // 大型ビジョン
+    if (o("vision")) { cx.fillStyle = "#1b1f3b"; cx.fillRect(122, 2, 76, 28); cx.fillStyle = "#123"; cx.fillRect(125, 5, 70, 22); cx.fillStyle = "#4dd0e1"; cx.font = "10px DotGothic16, monospace"; cx.textAlign = "center"; cx.fillText("FANS " + fmt(S.fans), 160, 19); }
+    // ナイター照明
+    if (night) { [[8, 6], [300, 6]].forEach(([x, y]) => { cx.fillStyle = "#9aa0a6"; cx.fillRect(x + 5, y + 10, 2, 22); cx.fillStyle = "#fff6c2"; cx.fillRect(x, y, 12, 9); cx.fillStyle = "#f4b400"; for (let i = 0; i < 4; i++) cx.fillRect(x + 1 + i * 3, y + 1, 1, 7); }); }
+    // ドームの屋根
+    if (dome) { cx.fillStyle = "#cfd4dc"; for (let x = 0; x < W; x += 2) { const h = 8 - Math.round(Math.pow((x - W / 2) / (W / 2), 2) * 8); cx.fillRect(x, 0, 2, h); } }
+    // フェンス
+    cx.fillStyle = "#1f6d3a"; cx.fillRect(0, 76, W, 6); cx.fillStyle = "#f4b400"; cx.fillRect(0, 76, W, 1);
+    // 芝
+    for (let y = 82; y < H; y += 6) { cx.fillStyle = ((y / 6) | 0) % 2 ? "#3fa34d" : "#46b056"; cx.fillRect(0, y, W, 6); }
+    // 打席とマウンド（横から見た球場）
+    cx.fillStyle = "#c98a4a";
+    [[66, 164, 70, 10], [72, 160, 58, 4], [72, 174, 58, 4]].forEach(([x, y, w, h]) => cx.fillRect(x, y, w, h));
+    [[218, 158, 50, 8], [224, 155, 38, 3], [224, 166, 38, 3]].forEach(([x, y, w, h]) => cx.fillRect(x, y, w, h));
+    cx.fillStyle = "#fff"; cx.fillRect(236, 157, 10, 2);
+    // 投手
+    drawSprite(cx, PITCHER[(tick >> 5) % 2], 230, 124, 2);
+    // 売店
+    if (o("baiten")) { cx.fillStyle = "#fff"; cx.fillRect(282, 92, 30, 18); cx.fillStyle = "#d7263d"; for (let i = 0; i < 5; i++) cx.fillRect(282 + i * 6, 88, 3, 5); cx.fillStyle = "#1b1f3b"; cx.font = "8px DotGothic16, monospace"; cx.textAlign = "center"; cx.fillText("売店", 297, 104); }
+    // 打者
+    drawSprite(cx, BATTER[swingT > 0 ? 1 : 0], 96, 128, 2);
+    cx.fillStyle = "#fff"; cx.fillRect(116, 168, 10, 3);
+    // 打球
+    balls.forEach(b => { cx.fillStyle = "#fff"; cx.fillRect(b.x | 0, b.y | 0, 3, 3); cx.fillStyle = "#d7263d"; cx.fillRect((b.x | 0) + 1, (b.y | 0) + 1, 1, 1); });
+    // 花火
+    sparks.forEach(p => { cx.fillStyle = p.c; cx.fillRect(p.x | 0, p.y | 0, 2, 2); });
+    // ファンサービス
+    if (fs) { const bob = Math.sin(tick / 6) * 2; cx.fillStyle = "#1b1f3b"; cx.fillRect(fs.x - 1, fs.y - 1 + bob, 54, 16); cx.fillStyle = "#f4b400"; cx.fillRect(fs.x, fs.y + bob, 52, 14);
+      cx.fillStyle = "#1b1f3b"; cx.font = "10px DotGothic16, monospace"; cx.textAlign = "center"; cx.fillText("ファンサ!", fs.x + 26, fs.y + 11 + bob); }
+    // 文字
+    floats.forEach(f => { cx.font = (f.big ? "16px" : "10px") + " DotGothic16, monospace"; cx.textAlign = "center"; cx.fillStyle = "#1b1f3b"; cx.fillText(f.t, f.x + 1, f.y + 1); cx.fillStyle = f.c; cx.fillText(f.t, f.x, f.y); });
+  }
+
+  /* ================= 操作 ================= */
+  function swing(px, py) {
+    if (fs && px !== undefined && px >= fs.x - 4 && px <= fs.x + 56 && py >= fs.y - 6 && py <= fs.y + 20) { hitFanService(); return; }
+    S.clicks++; swingT = 6;
+    const hr = Math.random() < hrRate();
+    let g = clickGain(); if (hr) { g *= 10; S.hr++; }
+    gain(g);
+    balls.push({ x: 124, y: 150, vx: 3 + Math.random() * 2, vy: hr ? -4.2 : -1.6 - Math.random() * 1.6, hr });
+    floats.push({ t: (hr ? "ホームラン! +" : "+") + fmt(g), x: hr ? 170 : 130 + Math.random() * 40, y: hr ? 100 : 120, life: hr ? 70 : 40, big: hr, c: hr ? "#f4b400" : "#ffffff" });
+    if (floats.length > 30) floats.shift();
+    if (hr) for (let i = 0; i < 30; i++) { const a = Math.random() * 6.28, sp = 1 + Math.random() * 2; sparks.push({ x: 240, y: 40, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 40, c: CROWD[i % CROWD.length] }); }
+    updateText();
+  }
+  function hitFanService() {
+    S.fsHits++; fs = null;
+    if (Math.random() < 0.5) { S.frenzyUntil = Date.now() + 30000; toast("満員御礼！ 30秒間、生産が7倍"); floats.push({ t: "満員御礼!", x: 160, y: 90, life: 80, big: true, c: "#f4b400" }); }
+    else { const g = Math.max(13, Math.min(S.fans * 0.15, fpsBase() * 900) + 13); gain(g); toast("臨時収入！ ファン +" + fmt(g) + "人"); floats.push({ t: "+" + fmt(g), x: 160, y: 90, life: 80, big: true, c: "#f4b400" }); }
+    scheduleFs(); updateText(); refresh();
+  }
+  function scheduleFs() { fsNext = Date.now() + (60 + Math.random() * 120) * 1000 * (has("fs1") ? 0.7 : 1); }
+  function canvasPoint(ev) { const r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) * W / r.width, (ev.clientY - r.top) * H / r.height]; }
+  cv.addEventListener("pointerdown", ev => { ev.preventDefault(); const [x, y] = canvasPoint(ev); swing(x, y); });
+  document.addEventListener("keydown", ev => {
+    if (ev.code !== "Space" || ev.repeat) return;
+    const t = ev.target; if (t && /INPUT|TEXTAREA|SELECT|BUTTON/.test(t.tagName)) return;
+    const r = cv.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+    ev.preventDefault(); swing();
+  });
+
+  let buyAmt = 1;
+  document.querySelectorAll(".kc-buyamt button").forEach(b => b.addEventListener("click", () => {
+    buyAmt = Number(b.dataset.amt); document.querySelectorAll(".kc-buyamt button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false")); refresh();
+  }));
+  document.getElementById("buildings").addEventListener("click", ev => {
+    const el = ev.target.closest("[data-b]"); if (!el) return;
+    const b = BUILDINGS.find(x => x.id === el.dataset.b), c = cost(b, buyAmt);
+    if (S.fans < c) return; S.fans -= c; S.owned[b.id] = (S.owned[b.id] || 0) + buyAmt; refresh(); updateText(); save();
+  });
+  document.getElementById("upgrades").addEventListener("click", ev => {
+    const el = ev.target.closest("[data-u]"); if (!el) return;
+    const u = upById(el.dataset.u); if (!u || has(u.id) || S.fans < u.cost) return;
+    S.fans -= u.cost; S.ups.push(u.id); toast(u.name + " を手に入れた！"); refresh(); updateText(); save();
+  });
+  document.querySelectorAll(".kc-tabs button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".kc-tabs button").forEach(x => x.setAttribute("aria-selected", x === b ? "true" : "false"));
+    ["build", "up", "rec"].forEach(k => document.getElementById("pane-" + k).hidden = k !== b.dataset.tab);
+    refresh();
+  }));
+  document.getElementById("win").addEventListener("click", () => {
+    const add = pennantsFor(S.allTime) - S.flags; if (add < 1) return;
+    if (!confirm("優勝してシーズンを終えますか？\nペナントを " + add + " 本もらえます（生産 +" + add * 10 + "%）。\nファン・施設・強化は最初からになります。")) return;
+    S.flags += add; S.seasonNo++; S.fans = 0; S.season = 0; S.owned = {}; S.ups = []; S.frenzyUntil = 0;
+    toast("優勝おめでとう！ ペナント +" + add + " 本"); for (let i = 0; i < 60; i++) { const a = Math.random() * 6.28, sp = 1 + Math.random() * 3; sparks.push({ x: 160, y: 50, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 60, c: CROWD[i % CROWD.length] }); }
+    refresh(); updateText(); save();
+  });
+  document.getElementById("reset").addEventListener("click", () => {
+    if (!confirm("データをすべて消して最初からやり直しますか？\nペナントや実績も消え、元に戻せません。")) return;
+    S = fresh(); save(); refresh(); updateText(); toast("最初からはじめます");
+  });
+
+  /* ================= 表示 ================= */
+  const $ = id => document.getElementById(id);
+  let toastTimer = 0;
+  function toast(t) { const el = $("toast"); el.textContent = t; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2600); }
+  function updateText() {
+    $("fans").textContent = fmt(S.fans); $("fps").textContent = fmt(fpsNow(), true);
+    const left = Math.ceil((S.frenzyUntil - Date.now()) / 1000);
+    $("frenzy").textContent = left > 0 ? "　満員御礼 ×7（あと" + left + "秒）" : "";
+    $("season").textContent = S.seasonNo; $("flags").textContent = S.flags; $("flagPct").textContent = S.flags * 10;
+    $("seasonTotal").textContent = fmt(S.season) + "人";
+    const add = pennantsFor(S.allTime) - S.flags, w = $("win");
+    w.disabled = add < 1;
+    if (add >= 1) w.textContent = "優勝してシーズンを終える（ペナント +" + add + "）";
+    else { const need = Math.pow(S.flags + 1, 3) * 1e6; w.textContent = "優勝まで あと " + fmt(Math.max(0, need - S.allTime)) + "人"; }
+  }
+  let lastSig = "";
+  function refresh(force) {
+    const affordB = BUILDINGS.map(b => S.fans >= cost(b, buyAmt) ? 1 : 0).join("");
+    const avail = UPGRADES.filter(u => !has(u.id) && u.need(S));
+    const affordU = avail.map(u => S.fans >= u.cost ? 1 : 0).join("");
+    const sig = [affordB, affordU, avail.length, JSON.stringify(S.owned), S.ups.length, buyAmt, S.ach.length, S.flags].join("|");
+    $("upDot").hidden = !avail.some(u => S.fans >= u.cost);
+    if (sig === lastSig && !force) return; lastSig = sig;
+    // 施設：持っているもの＋次の1つまで見せる（その先は伏せ字）
+    let reach = 1; BUILDINGS.forEach((b, i) => { if ((S.owned[b.id] || 0) > 0 || S.allTime >= b.base * 0.5) reach = Math.max(reach, i + 1); });
+    $("buildings").innerHTML = BUILDINGS.map((b, i) => {
+      if (i > reach) return "";
+      const lock = i > 0 && i === reach && !(S.owned[b.id] > 0) && S.allTime < b.base * 0.5, c = cost(b, buyAmt), ok = S.fans >= c;
+      if (lock) return `<button type="button" class="kc-item locked" disabled><img alt="" src="${ICON_URL.star}"><span><span class="nm">？？？？</span><span class="ds">ファンが増えると現れる</span></span><span class="cost">${fmt(c)}</span></button>`;
+      const each = b.fps * bMult(b.id) * flagMult();
+      return `<button type="button" class="kc-item${ok ? " ok" : ""}" data-b="${b.id}"${ok ? "" : " disabled"}><img alt="" src="${ICON_URL[b.id]}"><span><span class="nm">${b.name}${buyAmt > 1 ? " ×" + buyAmt : ""}</span><span class="ds">${b.desc}／1つで毎秒 ${fmt(each, true)}人</span></span><span><span class="cost">${fmt(c)}人</span><br><span class="own">${S.owned[b.id] || 0}</span></span></button>`;
+    }).join("");
+    // 強化
+    const list = avail.slice().sort((a, b) => a.cost - b.cost);
+    $("upgrades").innerHTML = list.length ? list.map(u => {
+      const ok = S.fans >= u.cost, icon = u.icon ? ICON_URL[u.icon] : u.hr ? ICON_URL.star : u.fs ? ICON_URL.flag : ICON_URL.bat;
+      return `<button type="button" class="kc-item${ok ? " ok" : ""}" data-u="${u.id}"${ok ? "" : " disabled"}><img alt="" src="${icon}"><span><span class="nm">${u.name}</span><span class="ds">${u.desc}</span></span><span class="cost">${fmt(u.cost)}人</span></button>`;
+    }).join("") : '<div class="kc-empty">いま買える強化はありません。バットを振ったり施設を建てたりすると、新しい強化が現れます。</div>';
+    updateRec();
+  }
+  function updateRec() {
+    if ($("pane-rec").hidden) return;
+    const h = Math.floor(S.playSec / 3600), m = Math.floor(S.playSec % 3600 / 60);
+    $("stats").innerHTML = [["通算のファン", fmt(S.allTime) + "人"], ["今シーズンのファン", fmt(S.season) + "人"], ["バットを振った回数", fmt(S.clicks) + "回"],
+      ["ホームラン", fmt(S.hr) + "本"], ["1回で集まるファン", fmt(clickGain(), true) + "人"], ["施設の数", totalOwned()], ["ファンサービス", S.fsHits + "回"],
+      ["ペナント", S.flags + "本"], ["遊んだ時間", h + "時間" + m + "分"]].map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join("");
+    $("ach").innerHTML = `<div style="grid-column:1/-1;border:none;background:none;padding:0">実績 ${S.ach.length} / ${ACH.length}</div>` +
+      ACH.map(a => { const on = S.ach.indexOf(a.id) >= 0; return `<div class="${on ? "" : "off"}"><b>${on ? a.name : "？？？"}</b>${a.desc}</div>`; }).join("");
+  }
+  function checkAch() {
+    ACH.forEach(a => { if (S.ach.indexOf(a.id) < 0 && a.ok(S)) { S.ach.push(a.id); toast("実績「" + a.name + "」を達成！"); } });
+  }
+
+  /* ================= ループ ================= */
+  // 閉じていた間：最大8時間、半分のペース
+  (function offline() {
+    const sec = Math.min(8 * 3600, Math.max(0, (Date.now() - (S.saved || Date.now())) / 1000));
+    const g = fpsBase() * sec * 0.5;
+    if (sec > 60 && g >= 1) { gain(g); setTimeout(() => toast("おかえりなさい！ 留守のあいだに " + fmt(g) + " 人のファンが増えました"), 600); }
+  })();
+  let last = performance.now(), acc = 0, saveAcc = 0;
+  function loop(now) {
+    const dt = Math.min(3600, (now - last) / 1000); last = now; tick++;
+    gain(fpsNow() * dt); S.playSec += dt;
+    if (swingT > 0) swingT--;
+    balls.forEach(b => { b.x += b.vx; b.y += b.vy; b.vy += 0.05; }); balls = balls.filter(b => b.x < W + 5 && b.y > -10 && b.y < H);
+    floats.forEach(f => { f.y -= 0.6; f.life--; }); floats = floats.filter(f => f.life > 0);
+    sparks.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.04; p.life--; }); sparks = sparks.filter(p => p.life > 0);
+    if (!fs && Date.now() > fsNext && S.clicks > 0) fs = { x: 20 + Math.random() * 230, y: 84 + Math.random() * 40, until: Date.now() + 12000 };
+    if (fs && Date.now() > fs.until) { fs = null; scheduleFs(); }
+    render();
+    acc += dt; saveAcc += dt;
+    if (acc > 0.25) { acc = 0; updateText(); checkAch(); refresh(); updateRec(); }
+    if (saveAcc > 5) { saveAcc = 0; save(); }
+    requestAnimationFrame(loop);
+  }
+  document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
+  window.addEventListener("pagehide", save);
+  updateText(); refresh(true);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => refresh(true));
+  requestAnimationFrame(loop);
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "球団経営クリッカーのデータは保存されますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "ブラウザの中に数秒ごとに自動で保存されます。サーバーには送信されません。" }
+    },
+    {
+      "@type": "Question",
+      "name": "閉じている間もファンは増えますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "増えます。次に開いたとき、閉じていた時間（最大8時間）の半分のペースで施設が集めたファンが加わります。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/typing-game/" class="related-tool-card"><h3>横文字ばっかりのタイピングゲーム</h3><p>やたら横文字しか出てこない、無料のタイピングゲームです。</p></a>
+<a href="/mylife-start/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ アピールポイントのすゝめ</h3><p>経歴・ドラフト順位・アピールポイント・ウィークポイントによる初期能力とボーナスの解説です。</p></a>
+<a href="/eikan-kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 栄冠ナイン 金特の入手方法まとめ</h3><p>金特本・国際大会・特訓の3つの手段。欲しい金特から狙う評価を逆引きできます。</p></a>
+<a href="/shippo/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 尻尾 入手方法一覧</h3><p>尻尾12種の入手方法とオススメ度。9個でMAXになるので、あと何個かも分かります。</p></a>
+<a href="/crystal-banno/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 万能クリスタル（小）（大）入手方法一覧</h3><p>万能クリスタル（小）9通りと（大）の入手方法を、チェックしながら管理できる一覧。</p></a>
+<a href="/crystal/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ イベントクリスタル（小）（大）入手方法一覧</h3><p>特殊能力ファイルに使うイベントクリスタルの入手方法と、怪しい露店の交換レート一覧。</p></a>
+<a href="/kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 能力研究所の金特ミッション一覧</h3><p>マイライフの能力研究所で受けられる金特ミッションの内容と取得条件の一覧。2024-2025 とも共通です。</p></a>
+<a href="/satei/" class="related-tool-card"><h3>パワプロ2026-2027 ⭐︎(星)計算ツール</h3><p>能力値と所持する特殊能力を入力すると、査定である☆(星)を計算します。</p></a>
+<a href="/nouryoku/" class="related-tool-card"><h3>パワプロ風 能力画像ジェネレーター（野手）</h3><p>パワプロ風の能力画像を作れる能力メーカー。野手の能力値と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
+<a href="/nouryoku-pitcher/" class="related-tool-card"><h3>パワプロ風 能力画像ジェネレーター（投手）</h3><p>パワプロ風の能力画像を作れる能力メーカー。投手の能力値・変化球と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
+<a href="/order/" class="related-tool-card"><h3>パワプロ風 スタメン画像ジェネレーター</h3><p>名前・守備位置・調子を入れるだけで、パワプロ風のスターティングオーダーを画像・GIFアニメ・動画にできます。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
