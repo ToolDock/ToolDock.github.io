@@ -70,6 +70,20 @@ body{
 #field{ width:100%; height:auto; image-rendering:pixelated; image-rendering:crisp-edges; cursor:pointer;
     touch-action:manipulation; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
 .kc-hint{ font-size:.85rem; margin:6px 0 0; color:#5c6470; text-align:center; }
+.kc-news{ margin:6px 0 0; background:#fff; border:3px solid var(--kc-line); padding:6px 10px; font-size:.92rem; min-height:2.6em; display:flex; gap:8px; align-items:center; }
+.kc-news .tag{ background:var(--kc-accent); color:#fff; padding:0 6px; font-size:.8rem; white-space:nowrap; }
+.kc-news .txt{ transition:opacity .3s; }
+.kc-month{ font-size:.85rem; color:#ffd166; }
+.kc-draft{ margin-top:12px; background:#fff3c4; border:3px solid var(--kc-line); padding:10px 12px; }
+.kc-draft h3{ margin:0 0 6px; font-size:1.05rem; font-weight:400; color:var(--kc-accent); }
+.kc-draft .cands{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+@media (max-width:420px){ .kc-draft .cands{ grid-template-columns:1fr; } }
+.kc-draft button{ font:inherit; text-align:left; background:#fff; border:2px solid var(--kc-line); padding:6px; cursor:pointer; color:var(--kc-ink); box-shadow:2px 2px 0 var(--kc-line); }
+.kc-draft button b{ display:block; font-weight:400; font-size:.95rem; }
+.kc-draft button span{ display:block; font-size:.78rem; color:#5c6470; line-height:1.35; }
+.kc-draft button em{ font-style:normal; color:var(--kc-accent); font-size:.8rem; }
+.kc-rookies{ font-size:.82rem; color:#5c6470; margin-top:6px; line-height:1.5; }
+.kc-ach div.hidden-on{ border-color:#7e57c2; background:#f3ecff; }
 
 .kc-box{ margin-top:12px; background:var(--kc-panel); border:3px solid var(--kc-line); padding:10px 12px; font-size:.95rem; }
 .kc-box .row{ display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; }
@@ -173,9 +187,16 @@ body{
       <div class="big"><span id="fans">0</span><small>人</small></div>
       <div class="sub">毎秒 <span id="fps">0</span> 人</div>
       <div class="buffs" id="buffs"></div>
+      <div class="kc-month" id="month"></div>
     </div>
     <div class="kc-field-wrap"><canvas id="field" width="320" height="180" aria-label="球場。タップするとバットを振ります"></canvas></div>
+    <div class="kc-news" aria-live="off"><span class="tag">速報</span><span class="txt" id="news"></span></div>
     <p class="kc-hint">球場をタップ（スペースキー）してバットを振ろう。ときどき飛んでくる「ファンサ!」もタップ！</p>
+
+    <div class="kc-draft" id="draft" hidden>
+      <h3>ドラフト会議！ 1人を指名しよう</h3>
+      <div class="cands" id="cands"></div>
+    </div>
 
     <div class="kc-box">
       <div class="row"><span>今シーズンの試合</span><span><b id="wl">0勝0敗</b></span></div>
@@ -186,6 +207,7 @@ body{
     <div class="kc-box">
       <div class="row"><span>シーズン <b id="season">1</b></span><span>ペナント <b id="flags">0</b> 本（生産 +<span id="flagPct">0</span>%）</span></div>
       <div class="row"><span>今シーズンの獲得ファン</span><span id="seasonTotal">0</span></div>
+      <div class="kc-rookies" id="rookies"></div>
       <button type="button" class="kc-btn gold wide" id="win" disabled>優勝してシーズンを終える</button>
     </div>
   </div>
@@ -214,7 +236,7 @@ body{
     <div class="kc-pane" id="pane-rec" hidden>
       <div class="kc-stats" id="stats"></div>
       <h3 id="achHead">実績</h3>
-      <p class="kc-note">実績を1つ達成するごとに、すべての生産が1%上がります。</p>
+      <p class="kc-note">実績を1つ達成するごとに、すべての生産が1%上がります。紫の枠は「隠し実績」で、条件はひみつです。</p>
       <div class="kc-ach" id="ach"></div>
     </div>
     <div class="kc-pane kc-form" id="pane-team" hidden>
@@ -254,8 +276,12 @@ body{
 <tr><th>試合</th><td>開いている間、約1分半ごとに試合が行われます。勝率は球団の人気（毎秒のファン）で上がり、勝つとファンが増えます。連勝するほどボーナスが大きくなります。</td></tr>
 <tr><th>ファンサービス</th><td>球場にときどき現れる「ファンサ!」をタップすると、満員御礼（生産7倍）・臨時収入・ホームラン競争（タップ10倍）・グッズ完売（施設1つの生産10倍）のどれかが起こります。</td></tr>
 <tr><th>優勝と殿堂</th><td>たくさんのファンを集めると優勝できます。ファンと施設は最初からになりますが、ペナント（1本ごとに生産+10%）と殿堂ポイントがもらえます。殿堂ポイントでは、自動スイングや施設の値引きなど、ずっと残る力が手に入ります。</td></tr>
+<tr><th>ドラフト会議</th><td>シーズン中にファンが1万・1000万・100億・10兆人に届くたび、新人を1人指名できます。候補は3人で、大砲・安打製造機・エース・人気者・守備職人・俊足・勝負強さのどれか。そのシーズンのあいだ効果が続きます。</td></tr>
+<tr><th>雨</th><td>ときどき雨が降り、1分間生産が半分になります。ドーム球場があれば、逆に満員になって生産が2倍に。</td></tr>
+<tr><th>月のイベント</th><td>お正月・春季キャンプ・開幕ダッシュ・オールスター・ストーブリーグなど、月ごとに違うボーナスがつきます（端末の日付で決まります）。</td></tr>
 <tr><th>来場ボーナス</th><td>1日1回、最初に開いたときにボーナスがもらえます。毎日続けて開くと、7日目まで大きくなります。</td></tr>
-<tr><th>実績</th><td>100以上の実績があり、1つ達成するごとにすべての生産が1%上がります。</td></tr>
+<tr><th>実績</th><td>175個の実績があり、1つ達成するごとにすべての生産が1%上がります。そのうち26個は条件がひみつの「隠し実績」です。いろいろ試して見つけてください。</td></tr>
+<tr><th>速報</th><td>球場の下に、球団の様子に合わせたスポーツ新聞の見出しが流れます。</td></tr>
 <tr><th>球団づくり</th><td>「球団」のタブで、球団名とユニフォームの色（メイン・アクセント・生地）を決められます。打者と応援団の旗、観客席のファンの服が球団カラーになります。</td></tr>
 </tbody>
 </table>
@@ -347,6 +373,23 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     { id: "keep", name: "永久欠番", desc: lv => "優勝しても施設の " + (lv + 1) * 10 + "% を持ち越す（いま " + lv * 10 + "%）", max: 3, cost: lv => [10, 25, 50][lv] },
   ];
 
+  /* 月ごとのイベント（端末の日付で決まる） */
+  const MONTHS = [
+    ["お正月", "来場ボーナスが3倍"], ["春季キャンプ", "1回で集まるファンが2倍"], ["オープン戦", "試合の間隔が半分"], ["開幕ダッシュ", "勝ったときのファンが2倍"],
+    ["大型連休", "すべての生産 +10%"], ["梅雨", "雨がよく降る（ドームがあれば生産 +20%）"], ["オールスター", "ファンサービスの出る間隔 -30%"], ["夏休み", "留守中のペース +25%"],
+    ["優勝争い", "連勝ボーナスが2倍"], ["ポストシーズン", "ホームランの確率 +3%"], ["ファン感謝デー", "実績のボーナスが1.5倍"], ["ストーブリーグ", "施設の値段 -10%"],
+  ];
+  const MON = () => new Date().getMonth();
+  const isMon = m => MON() === m;
+  /* ドラフト：シーズン中にファンがこの数に届くたび、新人を1人指名できる（優勝でリセット） */
+  const DRAFT_AT = [1e4, 1e7, 1e10, 1e13];
+  const ROOKIE = {
+    slugger: ["大砲", "ホームランの確率 +2%、ホームランのファン +5倍"], hitter: ["安打製造機", "1回で集まるファン ×1.5"], ace: ["エース", "試合の勝率 +5%"],
+    idol: ["人気者", "すべての生産 +10%"], glove: ["守備職人", "施設の値段 -5%"], speed: ["俊足", "ファンサービスの出る間隔 -15%"], clutch: ["勝負強さ", "勝ったときのファン ×1.5"],
+  };
+  const SEI = ["大空", "春風", "若葉", "雷電", "白波", "黒潮", "疾風", "月影", "朝日", "夕凪", "青嵐", "星川", "流星", "岩鉄", "桜木", "海原"];
+  const MEI = ["一番", "剛", "翼", "迅", "弾", "光", "大地", "隼", "豪", "輝", "球太", "打吉", "走", "守", "勝", "満塁"];
+  const rk = id => S.rookies.filter(x => x === id).length;
   const OPP = ["ペンギンズ", "カピバラーズ", "アルパカズ", "ハリネズミーズ", "モモンガーズ", "フラミンゴス", "カメレオンズ", "ナマケモノーズ", "コアラーズ", "ラッコーズ", "マンボウズ", "オカピーズ"];
   const PRESETS = [
     ["紺×赤", "#22306b", "#d7263d", "#ffffff"], ["黒×黄", "#1d1d1f", "#f4b400", "#ffffff"], ["赤×白", "#c8102e", "#ffffff", "#ffffff"], ["緑×金", "#1f6d3a", "#e0b43b", "#f3e7c9"],
@@ -359,12 +402,13 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     ach: [], playSec: 0, frenzyUntil: 0, saved: Date.now(),
     lp: 0, perks: {}, team: { name: "ドット・スターズ", main: "#22306b", acc: "#d7263d", body: "#ffffff", named: 0, colored: 0 },
     w: 0, l: 0, games: [], streak: 0, bestStreak: 0, winsAll: 0, gamesAll: 0, nextGame: 0,
-    buffs: [], daily: { last: "", streak: 0, best: 0 }, bestFps: 0, bestSeason: 0, upsAll: 0, autoSw: 0 });
+    buffs: [], daily: { last: "", streak: 0, best: 0 }, bestFps: 0, bestSeason: 0, upsAll: 0, autoSw: 0,
+    created: Date.now(), sec: {}, rookies: [], draft: null, draftsDone: 0, seasonUps: 0, lossStreak: 0, rainNext: 0, events: 0 });
   let S = fresh();
   function load(v) {
     const f = fresh(), o = Object.assign(f, v);
     o.team = Object.assign(fresh().team, v.team || {}); o.daily = Object.assign(fresh().daily, v.daily || {});
-    o.perks = v.perks || {}; o.buffs = Array.isArray(v.buffs) ? v.buffs : []; o.games = Array.isArray(v.games) ? v.games : [];
+    o.perks = v.perks || {}; o.sec = v.sec || {}; o.rookies = Array.isArray(v.rookies) ? v.rookies : []; o.buffs = Array.isArray(v.buffs) ? v.buffs : []; o.games = Array.isArray(v.games) ? v.games : [];
     return o;
   }
   try { const v = JSON.parse(localStorage.getItem(KEY) || "null"); if (v && typeof v === "object") S = load(v); } catch (e) { /* 壊れていれば最初から */ }
@@ -380,8 +424,8 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   const buff = t => S.buffs.find(b => b.t === t && b.until > now());
   const flagMult = () => 1 + 0.1 * S.flags;
   function milk() { let m = 0.01; S.ups.forEach(u => { const x = upById(u); if (x && x.milk) m += x.milk; }); return m; }
-  const achMult = () => 1 + milk() * S.ach.length;
-  const allMult = () => flagMult() * achMult() * (1 + 0.25 * pk("prod"));
+  const achMult = () => 1 + milk() * S.ach.length * (isMon(10) ? 1.5 : 1);
+  const allMult = () => flagMult() * achMult() * (1 + 0.25 * pk("prod")) * (1 + 0.1 * rk("idol")) * (isMon(4) ? 1.1 : 1);
   function bMult(id) {
     let m = 1;
     S.ups.forEach(u => { const x = upById(u); if (!x) return; if (x.bld === id) m *= 2; if (x.syn && x.syn[1] === id) m *= 1 + 0.01 * (S.owned[x.syn[0]] || 0); });
@@ -390,24 +434,25 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   }
   const bFps = b => (S.owned[b.id] || 0) * b.fps * bMult(b.id) * allMult();
   const fpsBase = () => BUILDINGS.reduce((a, b) => a + bFps(b), 0);
-  const fpsNow = () => fpsBase() * (buff("frenzy") ? 7 : 1);
+  const fpsNow = () => fpsBase() * (buff("frenzy") ? 7 : 1) * (buff("rain") ? 0.5 : 1) * (buff("rainDome") ? (isMon(5) ? 2.4 : 2) : 1);
   function clickGain() {
     let base = Math.pow(2, pk("click")), pct = 0;
     S.ups.forEach(u => { const x = upById(u); if (!x) return; if (x.click) base *= x.click; if (x.pct) pct += x.pct; });
+    base *= Math.pow(1.5, rk("hitter")) * (isMon(1) ? 2 : 1);
     return (base * allMult() + fpsBase() * pct) * (buff("frenzy") ? 7 : 1) * (buff("derby") ? 10 : 1);
   }
-  function hrRate() { let r = 0.02 + 0.01 * pk("hr"); S.ups.forEach(u => { const x = upById(u); if (x && x.hr) r += x.hr; }); return r; }
-  const hrMult = () => has("hrx") ? 20 : 10;
-  const costMult = () => Math.pow(0.97, pk("cost"));
+  function hrRate() { let r = 0.02 + 0.01 * pk("hr") + 0.02 * rk("slugger") + (isMon(9) ? 0.03 : 0); S.ups.forEach(u => { const x = upById(u); if (x && x.hr) r += x.hr; }); return r; }
+  const hrMult = () => (has("hrx") ? 20 : 10) + 5 * rk("slugger");
+  const costMult = () => Math.pow(0.97, pk("cost")) * Math.pow(0.95, rk("glove")) * (isMon(11) ? 0.9 : 1);
   function cost(b, n) { const k = S.owned[b.id] || 0; return Math.ceil(b.base * Math.pow(1.15, k) * (Math.pow(1.15, n) - 1) / 0.15 * costMult()); }
   const pennantsFor = all => Math.floor(Math.cbrt(all / 1e6));
   function gain(n) { if (!(n > 0)) return; S.fans += n; S.season += n; S.allTime += n; }
   function winRate() {
-    let r = 0.35 + 0.035 * Math.log10(1 + fpsBase()) + 0.03 * pk("game");
+    let r = 0.35 + 0.035 * Math.log10(1 + fpsBase()) + 0.03 * pk("game") + 0.05 * rk("ace");
     S.ups.forEach(u => { const x = upById(u); if (x && x.win) r += x.win; });
     return Math.max(0.3, Math.min(0.85, r));
   }
-  function fsGap() { let m = Math.pow(0.85, pk("fs")); S.ups.forEach(u => { const x = upById(u); if (x && x.fs) m *= x.fs; }); return m; }
+  function fsGap() { let m = Math.pow(0.85, pk("fs") + rk("speed")) * (isMon(6) ? 0.7 : 1); S.ups.forEach(u => { const x = upById(u); if (x && x.fs) m *= x.fs; }); return m; }
   const frenzyLen = () => (30 + 15 * pk("frenzy")) * (has("fs3") ? 2 : 1) * 1000;
 
   const UNITS = [[1e20, "垓"], [1e16, "京"], [1e12, "兆"], [1e8, "億"], [1e4, "万"]];
@@ -443,6 +488,56 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   A("hall1", "殿堂入り", "殿堂の力を手に入れる", s => Object.keys(s.perks).length > 0);
   A("time1", "1時間の熱戦", "合わせて1時間遊ぶ", s => s.playSec >= 3600);
   A("time10", "10時間の熱戦", "合わせて10時間遊ぶ", s => s.playSec >= 36000);
+  A("time50", "50時間の死闘", "合わせて50時間遊ぶ", s => s.playSec >= 180000);
+  A("time100", "100時間の伝説", "合わせて100時間遊ぶ", s => s.playSec >= 360000);
+  A("c1e6", "百万回の素振り", "100万回バットを振る", s => s.clicks >= 1e6);
+  A("hr1e4", "一万本の放物線", "ホームランを1万本", s => s.hr >= 1e4);
+  [[1e21, "次元を超えた人気"], [1e24, "数えきれないファン"]].forEach(([n, nm]) => A("f" + n, nm, "通算 " + fmt(n) + "人のファン", s => s.allTime >= n));
+  [[1e11, "ファンの洪水"], [1e13, "ファンの銀河"]].forEach(([n, nm]) => A("fps" + n, nm, "毎秒 " + fmtN(n) + "人", () => fpsBase() >= n));
+  BUILDINGS.forEach(b => [[150, "の殿堂"], [200, "の頂点"]].forEach(([n, sfx]) => A("b_" + b.id + n, b.name + sfx, b.name + "を" + n, s => (s.owned[b.id] || 0) >= n)));
+  [[2000, "野球の大陸"], [3000, "野球の惑星"]].forEach(([n, nm]) => A("ball" + n, nm, "施設を合わせて" + n, () => totalOwned() >= n));
+  [[100, "ファンサの化身"], [250, "ファンサ界の伝説"]].forEach(([n, nm]) => A("fs" + n, nm, "ファンサービスを" + n + "回", s => s.fsHits >= n));
+  [[250, "旗が立てきれない"], [1000, "千本のペナント"]].forEach(([n, nm]) => A("p" + n, nm, "ペナントを" + n + "本", s => s.flags >= n));
+  A("w5000", "勝利の歴史", "試合に通算5000勝", s => s.winsAll >= 5000);
+  A("st30", "30連勝", "30連勝する", s => s.bestStreak >= 30);
+  A("d100", "百日皆勤", "100日続けて来場", s => s.daily.best >= 100);
+  [[300, "補強の鬼"], [600, "強化マニア"]].forEach(([n, nm]) => A("u" + n, nm, "強化を通算" + n + "個", s => s.upsAll >= n));
+  [[10, "常連の監督"], [50, "名監督の系譜"]].forEach(([n, nm]) => A("se" + n, nm, n + "シーズン目を迎える", s => s.seasonNo >= n));
+  A("hallMax", "殿堂を極めし者", "殿堂の力をどれか1つ最大にする", s => PERKS.some(p => (s.perks[p.id] || 0) >= p.max));
+  A("dr1", "ドラフト1位", "新人を指名する", s => (s.sec.drafts || 0) >= 1);
+  A("dr4", "全員指名", "1シーズンで4人の新人を指名する", s => s.draftsDone >= 4);
+  A("dr20", "スカウトの眼", "新人を通算20人指名する", s => (s.sec.drafts || 0) >= 20);
+  A("full", "143試合", "1シーズンで143試合を戦い抜く", s => (s.sec.fullSeason || 0) >= 1);
+  A("rainDome", "雨に負けない", "雨の日にドームを満員にする", s => (s.sec.rainDome || 0) >= 1);
+  A("slam1", "満塁ホームラン", "満員御礼のあいだにホームランを打つ", s => (s.sec.slam || 0) >= 1);
+  /* 隠し実績（条件は見えない） */
+  const HA = (id, name, desc, ok) => ACH.push({ id, name, desc, ok, hidden: 1 });
+  HA("x_pitcher", "ピッチャー返し", "投手を20回タップした", s => (s.sec.pitcher || 0) >= 20);
+  HA("x_vision", "ビジョンに映りたい", "大型ビジョンを10回タップした", s => (s.sec.vision || 0) >= 10);
+  HA("x_rename", "改名マニア", "球団名を5回変えた", s => (s.sec.rename || 0) >= 5);
+  HA("x_mono", "単色ユニフォーム", "メインとアクセントを同じ色にした", s => (s.sec.mono || 0) >= 1);
+  HA("x_night", "深夜の素振り", "夜中の0時〜4時にバットを振った", s => (s.sec.night || 0) >= 1);
+  HA("x_bday", "野球の日", "8月9日に来場した", s => (s.sec.baseballDay || 0) >= 1);
+  HA("x_newyear", "初素振り", "1月1日に来場した", s => (s.sec.newYear || 0) >= 1);
+  HA("x_anniv", "球団創立記念日", "球団をつくった日に、1年後も来場した", s => (s.sec.anniv || 0) >= 1);
+  HA("x_fast", "高速スイング", "1秒に12回バットを振った", s => (s.sec.fast || 0) >= 1);
+  HA("x_hrfest", "ホームラン祭り", "10秒以内に5本のホームラン", s => (s.sec.hrFest || 0) >= 1);
+  HA("x_bench", "ベンチを温める", "30分間タップせずに見守った", s => (s.sec.bench || 0) >= 1);
+  HA("x_noups", "縛りプレイ", "強化を1つも買わずに優勝した", s => (s.sec.noUps || 0) >= 1);
+  HA("x_school", "育成一筋", "少年野球教室だけで優勝した", s => (s.sec.schoolOnly || 0) >= 1);
+  HA("x_perfect", "無敗優勝", "1敗もせずに優勝した", s => (s.sec.perfect || 0) >= 1);
+  HA("x_rock", "どん底からの…", "10連敗した", s => (s.sec.rock || 0) >= 1);
+  HA("x_quick", "早押し名人", "ファンサービスを出てすぐタップした", s => (s.sec.quickFs || 0) >= 1);
+  HA("x_miss", "見逃し三振", "ファンサービスを10回見逃した", s => (s.sec.fsMiss || 0) >= 10);
+  HA("x_lucky", "ラッキーセブン", "ファンの数の下3けたが777になった", s => (s.sec.lucky7 || 0) >= 1);
+  HA("x_bulk", "大人買い", "施設を100個まとめて買った", s => (s.sec.bulk || 0) >= 1);
+  HA("x_saver", "貯金しすぎ", "施設を持たずにファン100万人をためた", s => (s.sec.saver || 0) >= 1);
+  HA("x_upset", "番狂わせ", "勝率4割以下の試合に勝った", s => (s.sec.upset || 0) >= 1);
+  HA("x_shutout", "完封勝利", "相手を0点に抑えて勝った", s => (s.sec.shutout || 0) >= 1);
+  HA("x_bigwin", "大量得点", "1試合で10点以上取って勝った", s => (s.sec.bigWin || 0) >= 1);
+  HA("x_slam25", "満塁男", "満塁ホームランを25本打った", s => (s.sec.slam || 0) >= 25);
+  HA("x_same", "こだわりの補強", "同じタイプの新人を1シーズンに3人指名した", s => (s.sec.sameType || 0) >= 1);
+  HA("x_rain", "雨男", "雨に10回降られた", s => (s.sec.rainCount || 0) >= 10);
 
   /* ================= ドット絵 ================= */
   const PAL = { k: "#1b1f3b", w: "#ffffff", r: "#d7263d", b: "#2b6cb0", n: "#22306b", y: "#f4b400", o: "#f28c28", g: "#3fa34d",
@@ -540,6 +635,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     cx.fillStyle = "#fff"; cx.fillRect(116, 168, 10, 3);
     balls.forEach(b => { cx.fillStyle = "#fff"; cx.fillRect(b.x | 0, b.y | 0, 3, 3); cx.fillStyle = "#d7263d"; cx.fillRect((b.x | 0) + 1, (b.y | 0) + 1, 1, 1); });
     sparks.forEach(p => { cx.fillStyle = p.c; cx.fillRect(p.x | 0, p.y | 0, 2, 2); });
+    if (buff("rain")) { cx.fillStyle = "rgba(160,190,230,.8)"; for (let i = 0; i < 60; i++) { const x = (i * 53 + tick * 3) % W, y = (i * 37 + tick * 7) % H; cx.fillRect(x, y, 1, 4); } }
     if (fs) { const bob = Math.sin(tick / 6) * 2; cx.fillStyle = "#1b1f3b"; cx.fillRect(fs.x - 1, fs.y - 1 + bob, 54, 16); cx.fillStyle = "#f4b400"; cx.fillRect(fs.x, fs.y + bob, 52, 14);
       cx.fillStyle = "#1b1f3b"; cx.font = "10px DotGothic16, monospace"; cx.textAlign = "center"; cx.fillText("ファンサ!", fs.x + 26, fs.y + 11 + bob); }
     floats.forEach(f => { cx.font = (f.big ? "16px" : "10px") + " DotGothic16, monospace"; cx.textAlign = "center"; cx.fillStyle = "#1b1f3b"; cx.fillText(f.t, f.x + 1, f.y + 1); cx.fillStyle = f.c; cx.fillText(f.t, f.x, f.y); });
@@ -549,21 +645,36 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   /* ================= 操作 ================= */
   function swing(px, py, auto) {
     if (!auto && fs && px !== undefined && px >= fs.x - 4 && px <= fs.x + 56 && py >= fs.y - 6 && py <= fs.y + 20) { hitFanService(); return; }
-    S.clicks++; if (auto) S.autoSw++; else swingT = 6;
-    const hr = Math.random() < hrRate();
-    let g = clickGain(); if (hr) { g *= hrMult(); S.hr++; }
+    S.clicks++; if (auto) S.autoSw++; else { swingT = 6; manualSwing(px, py); }
+    const hr = Math.random() < hrRate(), slam = hr && !!buff("frenzy");
+    let g = clickGain(); if (hr) { g *= hrMult() * (slam ? 4 : 1); S.hr++; hrTimes.push(now()); if (hrTimes.length > 5) hrTimes.shift();
+      if (hrTimes.length === 5 && hrTimes[4] - hrTimes[0] <= 10000) sec("hrFest"); if (slam) sec("slam"); }
     gain(g);
+    if (Math.floor(S.fans) % 1000 === 777) sec("lucky7");
     if (!auto || Math.random() < 0.3) {
       balls.push({ x: 124, y: 150, vx: 3 + Math.random() * 2, vy: hr ? -4.2 : -1.6 - Math.random() * 1.6 });
-      floats.push({ t: (hr ? "ホームラン! +" : "+") + fmt(g), x: hr ? 170 : 130 + Math.random() * 40, y: hr ? 100 : 120, life: hr ? 70 : 40, big: hr, c: hr ? "#f4b400" : "#ffffff" });
+      floats.push({ t: (slam ? "満塁ホームラン! +" : hr ? "ホームラン! +" : "+") + fmt(g), x: hr ? 170 : 130 + Math.random() * 40, y: hr ? 100 : 120, life: hr ? 70 : 40, big: hr, c: hr ? "#f4b400" : "#ffffff" });
       if (floats.length > 30) floats.shift();
       if (hr) burst(240, 40, 30, 40);
     }
     if (auto) swingT = Math.max(swingT, 3);
   }
+  /* 隠し実績用のカウンター */
+  function sec(k, n) { S.sec[k] = (S.sec[k] || 0) + (n || 1); }
+  const hrTimes = [], tapTimes = [];
+  let lastManual = Date.now();
+  function manualSwing(px, py) {
+    const t = now(); lastManual = t; tapTimes.push(t); while (tapTimes.length && t - tapTimes[0] > 1000) tapTimes.shift();
+    if (tapTimes.length >= 12) sec("fast");
+    const h = new Date().getHours(); if (h < 4) sec("night");
+    if (px !== undefined) {
+      if (px >= 228 && px <= 252 && py >= 122 && py <= 160) sec("pitcher");
+      if ((S.owned.vision || 0) > 0 && px >= 112 && px <= 208 && py <= 30) sec("vision");
+    }
+  }
   function addBuff(t, ms, extra) { S.buffs = S.buffs.filter(b => b.until > now() && b.t !== t); S.buffs.push(Object.assign({ t, until: now() + ms }, extra || {})); }
   function hitFanService() {
-    S.fsHits++; fs = null;
+    S.fsHits++; if (fs && now() - fs.born < 1500) sec("quickFs"); fs = null;
     const owned = BUILDINGS.filter(b => (S.owned[b.id] || 0) > 0), r = Math.random();
     let msg;
     if (r < 0.4) { addBuff("frenzy", frenzyLen()); msg = "満員御礼！ " + frenzyLen() / 1000 + "秒間、生産が7倍"; }
@@ -575,17 +686,47 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   }
   function scheduleFs() { fsNext = now() + (60 + Math.random() * 120) * 1000 * fsGap(); }
   function playGame() {
-    const opp = OPP[Math.floor(Math.random() * OPP.length)], win = Math.random() < winRate();
+    const opp = OPP[Math.floor(Math.random() * OPP.length)], rate = winRate(), win = Math.random() < rate;
     let a = Math.floor(Math.random() * 6), b = Math.floor(Math.random() * 6);
     if (win) { if (a <= b) a = b + 1 + Math.floor(Math.random() * 3); } else { if (b <= a) b = a + 1 + Math.floor(Math.random() * 3); }
     S.gamesAll++; S.games.push(win ? 1 : 0); if (S.games.length > 30) S.games.shift();
     if (win) {
-      S.w++; S.winsAll++; S.streak++; S.bestStreak = Math.max(S.bestStreak, S.streak);
-      const g = (fpsBase() * 30 + clickGain() * 10 + 10) * (1 + 0.1 * Math.min(S.streak, 20)) * (has("gm3") ? 3 : 1);
+      S.w++; S.winsAll++; S.streak++; S.bestStreak = Math.max(S.bestStreak, S.streak); S.lossStreak = 0;
+      if (rate <= 0.4) sec("upset"); if (b === 0) sec("shutout"); if (a >= 10) sec("bigWin");
+      const g = (fpsBase() * 30 + clickGain() * 10 + 10) * (1 + 0.1 * Math.min(S.streak, 20) * (isMon(8) ? 2 : 1)) * (has("gm3") ? 3 : 1) * Math.pow(1.5, rk("clutch")) * (isMon(3) ? 2 : 1);
       gain(g); toast("勝利！ " + a + "－" + b + "で" + opp + "に勝ちました（" + S.streak + "連勝）ファン +" + fmt(g) + "人"); burst(160, 50, 20, 40);
-    } else { S.l++; S.streak = 0; toast("惜敗… " + a + "－" + b + "で" + opp + "に負けました"); }
-    S.nextGame = now() + 90000;
+    } else { S.l++; S.streak = 0; S.lossStreak++; if (S.lossStreak >= 10) sec("rock"); toast("惜敗… " + a + "－" + b + "で" + opp + "に負けました"); }
+    S.nextGame = now() + gameGap();
+    if (S.w + S.l === 143) { sec("fullSeason"); toast("143試合を戦い抜いた！ 今シーズンの成績 " + S.w + "勝" + S.l + "敗"); }
   }
+  const gameGap = () => isMon(2) ? 45000 : 90000;
+  /* 雨（ドームがあれば逆に満員） */
+  function rainCheck() {
+    if (!S.rainNext) S.rainNext = now() + (8 + Math.random() * 12) * 60000;
+    if (now() < S.rainNext) return;
+    S.rainNext = now() + (8 + Math.random() * 12) * 60000 * (isMon(5) ? 0.5 : 1);
+    sec("rainCount");
+    if ((S.owned.dome || 0) > 0) { addBuff("rainDome", 60000); sec("rainDome"); toast("雨が降ってきた… でもドームは満員！ 60秒間、生産" + (isMon(5) ? "2.4" : "2") + "倍"); }
+    else { addBuff("rain", 60000); toast("雨で客足が鈍る… 60秒間、生産が半分（ドームがあれば…）"); }
+  }
+  /* ドラフト */
+  function draftCheck() {
+    if (S.draft || S.draftsDone >= DRAFT_AT.length || S.season < DRAFT_AT[S.draftsDone]) return;
+    const keys = Object.keys(ROOKIE), pick = [];
+    while (pick.length < 3) { const k = keys[Math.floor(Math.random() * keys.length)]; if (pick.indexOf(k) < 0) pick.push(k); }
+    S.draft = pick.map(k => ({ k, name: SEI[Math.floor(Math.random() * SEI.length)] + " " + MEI[Math.floor(Math.random() * MEI.length)] }));
+    toast("ドラフト会議の時間です！ 新人を1人指名しよう"); drawDraft();
+  }
+  function drawDraft() {
+    const box = $("draft"); box.hidden = !S.draft; if (!S.draft) return;
+    $("cands").innerHTML = S.draft.map((c, i) => `<button type="button" data-i="${i}"><em>${(S.draftsDone + 1)}巡目</em><b>${esc(c.name)}</b><span>${ROOKIE[c.k][0]}：${ROOKIE[c.k][1]}</span></button>`).join("");
+  }
+  $("cands").addEventListener("click", ev => {
+    const b = ev.target.closest("[data-i]"); if (!b || !S.draft) return; const c = S.draft[b.dataset.i];
+    S.rookies.push(c.k); S.draftsDone++; S.draft = null; sec("drafts");
+    if (S.rookies.filter(x => x === c.k).length >= 3) sec("sameType");
+    toast(c.name + "（" + ROOKIE[c.k][0] + "）を指名しました！"); drawDraft(); refresh(true); updateText(); save();
+  });
   function canvasPoint(ev) { const r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) * W / r.width, (ev.clientY - r.top) * H / r.height]; }
   cv.addEventListener("pointerdown", ev => { ev.preventDefault(); const [x, y] = canvasPoint(ev); swing(x, y); updateText(); });
   document.addEventListener("keydown", ev => {
@@ -602,12 +743,12 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   $("buildings").addEventListener("click", ev => {
     const el = ev.target.closest("[data-b]"); if (!el) return;
     const b = BUILDINGS.find(x => x.id === el.dataset.b), c = cost(b, buyAmt);
-    if (S.fans < c) return; S.fans -= c; S.owned[b.id] = (S.owned[b.id] || 0) + buyAmt; refresh(); updateText(); save();
+    if (S.fans < c) return; S.fans -= c; S.owned[b.id] = (S.owned[b.id] || 0) + buyAmt; if (buyAmt === 100) sec("bulk"); refresh(); updateText(); save();
   });
   $("upgrades").addEventListener("click", ev => {
     const el = ev.target.closest("[data-u]"); if (!el) return;
     const u = upById(el.dataset.u); if (!u || has(u.id) || S.fans < u.cost) return;
-    S.fans -= u.cost; S.ups.push(u.id); S.upsAll++; toast(u.name + " を手に入れた！"); refresh(); updateText(); save();
+    S.fans -= u.cost; S.ups.push(u.id); S.upsAll++; S.seasonUps++; toast(u.name + " を手に入れた！"); refresh(); updateText(); save();
   });
   $("perks").addEventListener("click", ev => {
     const el = ev.target.closest("[data-p]"); if (!el) return;
@@ -624,10 +765,14 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     const add = pennantsFor(S.allTime) - S.flags; if (add < 1) return;
     const keep = pk("keep") * 0.1;
     if (!confirm("優勝してシーズンを終えますか？\nペナントと殿堂ポイントを " + add + " ずつもらえます（生産 +" + add * 10 + "%）。\nファン・強化は最初から、施設は" + (keep ? Math.round(keep * 100) + "%を残して" : "") + "最初からになります。")) return;
+    if (!S.seasonUps) sec("noUps");
+    if ((S.owned.school || 0) > 0 && BUILDINGS.every(b => b.id === "school" || !(S.owned[b.id] > 0))) sec("schoolOnly");
+    if (S.w + S.l > 0 && S.l === 0) sec("perfect");
     S.flags += add; S.lp += add; S.seasonNo++; S.bestSeason = Math.max(S.bestSeason, S.season);
     const kept = {}; Object.keys(S.owned).forEach(k => { const n = Math.floor(S.owned[k] * keep); if (n > 0) kept[k] = n; });
     if (pk("start")) ["school", "oendan", "baiten"].forEach(k => kept[k] = Math.max(kept[k] || 0, 10));
     S.fans = 0; S.season = 0; S.owned = kept; S.ups = []; S.buffs = []; S.w = 0; S.l = 0; S.games = []; S.streak = 0;
+    S.rookies = []; S.draft = null; S.draftsDone = 0; S.seasonUps = 0; drawDraft();
     toast("優勝おめでとう！ ペナントと殿堂ポイント +" + add); burst(160, 50, 70, 60);
     refresh(true); updateText(); save();
   });
@@ -640,7 +785,8 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   $("presets").addEventListener("click", ev => { const b = ev.target.closest("[data-i]"); if (!b) return; const p = PRESETS[b.dataset.i];
     S.team.main = p[1]; S.team.acc = p[2]; S.team.body = p[3]; S.team.colored = 1; syncTeamForm(); updateText(); save(); });
   nameEl.addEventListener("input", () => { const v = nameEl.value.trim().slice(0, 12); if (v) { S.team.name = v; S.team.named = 1; updateText(); save(); } });
-  [mainEl, accEl, bodyEl].forEach(el => el.addEventListener("input", () => { S.team.main = mainEl.value; S.team.acc = accEl.value; S.team.body = bodyEl.value; S.team.colored = 1; drawPreview(); save(); }));
+  nameEl.addEventListener("change", () => sec("rename"));
+  [mainEl, accEl, bodyEl].forEach(el => el.addEventListener("input", () => { S.team.main = mainEl.value; S.team.acc = accEl.value; S.team.body = bodyEl.value; S.team.colored = 1; if (S.team.main.toLowerCase() === S.team.acc.toLowerCase()) sec("mono"); drawPreview(); save(); }));
   $("exportBtn").addEventListener("click", () => { save(); $("saveText").value = btoa(unescape(encodeURIComponent(JSON.stringify(S)))); $("saveText").select(); toast("書き出しました。文字をコピーしてください"); });
   $("importBtn").addEventListener("click", () => {
     try { const v = JSON.parse(decodeURIComponent(escape(atob($("saveText").value.trim())))); if (!v || typeof v !== "object" || !("allTime" in v)) throw 0;
@@ -662,7 +808,9 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     $("teamName").textContent = S.team.name; $("teamRec").textContent = "通算 " + S.winsAll + "勝";
     $("fans").textContent = fmt(S.fans); $("fps").textContent = fmt(fpsNow(), true);
     const t = now(); S.buffs = S.buffs.filter(b => b.until > t);
-    $("buffs").textContent = S.buffs.map(b => ({ frenzy: "満員御礼×7", derby: "ホームラン競争", goods: "グッズ完売" }[b.t] + "（" + Math.ceil((b.until - t) / 1000) + "秒）")).join("　");
+    $("month").textContent = (new Date().getMonth() + 1) + "月のイベント「" + MONTHS[MON()][0] + "」：" + MONTHS[MON()][1];
+    $("rookies").textContent = S.rookies.length ? "今シーズンの新人：" + S.rookies.map(k => ROOKIE[k][0]).join("・") : "";
+    $("buffs").textContent = S.buffs.map(b => ({ frenzy: "満員御礼×7", derby: "ホームラン競争", goods: "グッズ完売", rain: "雨（生産半分）", rainDome: "ドーム満員" }[b.t] + "（" + Math.ceil((b.until - t) / 1000) + "秒）")).join("　");
     $("season").textContent = S.seasonNo; $("flags").textContent = S.flags; $("flagPct").textContent = S.flags * 10;
     $("seasonTotal").textContent = fmt(S.season) + "人";
     const add = pennantsFor(S.allTime) - S.flags, w = $("win");
@@ -704,8 +852,10 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
       const lv = pk(p.id), maxed = lv >= p.max, c = maxed ? 0 : p.cost(lv), ok = !maxed && S.lp >= c;
       return `<button type="button" class="kc-item${ok ? " ok" : ""}${maxed ? " maxed" : ""}" data-p="${p.id}"${ok ? "" : " disabled"}><img alt="" src="${ICON_URL.trophy}"><span><span class="nm">${p.name}　Lv${lv}/${p.max}</span><span class="ds">${p.desc(lv)}</span></span><span class="cost">${maxed ? "最大" : c + "pt"}</span></button>`;
     }).join("");
-    $("achHead").textContent = "実績 " + S.ach.length + " / " + ACH.length + "（生産 +" + Math.round(milk() * S.ach.length * 1000) / 10 + "%）";
-    $("ach").innerHTML = ACH.map(a => { const on = S.ach.indexOf(a.id) >= 0; return `<div class="${on ? "" : "off"}"><b>${on ? esc(a.name) : "？？？"}</b>${esc(a.desc)}</div>`; }).join("");
+    $("achHead").textContent = "実績 " + S.ach.length + " / " + ACH.length + "（生産 +" + Math.round((achMult() - 1) * 1000) / 10 + "%）";
+    $("ach").innerHTML = ACH.map(a => { const on = S.ach.indexOf(a.id) >= 0;
+      if (a.hidden) return `<div class="${on ? "hidden-on" : "off"}"><b>${on ? esc(a.name) : "隠し実績"}</b>${on ? esc(a.desc) : "条件はひみつ"}</div>`;
+      return `<div class="${on ? "" : "off"}"><b>${on ? esc(a.name) : "？？？"}</b>${esc(a.desc)}</div>`; }).join("");
   }
   function updateRec() {
     if ($("pane-rec").hidden) return;
@@ -717,23 +867,58 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
       ["遊んだ時間", h + "時間" + m + "分"]].map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join("");
   }
   function checkAch() {
-    ACH.forEach(a => { if (S.ach.indexOf(a.id) < 0 && a.ok(S)) { S.ach.push(a.id); toast("実績「" + a.name + "」を達成！（生産 +" + Math.round(milk() * 100 * 10) / 10 + "%）"); } });
+    ACH.forEach(a => { if (S.ach.indexOf(a.id) < 0 && a.ok(S)) { S.ach.push(a.id); toast((a.hidden ? "隠し実績" : "実績") + "「" + a.name + "」を達成！（生産 +" + Math.round(milk() * (isMon(10) ? 1.5 : 1) * 1000) / 10 + "%）"); } });
+  }
+
+  /* ================= スポーツ新聞の見出し ================= */
+  const NEWS = [
+    () => S.team.name + "、本日も元気に営業中",
+    () => S.streak >= 3 ? S.team.name + "、破竹の" + S.streak + "連勝！ 街は大騒ぎ" : null,
+    () => S.lossStreak >= 3 ? S.team.name + "、" + S.lossStreak + "連敗… 監督「明日は勝つ」" : null,
+    () => (S.owned.baiten || 0) >= 10 ? "売店の名物カレー、行列は" + Math.min(9, 1 + (S.owned.baiten / 20 | 0)) + "時間待ち" : null,
+    () => (S.owned.oendan || 0) >= 25 ? "応援団の太鼓、隣町まで聞こえると話題に" : null,
+    () => (S.owned.school || 0) >= 50 ? "少年野球教室の卒業生、早くもスター候補に" : null,
+    () => (S.owned.dome || 0) > 0 ? "ドーム球場、雨の日の来場者が晴れの日を上回る" : null,
+    () => (S.owned.night || 0) > 0 ? "ナイター観戦が大人気。仕事帰りのファン急増" : null,
+    () => (S.owned.tv || 0) > 0 ? "球団テレビ局の視聴率、ついに朝ドラ超え？" : null,
+    () => (S.owned.moon || 0) > 0 ? "月面球場で特大アーチ。打球はまだ落ちてこない" : null,
+    () => (S.owned.galaxy || 0) > 0 ? "銀河リーグ開幕。相手チームの名前が発音できない" : null,
+    () => (S.owned.time || 0) > 0 ? "時空スタジアムに100年前のファンが来場" : null,
+    () => S.hr >= 100 ? "通算" + S.hr + "本塁打。記念ボールの奪い合い続く" : null,
+    () => S.flags > 0 ? S.team.name + "、ペナント" + S.flags + "本目の旗を球場に掲揚" : null,
+    () => S.rookies.length ? "新人の" + ROOKIE[S.rookies[S.rookies.length - 1]][0] + "、デビュー戦から大活躍" : null,
+    () => S.fsHits >= 10 ? "神対応のファンサービス、SNSで拡散中" : null,
+    () => buff("frenzy") ? "【号外】本日満員御礼！ 当日券は完売" : null,
+    () => buff("rain") ? "雨で客足が鈍る。ドーム建設の声も" : null,
+    () => S.clicks >= 1000 ? "素振りのしすぎでバット工場がフル稼働" : null,
+    () => MONTHS[MON()][0] + "の季節。" + MONTHS[MON()][1],
+    () => "対戦相手の" + OPP[(tick >> 8) % OPP.length] + "、" + S.team.name + "対策の秘密練習を公開",
+    () => fpsBase() >= 1e9 ? "経済学者「" + S.team.name + "のファンが国の人口を超えた」" : null,
+  ];
+  let newsAt = 0;
+  function newsTick() {
+    if (now() < newsAt) return; newsAt = now() + 9000;
+    const ok = NEWS.map(f => f()).filter(Boolean), el = $("news"), t = ok[Math.floor(Math.random() * ok.length)];
+    el.style.opacity = 0; setTimeout(() => { el.textContent = t; el.style.opacity = 1; }, 250);
   }
 
   /* ================= 来場ボーナス・留守中 ================= */
   (function arrive() {
     const d = new Date(), key = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
     const y = new Date(d.getTime() - 86400000), ykey = y.getFullYear() + "-" + (y.getMonth() + 1) + "-" + y.getDate();
-    const off = pk("offline"), rate = [0.5, 0.75, 1][off], capH = [8, 16, 24][off];
+    const off = pk("offline"), rate = Math.min(1, [0.5, 0.75, 1][off] + (isMon(7) ? 0.25 : 0)), capH = [8, 16, 24][off];
+    if (d.getMonth() === 7 && d.getDate() === 9) sec("baseballDay");
+    if (d.getMonth() === 0 && d.getDate() === 1) sec("newYear");
+    const cd = new Date(S.created); if (cd.getMonth() === d.getMonth() && cd.getDate() === d.getDate() && now() - S.created > 300 * 86400000) sec("anniv");
     const sec = Math.min(capH * 3600, Math.max(0, (now() - (S.saved || now())) / 1000));
     const g = fpsBase() * sec * rate, msgs = [];
     if (sec > 60 && g >= 1) { gain(g); msgs.push("おかえりなさい！ 留守のあいだに " + fmt(g) + " 人のファンが増えました"); }
     if (S.daily.last !== key) {
       S.daily.streak = S.daily.last === ykey ? S.daily.streak + 1 : 1; S.daily.best = Math.max(S.daily.best, S.daily.streak); S.daily.last = key;
-      const bonus = Math.max(100, fpsBase() * 300) * Math.min(S.daily.streak, 7);
+      const bonus = Math.max(100, fpsBase() * 300) * Math.min(S.daily.streak, 7) * (isMon(0) ? 3 : 1);
       gain(bonus); msgs.push("来場ボーナス（" + S.daily.streak + "日連続）！ ファン +" + fmt(bonus) + "人");
     }
-    if (!S.nextGame || S.nextGame < now()) S.nextGame = now() + 90000;
+    if (!S.nextGame || S.nextGame < now()) S.nextGame = now() + gameGap();
     msgs.forEach((m, i) => setTimeout(() => toast(m), 600 + i * 50));
   })();
 
@@ -745,22 +930,25 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     const auto = pk("auto");
     if (auto) { autoAcc += dt * auto; let n = 0; while (autoAcc >= 1 && n < 50) { autoAcc -= 1; n++; swing(undefined, undefined, true); } if (autoAcc > 50) autoAcc = 0; }
     if (now() >= S.nextGame) playGame();
+    rainCheck(); draftCheck();
+    if (now() - lastManual > 30 * 60000 && fpsBase() > 0) { sec("bench"); lastManual = now(); }
+    if (S.fans >= 1e6 && totalOwned() === 0) sec("saver");
     if (swingT > 0) swingT--;
     balls.forEach(b => { b.x += b.vx; b.y += b.vy; b.vy += 0.05; }); balls = balls.filter(b => b.x < W + 5 && b.y > -10 && b.y < H);
     floats.forEach(f => { f.y -= 0.6; f.life--; }); floats = floats.filter(f => f.life > 0);
     sparks.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.04; p.life--; }); sparks = sparks.filter(p => p.life > 0);
     if (sparks.length > 400) sparks.splice(0, sparks.length - 400);
-    if (!fs && now() > fsNext && S.clicks > 0) fs = { x: 20 + Math.random() * 230, y: 84 + Math.random() * 40, until: now() + 12000 };
-    if (fs && now() > fs.until) { fs = null; scheduleFs(); }
+    if (!fs && now() > fsNext && S.clicks > 0) fs = { x: 20 + Math.random() * 230, y: 84 + Math.random() * 40, until: now() + 12000, born: now() };
+    if (fs && now() > fs.until) { fs = null; sec("fsMiss"); scheduleFs(); }
     render();
     acc += dt; saveAcc += dt;
-    if (acc > 0.25) { acc = 0; S.bestFps = Math.max(S.bestFps, fpsBase()); updateText(); checkAch(); refresh(); }
+    if (acc > 0.25) { acc = 0; S.bestFps = Math.max(S.bestFps, fpsBase()); updateText(); checkAch(); refresh(); newsTick(); }
     if (saveAcc > 5) { saveAcc = 0; save(); }
     requestAnimationFrame(loop);
   }
   document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
   window.addEventListener("pagehide", save);
-  syncTeamForm(); updateText(); refresh(true);
+  syncTeamForm(); updateText(); refresh(true); drawDraft();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { refresh(true); drawPreview(); });
   requestAnimationFrame(loop);
 })();

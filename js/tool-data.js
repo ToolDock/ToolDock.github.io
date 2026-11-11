@@ -30,6 +30,7 @@ window.CATEGORY_NAMES = {
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-11", id: "kyudan-clicker", kind: "update", text: "球団経営クリッカーに、ドラフト会議・雨・月ごとのイベント・スポーツ新聞の速報・隠し実績を追加（実績は175個に）" },
   { date: "2026-11-11", id: "kyudan-clicker", kind: "update", text: "球団経営クリッカーに、球団名とユニフォームの色の設定・試合・殿堂・来場ボーナス・施設4種・実績93個などのやり込み要素を追加" },
   { date: "2026-11-11", id: "kyudan-clicker", kind: "new", text: "ドット絵の野球クリッカーゲーム「球団経営クリッカー」を公開。タップと放置でファンを増やし、施設を建てて優勝を目指そう" },
   { date: "2026-11-08", id: "nouryoku", kind: "update", text: "トップと右の列に「管理人のおすすめ」を追加。人気とは別に、管理人がふだん使っているツールを並べています" },
