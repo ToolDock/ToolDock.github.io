@@ -47,3 +47,10 @@ SNSとGoogleが最初に読むHTMLに、OGP・パンくず・「同じカテゴ�
 海外・クラウドからのアクセスを断っているとみられる。今は `update-npb.yml` が、つながらない日は更新を飛ばして警告で終える。
 シーズン中は問題ない（オフは成績が動かない）が、**2027年の開幕（3月下旬）までに**、つながるか確かめ、
 まだ断られていれば別の取り方を考える。
+
+## タイピング練習のランキング（/typing-game/）
+
+問題とローマ字の判定・スコアの計算は `typing-game/engine.js` にまとめ、ページとランキングのサーバー
+（Google Apps Script。`scripts/gas/typing-ranking.gs`、置き方は `scripts/gas/README.md`）で同じものを使う。
+問題を足す・判定を変えるときは `VERSION` を上げ、持ち主に Apps Script の `engine` への貼り直しと再デプロイを頼む。
+`index.html` の `RANK_URL` が空のあいだは、ランキングの表示は出ない。
