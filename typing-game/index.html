@@ -149,6 +149,17 @@ tr.slow td{ background:color-mix(in srgb, var(--c) 6%, #fff); }
   .q-roma{ font-size:1.1rem; }
   .res-head .pb{ margin-left:0; text-align:left; }
 }
+.badge{ position:absolute; right:12px; top:-11px; font-size:.72rem; font-weight:700; padding:1px 8px; border:1px solid var(--line-input); background:#fff; color:#5c6470; border-radius:10px; }
+.badge.on{ border-color:var(--c); color:var(--c); }
+.rank-box{ margin-top:14px; padding:14px 16px; border:1px solid var(--line); background:var(--surface-2); }
+.rank-form{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.rank-form input{ font:inherit; font-size:1rem; padding:6px 8px; border:1px solid var(--line-input); border-radius:var(--r-ctl); width:12em; background:#fff; }
+.rank-form button{ font:inherit; font-weight:700; padding:7px 18px; border:0; border-radius:var(--r-ctl); background:var(--c); color:#fff; cursor:pointer; }
+.rank-form button:disabled{ opacity:.5; cursor:default; }
+.rank-msg{ margin-top:8px; font-size:.9rem; }
+.rank-msg.ok{ color:var(--ink); font-weight:700; }
+.rank-msg.ng{ color:#b42318; }
+tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
 .tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
 .tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
 .tool-article th{ background:var(--surface-2); white-space:nowrap; }
@@ -190,6 +201,7 @@ tr.slow td{ background:color-mix(in srgb, var(--c) 6%, #fff); }
 </div>
 
 <div class="stage" id="stage" tabindex="-1">
+  <span class="badge" id="rankBadge" hidden></span>
   <div class="hud tnum">
     <span class="time">残り<b id="hTime">60.0</b>秒</span>
     <span>打鍵<b id="hKeys">0</b></span>
@@ -223,6 +235,14 @@ tr.slow td{ background:color-mix(in srgb, var(--c) 6%, #fff); }
     <div class="pb" id="rPb"></div>
   </div>
   <div class="kpis tnum" id="rKpis"></div>
+  <div class="rank-box" id="rankBox" hidden>
+    <div class="rank-form">
+      <input id="rankName" maxlength="12" placeholder="名前（12文字まで）" autocomplete="nickname" aria-label="ランキングに載せる名前">
+      <button type="button" id="rankSend">ランキングに登録</button>
+    </div>
+    <div class="rank-msg" id="rankMsg"></div>
+    <div class="note">本名やメールアドレスは入れないでください。送るのは名前・スコアと、判定のための打鍵の記録だけです。</div>
+  </div>
 
   <h3 style="font-size:1rem;margin:24px 0 8px;">速さの移り変わり <span class="muted small" style="font-weight:400">5秒ごとの打鍵数を1分あたりに直したもの</span></h3>
   <div id="rTimeline"></div>
@@ -238,6 +258,12 @@ tr.slow td{ background:color-mix(in srgb, var(--c) 6%, #fff); }
     <button type="button" role="tab" data-v="all" aria-selected="false">これまで全部</button>
   </div>
   <div class="ana" id="ana"></div>
+</section>
+
+<section id="ranking" hidden>
+  <h2 class="sec">ランキング</h2>
+  <div class="muted small" id="rankHead"></div>
+  <div id="rankList"></div>
 </section>
 
 <section id="history">
@@ -309,6 +335,7 @@ tr.slow td{ background:color-mix(in srgb, var(--c) 6%, #fff); }
 
 </article>
 
+<script src="/typing-game/engine.js"></script>
 <script>
 (() => {
 "use strict";
@@ -316,451 +343,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const STORE = "tooldock:typing:v2";
 
-/* =========================================================
-   問題（表示|よみ）
-========================================================= */
-const SENT = `今日はいい天気ですね|きょうはいいてんきですね
-明日の朝は早めに起きます|あしたのあさははやめにおきます
-駅の近くに新しいパン屋ができた|えきのちかくにあたらしいぱんやができた
-冷蔵庫のプリンを食べたのは誰だ|れいぞうこのぷりんをたべたのはだれだ
-週末は家でゆっくり映画を見たい|しゅうまつはいえでゆっくりえいがをみたい
-傘を持っていけばよかった|かさをもっていけばよかった
-締め切りは来週の金曜日です|しめきりはらいしゅうのきんようびです
-電車が遅れているらしい|でんしゃがおくれているらしい
-猫が日なたで丸くなっている|ねこがひなたでまるくなっている
-夏休みの宿題がまだ終わらない|なつやすみのしゅくだいがまだおわらない
-一度決めたことは最後までやり通す|いちどきめたことはさいごまでやりとおす
-失敗は成功のもと|しっぱいはせいこうのもと
-急がば回れ|いそがばまわれ
-石の上にも三年|いしのうえにもさんねん
-早起きは三文の徳|はやおきはさんもんのとく
-好きこそものの上手なれ|すきこそもののじょうずなれ
-塵も積もれば山となる|ちりもつもればやまとなる
-百聞は一見にしかず|ひゃくぶんはいっけんにしかず
-七転び八起き|ななころびやおき
-雨降って地固まる|あめふってじかたまる
-備えあれば憂いなし|そなえあればうれいなし
-習うより慣れろ|ならうよりなれろ
-能ある鷹は爪を隠す|のうあるたかはつめをかくす
-犬も歩けば棒に当たる|いぬもあるけばぼうにあたる
-花より団子|はなよりだんご
-九回裏ツーアウト満塁のチャンス|きゅうかいうらつーあうとまんるいのちゃんす
-コンビニでおにぎりを二つ買った|こんびにでおにぎりをふたつかった
-スマートフォンの充電が切れそうだ|すまーとふぉんのじゅうでんがきれそうだ
-来月から新しいプロジェクトが始まる|らいげつからあたらしいぷろじぇくとがはじまる
-会議の資料を印刷しておいてください|かいぎのしりょうをいんさつしておいてください
-お先に失礼します|おさきにしつれいします
-よろしくお願いいたします|よろしくおねがいいたします
-少々お待ちください|しょうしょうおまちください
-図書館で静かに本を読む|としょかんでしずかにほんをよむ
-自転車で海沿いの道を走る|じてんしゃでうみぞいのみちをはしる
-晩ごはんはカレーライスにしよう|ばんごはんはかれーらいすにしよう
-窓を開けると涼しい風が入ってきた|まどをあけるとすずしいかぜがはいってきた
-指を正しい位置に置いてから打ち始めよう|ゆびをただしいいちにおいてからうちはじめよう
-手元を見ないで打てるようになりたい|てもとをみないでうてるようになりたい
-正確に打つことが速さへの近道|せいかくにうつことがはやさへのちかみち
-春になると桜の花が咲きます|はるになるとさくらのはながさきます
-秋は食欲の季節だ|あきはしょくよくのきせつだ
-冬の夜空に星がきらめく|ふゆのよぞらにほしがきらめく
-夕焼けで空がオレンジ色に染まる|ゆうやけでそらがおれんじいろにそまる
-引っ越しの荷物がようやく片付いた|ひっこしのにもつがようやくかたづいた
-新幹線の切符を予約した|しんかんせんのきっぷをよやくした
-熱いお茶をいれて一休みしよう|あついおちゃをいれてひとやすみしよう
-ファミリーレストランで待ち合わせ|ふぁみりーれすとらんでまちあわせ
-パーティーの準備はもう済んだ|ぱーてぃーのじゅんびはもうすんだ
-ヴァイオリンの音色が美しい|ゔぁいおりんのねいろがうつくしい
-待ちに待った週末がやってきた|まちにまったしゅうまつがやってきた
-思い立ったが吉日|おもいたったがきちじつ
-宝くじが当たったら何をしよう|たからくじがあたったらなにをしよう
-打ち間違えても落ち着いて続けよう|うちまちがえてもおちついてつづけよう
-地図アプリを見ながら歩く|ちずあぷりをみながらあるく
-洗濯物を取り込むのを忘れていた|せんたくものをとりこむのをわすれていた
-机の上を片付けると集中できる|つくえのうえをかたづけるとしゅうちゅうできる
-朝の満員電車はとても疲れる|あさのまんいんでんしゃはとてもつかれる
-野菜もしっかり食べましょう|やさいもしっかりたべましょう
-目覚まし時計が鳴る前に起きた|めざましどけいがなるまえにおきた
-旅行の写真を整理する|りょこうのしゃしんをせいりする
-雪が降ったら雪だるまを作ろう|ゆきがふったらゆきだるまをつくろう
-夜更かしは体によくない|よふかしはからだによくない
-昨日より今日、今日より明日|きのうよりきょうきょうよりあした
-一歩ずつ前に進もう|いっぽずつまえにすすもう
-お気に入りの喫茶店で読書する|おきにいりのきっさてんでどくしょする
-次の駅で乗り換えてください|つぎのえきでのりかえてください
-ご注文はお決まりですか|ごちゅうもんはおきまりですか
-領収書をいただけますか|りょうしゅうしょをいただけますか
-鉛筆を削ってから試験に臨む|えんぴつをけずってからしけんにのぞむ
-本日は晴天なり|ほんじつはせいてんなり
-月がとてもきれいですね|つきがとてもきれいですね
-打鍵の音が心地よい|だけんのおとがここちよい
-キーボードを新しくしたら速くなった|きーぼーどをあたらしくしたらはやくなった
-練習は裏切らない|れんしゅうはうらぎらない
-迷ったら楽しいほうを選ぶ|まよったらたのしいほうをえらぶ
-東京駅から新大阪駅まで|とうきょうえきからしんおおさかえきまで
-北海道でおいしい海鮮丼を食べた|ほっかいどうでおいしいかいせんどんをたべた
-沖縄の海は透き通っている|おきなわのうみはすきとおっている
-富士山の頂上で日の出を見る|ふじさんのちょうじょうでひのでをみる
-締めの一杯はラーメンに限る|しめのいっぱいはらーめんにかぎる
-ちょっとそこまで散歩してくる|ちょっとそこまでさんぽしてくる
-雨の日は家でのんびり過ごす|あめのひはいえでのんびりすごす
-年末は大掃除で忙しい|ねんまつはおおそうじでいそがしい
-新しい靴で出かけよう|あたらしいくつででかけよう
-温泉に入って疲れを取る|おんせんにはいってつかれをとる
-誕生日おめでとうございます|たんじょうびおめでとうございます
-最後まで諦めない|さいごまであきらめない
-継続は力なり|けいぞくはちからなり
-案ずるより産むが易し|あんずるよりうむがやすし
-笑う門には福来る|わらうかどにはふくきたる
-千里の道も一歩から|せんりのみちもいっぽから
-チームワークで勝利をつかむ|ちーむわーくでしょうりをつかむ
-ウェブサイトを毎日更新する|うぇぶさいとをまいにちこうしんする
-ティッシュを箱ごと持ってきて|てぃっしゅをはこごともってきて
-フォークとナイフを並べる|ふぉーくとないふをならべる
-ジェットコースターに乗りたい|じぇっとこーすたーにのりたい
-金曜日の夜は気分が軽い|きんようびのよるはきぶんがかるい
-ペンギンがよちよち歩いている|ぺんぎんがよちよちあるいている
-入場券は窓口で買えます|にゅうじょうけんはまどぐちでかえます
-六時に駅の改札で会おう|ろくじにえきのかいさつであおう
-隣の家から焼き魚のにおいがする|となりのいえからやきざかなのにおいがする`;
-
-const WORDS = `猫|ねこ
-桜|さくら
-新幹線|しんかんせん
-図書館|としょかん
-自転車|じてんしゃ
-冷蔵庫|れいぞうこ
-洗濯機|せんたくき
-扇風機|せんぷうき
-加湿器|かしつき
-電子レンジ|でんしれんじ
-天気予報|てんきよほう
-誕生日|たんじょうび
-夏休み|なつやすみ
-運動会|うんどうかい
-修学旅行|しゅうがくりょこう
-卒業式|そつぎょうしき
-入学式|にゅうがくしき
-遊園地|ゆうえんち
-水族館|すいぞくかん
-動物園|どうぶつえん
-美術館|びじゅつかん
-映画館|えいがかん
-喫茶店|きっさてん
-郵便局|ゆうびんきょく
-交差点|こうさてん
-横断歩道|おうだんほどう
-駐車場|ちゅうしゃじょう
-北海道|ほっかいどう
-沖縄|おきなわ
-名古屋|なごや
-富士山|ふじさん
-太平洋|たいへいよう
-地球儀|ちきゅうぎ
-望遠鏡|ぼうえんきょう
-顕微鏡|けんびきょう
-時刻表|じこくひょう
-目覚まし時計|めざましどけい
-鉛筆|えんぴつ
-消しゴム|けしごむ
-教科書|きょうかしょ
-黒板|こくばん
-給食|きゅうしょく
-体育館|たいいくかん
-満塁ホームラン|まんるいほーむらん
-卓球|たっきゅう
-陸上競技|りくじょうきょうぎ
-将棋|しょうぎ
-切手|きって
-小包|こづつみ
-新聞|しんぶん
-辞書|じしょ
-百科事典|ひゃっかじてん
-炊飯器|すいはんき
-味噌汁|みそしる
-卵焼き|たまごやき
-唐揚げ|からあげ
-茶碗蒸し|ちゃわんむし
-肉じゃが|にくじゃが
-お好み焼き|おこのみやき
-回転寿司|かいてんずし
-抹茶|まっちゃ
-金平糖|こんぺいとう
-天ぷら|てんぷら
-牛丼|ぎゅうどん
-親子丼|おやこどん
-紅茶|こうちゃ
-牛乳|ぎゅうにゅう
-一石二鳥|いっせきにちょう
-十人十色|じゅうにんといろ
-一期一会|いちごいちえ
-試行錯誤|しこうさくご
-臨機応変|りんきおうへん
-起承転結|きしょうてんけつ
-以心伝心|いしんでんしん
-自画自賛|じがじさん
-半信半疑|はんしんはんぎ
-前代未聞|ぜんだいみもん
-温故知新|おんこちしん
-一生懸命|いっしょうけんめい
-有言実行|ゆうげんじっこう
-電光石火|でんこうせっか
-春夏秋冬|しゅんかしゅうとう
-花鳥風月|かちょうふうげつ
-七転八倒|しちてんばっとう
-紆余曲折|うよきょくせつ
-単刀直入|たんとうちょくにゅう
-優柔不断|ゆうじゅうふだん
-正々堂々|せいせいどうどう
-一心不乱|いっしんふらん
-冒険|ぼうけん
-宇宙|うちゅう
-銀河|ぎんが
-流れ星|ながれぼし
-台風|たいふう
-紅葉|こうよう
-雪だるま|ゆきだるま
-風鈴|ふうりん
-花火|はなび
-盆踊り|ぼんおどり
-年賀状|ねんがじょう
-お年玉|おとしだま
-鏡餅|かがみもち
-節分|せつぶん
-雛祭り|ひなまつり
-七夕|たなばた
-大晦日|おおみそか
-キーボード|きーぼーど
-ショートカット|しょーとかっと
-フォルダ|ふぉるだ
-チョコレート|ちょこれーと
-シュークリーム|しゅーくりーむ
-ヴィンテージ|ゔぃんてーじ
-ディナー|でぃなー
-ジェラート|じぇらーと
-ウォーターサーバー|うぉーたーさーばー
-チャンピオン|ちゃんぴおん
-ファインプレー|ふぁいんぷれー
-ティーカップ|てぃーかっぷ
-しゃっくり|しゃっくり
-ぎっくり腰|ぎっくりごし
-きゅうり|きゅうり
-ちょうちょ|ちょうちょ`;
-
-const EN = `apple|りんご
-banana|バナナ
-keyboard|キーボード
-practice|練習
-accuracy|正確さ
-rhythm|リズム
-finger|指
-morning|朝
-evening|夕方
-weather|天気
-umbrella|傘
-station|駅
-library|図書館
-bicycle|自転車
-mountain|山
-river|川
-ocean|海
-island|島
-forest|森
-window|窓
-kitchen|台所
-breakfast|朝ごはん
-dinner|夕ごはん
-coffee|コーヒー
-chocolate|チョコレート
-birthday|誕生日
-holiday|休日
-weekend|週末
-journey|旅
-adventure|冒険
-history|歴史
-science|科学
-language|言語
-question|質問
-answer|答え
-problem|問題
-solution|解決策
-important|大切な
-beautiful|美しい
-different|ちがう
-possible|できる
-necessary|必要な
-quickly|速く
-slowly|ゆっくり
-carefully|注意深く
-together|いっしょに
-tomorrow|明日
-yesterday|昨日
-tonight|今夜
-already|もう
-almost|ほとんど
-always|いつも
-sometimes|ときどき
-between|あいだに
-through|通りぬけて
-without|なしで
-because|なぜなら
-although|けれども
-knowledge|知識
-experience|経験
-challenge|挑戦
-victory|勝利
-champion|王者
-baseball|野球
-stadium|球場
-pitcher|投手
-catcher|捕手
-computer|コンピューター
-internet|インターネット
-password|パスワード
-software|ソフトウェア
-message|伝言
-picture|写真
-music|音楽
-guitar|ギター
-piano|ピアノ
-festival|祭り
-fireworks|花火
-summer|夏
-winter|冬
-spring|春
-autumn|秋
-rainbow|虹
-thunder|雷
-sunshine|日光
-moonlight|月明かり
-universe|宇宙
-galaxy|銀河
-planet|惑星
-energy|エネルギー
-quality|品質
-quantity|量
-journal|日誌
-puzzle|パズル
-quiz|クイズ
-zebra|シマウマ
-jazz|ジャズ
-oxygen|酸素
-yellow|黄色
-purple|紫
-crystal|水晶
-freedom|自由
-friendship|友情
-patience|忍耐
-courage|勇気
-wisdom|知恵
-strength|強さ
-mystery|なぞ
-treasure|宝物
-whisper|ささやき
-squirrel|リス
-jungle|ジャングル
-volcano|火山
-earthquake|地震
-environment|環境
-university|大学
-restaurant|レストラン
-vegetable|野菜
-strawberry|いちご
-watermelon|スイカ
-pineapple|パイナップル
-sandwich|サンドイッチ
-elephant|ゾウ
-giraffe|キリン
-penguin|ペンギン
-dolphin|イルカ
-butterfly|チョウ`;
-
-const parse = s => s.trim().split("\n").map(l => { const [a, b] = l.split("|"); return { d: a, r: b }; });
-const POOL = { sent: parse(SENT), word: parse(WORDS), en: parse(EN) };
-
-/* =========================================================
-   ローマ字（かな → 打ち方の候補）
-========================================================= */
-const K1 = {
-  "あ":["a"],"い":["i","yi"],"う":["u","wu","whu"],"え":["e"],"お":["o"],
-  "か":["ka","ca"],"き":["ki"],"く":["ku","cu","qu"],"け":["ke"],"こ":["ko","co"],
-  "さ":["sa"],"し":["si","shi","ci"],"す":["su"],"せ":["se","ce"],"そ":["so"],
-  "た":["ta"],"ち":["ti","chi"],"つ":["tu","tsu"],"て":["te"],"と":["to"],
-  "な":["na"],"に":["ni"],"ぬ":["nu"],"ね":["ne"],"の":["no"],
-  "は":["ha"],"ひ":["hi"],"ふ":["fu","hu"],"へ":["he"],"ほ":["ho"],
-  "ま":["ma"],"み":["mi"],"む":["mu"],"め":["me"],"も":["mo"],
-  "や":["ya"],"ゆ":["yu"],"よ":["yo"],
-  "ら":["ra"],"り":["ri"],"る":["ru"],"れ":["re"],"ろ":["ro"],
-  "わ":["wa"],"を":["wo"],
-  "が":["ga"],"ぎ":["gi"],"ぐ":["gu"],"げ":["ge"],"ご":["go"],
-  "ざ":["za"],"じ":["ji","zi"],"ず":["zu"],"ぜ":["ze"],"ぞ":["zo"],
-  "だ":["da"],"ぢ":["di"],"づ":["du"],"で":["de"],"ど":["do"],
-  "ば":["ba"],"び":["bi"],"ぶ":["bu"],"べ":["be"],"ぼ":["bo"],
-  "ぱ":["pa"],"ぴ":["pi"],"ぷ":["pu"],"ぺ":["pe"],"ぽ":["po"],
-  "ぁ":["xa","la"],"ぃ":["xi","li"],"ぅ":["xu","lu"],"ぇ":["xe","le"],"ぉ":["xo","lo"],
-  "ゃ":["xya","lya"],"ゅ":["xyu","lyu"],"ょ":["xyo","lyo"],"ゎ":["xwa","lwa"],
-  "ゔ":["vu"],"ー":["-"],"、":[","],"。":["."]
-};
-const TSU = ["xtu","ltu","xtsu","ltsu"];
-const COMP = {};
-const SM = { "ゃ":"a","ぃ":"i","ゅ":"u","ぇ":"e","ょ":"o" };
-for (const [k, p] of Object.entries({ "き":"ky","ぎ":"gy","に":"ny","ひ":"hy","び":"by","ぴ":"py","み":"my","り":"ry","ぢ":"dy" }))
-  for (const [s, v] of Object.entries(SM)) COMP[k + s] = [p + v];
-const add = (k, ...v) => { COMP[k] = v; };
-add("しゃ","sha","sya"); add("しぃ","syi"); add("しゅ","shu","syu"); add("しぇ","she","sye"); add("しょ","sho","syo");
-add("ちゃ","cha","tya","cya"); add("ちぃ","tyi","cyi"); add("ちゅ","chu","tyu","cyu"); add("ちぇ","che","tye","cye"); add("ちょ","cho","tyo","cyo");
-add("じゃ","ja","jya","zya"); add("じぃ","jyi","zyi"); add("じゅ","ju","jyu","zyu"); add("じぇ","je","jye","zye"); add("じょ","jo","jyo","zyo");
-add("ふぁ","fa"); add("ふぃ","fi","fyi"); add("ふぇ","fe","fye"); add("ふぉ","fo"); add("ふゃ","fya"); add("ふゅ","fyu"); add("ふょ","fyo");
-add("てぃ","thi"); add("てゃ","tha"); add("てゅ","thu"); add("てぇ","the"); add("てょ","tho");
-add("でぃ","dhi"); add("でゃ","dha"); add("でゅ","dhu"); add("でぇ","dhe"); add("でょ","dho");
-add("とぅ","twu"); add("どぅ","dwu");
-add("うぃ","wi","whi"); add("うぇ","we","whe"); add("うぉ","who");
-add("ゔぁ","va"); add("ゔぃ","vi"); add("ゔぇ","ve"); add("ゔぉ","vo"); add("ゔゅ","vyu");
-add("つぁ","tsa"); add("つぃ","tsi"); add("つぇ","tse"); add("つぉ","tso");
-add("くぁ","kwa","qa"); add("くぃ","qi"); add("くぇ","qe"); add("くぉ","qo"); add("ぐぁ","gwa");
-add("いぇ","ye"); add("すぃ","swi");
-const uniq = a => [...new Set(a)];
-for (const k of Object.keys(COMP)) {
-  const a = K1[k[0]] || [], b = K1[k[1]] || [];
-  const cross = []; for (const x of a) for (const y of b) cross.push(x + y);
-  COMP[k] = uniq([...COMP[k], ...cross]);
-}
-const CONS = /^[bcdfghjklmpqrstvwxyz]/;
-const CONS_N = /^[bcdfghjklmpqrstvwxz]/;   // ん を n 1回で打てる次の頭文字（y・n・母音以外）
-
-function tokenize(read, en) {
-  if (en) return [...read].map(ch => ({ k: ch, c: [ch] }));
-  let u = [];
-  for (let i = 0; i < read.length; ) {
-    const two = read.slice(i, i + 2);
-    if (two.length === 2 && COMP[two]) { u.push({ k: two, c: COMP[two].slice() }); i += 2; continue; }
-    const ch = read[i];
-    u.push({ k: ch, c: (K1[ch] || [ch]).slice() }); i++;
-  }
-  // っ は次の音と1まとまりにする（子音を重ねる / xtu・ltu ＋ 次）
-  const out = [];
-  for (let i = 0; i < u.length; i++) {
-    const x = u[i], nx = u[i + 1];
-    if (x.k === "っ" && nx && nx.k !== "っ" && nx.k !== "ん") {
-      const dbl = nx.c.filter(c => CONS.test(c)).map(c => c[0] + c);
-      const sm = []; for (const t of TSU) for (const c of nx.c) sm.push(t + c);
-      if (dbl.length) { out.push({ k: "っ" + nx.k, c: uniq([...dbl, ...sm]), sok: true, inner: nx.k }); i++; continue; }
-    }
-    if (x.k === "っ") { out.push({ k: "っ", c: TSU.slice() }); continue; }
-    out.push(x);
-  }
-  // ん：次が子音（y・n 以外）なら n 1回でもよい
-  for (let i = 0; i < out.length; i++) {
-    if (out[i].k !== "ん") continue;
-    const nx = out[i + 1];
-    const single = !!nx && nx.c.every(c => CONS_N.test(c));
-    out[i].c = single ? ["n", "nn", "xn"] : ["nn", "xn"];
-    out[i].nOk = single;
-  }
-  return out;
-}
-function splitSok(c) {
-  for (const t of ["xtsu","ltsu","xtu","ltu"]) if (c.startsWith(t)) return [t, c.slice(t.length)];
-  return ["重ねる", c.slice(1)];
-}
+const { POOL, K1, COMP, tokenize, splitSok } = TDT;
 
 /* =========================================================
    保存
@@ -828,34 +411,69 @@ function weakWeights() {
 }
 function defaultRoma(units) { return units.map(u => pick(u, "")).join(""); }
 
+/* =========================================================
+   ランキング（Google Apps Script。scripts/gas/typing-ranking.gs）
+   URL が空のあいだは、ランキングの表示を出さない
+========================================================= */
+const RANK_URL = "";
+let token = null, tokenBusy = false, rankDown = "";
+if (!S.pid) {
+  try { const a = new Uint8Array(8); crypto.getRandomValues(a); S.pid = [...a].map(x => x.toString(16).padStart(2, "0")).join(""); }
+  catch (e) { S.pid = Math.random().toString(16).slice(2, 10) + Math.random().toString(16).slice(2, 10); }
+  save();
+}
+function fetchToken() {
+  if (!RANK_URL || token || tokenBusy) return;
+  tokenBusy = true;
+  fetch(RANK_URL + "?a=token&v=" + TDT.VERSION)
+    .then(r => r.json())
+    .then(j => { if (j && j.ok) { token = j.token; rankDown = ""; } else rankDown = (j && j.msg) || "ランキングにつながりません"; })
+    .catch(() => { rankDown = "ランキングにつながりません"; })
+    .finally(() => { tokenBusy = false; badge(); });
+}
+const isRanked = () => !!(RANK_URL && token && !S.opt.weak);
+function badge() {
+  const el = $("rankBadge");
+  if (!RANK_URL) { el.hidden = true; return; }
+  el.hidden = false;
+  el.textContent = S.opt.weak ? "ランキング対象外（苦手なキーの出題がオン）" : token ? "ランキング対象" : (rankDown || "ランキングに接続中…");
+  el.classList.toggle("on", isRanked());
+}
+
 function newProblem() {
-  const en = S.opt.mode === "en";
-  const pool = POOL[S.opt.mode];
-  let cand = pool.filter(p => !recent.includes(p.d));
-  if (!cand.length) cand = pool;
-  let p;
-  if (S.opt.weak) {
-    const w = weakWeights();
-    const ws = cand.map(q => {
-      const r = defaultRoma(tokenize(q.r.toLowerCase(), en));
-      let s = 0; for (const ch of r) s += (w[ch] || 1);
-      return Math.pow(s / r.length, 4);
-    });
-    let tot = ws.reduce((a, b) => a + b, 0), x = Math.random() * tot;
-    p = cand[cand.length - 1];
-    for (let i = 0; i < cand.length; i++) { x -= ws[i]; if (x <= 0) { p = cand[i]; break; } }
-  } else p = cand[Math.floor(Math.random() * cand.length)];
-  recent.push(p.d); if (recent.length > Math.min(30, Math.floor(pool.length / 2))) recent.shift();
-  return en ? { disp: p.d, kana: p.r, read: p.d, en: true } : { disp: p.d, kana: p.r, read: p.r, en: false };
+  const mode = S.opt.mode, pool = POOL[mode];
+  let idx;
+  if (G.seq) idx = G.seq[G.seqI++];
+  else {
+    const cand = [];
+    for (let i = 0; i < pool.length; i++) if (!recent.includes(i)) cand.push(i);
+    if (S.opt.weak) {
+      const w = weakWeights();
+      const ws = cand.map(i => {
+        const r = defaultRoma(TDT.unitsOf(TDT.problem(mode, i)));
+        let s = 0; for (const ch of r) s += (w[ch] || 1);
+        return Math.pow(s / r.length, 4);
+      });
+      let x = Math.random() * ws.reduce((a, b) => a + b, 0);
+      idx = cand[cand.length - 1];
+      for (let i = 0; i < cand.length; i++) { x -= ws[i]; if (x <= 0) { idx = cand[i]; break; } }
+    } else idx = cand[Math.floor(Math.random() * cand.length)];
+    recent.push(idx); if (recent.length > Math.min(30, Math.floor(pool.length / 2))) recent.shift();
+  }
+  return TDT.problem(mode, idx);
 }
 
 function startRound() {
   if (G.playing) return;
   $("imeWarn").hidden = true;
+  const ranked = isRanked();
   Object.assign(G, {
     playing: true, limit: S.opt.sec * 1000, t0: performance.now(), lastT: 0,
     log: [], probs: [], hab: {}, extra: [0, 0], prevOk: null, keys: 0, miss: 0,
+    ranked, tok: ranked ? token : null, seq: ranked ? TDT.sequence(S.opt.mode, token.seed) : null, seqI: 0,
+    probIdx: [], rk: "", rt: [],
   });
+  if (ranked) token = null;
   recent = [];
   G.next = newProblem();
   loadProblem(0);
@@ -866,54 +484,36 @@ function startRound() {
 }
 function loadProblem(now) {
   const p = G.next; G.next = newProblem();
-  G.cur = { p, units: tokenize(p.read.toLowerCase(), p.en), u: 0, b: "", shown: now, started: false, lat: 0, keys: 0, miss: 0 };
+  G.probIdx.push(p.idx);
+  G.cur = { p, m: new TDT.Matcher(TDT.unitsOf(p), onCommit), shown: now, started: false, lat: 0, keys: 0, miss: 0 };
   G.prevOk = null;
   render();
 }
 function expected() {
-  const c = G.cur, u = c.units[c.u];
+  const m = G.cur.m, u = m.units[m.u];
   if (!u) return "";
-  const g = pick(u, c.b);
-  if (g && c.b.length < g.length) return g[c.b.length];
-  const nu = c.units[c.u + 1];
+  const g = pick(u, m.b);
+  if (g && m.b.length < g.length) return g[m.b.length];
+  const nu = m.units[m.u + 1];
   return nu ? pick(nu, "")[0] : "";
 }
-function commit(used) {
-  const c = G.cur, u = c.units[c.u];
-  // クセの記録
+function onCommit(u, used) {
+  // ローマ字のクセを記録し、表示もそれに合わせる
   if (u.sok) {
     const [st, inner] = splitSok(used);
     learnKey("っ", st); habit("っ", st);
-    const innerU = { k: u.inner, c: (COMP[u.inner] || K1[u.inner] || [inner]) };
-    if (innerU.c.length > 1) { learnKey(u.inner, inner); habit(u.inner, inner); }
+    if ((COMP[u.inner] || K1[u.inner] || []).length > 1) { learnKey(u.inner, inner); habit(u.inner, inner); }
   } else if (u.k === "ん") {
     if (u.nOk) { learnKey("ん", used); habit("ん（子音の前）", used); }
   } else if (u.c.length > 1) { learnKey(u.k, used); habit(u.k, used); }
-  u._used = used;
   const min = Math.min(...u.c.map(x => x.length));
   G.extra[0] += used.length - min; G.extra[1] += used.length;
-  c.u++; c.b = "";
 }
 function habit(k, c) { (G.hab[k] = G.hab[k] || {})[c] = (G.hab[k][c] || 0) + 1; }
-function feed(k) {
-  const c = G.cur, u = c.units[c.u];
-  const nb = c.b + k;
-  const m = u.c.filter(x => x.startsWith(nb));
-  if (m.length) {
-    c.b = nb;
-    if (m.includes(nb) && (m.every(x => x === nb) || c.u === c.units.length - 1)) commit(nb);
-    return true;
-  }
-  if (c.b && u.c.includes(c.b)) {        // 「n」のように、打ち切ったかどうか次の1打で決まるもの
-    const nu = c.units[c.u + 1];
-    if (nu && nu.c.some(x => x.startsWith(k))) { commit(c.b); return feed(k); }
-  }
-  return false;
-}
 function onChar(ch) {
   if (!G.playing) return;
-  const now = performance.now() - G.t0;
-  if (now >= G.limit) { finish(); return; }
+  if (performance.now() - G.t0 >= G.limit) { finish(); return; }
+  const now = Math.min(G.limit, Math.round(performance.now() - G.t0));
   const k = ch.toLowerCase();
   const c = G.cur;
   const exp = expected();
@@ -921,11 +521,12 @@ function onChar(ch) {
   const dt = first ? now - c.shown : now - G.lastT;
   if (first) { c.started = true; c.lat = dt; }
   G.lastT = now;
-  if (feed(k)) {
+  G.rk += k; G.rt.push(now);
+  if (c.m.feed(k)) {
     G.log.push({ t: now, k, dt, f: first ? 1 : 0, ok: 1, p: G.prevOk });
     G.prevOk = k; G.keys++; c.keys++;
     click(true);
-    if (c.u >= c.units.length) {
+    if (c.m.done()) {
       G.probs.push({ d: c.p.disp, keys: c.keys, miss: c.miss, lat: c.lat, time: now - c.shown, done: true });
       loadProblem(now);
       return;
@@ -941,20 +542,20 @@ function onChar(ch) {
 
 function render() {
   const c = G.cur; if (!c) return;
-  const p = c.p;
+  const p = c.p, m = c.m;
   $("qDisp").textContent = p.disp;
   // かな（打ち終えた分を薄く）
   if (p.en) $("qKana").textContent = p.kana;
   else {
-    let done = 0; for (let i = 0; i < c.u; i++) done += c.units[i].k.length;
+    let done = 0; for (let i = 0; i < m.u; i++) done += m.units[i].k.length;
     $("qKana").innerHTML = `<span class="done">${esc(p.kana.slice(0, done))}</span>${esc(p.kana.slice(done))}`;
   }
   // ローマ字
   let typed = "", rest = "";
-  for (let i = 0; i < c.units.length; i++) {
-    const u = c.units[i];
-    if (i < c.u) typed += u._used;
-    else if (i === c.u) { const g = pick(u, c.b); typed += c.b; rest += g.slice(c.b.length); }
+  for (let i = 0; i < m.units.length; i++) {
+    const u = m.units[i];
+    if (i < m.u) typed += u._used;
+    else if (i === m.u) { const g = pick(u, m.b); typed += m.b; rest += g.slice(m.b.length); }
     else rest += pick(u, "");
   }
   if (S.opt.guide) {
@@ -990,6 +591,7 @@ function idle() {
   $("hBar").style.transform = "scaleX(1)";
 }
 function abort() {
+  if (G.ranked && G.tok && !token) token = G.tok;   // 中断した回のランキング用の札は、次の回に使う
   G.playing = false; G.keys = 0; G.miss = 0; idle(); hud();
   $("hTime").textContent = S.opt.sec.toFixed(1);
 }
@@ -1033,9 +635,7 @@ function mergeAgg(dst, src) {
   dst.extra[0] += src.extra[0]; dst.extra[1] += src.extra[1];
 }
 
-const RANKS = [[0,"10級"],[50,"9級"],[75,"8級"],[90,"7級"],[100,"6級"],[130,"5級"],[160,"4級"],[190,"3級"],[220,"2級"],[235,"1級"],
-  [250,"初段"],[300,"二段"],[350,"三段"],[400,"四段"],[450,"五段"],[500,"六段"],[550,"七段"],[600,"八段"],[650,"九段"],[750,"十段"],[900,"名人"]];
-const rankOf = s => { let r = RANKS[0][1]; for (const [t, n] of RANKS) if (s >= t) r = n; return r; };
+const rankOf = TDT.rankOf;
 
 let lastRound = null;
 function finish() {
@@ -1046,15 +646,9 @@ function finish() {
   if (c && c.started) G.probs.push({ d: c.p.disp, keys: c.keys, miss: c.miss, lat: c.lat, time: dur - c.shown, done: false });
   const ok = G.keys, miss = G.miss;
   if (ok + miss === 0) { abort(); return; }
-  const firsts = G.log.filter(e => e.f);
-  const sumLat = firsts.reduce((s, e) => s + e.dt, 0);
-  const firstOk = firsts.filter(e => e.ok).length;
-  const waitTail = c && !c.started ? dur - c.shown : 0;
-  const rDur = dur - sumLat - waitTail;
-  const kpm = ok / dur * 60000;
-  const rkpm = rDur > 0 ? (ok - firstOk) / rDur * 60000 : 0;
-  const acc = ok / (ok + miss);
-  const sc = Math.round(kpm * acc * acc);
+  // 数字はランキングのサーバーと同じ計算で出す
+  const ev = TDT.evaluate(S.opt.mode, S.opt.sec, G.probIdx, G.rk, G.rt);
+  const kpm = ev.kpm, rkpm = ev.rkpm, acc = ev.acc, sc = ev.score;
   const ivs = G.log.filter(e => e.ok && !e.f && e.dt <= MAXDT).map(e => e.dt);
   const mean = ivs.length ? ivs.reduce((a, b) => a + b, 0) / ivs.length : 0;
   const sd = ivs.length > 1 ? Math.sqrt(ivs.reduce((a, b) => a + (b - mean) ** 2, 0) / (ivs.length - 1)) : 0;
@@ -1066,17 +660,20 @@ function finish() {
   mergeAgg(S.agg, agg);
 
   const run = { at: Date.now(), m: S.opt.mode, s: S.opt.sec, sc, kpm: Math.round(kpm), rkpm: Math.round(rkpm), acc: +(acc * 100).toFixed(1),
-    ok, miss, lat: firsts.length ? Math.round(sumLat / firsts.length) : 0 };
+    ok, miss, lat: Math.round(ev.lat) };
   const same = S.hist.filter(h => h.m === run.m && h.s === run.s);
   const prevBest = same.length ? Math.max(...same.map(h => h.sc)) : null;
   S.hist.push(run); if (S.hist.length > 500) S.hist.shift();
   save();
 
-  lastRound = { run, prevBest, kpm, rkpm, acc, mean, sd, peak, bins, BIN, agg, probs: G.probs.slice() };
+  lastRound = { run, prevBest, kpm, rkpm, acc, mean, sd, peak, bins, BIN, agg, probs: G.probs.slice(),
+    ranked: G.ranked, sub: G.ranked ? { tok: G.tok, mode: S.opt.mode, sec: S.opt.sec, keys: G.rk, times: G.rt.slice() } : null, sent: false };
+  fetchToken();
   idle();
   renderResult();
   anaView = "round"; renderAna();
   renderHist();
+  renderRankBox();
   $("result").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -1317,6 +914,66 @@ function bindClear() {
 }
 
 /* =========================================================
+   ランキングの登録と表示
+========================================================= */
+function renderRankBox() {
+  const R = lastRound, box = $("rankBox");
+  if (!RANK_URL || !R) { box.hidden = true; return; }
+  box.hidden = false;
+  const name = $("rankName"), btn = $("rankSend"), msg = $("rankMsg");
+  name.value = S.rankName || "";
+  if (!R.ranked) {
+    name.disabled = btn.disabled = true;
+    msg.className = "rank-msg";
+    msg.textContent = S.opt.weak ? "苦手なキーの出題がオンの回は、ランキングの対象外です。" : "ランキングにつながっていなかったため、この回は登録できません。";
+    return;
+  }
+  name.disabled = btn.disabled = R.sent;
+  if (!R.sent) { msg.className = "rank-msg"; msg.textContent = ""; }
+}
+function sendRank() {
+  const R = lastRound; if (!R || !R.ranked || R.sent) return;
+  const name = $("rankName").value.trim(), msg = $("rankMsg"), btn = $("rankSend");
+  if (!name) { msg.className = "rank-msg ng"; msg.textContent = "名前を入れてください。"; return; }
+  S.rankName = name; save();
+  btn.disabled = true; msg.className = "rank-msg"; msg.textContent = "送っています…";
+  fetch(RANK_URL, { method: "POST", body: JSON.stringify(Object.assign({ a: "submit", v: TDT.VERSION, pid: S.pid, name }, R.sub)) })
+    .then(r => r.json())
+    .then(j => {
+      if (j && j.ok) {
+        R.sent = true; $("rankName").disabled = true;
+        msg.className = "rank-msg ok";
+        msg.textContent = j.improved
+          ? `登録しました。${MODE_NAME[R.sub.mode]}・${R.sub.sec}秒で ${j.rank}位（${j.total}人中）です。`
+          : `登録しました。自己ベスト（${f0(j.best)}）のほうが高いので、順位は ${j.rank}位（${j.total}人中）のままです。`;
+        loadRanking();
+      } else { btn.disabled = false; msg.className = "rank-msg ng"; msg.textContent = (j && j.msg) || "登録できませんでした。"; }
+    })
+    .catch(() => { btn.disabled = false; msg.className = "rank-msg ng"; msg.textContent = "送れませんでした。通信を確かめて、もう一度押してください。"; });
+}
+let rankReq = 0;
+function loadRanking() {
+  if (!RANK_URL) return;
+  $("ranking").hidden = false;
+  const m = S.opt.mode, s = S.opt.sec, my = ++rankReq;
+  $("rankHead").textContent = `${MODE_NAME[m]}・${s}秒（問題と時間を切り替えると、そのランキングに変わります）`;
+  $("rankList").innerHTML = `<div class="empty" style="padding:12px 0">読み込んでいます…</div>`;
+  fetch(`${RANK_URL}?a=top&mode=${m}&sec=${s}&pid=${S.pid}`)
+    .then(r => r.json())
+    .then(j => {
+      if (my !== rankReq) return;
+      if (!j || !j.ok) { $("rankList").innerHTML = `<div class="empty" style="padding:12px 0">${esc((j && j.msg) || "読み込めませんでした")}</div>`; return; }
+      if (!j.list.length) { $("rankList").innerHTML = `<div class="empty" style="padding:12px 0">まだ誰も登録していません。1位になるチャンスです。</div>`; return; }
+      let h = `<div class="tbl-scroll"><table class="t"><thead><tr><th class="r">順位</th><th>名前</th><th class="r">スコア</th><th>段位</th><th class="r">速さ</th><th class="r">正確率</th><th>登録日</th></tr></thead><tbody>`;
+      h += j.list.map(r => `<tr${r.me ? ' class="me"' : ""}><td class="r">${r.r}</td><td>${esc(r.n)}</td><td class="r">${f0(r.s)}</td><td>${rankOf(r.s)}</td><td class="r">${f0(r.k)}</td><td class="r">${r.a}%</td><td class="tnum">${esc(r.d)}</td></tr>`).join("");
+      h += `</tbody></table></div>`;
+      h += `<div class="note">${j.total}人が登録しています。上位${j.list.length}人を表示。${j.me ? `あなたは <strong>${j.me.r}位</strong>（${f0(j.me.s)}）です。` : "ランキング対象の回を打ち終えると、結果の下から登録できます。"}</div>`;
+      $("rankList").innerHTML = h;
+    })
+    .catch(() => { if (my === rankReq) $("rankList").innerHTML = `<div class="empty" style="padding:12px 0">読み込めませんでした</div>`; });
+}
+
+/* =========================================================
    設定と入力
 ========================================================= */
 function syncSeg(id, v) { document.querySelectorAll(`#${id} button`).forEach(b => b.setAttribute("aria-pressed", b.dataset.v === String(v))); }
@@ -1325,10 +982,12 @@ function applyOpt() {
   $("optGuide").checked = S.opt.guide; $("optWeak").checked = S.opt.weak; $("optSound").checked = S.opt.sound;
   if (!G.playing) { $("hTime").textContent = S.opt.sec.toFixed(1); }
 }
-document.querySelectorAll("#segMode button").forEach(b => b.onclick = () => { if (G.playing) return; S.opt.mode = b.dataset.v; save(); applyOpt(); renderHist(); b.blur(); });
-document.querySelectorAll("#segSec button").forEach(b => b.onclick = () => { if (G.playing) return; S.opt.sec = +b.dataset.v; save(); applyOpt(); renderHist(); b.blur(); });
+document.querySelectorAll("#segMode button").forEach(b => b.onclick = () => { if (G.playing) return; S.opt.mode = b.dataset.v; save(); applyOpt(); renderHist(); loadRanking(); b.blur(); });
+document.querySelectorAll("#segSec button").forEach(b => b.onclick = () => { if (G.playing) return; S.opt.sec = +b.dataset.v; save(); applyOpt(); renderHist(); loadRanking(); b.blur(); });
+$("rankSend").onclick = sendRank;
+$("rankName").addEventListener("keydown", e => { if (e.key === "Enter") sendRank(); });
 $("optGuide").onchange = e => { S.opt.guide = e.target.checked; save(); if (G.playing) render(); };
-$("optWeak").onchange = e => { S.opt.weak = e.target.checked; save(); };
+$("optWeak").onchange = e => { S.opt.weak = e.target.checked; save(); badge(); };
 $("optSound").onchange = e => { S.opt.sound = e.target.checked; save(); };
 document.querySelectorAll("#anaTabs button").forEach(b => b.onclick = () => { anaView = b.dataset.v; renderAna(); });
 $("startBtn").onclick = () => startRound();
@@ -1363,7 +1022,7 @@ trap.addEventListener("input", e => {
   for (const ch of v) if (/^[\x21-\x7e]$/.test(ch)) onChar(ch);
 });
 
-applyOpt(); idle(); hud(); renderAna(); renderHist();
+applyOpt(); idle(); hud(); renderAna(); renderHist(); badge(); fetchToken(); loadRanking();
 })();
 </script>
 
