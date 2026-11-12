@@ -35,135 +35,186 @@
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 
 <style>
+/* ===== このページだけの配色（サイト共通の変数も上書きして、ヘッダー・関連ツールなども夜の球場の色にする） ===== */
+:root{
+    --bg:#0c0f2e; --surface:#151a45; --surface-2:#1d2358; --ink:#eef0ff; --line:#2e3678; --line-soft:#252b62; --line-input:#4a54a0;
+    --accent:#ffd166; --c:#ffd166; --gold:#ffd166;
+    --kc-bg:#0c0f2e; --kc-win:#161b48; --kc-win2:#1f2560; --kc-edge:#e8e2cf; --kc-ink:#eef0ff; --kc-dim:#9aa3d9; --kc-accent:#ff5d73; --kc-gold:#ffd166; --kc-green:#6ee07a;
+}
+html{ background:var(--kc-bg); }
 body{
-    margin:0;
-    padding:20px;
-    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-    background:var(--bg);
-    color:var(--ink);
-    line-height:1.7;
+    margin:0; padding:0 16px 40px;
+    font-family:"DotGothic16","Noto Sans JP",monospace;
+    color:var(--kc-ink); line-height:1.7;
+    background-color:var(--kc-bg);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(255,209,102,.06) 0 2px, transparent 3px),
+      radial-gradient(circle at 70% 30%, rgba(255,255,255,.05) 0 1px, transparent 2px),
+      linear-gradient(180deg, #0c0f2e 0%, #121640 60%, #0c0f2e 100%);
+    background-size: 160px 160px, 110px 110px, 100% 100%;
 }
-.container{
-    max-width:980px;
-    margin:0 auto;
-    background:var(--surface);
-    --pad:24px;
-    padding:var(--pad);
-    border:1px solid var(--line);
-}
+a{ color:#ffd166; }
+.container{ max-width:1020px; margin:0 auto; padding:0; background:none; border:none; }
 
-/* ---- ゲーム ---- */
-.kc{ --kc-ink:#1b1f3b; --kc-panel:#fdf6e3; --kc-line:#1b1f3b; --kc-accent:#d7263d; --kc-gold:#f4b400;
-    font-family:"DotGothic16","Noto Sans JP",monospace; color:var(--kc-ink);
-    display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:16px; margin-top:16px; }
+/* サイト共通の部品を、目立たない夜色に */
+.td-header{ background:#080a22 !important; border-bottom:2px solid #2e3678 !important; }
+.td-header .td-header-name, .td-header .td-header-tag{ color:#c9ceff !important; }
+.td-header .td-header-nav a{ color:#9aa3d9 !important; }
+.td-header .td-header-nav a:hover{ color:#fff !important; }
+.breadcrumb{ font-size:12px !important; color:#6f78b8 !important; padding:8px 4px !important; margin:0 !important; max-width:1020px; margin-inline:auto !important; }
+.breadcrumb a{ color:#9aa3d9 !important; }
+.td-ad-sticky{ background:rgba(8,10,34,.94) !important; border-top-color:#2e3678 !important; }
+.td-ad-label{ color:#6f78b8 !important; }
+.td-share-title{ color:var(--kc-dim) !important; }
+.related-tools-section{ border-top-color:#2e3678 !important; }
+.related-tools-section h2{ font-size:1rem !important; color:var(--kc-dim) !important; }
+.related-tool-card{ background:#121640 !important; border-color:#2e3678 !important; border-top-color:#ffd166 !important; }
+.related-tool-card h3{ color:#eef0ff !important; font-size:.95rem !important; }
+.related-tool-card p{ color:#9aa3d9 !important; font-size:.82rem !important; }
+
+/* ===== タイトル ===== */
+.kc-logo{ display:flex; gap:14px; align-items:center; margin:10px 0 4px; }
+.kc-logo img{ width:56px; height:56px; image-rendering:pixelated; flex-shrink:0; filter:drop-shadow(3px 3px 0 #000); }
+.kc-logo h1{ margin:0; font-size:2.1rem; line-height:1.15; font-weight:400; color:#ffd166; letter-spacing:.04em;
+    text-shadow:3px 3px 0 #b3261e, 6px 6px 0 rgba(0,0,0,.6); }
+.kc-logo p{ margin:6px 0 0; font-size:.92rem; color:var(--kc-dim); line-height:1.5; }
+@media (max-width:600px){ .kc-logo h1{ font-size:1.55rem; } .kc-logo img{ width:44px; height:44px; } }
+
+/* ===== ゲームの窓（昔のRPGの窓のように、二重の枠） ===== */
+.kc{ display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:14px; margin-top:12px; color:var(--kc-ink); }
 @media (max-width:760px){ .kc{ grid-template-columns:1fr; } }
 .kc *{ box-sizing:border-box; }
-.kc-left{ min-width:0; }
-.kc-count{ background:var(--kc-ink); color:#fff; padding:8px 14px 10px; border:3px solid var(--kc-line); border-bottom:none; }
-.kc-count .team{ font-size:.95rem; color:#ffd166; display:flex; justify-content:space-between; gap:8px; }
-.kc-count .team .rec{ color:#c9d1ff; white-space:nowrap; }
-.kc-count .big{ font-size:1.9rem; line-height:1.2; letter-spacing:.02em; font-variant-numeric:tabular-nums; }
+.kc-left, .kc-right{ min-width:0; }
+.kc-win{ background:var(--kc-win); border:3px solid var(--kc-edge); box-shadow:0 0 0 3px #05061a, inset 0 0 0 2px #05061a; }
+.kc-count{ padding:8px 14px 10px; border-bottom:none; }
+.kc-count .team{ font-size:.95rem; color:var(--kc-gold); display:flex; justify-content:space-between; gap:8px; }
+.kc-count .team .rec{ color:var(--kc-dim); white-space:nowrap; }
+.kc-count .big{ font-size:2rem; line-height:1.2; letter-spacing:.02em; font-variant-numeric:tabular-nums; color:#fff; text-shadow:2px 2px 0 #000; }
 .kc-count .big small{ font-size:1rem; margin-left:4px; }
-.kc-count .sub{ font-size:.95rem; color:#c9d1ff; }
+.kc-count .sub{ font-size:.95rem; color:var(--kc-dim); }
 .kc-count .buffs{ font-size:.9rem; color:var(--kc-gold); min-height:1.2em; }
-.kc-field-wrap{ position:relative; border:3px solid var(--kc-line); background:#000; line-height:0; }
+.kc-stadium{ font-size:.85rem; color:#7fe3ff; }
+.kc-month{ font-size:.85rem; color:#ffb4c0; }
+.kc-field-wrap{ position:relative; line-height:0; border-top:3px solid var(--kc-edge); margin-top:0; }
 #field{ width:100%; height:auto; image-rendering:pixelated; image-rendering:crisp-edges; cursor:pointer;
-    touch-action:manipulation; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
-.kc-hint{ font-size:.85rem; margin:6px 0 0; color:#5c6470; text-align:center; }
-.kc-news{ margin:6px 0 0; background:#fff; border:3px solid var(--kc-line); padding:6px 10px; font-size:.92rem; min-height:2.6em; display:flex; gap:8px; align-items:center; }
-.kc-news .tag{ background:var(--kc-accent); color:#fff; padding:0 6px; font-size:.8rem; white-space:nowrap; }
+    touch-action:manipulation; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; display:block; }
+.kc-hint{ font-size:.82rem; margin:6px 0 0; color:var(--kc-dim); text-align:center; }
+.kc-news{ margin:10px 0 0; padding:6px 10px; font-size:.92rem; min-height:2.7em; display:flex; gap:8px; align-items:center; background:#f3ead2; color:#1b1f3b; border:3px solid var(--kc-edge); box-shadow:0 0 0 3px #05061a; }
+.kc-news .tag{ background:#d7263d; color:#fff; padding:0 6px; font-size:.8rem; white-space:nowrap; }
 .kc-news .txt{ transition:opacity .3s; }
-.kc-month{ font-size:.85rem; color:#ffd166; }
-.kc-draft{ margin-top:12px; background:#fff3c4; border:3px solid var(--kc-line); padding:10px 12px; }
-.kc-draft h3{ margin:0 0 6px; font-size:1.05rem; font-weight:400; color:var(--kc-accent); }
-.kc-draft .cands{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
-@media (max-width:420px){ .kc-draft .cands{ grid-template-columns:1fr; } }
-.kc-draft button{ font:inherit; text-align:left; background:#fff; border:2px solid var(--kc-line); padding:6px; cursor:pointer; color:var(--kc-ink); box-shadow:2px 2px 0 var(--kc-line); }
-.kc-draft button b{ display:block; font-weight:400; font-size:.95rem; }
-.kc-draft button span{ display:block; font-size:.78rem; color:#5c6470; line-height:1.35; }
-.kc-draft button em{ font-style:normal; color:var(--kc-accent); font-size:.8rem; }
-.kc-rookies{ font-size:.82rem; color:#5c6470; margin-top:6px; line-height:1.5; }
-.kc-ach div.hidden-on{ border-color:#7e57c2; background:#f3ecff; }
 
-.kc-box{ margin-top:12px; background:var(--kc-panel); border:3px solid var(--kc-line); padding:10px 12px; font-size:.95rem; }
+/* 施設の列 */
+.kc-town{ margin-top:12px; padding:8px; }
+.kc-town h2{ margin:0 0 6px; font-size:1rem; font-weight:400; color:var(--kc-gold); display:flex; justify-content:space-between; }
+.kc-town h2 span{ color:var(--kc-dim); font-size:.8rem; }
+.kc-rows{ max-height:380px; overflow:auto; }
+@media (max-width:760px){ .kc-rows{ max-height:none; } }
+.kc-row{ position:relative; margin:0 0 4px; line-height:0; border:2px solid #05061a; }
+.kc-row canvas{ width:100%; height:auto; image-rendering:pixelated; display:block; }
+.kc-row .lbl{ display:block; background:#0b0e2b; padding:2px 6px; line-height:1.3; font-size:.78rem; color:#fff; }
+.kc-row .lbl b{ font-weight:400; color:var(--kc-gold); margin-left:4px; letter-spacing:-.05em; }
+.kc-town .empty{ font-size:.85rem; color:var(--kc-dim); padding:8px; line-height:1.5; }
+
+.kc-box{ margin-top:12px; padding:10px 12px; font-size:.95rem; }
 .kc-box .row{ display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; }
-.kc-box b{ font-weight:400; color:var(--kc-accent); }
-.kc-btn{ font:inherit; font-size:1rem; padding:6px 12px; border:3px solid var(--kc-line); background:#fff; color:var(--kc-ink);
-    cursor:pointer; box-shadow:3px 3px 0 var(--kc-line); }
-.kc-btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--kc-line); }
-.kc-btn:disabled{ opacity:.45; cursor:default; transform:none; box-shadow:3px 3px 0 var(--kc-line); }
-.kc-btn.gold{ background:var(--kc-gold); }
+.kc-box b{ font-weight:400; color:var(--kc-gold); }
+.kc-btn{ font:inherit; font-size:1rem; padding:6px 12px; border:3px solid var(--kc-edge); background:#2a3175; color:#fff; cursor:pointer; box-shadow:3px 3px 0 #05061a; }
+.kc-btn:hover:not(:disabled){ background:#353d8f; }
+.kc-btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 #05061a; }
+.kc-btn:disabled{ opacity:.45; cursor:default; transform:none; }
+.kc-btn.gold{ background:#d99a00; color:#1b1f3b; }
+.kc-btn.gold:hover:not(:disabled){ background:#f4b400; }
 .kc-box .kc-btn.wide{ margin-top:8px; width:100%; }
 .kc-games{ display:flex; gap:3px; flex-wrap:wrap; margin-top:6px; }
 .kc-games span{ width:14px; height:14px; font-size:10px; line-height:14px; text-align:center; color:#fff; }
-.kc-games .w{ background:#1b7a2c; } .kc-games .l{ background:#9aa0a6; }
-.kc-next{ font-size:.85rem; color:#5c6470; margin-top:4px; }
+.kc-games .w{ background:#2e9e43; } .kc-games .l{ background:#59607f; }
+.kc-next{ font-size:.85rem; color:var(--kc-dim); margin-top:4px; }
+.kc-rookies{ font-size:.82rem; color:var(--kc-dim); margin-top:6px; line-height:1.5; }
+.kc-draft{ margin-top:12px; padding:10px 12px; background:#3a2a05; border-color:#ffd166; }
+.kc-draft h3{ margin:0 0 6px; font-size:1.05rem; font-weight:400; color:var(--kc-gold); }
+.kc-draft .cands{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+@media (max-width:420px){ .kc-draft .cands{ grid-template-columns:1fr; } }
+.kc-draft button{ font:inherit; text-align:left; background:#161b48; border:2px solid #ffd166; padding:6px; cursor:pointer; color:#fff; box-shadow:2px 2px 0 #000; }
+.kc-draft button:hover{ background:#232a6b; }
+.kc-draft button b{ display:block; font-weight:400; font-size:1rem; }
+.kc-draft button span{ display:block; font-size:.78rem; color:var(--kc-dim); line-height:1.35; }
+.kc-draft button em{ font-style:normal; color:var(--kc-accent); font-size:.8rem; }
 
-.kc-right{ min-width:0; display:flex; flex-direction:column; }
-.kc-tabs{ display:flex; gap:0; border:3px solid var(--kc-line); border-bottom:none; }
-.kc-tabs button{ flex:1; font:inherit; font-size:.98rem; padding:8px 2px; background:#e9e3d2; border:none; border-right:3px solid var(--kc-line); cursor:pointer; color:var(--kc-ink); white-space:nowrap; }
+.kc-right{ display:flex; flex-direction:column; }
+.kc-tabs{ display:flex; border:3px solid var(--kc-edge); border-bottom:none; background:#0b0e2b; box-shadow:0 0 0 3px #05061a; }
+.kc-tabs button{ flex:1; font:inherit; font-size:.98rem; padding:8px 2px; background:none; border:none; border-right:2px solid #2e3678; cursor:pointer; color:var(--kc-dim); white-space:nowrap; }
 .kc-tabs button:last-child{ border-right:none; }
-.kc-tabs button[aria-selected="true"]{ background:var(--kc-panel); color:var(--kc-accent); }
+.kc-tabs button[aria-selected="true"]{ background:var(--kc-win); color:var(--kc-gold); }
 .kc-tabs .dot{ display:inline-block; width:8px; height:8px; background:var(--kc-accent); margin-left:3px; vertical-align:middle; }
 .kc-tabs .dot[hidden]{ display:none; }
-.kc-pane{ border:3px solid var(--kc-line); background:var(--kc-panel); padding:8px; flex:1; max-height:640px; overflow:auto; }
+.kc-pane{ padding:8px; flex:1; max-height:760px; overflow:auto; border-top:none; }
 @media (max-width:760px){ .kc-pane{ max-height:none; } }
-.kc-pane h3{ font-size:1.05rem; font-weight:400; margin:4px 0 6px; color:var(--kc-accent); }
-.kc-buyamt{ display:flex; gap:6px; align-items:center; font-size:.9rem; margin:0 0 8px; }
-.kc-buyamt button{ font:inherit; padding:2px 10px; border:2px solid var(--kc-line); background:#fff; cursor:pointer; color:var(--kc-ink); }
-.kc-buyamt button[aria-pressed="true"]{ background:var(--kc-ink); color:#fff; }
+.kc-pane h3{ font-size:1.05rem; font-weight:400; margin:4px 0 6px; color:var(--kc-gold); }
+.kc-buyamt{ display:flex; gap:6px; align-items:center; font-size:.9rem; margin:0 0 8px; color:var(--kc-dim); }
+.kc-buyamt button{ font:inherit; padding:2px 10px; border:2px solid #4a54a0; background:#10143a; cursor:pointer; color:#fff; }
+.kc-buyamt button[aria-pressed="true"]{ background:var(--kc-gold); color:#1b1f3b; border-color:var(--kc-gold); }
 
 .kc-item{ display:grid; grid-template-columns:40px 1fr auto; gap:8px; align-items:center; width:100%; text-align:left;
-    font:inherit; color:var(--kc-ink); background:#fff; border:2px solid var(--kc-line); padding:6px 8px; margin:0 0 6px; cursor:pointer; }
-.kc-item:hover:not(:disabled){ background:#fff8d6; }
-.kc-item:disabled{ cursor:default; background:#efe9d8; color:#8a8577; }
+    font:inherit; color:#fff; background:#1f2560; border:2px solid #4a54a0; padding:6px 8px; margin:0 0 6px; cursor:pointer; }
+.kc-item:hover:not(:disabled){ background:#2b3380; border-color:var(--kc-gold); }
+.kc-item:disabled{ cursor:default; background:#11153d; color:#6f78b8; border-color:#262c66; }
 .kc-item.locked .nm{ letter-spacing:.2em; }
-.kc-item.maxed{ background:#e8f3e8; }
+.kc-item.maxed{ background:#173d2a; border-color:#2e9e43; }
 .kc-item img{ width:40px; height:40px; image-rendering:pixelated; }
+.kc-item:disabled img{ opacity:.55; }
 .kc-item .nm{ display:block; font-size:1.02rem; line-height:1.25; }
-.kc-item .ds{ display:block; font-size:.8rem; line-height:1.3; color:#5c6470; }
-.kc-item:disabled .ds{ color:#9a9586; }
+.kc-item .ds{ display:block; font-size:.8rem; line-height:1.3; color:var(--kc-dim); }
+.kc-item:disabled .ds{ color:#545c95; }
 .kc-item .cost{ font-size:.92rem; text-align:right; white-space:nowrap; }
-.kc-item .own{ font-size:1.4rem; text-align:right; color:#9a9586; }
-.kc-item.ok .cost{ color:#1b7a2c; }
-.kc-empty{ font-size:.9rem; color:#5c6470; padding:6px; }
-.kc-note{ font-size:.85rem; color:#5c6470; margin:0 0 8px; line-height:1.5; }
+.kc-item .own{ font-size:1.4rem; text-align:right; color:#6f78b8; }
+.kc-item.ok .cost{ color:var(--kc-green); }
+.kc-empty{ font-size:.9rem; color:var(--kc-dim); padding:6px; }
+.kc-note{ font-size:.85rem; color:var(--kc-dim); margin:0 0 8px; line-height:1.5; }
+.kc-note b{ font-weight:400; color:var(--kc-gold); }
 
 .kc-stats{ font-size:.95rem; margin:0; }
-.kc-stats div{ display:flex; justify-content:space-between; gap:8px; border-bottom:1px dashed #b9b2a0; padding:3px 2px; }
+.kc-stats div{ display:flex; justify-content:space-between; gap:8px; border-bottom:1px dashed #2e3678; padding:3px 2px; }
 .kc-ach{ display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:6px; margin-top:6px; }
-.kc-ach div{ border:2px solid var(--kc-line); background:#fff; padding:4px 6px; font-size:.82rem; line-height:1.35; }
-.kc-ach div.off{ background:#e9e3d2; color:#9a9586; border-color:#b9b2a0; }
+.kc-ach div{ border:2px solid var(--kc-gold); background:#2a2a10; padding:4px 6px; font-size:.82rem; line-height:1.35; color:#fff; }
+.kc-ach div.off{ background:#11153d; color:#545c95; border-color:#262c66; }
+.kc-ach div.hidden-on{ border-color:#b48cff; background:#2a1d4d; }
 .kc-ach b{ display:block; font-weight:400; font-size:.92rem; }
 .kc-danger{ margin-top:14px; font-size:.85rem; }
-.kc-danger button{ font:inherit; font-size:.85rem; background:none; border:none; color:#9a3412; text-decoration:underline; cursor:pointer; padding:0; }
+.kc-danger button{ font:inherit; font-size:.85rem; background:none; border:none; color:#ff8a8a; text-decoration:underline; cursor:pointer; padding:0; }
 
 .kc-form label{ display:block; margin:0 0 10px; font-size:.95rem; }
-.kc-form input[type=text]{ font:inherit; font-size:1rem; width:100%; padding:6px 8px; border:2px solid var(--kc-line); background:#fff; color:var(--kc-ink); }
-.kc-form input[type=color]{ width:52px; height:34px; border:2px solid var(--kc-line); padding:0; background:#fff; vertical-align:middle; cursor:pointer; }
+.kc-form input[type=text]{ font:inherit; font-size:1rem; width:100%; padding:6px 8px; border:2px solid #4a54a0; background:#0b0e2b; color:#fff; }
+.kc-form input[type=color]{ width:52px; height:34px; border:2px solid #4a54a0; padding:0; background:#0b0e2b; vertical-align:middle; cursor:pointer; }
 .kc-form .colors{ display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
-.kc-form select{ font:inherit; padding:4px 6px; border:2px solid var(--kc-line); background:#fff; color:var(--kc-ink); }
+.kc-form select{ font:inherit; padding:4px 6px; border:2px solid #4a54a0; background:#0b0e2b; color:#fff; }
 .kc-presets{ display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 10px; }
-.kc-presets button{ font:inherit; font-size:.8rem; padding:3px 6px; border:2px solid var(--kc-line); background:#fff; cursor:pointer; display:flex; gap:4px; align-items:center; color:var(--kc-ink); }
-.kc-presets i{ display:inline-block; width:12px; height:12px; border:1px solid #1b1f3b; }
-.kc-form textarea{ width:100%; font:inherit; font-size:.8rem; border:2px solid var(--kc-line); padding:6px; min-height:70px; }
-#preview{ width:120px; height:auto; image-rendering:pixelated; border:2px solid var(--kc-line); background:#46b056; display:block; margin:0 0 10px; }
+.kc-presets button{ font:inherit; font-size:.8rem; padding:3px 6px; border:2px solid #4a54a0; background:#10143a; cursor:pointer; display:flex; gap:4px; align-items:center; color:#fff; }
+.kc-presets button:hover{ border-color:var(--kc-gold); }
+.kc-presets i{ display:inline-block; width:12px; height:12px; border:1px solid #000; }
+.kc-form textarea{ width:100%; font:inherit; font-size:.8rem; border:2px solid #4a54a0; background:#0b0e2b; color:#fff; padding:6px; min-height:70px; }
+#preview{ width:120px; height:auto; image-rendering:pixelated; border:3px solid var(--kc-edge); background:#46b056; display:block; margin:0 0 10px; }
 
 .kc-toast{ position:fixed; left:50%; top:16px; transform:translateX(-50%); z-index:50; max-width:92vw;
-    font-family:"DotGothic16","Noto Sans JP",monospace; background:#1b1f3b; color:#fff; border:3px solid #fff;
-    box-shadow:0 0 0 3px #1b1f3b; padding:8px 14px; font-size:.95rem; opacity:0; transition:opacity .25s; pointer-events:none; text-align:center; }
+    font-family:"DotGothic16","Noto Sans JP",monospace; background:#161b48; color:#fff; border:3px solid #e8e2cf;
+    box-shadow:0 0 0 3px #05061a; padding:8px 14px; font-size:.95rem; opacity:0; transition:opacity .25s; pointer-events:none; text-align:center; }
 .kc-toast.show{ opacity:1; }
 
 @media (max-width:600px){
-    body{ padding:12px; }
-    .container{ --pad:14px; }
+    body{ padding:0 10px 30px; }
     .kc-count .big{ font-size:1.6rem; }
     .kc-tabs button{ font-size:.88rem; }
 }
-.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
-.tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
-.tool-article th{ background:var(--surface-2); white-space:nowrap; }
-.tool-article table:not(:has(thead)) th{ width:30%; white-space:normal; }
+
+/* ===== 遊び方・よくある質問 ===== */
+.tool-article{ max-width:1020px; margin:28px auto 0; padding:16px 18px; background:var(--kc-win); border:3px solid var(--kc-edge); box-shadow:0 0 0 3px #05061a; color:var(--kc-ink); font-family:"DotGothic16","Noto Sans JP",monospace; }
+.tool-article h2{ font-size:1.15rem; font-weight:400; color:var(--kc-gold); margin:18px 0 8px; padding:0 0 4px; border-bottom:2px dashed #2e3678; }
+.tool-article h2:first-child{ margin-top:0; }
+.tool-article p{ font-size:.92rem; line-height:1.75; }
+.tool-article strong{ font-weight:400; color:#7fe3ff; }
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.9rem; }
+.tool-article th, .tool-article td{ border:1px solid #2e3678; padding:7px 10px; text-align:left; vertical-align:top; color:var(--kc-ink); }
+.tool-article th{ background:#1f2560; color:var(--kc-gold); font-weight:400; white-space:nowrap; }
+.tool-article table:not(:has(thead)) th{ width:24%; white-space:normal; }
 </style>
 </head>
 
@@ -175,36 +226,47 @@ body{
 
 <div class="container">
 
-<div class="td-banner">
+<header class="kc-logo">
+    <img id="logoBall" alt="" width="56" height="56">
+    <div>
     <h1>球団経営クリッカー</h1>
-    <p>球場をタップしてバットを振り、ファンを増やそう。施設を建てれば放置でもファンが増え、試合に勝ち、優勝してペナントを集めよう。球団名とユニフォームの色は自由に決められます。</p>
-</div>
+    <p>球場をタップしてファンを増やそう。施設を建てれば放置でもファンが増え、試合に勝ち、優勝してペナントを集めよう。球団名とユニフォームは自由に。</p>
+    </div>
+</header>
 
 <div class="kc" id="kc">
   <div class="kc-left">
+    <div class="kc-win">
     <div class="kc-count">
       <div class="team"><span id="teamName"></span><span class="rec" id="teamRec"></span></div>
       <div class="big"><span id="fans">0</span><small>人</small></div>
       <div class="sub">毎秒 <span id="fps">0</span> 人</div>
       <div class="buffs" id="buffs"></div>
+      <div class="kc-stadium" id="stadium"></div>
       <div class="kc-month" id="month"></div>
     </div>
     <div class="kc-field-wrap"><canvas id="field" width="320" height="180" aria-label="球場。タップするとバットを振ります"></canvas></div>
+    </div>
     <div class="kc-news" aria-live="off"><span class="tag">速報</span><span class="txt" id="news"></span></div>
     <p class="kc-hint">球場をタップ（スペースキー）してバットを振ろう。ときどき飛んでくる「ファンサ!」もタップ！</p>
 
-    <div class="kc-draft" id="draft" hidden>
+    <section class="kc-win kc-town" aria-label="球団の施設">
+      <h2>球団の施設<span id="townSum"></span></h2>
+      <div class="kc-rows" id="town"></div>
+    </section>
+
+    <div class="kc-win kc-draft" id="draft" hidden>
       <h3>ドラフト会議！ 1人を指名しよう</h3>
       <div class="cands" id="cands"></div>
     </div>
 
-    <div class="kc-box">
+    <div class="kc-win kc-box">
       <div class="row"><span>今シーズンの試合</span><span><b id="wl">0勝0敗</b></span></div>
       <div class="kc-games" id="games"></div>
       <div class="kc-next" id="nextGame"></div>
     </div>
 
-    <div class="kc-box">
+    <div class="kc-win kc-box">
       <div class="row"><span>シーズン <b id="season">1</b></span><span>ペナント <b id="flags">0</b> 本（生産 +<span id="flagPct">0</span>%）</span></div>
       <div class="row"><span>今シーズンの獲得ファン</span><span id="seasonTotal">0</span></div>
       <div class="kc-rookies" id="rookies"></div>
@@ -220,7 +282,7 @@ body{
       <button type="button" role="tab" aria-selected="false" data-tab="rec">記録</button>
       <button type="button" role="tab" aria-selected="false" data-tab="team">球団</button>
     </div>
-    <div class="kc-pane" id="pane-build">
+    <div class="kc-win kc-pane" id="pane-build">
       <div class="kc-buyamt">まとめ買い：
         <button type="button" data-amt="1" aria-pressed="true">1</button>
         <button type="button" data-amt="10" aria-pressed="false">10</button>
@@ -228,18 +290,18 @@ body{
       </div>
       <div id="buildings"></div>
     </div>
-    <div class="kc-pane" id="pane-up" hidden><div id="upgrades"></div></div>
-    <div class="kc-pane" id="pane-hall" hidden>
+    <div class="kc-win kc-pane" id="pane-up" hidden><div id="upgrades"></div></div>
+    <div class="kc-win kc-pane" id="pane-hall" hidden>
       <p class="kc-note">優勝でもらえる殿堂ポイントを使って、シーズンをまたいでずっと残る力を手に入れよう。いまの殿堂ポイント：<b id="lp">0</b></p>
       <div id="perks"></div>
     </div>
-    <div class="kc-pane" id="pane-rec" hidden>
+    <div class="kc-win kc-pane" id="pane-rec" hidden>
       <div class="kc-stats" id="stats"></div>
       <h3 id="achHead">実績</h3>
       <p class="kc-note">実績を1つ達成するごとに、すべての生産が1%上がります。紫の枠は「隠し実績」で、条件はひみつです。</p>
       <div class="kc-ach" id="ach"></div>
     </div>
-    <div class="kc-pane kc-form" id="pane-team" hidden>
+    <div class="kc-win kc-pane kc-form" id="pane-team" hidden>
       <canvas id="preview" width="30" height="44" aria-label="ユニフォームの見本"></canvas>
       <label>球団名（12文字まで）<input type="text" id="tName" maxlength="12" autocomplete="off"></label>
       <div>おすすめの配色</div>
@@ -498,6 +560,9 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   A("hall1", "殿堂入り", "殿堂の力を手に入れる", s => Object.keys(s.perks).length > 0);
   A("time1", "1時間の熱戦", "合わせて1時間遊ぶ", s => s.playSec >= 3600);
   A("time10", "10時間の熱戦", "合わせて10時間遊ぶ", s => s.playSec >= 36000);
+  A("st_2", "市民球場へ", "本拠地を市民球場にする", s => (s.maxStadium || 0) >= 2);
+  A("st_4", "大球場の主", "本拠地を大球場にする", s => (s.maxStadium || 0) >= 4);
+  A("st_5", "夢の球場", "本拠地を夢の球場にする", s => (s.maxStadium || 0) >= 5);
   A("time50", "50時間の死闘", "合わせて50時間遊ぶ", s => s.playSec >= 180000);
   A("time100", "100時間の伝説", "合わせて100時間遊ぶ", s => s.playSec >= 360000);
   A("c1e6", "百万回の素振り", "100万回バットを振る", s => s.clicks >= 1e6);
@@ -597,12 +662,24 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     rows.forEach((row, y) => [...row].forEach((ch, i) => { if (pal[ch]) { x.fillStyle = pal[ch]; x.fillRect(px + i * s, py + y * s, s, s); } }));
   }
 
+  /* ================= 本拠地のランク（今シーズンに買った強化の数で、球場が建て替わる） ================= */
+  const STADIUMS = [[0, "河川敷グラウンド"], [3, "草野球場"], [8, "市民球場"], [15, "プロの球場"], [30, "大球場"], [50, "夢の球場"]];
+  function stadiumLv() { let lv = 0; STADIUMS.forEach(([n], i) => { if (S.ups.length >= n) lv = i; }); return lv; }
+  let shownLv = -1;
+  function stadiumCheck() {
+    const lv = stadiumLv();
+    if (shownLv >= 0 && lv > shownLv) { toast("本拠地が「" + STADIUMS[lv][1] + "」に生まれ変わった！"); burst(160, 40, 60, 60); }
+    shownLv = lv; S.maxStadium = Math.max(S.maxStadium || 0, lv);
+  }
+
   /* ================= 球場の描画 ================= */
   const cv = document.getElementById("field"), cx = cv.getContext("2d");
   const W = 320, H = 180;
   let swingT = 0, balls = [], floats = [], sparks = [], fs = null, fsNext = now() + 20000, tick = 0;
   const SEATS = [];
   (function () { let r = 7; for (let y = 34; y < 74; y += 4) for (let x = 2; x < W - 2; x += 4) { r = (r * 9301 + 49297) % 233280; SEATS.push([x, y, r / 233280]); } })();
+  const UPPER = [];
+  (function () { let r = 11; for (let y = 16; y < 28; y += 4) for (let x = 2; x < W - 2; x += 4) { r = (r * 9301 + 49297) % 233280; UPPER.push([x, y, r / 233280]); } })();
   const CROWD = ["#d7263d", "#2b6cb0", "#f4b400", "#ffffff", "#3fa34d", "#ef6f9a", "#f28c28", "#7e57c2"];
 
   function render() {
@@ -615,23 +692,52 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     else { cx.fillStyle = "#fff"; [[30, 8], [180, 14]].forEach(([x, y]) => { cx.fillRect(x, y, 22, 4); cx.fillRect(x + 4, y - 3, 12, 3); }); }
     if (space) { cx.fillStyle = "#3a8fd6"; cx.fillRect(268, 6, 14, 14); cx.fillStyle = "#3fa34d"; cx.fillRect(271, 9, 5, 4); cx.fillRect(276, 14, 4, 3); }
     if (dome) { cx.fillStyle = "#cfd4dc"; for (let x = 0; x < W; x += 2) { const h = 8 - Math.round(Math.pow((x - W / 2) / (W / 2), 2) * 8); cx.fillRect(x, 0, 2, h); } }
-    // スタンド
-    cx.fillStyle = "#6b6f80"; cx.fillRect(0, 32, W, 44);
-    for (let y = 34; y < 76; y += 4) { cx.fillStyle = "#585c6c"; cx.fillRect(0, y + 3, W, 1); }
-    const fill = Math.min(1, Math.log10(1 + S.season) / 10);
-    SEATS.forEach(([x, y, r], i) => {
-      if (r >= fill) return;
-      const c = i % 5 === 0 ? S.team.main : i % 5 === 1 ? S.team.acc : CROWD[i % CROWD.length];
-      cx.fillStyle = c; const bob = (o("oendan") && (i + tick >> 3) % 7 === 0) ? -1 : 0; cx.fillRect(x, y + bob, 2, 2);
-    });
+    // スタンド（本拠地のランクで変わる）
+    const lv = stadiumLv(), fill = Math.min(1, Math.log10(1 + S.season) / 10);
+    const fan = (x, y, i) => { cx.fillStyle = i % 5 === 0 ? S.team.main : i % 5 === 1 ? S.team.acc : CROWD[i % CROWD.length];
+      const bob = (o("oendan") && (i + tick >> 3) % 7 === 0) ? -1 : 0; cx.fillRect(x, y + bob, 2, 2); };
+    if (lv === 0) {
+      // 河川敷：遠くの木と川、土手に立って見る人
+      cx.fillStyle = "#2f7d3a"; for (let x = 0; x < W; x += 16) { cx.fillRect(x, 50 - (x % 32 ? 4 : 8), 14, 14); }
+      cx.fillStyle = "#3a8a45"; cx.fillRect(0, 56, W, 8);
+      cx.fillStyle = "#5aa9e6"; cx.fillRect(0, 64, W, 6); cx.fillStyle = "#9ad1ff"; for (let x = (tick >> 2) % 12; x < W; x += 12) cx.fillRect(x, 66, 5, 1);
+      cx.fillStyle = "#6cbf5a"; cx.fillRect(0, 70, W, 12);
+      SEATS.forEach(([x, y, r], i) => { if (y === 34 && r < fill * 2) { cx.fillStyle = CROWD[i % CROWD.length]; cx.fillRect(x, 72, 2, 3); cx.fillStyle = "#f2c39b"; cx.fillRect(x, 71, 2, 1); } });
+    } else if (lv === 1) {
+      // 草野球場：低い木のベンチ席
+      cx.fillStyle = "#2f7d3a"; for (let x = 0; x < W; x += 16) cx.fillRect(x, 46 - (x % 32 ? 2 : 6), 14, 16);
+      cx.fillStyle = "#3a8a45"; cx.fillRect(0, 56, W, 4);
+      cx.fillStyle = "#9a6a3c"; cx.fillRect(0, 60, W, 16); cx.fillStyle = "#7a4e26"; for (let y = 62; y < 76; y += 4) cx.fillRect(0, y + 3, W, 1);
+      SEATS.forEach(([x, y, r], i) => { if (y >= 62 && r < fill) fan(x, y, i); });
+    } else {
+      const top = lv === 2 ? 46 : 32;
+      cx.fillStyle = lv === 2 ? "#8a8f9c" : "#6b6f80"; cx.fillRect(0, top, W, 76 - top);
+      for (let y = top + 2; y < 76; y += 4) { cx.fillStyle = lv === 2 ? "#777c89" : "#585c6c"; cx.fillRect(0, y + 3, W, 1); }
+      SEATS.forEach(([x, y, r], i) => { if (y >= top + 2 && r < fill) fan(x, y, i); });
+      if (lv >= 4) {
+        // 大球場：2階席と屋根のふち
+        cx.fillStyle = "#4e5266"; cx.fillRect(0, 14, W, 16); cx.fillStyle = "#3a3d4d"; cx.fillRect(0, 30, W, 2);
+        UPPER.forEach(([x, y, r], i) => { if (r < fill) fan(x, y, i + 3); });
+        cx.fillStyle = lv === 5 ? "#ffd166" : "#9aa0a6"; cx.fillRect(0, 12, W, 2);
+        for (let k = 0; k < 10; k++) { const x = 8 + k * 32, w = (tick >> 4) % 2; cx.fillStyle = "#5d3a1a"; cx.fillRect(x, 4, 1, 9); cx.fillStyle = k % 2 ? S.team.acc : S.team.main; cx.fillRect(x + 1, 4 + w, 6, 4); }
+      }
+      if (lv === 2) { cx.fillStyle = "#1f4d2c"; cx.fillRect(8, 30, 40, 16); cx.fillStyle = "#fff"; cx.font = "7px DotGothic16, monospace"; cx.textAlign = "center"; cx.fillText(S.w + "-" + S.l, 28, 41); }
+      if (lv === 5) {
+        cx.fillStyle = "#b3261e"; cx.fillRect(60, 30, 200, 9); cx.fillStyle = "#ffd166"; cx.font = "8px DotGothic16, monospace"; cx.textAlign = "center"; cx.fillText("★ " + S.team.name.slice(0, 12) + " ★", 160, 37);
+        for (let k = 0; k < 6; k++) { const sx = (k * 61 + tick * 2) % W, sy = 20 + (k * 17 + (tick >> 1)) % 50; cx.fillStyle = "#fff6c2"; cx.fillRect(sx, sy, 1, 1); }
+      }
+    }
     if (o("oendan")) { for (let k = 0; k < Math.min(6, o("oendan")); k++) { const x = 250 - k * 22, w = (tick >> 4) % 2; cx.fillStyle = "#5d3a1a"; cx.fillRect(x, 26, 1, 12); cx.fillStyle = k % 2 ? S.team.acc : S.team.main; cx.fillRect(x + 1, 26 + w, 7, 5); } }
     if (o("vision")) { cx.fillStyle = "#1b1f3b"; cx.fillRect(112, 2, 96, 28); cx.fillStyle = "#123"; cx.fillRect(115, 5, 90, 22); cx.font = "8px DotGothic16, monospace"; cx.textAlign = "center";
       cx.fillStyle = "#ffd166"; cx.fillText(S.team.name.slice(0, 12), 160, 14); cx.fillStyle = "#4dd0e1"; cx.fillText("FANS " + fmt(S.fans), 160, 24); }
     if (night) { [[8, 6], [300, 6]].forEach(([x, y]) => { cx.fillStyle = "#9aa0a6"; cx.fillRect(x + 5, y + 10, 2, 22); cx.fillStyle = "#fff6c2"; cx.fillRect(x, y, 12, 9); cx.fillStyle = "#f4b400"; for (let i = 0; i < 4; i++) cx.fillRect(x + 1 + i * 3, y + 1, 1, 7); }); }
     if (o("tv")) { cx.fillStyle = "#1b1f3b"; cx.fillRect(30, 60, 8, 8); cx.fillRect(28, 66, 2, 10); cx.fillStyle = "#d7263d"; cx.fillRect(32, 62, 2, 2); }
     // フェンスと芝
-    cx.fillStyle = "#1f6d3a"; cx.fillRect(0, 76, W, 6); cx.fillStyle = "#f4b400"; cx.fillRect(0, 76, W, 1);
-    for (let y = 82; y < H; y += 6) { cx.fillStyle = ((y / 6) | 0) % 2 ? "#3fa34d" : "#46b056"; cx.fillRect(0, y, W, 6); }
+    if (lv === 1) { cx.fillStyle = "#8b5a2b"; cx.fillRect(0, 76, W, 6); cx.fillStyle = "#6b4220"; for (let x = 0; x < W; x += 8) cx.fillRect(x, 76, 1, 6); }
+    else if (lv >= 2) { cx.fillStyle = "#1f6d3a"; cx.fillRect(0, 76, W, 6); cx.fillStyle = lv === 5 ? "#ffd166" : "#f4b400"; cx.fillRect(0, 76, W, 1);
+      if (lv >= 3) { const ads = ["#d7263d", "#2b6cb0", "#f4b400", "#ffffff", S.team.main]; for (let k = 0; k < 10; k++) { cx.fillStyle = ads[k % ads.length]; cx.fillRect(4 + k * 32, 78, 24, 3); } } }
+    for (let y = 82; y < H; y += 6) { cx.fillStyle = lv === 0 ? "#5bb54e" : ((y / 6) | 0) % 2 ? "#3fa34d" : "#46b056"; cx.fillRect(0, y, W, 6); }
+    if (lv === 0) { cx.fillStyle = "#b98a55"; [[30, 100, 20, 6], [180, 110, 30, 5], [90, 130, 16, 4], [260, 96, 18, 5]].forEach(([x, y, w, h]) => cx.fillRect(x, y, w, h)); }
     if (space) { cx.fillStyle = "rgba(200,200,220,.25)"; for (let y = 82; y < H; y += 6) cx.fillRect(0, y, W, 2); }
     // 打席とマウンド
     cx.fillStyle = "#c98a4a";
@@ -650,6 +756,62 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
       cx.fillStyle = "#1b1f3b"; cx.font = "10px DotGothic16, monospace"; cx.textAlign = "center"; cx.fillText("ファンサ!", fs.x + 26, fs.y + 11 + bob); }
     floats.forEach(f => { cx.font = (f.big ? "16px" : "10px") + " DotGothic16, monospace"; cx.textAlign = "center"; cx.fillStyle = "#1b1f3b"; cx.fillText(f.t, f.x + 1, f.y + 1); cx.fillStyle = f.c; cx.fillText(f.t, f.x, f.y); });
   }
+  /* ================= 球団の施設（建てた数だけ並ぶ。強化すると見た目も変わる） ================= */
+  const KID = [["..nn..", ".nnnn.", "..ss..", "..ss..", ".wwww.", "swwwws", "..ww..", ".w..w.", ".n..n."], ["..nn..", ".nnnn.", "..ss..", "..ss.T", ".wwwwT", "swwwws", "..ww..", "..ww..", "..nn.."]];
+  const FANP = [["rr....", "rrT...", "..T...", "..ss..", "..ss..", ".wwww.", "swwwws", ".wwww.", ".w..w.", ".n..n."], ["......", "......", "rrT...", "rrss..", "..ss..", ".wwww.", "swwwws", ".wwww.", ".w..w.", ".n..n."]];
+  const STRIP_BG = {
+    school: ["#9ad3ff", "#46b056"], oendan: ["#585c6c", "#6b6f80"], baiten: ["#f3e7c9", "#d9c49a"], farm: ["#7cc4ff", "#3fa34d"], scout: ["#a8b0c0", "#7d8494"],
+    night: ["#0b1033", "#1f2a66"], vision: ["#141832", "#232847"], dome: ["#bfe3ff", "#cfd4dc"], tv: ["#2c1f55", "#3b2a6b"], world: ["#3a8fd6", "#2b6cb0"],
+    moon: ["#05030f", "#9aa0a6"], galaxy: ["#0d0726", "#2a1660"], time: ["#0f3d3a", "#16605a"], multi: ["#3a1250", "#123a50"],
+  };
+  const townCv = {}, townFlash = {}, townPop = {};
+  let townKey = "";
+  const tiersOf = id => S.ups.filter(u => u.indexOf(id + "_") === 0).length;
+  function buildTown() {
+    const owned = BUILDINGS.filter(b => (S.owned[b.id] || 0) > 0), key = owned.map(b => b.id).join(",");
+    $("townSum").textContent = owned.length ? "合わせて " + totalOwned() + " 施設" : "";
+    if (key === townKey) return; townKey = key;
+    const box = $("town"); box.textContent = ""; Object.keys(townCv).forEach(k => delete townCv[k]);
+    if (!owned.length) { box.innerHTML = '<div class="empty">「施設」のタブで施設を建てると、ここに並んでいきます。強化すると見た目も豪華になります。</div>'; return; }
+    owned.slice().reverse().forEach(b => {
+      const row = document.createElement("div"); row.className = "kc-row";
+      const l = document.createElement("span"); l.className = "lbl"; row.appendChild(l);
+      const c = document.createElement("canvas"); c.width = 240; c.height = 28; row.appendChild(c);
+      box.appendChild(row); townCv[b.id] = { c, x: c.getContext("2d"), l };
+    });
+  }
+  function unitSprite(id, x, y, i, t, ctx2) {
+    const f = ((tick >> 4) + i) % 2, pal = teamPal();
+    if (id === "school") drawSprite(ctx2, KID[f], x + 2, y + 1, 1, pal);
+    else if (id === "oendan") drawSprite(ctx2, FANP[f], x + 2, y, 1, pal);
+    else { const bob = ((tick >> 3) + i) % 6 === 0 ? -1 : 0; drawSprite(ctx2, ICONS[id], x, y + bob, 1, pal); }
+  }
+  function drawTown() {
+    Object.keys(townCv).forEach(id => {
+      const { c, x: g, l } = townCv[id], n = S.owned[id] || 0, t = tiersOf(id), bg = STRIP_BG[id];
+      g.imageSmoothingEnabled = false;
+      g.fillStyle = bg[0]; g.fillRect(0, 0, 240, 14); g.fillStyle = bg[1]; g.fillRect(0, 14, 240, 14);
+      if (id === "multi") { ["#ff5d73", "#ffd166", "#6ee07a", "#7fe3ff", "#b48cff"].forEach((col, k) => { g.fillStyle = col; g.globalAlpha = .25; g.fillRect(((k * 48 + tick) % 288) - 48, 0, 24, 28); }); g.globalAlpha = 1; }
+      if (["night", "moon", "galaxy", "time"].indexOf(id) >= 0) { g.fillStyle = "#fff"; for (let k = 0; k < 12; k++) if ((k + (tick >> 5)) % 4) g.fillRect((k * 37) % 240, (k * 11) % 12, 1, 1); }
+      if (id === "world") { g.fillStyle = "#9ad1ff"; for (let k = (tick >> 2) % 16; k < 240; k += 16) g.fillRect(k, 20, 6, 1); }
+      const cap = Math.min(n, 32), perRow = cap > 16 ? Math.ceil(cap / 2) : cap, step = Math.min(14, 226 / Math.max(1, perRow));
+      for (let i = 0; i < cap; i++) {
+        const r = cap > 16 ? (i < perRow ? 0 : 1) : 1, k = r === 0 ? i : i - (cap > 16 ? perRow : 0);
+        const ux = 6 + k * step, uy = r === 0 ? 3 : 16;
+        if (t >= 2) { g.fillStyle = t >= 5 ? "#ffd166" : "#c9ccd3"; g.fillRect(ux, uy + 10, 10, 1); }
+        unitSprite(id, ux, uy, i, t, g);
+        if (t >= 4 && i % 3 === 0 && ((tick >> 3) + i) % 5 === 0) { g.fillStyle = "#fff6c2"; g.fillRect(ux + 9, uy - 1, 1, 1); g.fillRect(ux + 8, uy, 3, 1); }
+      }
+      if (t >= 6) { g.strokeStyle = t >= 7 ? "hsl(" + (tick * 4 % 360) + ",90%,65%)" : "#ffd166"; g.lineWidth = 1; g.strokeRect(0.5, 0.5, 239, 27); }
+      const fl = townFlash[id] ? (now() - townFlash[id]) / 1200 : 2;
+      if (fl < 1) { g.fillStyle = "rgba(255,246,194," + (1 - fl) * 0.7 + ")"; g.fillRect(0, 0, 240, 28); g.fillStyle = "#b3261e"; g.font = "10px DotGothic16, monospace"; g.textAlign = "center"; g.fillText("POWER UP!", 150, 18 - fl * 6); }
+      const pp = townPop[id] ? (now() - townPop[id]) / 600 : 2;
+      if (pp < 1) { g.fillStyle = "rgba(255,255,255," + (1 - pp) * 0.35 + ")"; g.fillRect(0, 0, 240, 28); }
+      const lbl = BUILDINGS.find(b => b.id === id).name + " ×" + n + (t ? "<b>" + "★".repeat(t) + "</b>" : "");
+      if (l.innerHTML !== lbl) l.innerHTML = lbl;
+    });
+  }
+
   function burst(x, y, n, life) { for (let i = 0; i < n; i++) { const a = Math.random() * 6.28, sp = 1 + Math.random() * 2.5; sparks.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life, c: i % 3 ? CROWD[i % CROWD.length] : S.team.acc }); } }
 
   /* ================= 操作 ================= */
@@ -753,12 +915,14 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   $("buildings").addEventListener("click", ev => {
     const el = ev.target.closest("[data-b]"); if (!el) return;
     const b = BUILDINGS.find(x => x.id === el.dataset.b), c = cost(b, buyAmt);
-    if (S.fans < c) return; S.fans -= c; S.owned[b.id] = (S.owned[b.id] || 0) + buyAmt; if (buyAmt === 100) sec("bulk"); refresh(); updateText(); save();
+    if (S.fans < c) return; S.fans -= c; S.owned[b.id] = (S.owned[b.id] || 0) + buyAmt; if (buyAmt === 100) sec("bulk"); townPop[b.id] = now(); buildTown(); refresh(); updateText(); save();
   });
   $("upgrades").addEventListener("click", ev => {
     const el = ev.target.closest("[data-u]"); if (!el) return;
     const u = upById(el.dataset.u); if (!u || has(u.id) || S.fans < u.cost) return;
-    S.fans -= u.cost; S.ups.push(u.id); S.upsAll++; S.seasonUps++; toast(u.name + " を手に入れた！"); refresh(); updateText(); save();
+    S.fans -= u.cost; S.ups.push(u.id); S.upsAll++; S.seasonUps++; toast(u.name + " を手に入れた！");
+    if (u.bld) townFlash[u.bld] = now(); else { floats.push({ t: "パワーアップ!", x: 160, y: 96, life: 70, big: true, c: "#ffd166" }); burst(110, 140, 24, 40); }
+    stadiumCheck(); refresh(); updateText(); save();
   });
   $("perks").addEventListener("click", ev => {
     const el = ev.target.closest("[data-p]"); if (!el) return;
@@ -782,7 +946,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     const kept = {}; Object.keys(S.owned).forEach(k => { const n = Math.floor(S.owned[k] * keep); if (n > 0) kept[k] = n; });
     if (pk("start")) ["school", "oendan", "baiten"].forEach(k => kept[k] = Math.max(kept[k] || 0, 10));
     S.fans = 0; S.season = 0; S.owned = kept; S.ups = []; S.buffs = []; S.w = 0; S.l = 0; S.games = []; S.streak = 0;
-    S.rookies = []; S.draft = null; S.draftsDone = 0; S.seasonUps = 0; drawDraft();
+    S.rookies = []; S.draft = null; S.draftsDone = 0; S.seasonUps = 0; drawDraft(); shownLv = 0; buildTown();
     toast("優勝おめでとう！ ペナントと殿堂ポイント +" + add); burst(160, 50, 70, 60);
     refresh(true); updateText(); save();
   });
@@ -801,12 +965,12 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   $("importBtn").addEventListener("click", () => {
     try { const v = JSON.parse(decodeURIComponent(escape(atob($("saveText").value.trim())))); if (!v || typeof v !== "object" || !("allTime" in v)) throw 0;
       if (!confirm("読み込むと、いまのデータは上書きされます。よろしいですか？")) return;
-      S = load(v); S.saved = now(); save(); syncTeamForm(); refresh(true); updateText(); toast("読み込みました");
+      S = load(v); S.saved = now(); save(); syncTeamForm(); townKey = ""; buildTown(); refresh(true); updateText(); toast("読み込みました");
     } catch (e) { toast("読み込めませんでした。文字が全部コピーされているか確かめてください"); }
   });
   $("reset").addEventListener("click", () => {
     if (!confirm("データをすべて消して最初からやり直しますか？\nペナント・殿堂・実績も消え、元に戻せません。")) return;
-    S = fresh(); save(); syncTeamForm(); refresh(true); updateText(); toast("最初からはじめます");
+    S = fresh(); save(); syncTeamForm(); townKey = ""; buildTown(); refresh(true); updateText(); toast("最初からはじめます");
   });
 
   /* ================= 表示 ================= */
@@ -818,6 +982,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     $("teamName").textContent = S.team.name; $("teamRec").textContent = "通算 " + S.winsAll + "勝";
     $("fans").textContent = fmt(S.fans); $("fps").textContent = fmt(fpsNow(), true);
     const t = now(); S.buffs = S.buffs.filter(b => b.until > t);
+    $("stadium").textContent = "本拠地：" + STADIUMS[stadiumLv()][1] + (stadiumLv() < STADIUMS.length - 1 ? "（強化をあと" + (STADIUMS[stadiumLv() + 1][0] - S.ups.length) + "つで建て替え）" : "");
     $("month").textContent = (new Date().getMonth() + 1) + "月のイベント「" + MONTHS[MON()][0] + "」：" + MONTHS[MON()][1];
     $("rookies").textContent = S.rookies.length ? "今シーズンの新人：" + S.rookies.map(k => ROOKIE[k][0]).join("・") : "";
     $("buffs").textContent = S.buffs.map(b => ({ frenzy: "満員御礼×7", derby: "ホームラン競争", goods: "グッズ完売", rain: "雨（生産半分）", rainDome: "ドーム満員" }[b.t] + "（" + Math.ceil((b.until - t) / 1000) + "秒）")).join("　");
@@ -933,7 +1098,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   })();
 
   /* ================= ループ ================= */
-  let last = performance.now(), acc = 0, saveAcc = 0, autoAcc = 0;
+  let last = performance.now(), acc = 0, saveAcc = 0, autoAcc = 0, townAcc = 0;
   function loop(t) {
     const dt = Math.min(3600, (t - last) / 1000); last = t; tick++;
     gain(fpsNow() * dt); S.playSec += dt;
@@ -951,6 +1116,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     if (!fs && now() > fsNext && S.clicks > 0) fs = { x: 20 + Math.random() * 230, y: 84 + Math.random() * 40, until: now() + 12000, born: now() };
     if (fs && now() > fs.until) { fs = null; sec("fsMiss"); scheduleFs(); }
     render();
+    townAcc += dt; if (townAcc > 0.1) { townAcc = 0; drawTown(); }
     acc += dt; saveAcc += dt;
     if (acc > 0.25) { acc = 0; S.bestFps = Math.max(S.bestFps, fpsBase()); updateText(); checkAch(); refresh(); newsTick(); }
     if (saveAcc > 5) { saveAcc = 0; save(); }
@@ -958,7 +1124,8 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   }
   document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
   window.addEventListener("pagehide", save);
-  syncTeamForm(); updateText(); refresh(true); drawDraft();
+  syncTeamForm(); updateText(); refresh(true); drawDraft(); buildTown(); stadiumCheck();
+  $("logoBall").src = ICON_URL.school;
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { refresh(true); drawPreview(); });
   requestAnimationFrame(loop);
 })();
