@@ -255,6 +255,12 @@ a{ color:#ffd166; }
       <div class="kc-rows" id="town"></div>
     </section>
 
+    <div class="kc-win kc-draft" id="retire" hidden>
+      <h3>永久欠番にする選手を選ぼう</h3>
+      <p class="kc-note">選んだ選手の背番号は永久欠番になり、その能力が半分の強さで、これからずっと球団に残ります。</p>
+      <div class="cands" id="retCands"></div>
+      <button type="button" class="kc-btn wide" id="retSkip" style="margin-top:8px;width:100%">誰も選ばずに優勝する</button>
+    </div>
     <div class="kc-win kc-draft" id="draft" hidden>
       <h3>ドラフト会議！ 1人を指名しよう</h3>
       <div class="cands" id="cands"></div>
@@ -294,6 +300,8 @@ a{ color:#ffd166; }
     <div class="kc-win kc-pane" id="pane-hall" hidden>
       <p class="kc-note">優勝でもらえる殿堂ポイントを使って、シーズンをまたいでずっと残る力を手に入れよう。いまの殿堂ポイント：<b id="lp">0</b></p>
       <div id="perks"></div>
+      <h3>永久欠番</h3>
+      <div id="retired" class="kc-note"></div>
     </div>
     <div class="kc-win kc-pane" id="pane-rec" hidden>
       <div class="kc-stats" id="stats"></div>
@@ -337,7 +345,7 @@ a{ color:#ffd166; }
 <tr><th>強化する</th><td>施設をたくさん建てると、その施設の生産が2倍になる強化が出てきます（1・10・25・50・100・150・200個で）。施設どうしの「連携」や、バットの強化もあります。</td></tr>
 <tr><th>試合</th><td>開いている間、約1分半ごとに試合が行われます。勝率は球団の人気（毎秒のファン）で上がり、勝つとファンが増えます。連勝するほどボーナスが大きくなります。</td></tr>
 <tr><th>ファンサービス</th><td>球場にときどき現れる「ファンサ!」をタップすると、満員御礼（生産7倍）・臨時収入・ホームラン競争（タップ10倍）・グッズ完売（施設1つの生産10倍）のどれかが起こります。</td></tr>
-<tr><th>優勝と殿堂</th><td>たくさんのファンを集めると優勝できます。ファンと施設は最初からになりますが、ペナント（1本ごとに生産+10%）と殿堂ポイントがもらえます。殿堂ポイントでは、自動スイングや施設の値引きなど、ずっと残る力が手に入ります。</td></tr>
+<tr><th>優勝と殿堂</th><td>たくさんのファンを集めると優勝できます。ファンと施設は最初からになりますが、ペナント（1本ごとに生産+10%）と殿堂ポイントがもらえます。殿堂ポイントでは、自動スイングや施設の値引きなど、ずっと残る力が手に入ります。また優勝のとき、そのシーズンに指名した新人から1人を「永久欠番」にでき、その能力が半分の強さでずっと残ります。</td></tr>
 <tr><th>ドラフト会議</th><td>シーズン中にファンが1万・1000万・100億・10兆人に届くたび、新人を1人指名できます。候補は3人で、大砲・安打製造機・エース・人気者・守備職人・俊足・勝負強さのどれか。そのシーズンのあいだ効果が続きます。</td></tr>
 <tr><th>雨</th><td>ときどき雨が降り、1分間生産が半分になります。ドーム球場があれば、逆に満員になって生産が2倍に。</td></tr>
 <tr><th>月のイベント</th><td>お正月・春季キャンプ・開幕ダッシュ・オールスター・ストーブリーグなど、月ごとに違うボーナスがつきます（端末の日付で決まります）。</td></tr>
@@ -421,6 +429,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   UPGRADES.push({ id: "milk2", name: "永久ファンクラブ", desc: "実績1つごとの生産アップがさらに +0.5%", cost: 1e13, need: s => s.ach.length >= 60, milk: 0.005 });
 
   /* 殿堂（優勝でもらえる殿堂ポイントで買う。シーズンをまたいで残る） */
+  const KEEP = [0, 0.1, 0.3, 0.5];
   const PERKS = [
     { id: "prod", name: "黄金時代", desc: lv => "すべての生産 +25%（いま +" + lv * 25 + "%）", max: 20, cost: lv => 5 * (lv + 1) },
     { id: "click", name: "伝説のバット", desc: lv => "1回で集まるファン ×2（いま ×" + Math.pow(2, lv) + "）", max: 6, cost: lv => Math.pow(2, lv) },
@@ -432,7 +441,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     { id: "game", name: "名将", desc: lv => "試合の勝率 +3%（いま +" + lv * 3 + "%）", max: 5, cost: lv => 2 * (lv + 1) },
     { id: "offline", name: "常勝軍団の貯金", desc: lv => ["留守中のペース 50%→75%、上限 8→16時間", "留守中のペース 75%→100%、上限 16→24時間", "最大"][lv], max: 2, cost: lv => [3, 8][lv] },
     { id: "start", name: "名門の伝統", desc: () => "新しいシーズンを、少年野球教室・応援団・売店を10ずつ持って始める", max: 1, cost: () => 3 },
-    { id: "keep", name: "永久欠番", desc: lv => "優勝しても施設の " + (lv + 1) * 10 + "% を持ち越す（いま " + lv * 10 + "%）", max: 3, cost: lv => [10, 25, 50][lv] },
+    { id: "keep", name: "伝統の継承", desc: lv => lv >= 3 ? "優勝しても施設の 50% を持ち越す（最大）" : "優勝しても施設の " + KEEP[lv + 1] * 100 + "% を持ち越す（いま " + KEEP[lv] * 100 + "%）", max: 3, cost: lv => [10, 25, 50][lv] },
   ];
 
   /* 月ごとのイベント（端末の日付で決まる） */
@@ -461,7 +470,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   };
   const pickOne = a => a[Math.floor(Math.random() * a.length)];
   const rookieName = k => pickOne(NAMES[k]);
-  const rk = id => S.rookies.filter(x => x === id).length;
+  const rk = id => S.rookies.filter(x => x === id).length + 0.5 * S.retired.filter(r => r.k === id).length;
   const OPP = ["ペンギンズ", "カピバラーズ", "アルパカズ", "ハリネズミーズ", "モモンガーズ", "フラミンゴス", "カメレオンズ", "ナマケモノーズ", "コアラーズ", "ラッコーズ", "マンボウズ", "オカピーズ"];
   const PRESETS = [
     ["紺×赤", "#22306b", "#d7263d", "#ffffff"], ["黒×黄", "#1d1d1f", "#f4b400", "#ffffff"], ["赤×白", "#c8102e", "#ffffff", "#ffffff"], ["緑×金", "#1f6d3a", "#e0b43b", "#f3e7c9"],
@@ -475,12 +484,12 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     lp: 0, perks: {}, team: { name: "ドット・スターズ", main: "#22306b", acc: "#d7263d", body: "#ffffff", named: 0, colored: 0 },
     w: 0, l: 0, games: [], streak: 0, bestStreak: 0, winsAll: 0, gamesAll: 0, nextGame: 0,
     buffs: [], daily: { last: "", streak: 0, best: 0 }, bestFps: 0, bestSeason: 0, upsAll: 0, autoSw: 0,
-    created: Date.now(), sec: {}, rookies: [], draft: null, draftsDone: 0, seasonUps: 0, lossStreak: 0, rainNext: 0, events: 0 });
+    created: Date.now(), sec: {}, rookies: [], rookieNames: [], retired: [], draft: null, draftsDone: 0, seasonUps: 0, lossStreak: 0, rainNext: 0, events: 0 });
   let S = fresh();
   function load(v) {
     const f = fresh(), o = Object.assign(f, v);
     o.team = Object.assign(fresh().team, v.team || {}); o.daily = Object.assign(fresh().daily, v.daily || {});
-    o.perks = v.perks || {}; o.sec = v.sec || {}; o.rookies = Array.isArray(v.rookies) ? v.rookies : []; o.buffs = Array.isArray(v.buffs) ? v.buffs : []; o.games = Array.isArray(v.games) ? v.games : [];
+    o.perks = v.perks || {}; o.sec = v.sec || {}; o.rookies = Array.isArray(v.rookies) ? v.rookies : []; o.rookieNames = Array.isArray(v.rookieNames) ? v.rookieNames : []; o.retired = Array.isArray(v.retired) ? v.retired : []; o.buffs = Array.isArray(v.buffs) ? v.buffs : []; o.games = Array.isArray(v.games) ? v.games : [];
     return o;
   }
   try { const v = JSON.parse(localStorage.getItem(KEY) || "null"); if (v && typeof v === "object") S = load(v); } catch (e) { /* 壊れていれば最初から */ }
@@ -598,6 +607,8 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   A("hallMax", "殿堂を極めし者", "殿堂の力をどれか1つ最大にする", s => PERKS.some(p => (s.perks[p.id] || 0) >= p.max));
   A("dr1", "ドラフト1位", "新人を指名する", s => (s.sec.drafts || 0) >= 1);
   A("dr4", "青田買い", "1シーズンで4人の新人を指名する", s => s.draftsDone >= 4);
+  A("ret1", "背番号よ永遠に", "選手を永久欠番にする", s => s.retired.length >= 1);
+  A("ret10", "欠番だらけ", "永久欠番を10人にする", s => s.retired.length >= 10);
   A("dr20", "スカウトの眼", "新人を通算20人指名する", s => (s.sec.drafts || 0) >= 20);
   A("full", "143試合", "1シーズンで143試合を戦い抜く", s => (s.sec.fullSeason || 0) >= 1);
   A("rainDome", "雨に負けない", "雨の日にドームを満員にする", s => (s.sec.rainDome || 0) >= 1);
@@ -912,7 +923,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   }
   $("cands").addEventListener("click", ev => {
     const b = ev.target.closest("[data-i]"); if (!b || !S.draft) return; const c = S.draft[b.dataset.i];
-    S.rookies.push(c.k); S.draftsDone++; S.draft = null; sec("drafts");
+    S.rookies.push(c.k); S.rookieNames.push(c.name); S.draftsDone++; S.draft = null; sec("drafts");
     if (S.rookies.filter(x => x === c.k).length >= 3) sec("sameType");
     toast(c.name + "（" + ROOKIE[c.k][0] + "）を指名しました！"); drawDraft(); refresh(true); updateText(); save();
   });
@@ -952,10 +963,27 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     ["build", "up", "hall", "rec", "team"].forEach(k => $("pane-" + k).hidden = k !== b.dataset.tab);
     refresh(true);
   }));
+  let retirePending = false;
   $("win").addEventListener("click", () => {
-    const add = pennantsFor(S.allTime) - S.flags; if (add < 1) return;
-    const keep = pk("keep") * 0.1;
+    const add = pennantsFor(S.allTime) - S.flags; if (add < 1 || retirePending) return;
+    const keep = KEEP[pk("keep")];
     if (!confirm("優勝してシーズンを終えますか？\nペナントと殿堂ポイントを " + add + " ずつもらえます（生産 +" + add * 10 + "%）。\nファン・強化は最初から、施設は" + (keep ? Math.round(keep * 100) + "%を残して" : "") + "最初からになります。")) return;
+    if (!S.rookies.length) { finishWin(-1); return; }
+    retirePending = true; w8();
+    const used = S.retired.map(r => r.no);
+    $("retCands").innerHTML = S.rookies.map((k, i) => {
+      let no; do { no = 1 + Math.floor(Math.random() * 99); } while (used.indexOf(no) >= 0); used.push(no);
+      return `<button type="button" data-i="${i}" data-no="${no}"><em>背番号 ${no}</em><b>${esc(S.rookieNames[i] || ROOKIE[k][0])}</b><span>${ROOKIE[k][0]}：${ROOKIE[k][1]}（半分の強さで残る）</span></button>`;
+    }).join("");
+    $("retire").hidden = false; $("retire").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  function w8() { $("win").disabled = true; }
+  $("retCands").addEventListener("click", ev => { const b = ev.target.closest("[data-i]"); if (b) finishWin(Number(b.dataset.i), Number(b.dataset.no)); });
+  $("retSkip").addEventListener("click", () => finishWin(-1));
+  function finishWin(idx, no) {
+    const add = pennantsFor(S.allTime) - S.flags; retirePending = false; $("retire").hidden = true; if (add < 1) return;
+    const keep = KEEP[pk("keep")];
+    if (idx >= 0) { const k = S.rookies[idx], name = S.rookieNames[idx] || ROOKIE[k][0]; S.retired.push({ k, name, no, season: S.seasonNo }); toast("背番号" + no + "・" + name + "、永久欠番に！"); }
     if (!S.seasonUps) sec("noUps");
     if ((S.owned.school || 0) > 0 && BUILDINGS.every(b => b.id === "school" || !(S.owned[b.id] > 0))) sec("schoolOnly");
     if (S.w + S.l > 0 && S.l === 0) sec("perfect");
@@ -963,10 +991,10 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     const kept = {}; Object.keys(S.owned).forEach(k => { const n = Math.floor(S.owned[k] * keep); if (n > 0) kept[k] = n; });
     if (pk("start")) ["school", "oendan", "baiten"].forEach(k => kept[k] = Math.max(kept[k] || 0, 10));
     S.fans = 0; S.season = 0; S.owned = kept; S.ups = []; S.buffs = []; S.w = 0; S.l = 0; S.games = []; S.streak = 0;
-    S.rookies = []; S.draft = null; S.draftsDone = 0; S.seasonUps = 0; drawDraft(); shownLv = 0; buildTown();
+    S.rookies = []; S.rookieNames = []; S.draft = null; S.draftsDone = 0; S.seasonUps = 0; drawDraft(); shownLv = 0; buildTown();
     toast("優勝おめでとう！ ペナントと殿堂ポイント +" + add); burst(160, 50, 70, 60);
     refresh(true); updateText(); save();
-  });
+  }
 
   /* 球団の設定 */
   const nameEl = $("tName"), mainEl = $("tMain"), accEl = $("tAcc"), bodyEl = $("tBody");
@@ -1006,7 +1034,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     $("season").textContent = S.seasonNo; $("flags").textContent = S.flags; $("flagPct").textContent = S.flags * 10;
     $("seasonTotal").textContent = fmt(S.season) + "人";
     const add = pennantsFor(S.allTime) - S.flags, w = $("win");
-    w.disabled = add < 1;
+    w.disabled = add < 1 || retirePending;
     if (add >= 1) w.textContent = "優勝してシーズンを終える（ペナント +" + add + "）";
     else { const need = Math.pow(S.flags + 1, 3) * 1e6; w.textContent = "優勝まで あと " + fmt(Math.max(0, need - S.allTime)) + "人"; }
     $("wl").textContent = S.w + "勝" + S.l + "敗" + (S.streak >= 2 ? "（" + S.streak + "連勝中）" : "");
@@ -1044,6 +1072,8 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
       const lv = pk(p.id), maxed = lv >= p.max, c = maxed ? 0 : p.cost(lv), ok = !maxed && S.lp >= c;
       return `<button type="button" class="kc-item${ok ? " ok" : ""}${maxed ? " maxed" : ""}" data-p="${p.id}"${ok ? "" : " disabled"}><img alt="" src="${ICON_URL.trophy}"><span><span class="nm">${p.name}　Lv${lv}/${p.max}</span><span class="ds">${p.desc(lv)}</span></span><span class="cost">${maxed ? "最大" : c + "pt"}</span></button>`;
     }).join("");
+    $("retired").innerHTML = S.retired.length ? S.retired.map(r => "背番号" + r.no + "　" + esc(r.name) + "（" + ROOKIE[r.k][0] + "・シーズン" + r.season + "）").join("<br>")
+      : "優勝のとき、そのシーズンに指名した新人から1人を選んで永久欠番にできます。能力が半分の強さでずっと残ります。";
     $("achHead").textContent = "実績 " + S.ach.length + " / " + ACH.length + "（生産 +" + Math.round((achMult() - 1) * 1000) / 10 + "%）";
     $("ach").innerHTML = ACH.map(a => { const on = S.ach.indexOf(a.id) >= 0;
       if (a.hidden) return `<div class="${on ? "hidden-on" : "off"}"><b>${on ? esc(a.name) : "隠し実績"}</b>${on ? esc(a.desc) : "条件はひみつ"}</div>`;
