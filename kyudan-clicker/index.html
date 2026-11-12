@@ -277,6 +277,7 @@ a{ color:#ffd166; }
       <div class="row"><span>今シーズンの獲得ファン</span><span id="seasonTotal">0</span></div>
       <div class="kc-rookies" id="rookies"></div>
       <button type="button" class="kc-btn gold wide" id="win" disabled>優勝してシーズンを終える</button>
+      <div class="kc-next" id="winInfo"></div>
     </div>
   </div>
 
@@ -345,7 +346,7 @@ a{ color:#ffd166; }
 <tr><th>強化する</th><td>施設をたくさん建てると、その施設の生産が2倍になる強化が出てきます（1・10・25・50・100・150・200個で）。施設どうしの「連携」や、バットの強化もあります。</td></tr>
 <tr><th>試合</th><td>開いている間、約1分半ごとに試合が行われます。勝率は球団の人気（毎秒のファン）で上がり、勝つとファンが増えます。連勝するほどボーナスが大きくなります。</td></tr>
 <tr><th>ファンサービス</th><td>球場にときどき現れる「ファンサ!」をタップすると、満員御礼（生産7倍）・臨時収入・ホームラン競争（タップ10倍）・グッズ完売（施設1つの生産10倍）のどれかが起こります。</td></tr>
-<tr><th>優勝と殿堂</th><td>たくさんのファンを集めると優勝できます。ファンと施設は最初からになりますが、ペナント（1本ごとに生産+10%）と殿堂ポイントがもらえます。殿堂ポイントでは、自動スイングや施設の値引きなど、ずっと残る力が手に入ります。また優勝のとき、そのシーズンに指名した新人から1人を「永久欠番」にでき、その能力が半分の強さでずっと残ります。</td></tr>
+<tr><th>優勝と殿堂</th><td>たくさんのファンを集めると優勝できます。ファンと施設は最初からになりますが、ペナント（1本ごとに生産+10%）と殿堂ポイントがもらえます。殿堂ポイントでは、自動スイングや施設の値引きなど、ずっと残る力が手に入ります。今シーズンをやり込んでから優勝するほど（本拠地の格・ファンの数・施設・強化・勝利・ドラフト）、殿堂ポイントのボーナスと倍率が増えます。また優勝のとき、そのシーズンに指名した新人から1人を「永久欠番」にでき、その能力が半分の強さでずっと残ります。</td></tr>
 <tr><th>ドラフト会議</th><td>シーズン中にファンが1万・1000万・100億・10兆人に届くたび、新人を1人指名できます。候補は3人で、大砲・安打製造機・エース・人気者・守備職人・俊足・勝負強さのどれか。そのシーズンのあいだ効果が続きます。</td></tr>
 <tr><th>雨</th><td>ときどき雨が降り、1分間生産が半分になります。ドーム球場があれば、逆に満員になって生産が2倍に。</td></tr>
 <tr><th>月のイベント</th><td>お正月・春季キャンプ・開幕ダッシュ・オールスター・ストーブリーグなど、月ごとに違うボーナスがつきます（端末の日付で決まります）。</td></tr>
@@ -607,6 +608,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   A("hallMax", "殿堂を極めし者", "殿堂の力をどれか1つ最大にする", s => PERKS.some(p => (s.perks[p.id] || 0) >= p.max));
   A("dr1", "ドラフト1位", "新人を指名する", s => (s.sec.drafts || 0) >= 1);
   A("dr4", "青田買い", "1シーズンで4人の新人を指名する", s => s.draftsDone >= 4);
+  A("deep1", "やり込みの鬼", "やり込みボーナス30pt以上で優勝する", s => (s.sec.deepWin || 0) >= 1);
   A("ret1", "背番号よ永遠に", "選手を永久欠番にする", s => s.retired.length >= 1);
   A("ret10", "欠番だらけ", "永久欠番を10人にする", s => s.retired.length >= 10);
   A("dr20", "スカウトの眼", "新人を通算20人指名する", s => (s.sec.drafts || 0) >= 20);
@@ -963,11 +965,26 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     ["build", "up", "hall", "rec", "team"].forEach(k => $("pane-" + k).hidden = k !== b.dataset.tab);
     refresh(true);
   }));
+  /* やり込みボーナス：今シーズンをやり込むほど、優勝でもらえる殿堂ポイントが増える */
+  function winBonus() {
+    const parts = [
+      ["本拠地", [0, 1, 2, 4, 7, 10][stadiumLv()]],
+      ["今シーズンのファン", Math.max(0, Math.floor(Math.log10(Math.max(1, S.season))) - 6)],
+      ["施設", Math.floor(totalOwned() / 100)],
+      ["強化", Math.floor(S.seasonUps / 10)],
+      ["勝利", Math.floor(S.w / 10)],
+      ["ドラフト", S.draftsDone],
+    ];
+    const total = parts.reduce((a, p) => a + p[1], 0);
+    return { total, parts, rate: total * 5 };   // ボーナス1につき、ペナント分の殿堂ポイントも +5%
+  }
+  const hallGain = (add, wb) => add + wb.total + Math.floor(add * wb.rate / 100);
   let retirePending = false;
   $("win").addEventListener("click", () => {
     const add = pennantsFor(S.allTime) - S.flags; if (add < 1 || retirePending) return;
     const keep = KEEP[pk("keep")];
-    if (!confirm("優勝してシーズンを終えますか？\nペナントと殿堂ポイントを " + add + " ずつもらえます（生産 +" + add * 10 + "%）。\nファン・強化は最初から、施設は" + (keep ? Math.round(keep * 100) + "%を残して" : "") + "最初からになります。")) return;
+    const wb = winBonus();
+    if (!confirm("優勝してシーズンを終えますか？\nペナント +" + add + "本（生産 +" + add * 10 + "%）、殿堂ポイント +" + hallGain(add, wb) + "pt（ペナント分 " + add + " ×やり込み倍率 +" + wb.rate + "% ＋ やり込みボーナス " + wb.total + "）をもらえます。\nファン・強化は最初から、施設は" + (keep ? Math.round(keep * 100) + "%を残して" : "") + "最初からになります。")) return;
     if (!S.rookies.length) { finishWin(-1); return; }
     retirePending = true; w8();
     const used = S.retired.map(r => r.no);
@@ -987,12 +1004,12 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     if (!S.seasonUps) sec("noUps");
     if ((S.owned.school || 0) > 0 && BUILDINGS.every(b => b.id === "school" || !(S.owned[b.id] > 0))) sec("schoolOnly");
     if (S.w + S.l > 0 && S.l === 0) sec("perfect");
-    S.flags += add; S.lp += add; S.seasonNo++; S.bestSeason = Math.max(S.bestSeason, S.season);
+    const wb = winBonus(); S.flags += add; S.lp += hallGain(add, wb); if (wb.total >= 30) sec("deepWin"); S.seasonNo++; S.bestSeason = Math.max(S.bestSeason, S.season);
     const kept = {}; Object.keys(S.owned).forEach(k => { const n = Math.floor(S.owned[k] * keep); if (n > 0) kept[k] = n; });
     if (pk("start")) ["school", "oendan", "baiten"].forEach(k => kept[k] = Math.max(kept[k] || 0, 10));
     S.fans = 0; S.season = 0; S.owned = kept; S.ups = []; S.buffs = []; S.w = 0; S.l = 0; S.games = []; S.streak = 0;
     S.rookies = []; S.rookieNames = []; S.draft = null; S.draftsDone = 0; S.seasonUps = 0; drawDraft(); shownLv = 0; buildTown();
-    toast("優勝おめでとう！ ペナントと殿堂ポイント +" + add); burst(160, 50, 70, 60);
+    toast("優勝おめでとう！ ペナント +" + add + "本・殿堂ポイント +" + hallGain(add, wb) + "pt"); burst(160, 50, 70, 60);
     refresh(true); updateText(); save();
   }
 
@@ -1035,7 +1052,10 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     $("seasonTotal").textContent = fmt(S.season) + "人";
     const add = pennantsFor(S.allTime) - S.flags, w = $("win");
     w.disabled = add < 1 || retirePending;
-    if (add >= 1) w.textContent = "優勝してシーズンを終える（ペナント +" + add + "）";
+    const wbx = winBonus();
+    $("winInfo").innerHTML = "優勝でもらえる殿堂ポイント：" + hallGain(Math.max(0, add), wbx) + "pt（ペナント分 " + Math.max(0, add) + " ×やり込み倍率 +" + wbx.rate + "% ＋ やり込みボーナス " + wbx.total + "）<br>" +
+      wbx.parts.map(p => p[0] + " +" + p[1]).join("　") + "<br>やり込むほどボーナスと倍率が増えます（ボーナス1につき倍率 +5%。本拠地の格・今シーズンのファン・施設100ごと・強化10ごと・10勝ごと・指名した新人）";
+    if (add >= 1) w.textContent = "優勝してシーズンを終える（ペナント +" + add + "・殿堂 +" + hallGain(add, wbx) + "pt）";
     else { const need = Math.pow(S.flags + 1, 3) * 1e6; w.textContent = "優勝まで あと " + fmt(Math.max(0, need - S.allTime)) + "人"; }
     $("wl").textContent = S.w + "勝" + S.l + "敗" + (S.streak >= 2 ? "（" + S.streak + "連勝中）" : "");
     $("games").innerHTML = S.games.map(g => `<span class="${g ? "w" : "l"}">${g ? "○" : "●"}</span>`).join("");
