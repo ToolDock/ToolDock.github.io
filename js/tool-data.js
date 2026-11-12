@@ -30,6 +30,7 @@ window.CATEGORY_NAMES = {
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-12", id: "kyudan-clicker", kind: "update", text: "球団経営クリッカーに「永久欠番」を追加。優勝のとき新人を1人選ぶと、背番号が欠番になり能力がずっと残ります" },
   { date: "2026-11-12", id: "kyudan-clicker", kind: "update", text: "球団経営クリッカーを夜の球場のデザインに一新。建てた施設が並んで見える「球団の施設」と、強化するほど河川敷から夢の球場まで建て替わる本拠地を追加" },
   { date: "2026-11-11", id: "kyudan-clicker", kind: "update", text: "球団経営クリッカーに、ドラフト会議・雨・月ごとのイベント・スポーツ新聞の速報・隠し実績を追加（実績は175個に）" },
   { date: "2026-11-11", id: "kyudan-clicker", kind: "update", text: "球団経営クリッカーに、球団名とユニフォームの色の設定・試合・殿堂・来場ボーナス・施設4種・実績93個などのやり込み要素を追加" },
