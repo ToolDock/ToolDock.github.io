@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>横文字ばっかりのタイピングゲーム｜無料英語タイピング練習ゲーム | ToolDock</title>
-<meta name="description" content="横文字ばっかりの単語を高速入力する無料タイピングゲーム。IT・ビジネス・SNS用語などのカタカナ語をローマ字で入力してスコアを競おう。">
+<title>タイピング練習ゲーム｜打鍵の速さ・苦手キー・ローマ字のクセまで分析【無料】</title>
+<meta name="description" content="日本語の短文・単語、英単語で練習できる無料のタイピングゲーム。KPM・初速・正確率だけでなく、キーごとの速さとミス、指ごとの速さ、遅い並び、打ち間違いの傾向、ローマ字の打ち方のクセまで細かく分析します。記録はブラウザに保存され、成長の推移も見られます。">
 <link rel="canonical" href="https://tooldock.github.io/typing-game/">
 
 <!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ToolDock">
-<meta property="og:title" content="横文字ばっかりのタイピングゲーム｜無料英語タイピング練習ゲーム | ToolDock">
-<meta property="og:description" content="横文字ばっかりの単語を高速入力する無料タイピングゲーム。IT・ビジネス・SNS用語などのカタカナ語をローマ字で入力してスコアを競おう。">
+<meta property="og:title" content="タイピング練習ゲーム｜打鍵の速さ・苦手キー・ローマ字のクセまで分析【無料】 | ToolDock">
+<meta property="og:description" content="日本語の短文・単語、英単語で練習できる無料のタイピングゲーム。KPM・初速・正確率だけでなく、キーごとの速さとミス、指ごとの速さ、遅い並び、打ち間違いの傾向、ローマ字の打ち方のクセまで細かく分析します。記録はブラウザに保存され、成長の推移も見られます。">
 <meta property="og:url" content="https://tooldock.github.io/typing-game/">
 <meta property="og:image" content="https://tooldock.github.io/ogp/typing-game.png">
 <meta property="og:image:width" content="1200">
@@ -28,1541 +28,1343 @@
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
 
-<meta name="keywords" content="タイピングゲーム,無料,横文字,カタカナ語,ローマ字入力,タイピング練習,IT用語">
+<meta name="keywords" content="タイピング,タイピング練習,タイピングゲーム,無料,ローマ字入力,KPM,初速,正確率,苦手キー,打鍵分析">
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  background: radial-gradient(circle at top, #102030, #05070d 60%), #05070d;
-  color: #e8ffff;
-  font-family: "Consolas", "Courier New", monospace;
-  min-height: 100vh;
-  overflow-x: hidden;
+body{
+  margin:0; padding:20px;
+  font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+  background:var(--bg); color:var(--ink); line-height:1.7;
 }
+.container{ max-width:960px; margin:0 auto; background:var(--surface); --pad:28px; padding:var(--pad); border:1px solid var(--line); }
+.mono{ font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Roboto Mono",monospace; }
+.tnum{ font-variant-numeric:tabular-nums; }
+h2.sec{ margin:30px 0 12px; font-size:1.1rem; padding-bottom:4px; border-bottom:2px solid var(--c); }
+.muted{ color:#5c6470; }
+.small{ font-size:.85rem; }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.03),
-    rgba(255,255,255,0.03) 1px,
-    transparent 2px,
-    transparent 4px
-  );
-  pointer-events: none;
+/* ---------- 設定 ---------- */
+.setup{ display:grid; grid-template-columns:auto 1fr; gap:10px 16px; align-items:center; }
+.setup .lab{ font-size:.88rem; font-weight:700; color:#3a3d42; }
+.seg{ justify-self:start; display:inline-flex; flex-wrap:wrap; border:1px solid var(--line-input); border-radius:var(--r-ctl); overflow:hidden; }
+.seg button{ font:inherit; font-size:.92rem; padding:6px 14px; border:0; border-right:1px solid var(--line-input); background:#fff; color:var(--ink); cursor:pointer; }
+.seg button:last-child{ border-right:0; }
+.seg button[aria-pressed="true"]{ background:var(--c); color:#fff; font-weight:700; }
+.opts{ display:flex; flex-wrap:wrap; gap:6px 18px; font-size:.92rem; }
+.opts label{ display:flex; align-items:center; gap:6px; cursor:pointer; }
+.opts input{ accent-color:var(--c); width:16px; height:16px; }
+
+/* ---------- 打つ場所 ---------- */
+.stage{ position:relative; margin-top:20px; border:1px solid var(--line); background:var(--surface-2); padding:18px 20px 22px; outline:none; }
+.stage.playing{ background:#fff; border-color:var(--c); box-shadow:0 0 0 1px var(--c) inset; }
+.hud{ display:flex; flex-wrap:wrap; gap:4px 22px; font-size:.82rem; color:#5c6470; }
+.hud b{ font-size:1.15rem; color:var(--ink); font-weight:700; margin-left:4px; }
+.hud .time b{ color:var(--c); }
+.bar{ height:3px; background:var(--line-soft); margin:10px 0 0; }
+.bar i{ display:block; height:100%; width:100%; background:var(--c); transform-origin:left; }
+.q{ text-align:center; padding:26px 0 6px; min-height:178px; }
+.q-disp{ font-size:1.9rem; font-weight:700; line-height:1.45; letter-spacing:.02em; word-break:break-all; }
+.q-kana{ font-size:1.05rem; color:#5c6470; margin-top:6px; letter-spacing:.06em; word-break:break-all; }
+.q-kana .done{ color:#b9b7b0; }
+.q-roma{ font-size:1.35rem; margin-top:12px; letter-spacing:.04em; word-break:break-all; min-height:2em; }
+.q-roma .done{ color:#b9b7b0; }
+.q-roma .next{ color:var(--c); border-bottom:2px solid var(--c); }
+.q-roma .rest{ color:var(--ink); }
+.q-next{ font-size:.82rem; color:#8a8f98; margin-top:14px; }
+.q.miss .q-roma .next{ background:color-mix(in srgb, var(--c) 18%, #fff); }
+.q-msg{ font-size:1.05rem; color:#3a3d42; }
+.q-msg kbd{ font-family:inherit; font-size:.9rem; border:1px solid var(--line-input); border-bottom-width:2px; border-radius:4px; padding:1px 8px; background:#fff; }
+.warn{ margin:8px auto 0; max-width:30em; font-size:.88rem; color:#b42318; }
+.start{ font:inherit; font-size:1.05rem; font-weight:700; padding:10px 28px; margin-top:14px; border:0; border-radius:var(--r-ctl); background:var(--c); color:#fff; cursor:pointer; }
+.trap{ position:absolute; left:0; top:0; width:1px; height:1px; opacity:0; border:0; padding:0; pointer-events:none; }
+
+/* ---------- 結果 ---------- */
+.res-head{ display:flex; flex-wrap:wrap; align-items:flex-end; gap:6px 28px; padding:18px 20px; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 4%, #fff); }
+.res-head .k{ font-size:.85rem; font-weight:700; color:#3a3d42; }
+.res-head .score{ font-size:2.8rem; font-weight:800; color:var(--c); line-height:1.1; }
+.res-head .rank{ font-size:1.6rem; font-weight:800; line-height:1.2; }
+.res-head .pb{ font-size:.9rem; color:#3a3d42; margin-left:auto; text-align:right; }
+.res-head .pb strong{ color:var(--c); }
+.kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin-top:14px; }
+.kpi{ background:#fff; padding:10px 12px; }
+.kpi .k{ font-size:.78rem; color:#5c6470; }
+.kpi .v{ font-size:1.45rem; font-weight:800; line-height:1.3; }
+.kpi .v small{ font-size:.78rem; font-weight:700; color:#5c6470; margin-left:2px; }
+.kpi .s{ font-size:.75rem; color:#8a8f98; }
+
+.tabs{ display:flex; gap:0; border-bottom:1px solid var(--line); margin:26px 0 0; }
+.tabs button{ font:inherit; font-size:.92rem; padding:8px 16px; border:1px solid transparent; border-bottom:0; background:none; cursor:pointer; color:#5c6470; margin-bottom:-1px; }
+.tabs button[aria-selected="true"]{ border-color:var(--line); background:#fff; color:var(--ink); font-weight:700; }
+.ana h3{ font-size:1rem; margin:24px 0 8px; }
+.ana h3 span{ font-size:.8rem; font-weight:400; color:#5c6470; margin-left:8px; }
+.empty{ color:#8a8f98; font-size:.9rem; padding:8px 0; }
+
+.chart{ width:100%; height:auto; display:block; }
+.chart text{ font-size:11px; fill:#5c6470; font-family:inherit; }
+.chart .grid{ stroke:var(--line-soft); stroke-width:1; }
+.chart .base{ stroke:var(--line); stroke-width:1; }
+.chart .barr{ fill:var(--c); }
+.chart .barr:hover{ fill:color-mix(in srgb, var(--c) 75%, #000); }
+.chart .ln{ fill:none; stroke:var(--c); stroke-width:2; }
+.chart .dot{ fill:var(--c); stroke:#fff; stroke-width:2; }
+.chart .hit{ fill:transparent; }
+.chart .hit:hover + .dot, .chart .dot:hover{ r:6; }
+
+.kb-wrap{ overflow-x:auto; }
+.kb{ display:inline-block; min-width:520px; }
+.kb-row{ display:flex; gap:4px; margin-bottom:4px; }
+.kb-key{ width:44px; height:44px; border:1px solid var(--line); border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1; background:#fff; position:relative; }
+.kb-key .c{ font-weight:700; font-size:.95rem; }
+.kb-key .n{ font-size:.66rem; opacity:.9; }
+.kb-key.none{ background:var(--surface-2); color:#b9b7b0; border-style:dashed; }
+.kb-key.dark{ color:#fff; border-color:transparent; }
+.kb-legend{ display:flex; align-items:center; gap:8px; font-size:.78rem; color:#5c6470; margin-top:6px; }
+.kb-legend i{ display:inline-block; width:120px; height:8px; background:linear-gradient(90deg, color-mix(in srgb, var(--c) 6%, #fff), var(--c)); }
+.seg.sm button{ font-size:.82rem; padding:4px 10px; }
+
+.two{ display:grid; grid-template-columns:1fr 1fr; gap:8px 24px; }
+.two > div{ min-width:0; }
+table.t{ width:100%; border-collapse:collapse; font-size:.9rem; }
+table.t th, table.t td{ border-bottom:1px solid var(--line-soft); padding:5px 6px; text-align:left; }
+table.t th{ font-size:.78rem; color:#5c6470; font-weight:700; }
+table.t td.r, table.t th.r{ text-align:right; font-variant-numeric:tabular-nums; }
+table.t td.kc{ font-family:ui-monospace,Menlo,Consolas,monospace; font-weight:700; white-space:nowrap; }
+.mb{ display:inline-block; height:8px; background:var(--c); vertical-align:middle; margin-right:6px; border-radius:0 2px 2px 0; }
+.tbl-scroll{ overflow-x:auto; }
+#rProbs{ max-height:360px; overflow-y:auto; border-bottom:1px solid var(--line-soft); }
+#rProbs thead th{ position:sticky; top:0; background:#fff; }
+tr.slow td{ background:color-mix(in srgb, var(--c) 6%, #fff); }
+.note{ font-size:.82rem; color:#5c6470; margin:10px 0 0; }
+.hist-ctl{ display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; justify-content:space-between; }
+.linkbtn{ font:inherit; font-size:.82rem; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; padding:4px 12px; cursor:pointer; color:#3a3d42; }
+
+@media (max-width:700px){
+  body{ padding:12px; }
+  .container{ --pad:16px; }
+  .setup{ grid-template-columns:1fr; gap:4px 0; }
+  .setup .lab{ margin-top:8px; }
+  .kpis{ grid-template-columns:repeat(2,1fr); }
+  .two{ grid-template-columns:1fr; }
+  .q-disp{ font-size:1.45rem; }
+  .q-roma{ font-size:1.1rem; }
+  .res-head .pb{ margin-left:0; text-align:left; }
 }
-
-.container { width: min(1000px, 95%); margin: 40px auto; }
-
-h1 {
-  text-align: center;
-  font-size: 2.2rem;
-  font-family: 'Orbitron', 'Consolas', monospace;
-  font-weight: 700;
-  color: #00e5ff;
-  text-shadow:
-    0 0 6px #00e5ff,
-    0 0 18px rgba(0,229,255,0.4),
-    0 0 40px rgba(0,229,255,0.15);
-  letter-spacing: 0.05em;
-  margin-bottom: 10px;
-}
-
-.subtitle { text-align: center; color: #9fd9e3; margin-bottom: 30px; }
-
-.panel {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(0,229,255,0.3);
-  padding: 20px;
-  backdrop-filter: blur(10px);
-}
-
-.controls { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; }
-
-select, button {
-  background: #09141d;
-  color: #dfffff;
-  border: 1px solid #00e5ff;
-  padding: 12px 16px;
-  border-radius: var(--r-ctl);
-  font-size: 1rem;
-}
-
-button { cursor: pointer; transition: 0.2s; }
-button:hover { background: #00e5ff; color: #000; }
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.stat-box {
-  background: rgba(0,0,0,0.35);
-  border: 1px solid rgba(0,229,255,0.3);
-  padding: 15px;
-  text-align: center;
-}
-
-.stat-label { color: #9fcbd2; font-size: 0.9rem; }
-.stat-value { font-size: 2rem; color: #00e5ff; text-shadow: 0 0 10px #00e5ff; }
-
-.word-area { text-align: center; margin-bottom: 35px; }
-
-.katakana {
-  font-size: 3rem;
-  margin-bottom: 10px;
-  color: #ffffff;
-  text-shadow: 0 0 15px rgba(255,255,255,0.4);
-  min-height: 70px;
-}
-
-.roma { font-size: 1.5rem; color: #77f7ff; letter-spacing: 2px; min-height: 35px; }
-
-.input-view {
-  margin-top: 20px;
-  font-size: 1.4rem;
-  min-height: 40px;
-  word-break: break-all;
-}
-
-.correct { color: #00ff99; text-shadow: 0 0 10px #00ff99; }
-.current { color: #fff; border-bottom: 2px solid #fff; }
-.remaining { color: #6c8a95; }
-
-.combo {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 1.3rem;
-  color: #ffcc00;
-  text-shadow: 0 0 12px #ffcc00;
-}
-
-.message { text-align: center; margin-top: 20px; color: #ff6b6b; min-height: 25px; }
-
-.keyboard { margin-top: 40px; display: flex; flex-direction: column; gap: 8px; }
-
-.key-row { display: flex; justify-content: center; gap: 8px; }
-
-.key {
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(0,229,255,0.3);
-  background: rgba(255,255,255,0.03);
-  transition: 0.05s;
-}
-
-.key.active {
-  background: #00e5ff;
-  color: #000;
-  transform: scale(1.08);
-}
-
-.result { margin-top: 30px; text-align: center; display: none; }
-.result h2 { color: #00ff99; margin-bottom: 10px; }
-
-.description { margin-top: 60px; line-height: 1.9; color: #cde7ea; }
-
-.miss-shake { animation: missShake 0.25s ease-out; }
-
-@keyframes missShake {
-  0%   { transform: translateX(0); }
-  25%  { transform: translateX(-5px); }
-  75%  { transform: translateX(5px); }
-  100% { transform: translateX(0); }
-}
-
-@media (max-width: 700px) {
-  .stats { grid-template-columns: repeat(2, 1fr); }
-  .katakana { font-size: 2rem; }
-  .roma { font-size: 1.1rem; }
-}
-
-.tg-table { width:100%; border-collapse:collapse; margin:12px 0; }
-.tg-table th, .tg-table td { border-bottom:1px solid rgba(205,231,234,0.25); padding:8px; text-align:left; vertical-align:top; }
-.tg-table th { white-space:nowrap; color:#8ff; width:6em; }
-.description ol, .description ul { padding-left:1.4em; }
-.description li { margin-bottom:0.4em; }
-.description h2 { margin-top:28px; color:#8ff; }
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; }
+.tool-article table:not(:has(thead)) th{ width:30%; white-space:normal; }
 </style>
 </head>
 <body>
 <!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
-<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=game">ゲーム</a> <span class="bc-sep">›</span> <span>横文字ばっかりのタイピングゲーム</span></nav>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "ゲーム", "item": "https://tooldock.github.io/category/?cat=game"}, {"@type": "ListItem", "position": 3, "name": "横文字ばっかりのタイピングゲーム", "item": "https://tooldock.github.io/typing-game/"}]}</script>
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=game">ゲーム</a> <span class="bc-sep">›</span> <span>タイピング練習（打鍵分析つき）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "ゲーム", "item": "https://tooldock.github.io/category/?cat=game"}, {"@type": "ListItem", "position": 3, "name": "タイピング練習（打鍵分析つき）", "item": "https://tooldock.github.io/typing-game/"}]}</script>
 <!-- /BREADCRUMB -->
 
 <div class="container">
-  <h1>横文字ばっかりのタイピングゲーム</h1>
-  <p class="subtitle">IT・ビジネス・SNS系のカタカナ語を高速タイピング。</p>
 
-  <div class="panel">
-    <div class="controls">
-      <select id="genre">
-        <option value="all">全ジャンル</option>
-        <option value="IT">IT</option>
-        <option value="Business">ビジネス</option>
-        <option value="SNS">SNS</option>
-      </select>
+<div class="td-banner">
+  <h1>タイピング練習（打鍵分析つき）</h1>
+  <p>日本語の短文・単語、英単語を打って、速さと正確さを測ります。打ち終わると、キーごとの速さとミス、指ごとの速さ、遅い並び、打ち間違いの傾向、ローマ字の打ち方のクセまで細かく分析します。</p>
+</div>
 
-      <select id="difficulty">
-        <option value="easy">EASY</option>
-        <option value="normal">NORMAL</option>
-        <option value="hard">HARD</option>
-      </select>
-
-      <button id="startBtn">ゲーム開始</button>
-    </div>
-
-    <div class="stats">
-      <div class="stat-box">
-        <div class="stat-label">WPM</div>
-        <div class="stat-value" id="wpm">0</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Accuracy</div>
-        <div class="stat-value" id="accuracy">100%</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Combo</div>
-        <div class="stat-value" id="combo">0</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Time</div>
-        <div class="stat-value" id="time">60</div>
-      </div>
-    </div>
-
-    <div class="word-area">
-      <div class="katakana" id="katakana">PRESS START</div>
-      <div class="roma" id="roma"></div>
-      <div class="input-view" id="inputView"></div>
-      <div class="combo" id="comboText"></div>
-      <div class="message" id="message"></div>
-    </div>
-
-    <div class="keyboard" id="keyboard"></div>
-
-    <div class="result" id="result">
-      <h2>GAME OVER</h2>
-      <p id="finalScore"></p>
-    </div>
+<div class="setup">
+  <div class="lab">問題</div>
+  <div class="seg" id="segMode">
+    <button type="button" data-v="sent">日本語の短文</button>
+    <button type="button" data-v="word">日本語の単語</button>
+    <button type="button" data-v="en">英単語</button>
   </div>
-
-  <div class="description">
-    <h2>このタイピングゲームについて</h2>
-    <p>
-      「横文字ばっかりのタイピングゲーム」は、
-      IT用語・ビジネス用語・SNS用語などのカタカナ語を
-      英単語入力で高速タイピングする無料ブラウザゲームです。
-    </p>
-    <p>
-      WPM（Words Per Minute）や正確率をリアルタイム表示。
-      サイバー風UIとネオン演出で、気持ちよくタイピング練習できます。
-    </p>
-
-    <h2>遊び方</h2>
-    <ol>
-      <li>ジャンルと難易度を選びます</li>
-      <li>「START」を押すと制限時間60秒のカウントが始まります</li>
-      <li>画面に出たカタカナ語を、<strong>ローマ字（英字）で入力</strong>します</li>
-      <li>正しく打ち切ると次の語に進み、連続で正解するとコンボが伸びます</li>
-    </ol>
-
-    <h2>画面に出る数字の意味</h2>
-    <table class="tg-table">
-      <tr><th>スコア</th><td>正しく打った語に応じて加算されます。コンボが続くほど伸びます</td></tr>
-      <tr><th>WPM</th><td>1分あたりに打てる語数の換算値。タイピング速度の目安です</td></tr>
-      <tr><th>正確率</th><td>打鍵のうち、正しかったものの割合</td></tr>
-      <tr><th>コンボ</th><td>ミスなしで続けて正解した数。ミスすると0に戻ります</td></tr>
-      <tr><th>TIME</th><td>残り時間。60秒から始まります</td></tr>
-    </table>
-
-    <h2>速く打つためのコツ</h2>
-    <ul>
-      <li><strong>正確さを先に</strong>— ミスの打ち直しは、ゆっくり正確に打つより時間を使います</li>
-      <li><strong>手元を見ない</strong>— 最初は遅くなりますが、これがいちばん伸びます</li>
-      <li><strong>語を先読みする</strong>— 打ちながら次の文字を目で追う癖をつけます</li>
-      <li><strong>苦手な運びを把握する</strong>— 同じ指が連続する並びは崩れやすいので、その語だけ繰り返します</li>
-      <li><strong>easyから始める</strong>— 短い語でリズムを作ってから長い語に移ります</li>
-    </ul>
-
-    <h2>よくある質問</h2>
-
-    <p><strong>Q. かな入力でも遊べますか？</strong><br>
-    A. このゲームはローマ字（英字）入力を前提としています。入力欄には英字で打ってください。</p>
-
-    <p><strong>Q. スマートフォンでも遊べますか？</strong><br>
-    A. 画面上のキーボードで入力できますが、タイピング練習としては物理キーボードをおすすめします。</p>
-
-    <p><strong>Q. スコアは保存されますか？</strong><br>
-    A. 記録はブラウザの中だけに保存され、サーバーには送信されません。</p>
-
-    <p><strong>Q. なぜ横文字ばかりなのですか？</strong><br>
-    A. IT・ビジネス・SNSの現場で実際に飛び交うカタカナ語を集めているためです。
-    打ちながら用語そのものにも触れられます。</p>
+  <div class="lab">時間</div>
+  <div class="seg" id="segSec">
+    <button type="button" data-v="30">30秒</button>
+    <button type="button" data-v="60">60秒</button>
+    <button type="button" data-v="120">120秒</button>
+  </div>
+  <div class="lab">設定</div>
+  <div class="opts">
+    <label><input type="checkbox" id="optGuide"> ローマ字を表示</label>
+    <label><input type="checkbox" id="optWeak"> 苦手なキーの多い問題を多めに出す</label>
+    <label><input type="checkbox" id="optSound"> 打鍵音</label>
   </div>
 </div>
 
+<div class="stage" id="stage" tabindex="-1">
+  <div class="hud tnum">
+    <span class="time">残り<b id="hTime">60.0</b>秒</span>
+    <span>打鍵<b id="hKeys">0</b></span>
+    <span>ミス<b id="hMiss">0</b></span>
+    <span>速さ<b id="hKpm">0</b> 打/分</span>
+    <span>正確率<b id="hAcc">100.0</b>%</span>
+  </div>
+  <div class="bar"><i id="hBar"></i></div>
+  <div class="q" id="q">
+    <div id="qIdle">
+      <div class="q-msg"><kbd>Space</kbd> キーか下のボタンで開始</div>
+      <button type="button" class="start" id="startBtn">開始する</button>
+      <div class="note">入力は半角英数（日本語入力オフ）で。<kbd style="font-size:.8rem">Esc</kbd> で中断できます。</div>
+    </div>
+    <div id="qPlay" hidden>
+      <div class="q-disp" id="qDisp"></div>
+      <div class="q-kana" id="qKana"></div>
+      <div class="q-roma mono" id="qRoma"></div>
+      <div class="q-next" id="qNext"></div>
+    </div>
+    <div class="warn" id="imeWarn" hidden>日本語入力がオンになっています。半角英数に切り替えてください（Windows は「半角/全角」キー、Mac は「英数」キー）。</div>
+  </div>
+  <input class="trap" id="trap" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="ここに入力">
+</div>
+
+<section id="result" hidden>
+  <h2 class="sec">今回の結果</h2>
+  <div class="res-head">
+    <div><div class="k">スコア</div><div class="score tnum" id="rScore">0</div></div>
+    <div><div class="k">段位</div><div class="rank" id="rRank">-</div></div>
+    <div class="pb" id="rPb"></div>
+  </div>
+  <div class="kpis tnum" id="rKpis"></div>
+
+  <h3 style="font-size:1rem;margin:24px 0 8px;">速さの移り変わり <span class="muted small" style="font-weight:400">5秒ごとの打鍵数を1分あたりに直したもの</span></h3>
+  <div id="rTimeline"></div>
+
+  <h3 style="font-size:1rem;margin:24px 0 8px;">問題ごとの記録 <span class="muted small" style="font-weight:400">いちばん遅かった問題に色</span></h3>
+  <div class="tbl-scroll" id="rProbs"></div>
+</section>
+
+<section id="analysis">
+  <h2 class="sec">打鍵の分析</h2>
+  <div class="tabs" role="tablist" id="anaTabs">
+    <button type="button" role="tab" data-v="round" aria-selected="true">今回</button>
+    <button type="button" role="tab" data-v="all" aria-selected="false">これまで全部</button>
+  </div>
+  <div class="ana" id="ana"></div>
+</section>
+
+<section id="history">
+  <h2 class="sec">記録の推移</h2>
+  <div id="hist"></div>
+</section>
+
+</div>
+
+<article class="tool-article">
+
+<h2>このタイピング練習でわかること</h2>
+<p>速さと正確率だけでは、どこで時間を落としているのかまでは分かりません。このページは1打ごとの時刻を記録して、打ち終わったあとに次のことを出します。</p>
+<ul>
+<li><strong>キーごとの速さとミス率</strong>（キーボードの図で、遅いキー・ミスの多いキーほど濃く表示）</li>
+<li><strong>打ち間違いの傾向</strong>（「f を打つところで g を打った」のような組み合わせ）</li>
+<li><strong>遅い並び・速い並び</strong>（2文字の続きごとの平均時間）</li>
+<li><strong>指ごとの速さ</strong>と、<strong>左右交互・同じ手・同じ指</strong>で続けたときの差</li>
+<li><strong>ローマ字のクセ</strong>（「し」を si と shi のどちらで打ったか、最短の打ち方より何打多いか）</li>
+</ul>
+<p>「これまで全部」に切り替えると、これまで遊んだ全部の打鍵をまとめた分析になります。1回分より数が多いので、苦手なキーがはっきり出ます。</p>
+
+<h2>数字の意味</h2>
+<div class="table-scroll">
+<table>
+<tbody>
+<tr><th>速さ（打/分）</th><td>正しく打った数を1分あたりに直したもの。KPM（Keys Per Minute）とも呼ばれます</td></tr>
+<tr><th>初速</th><td>問題が出てから1打目を打つまでの時間。問題を読んで打ち始めるまでの速さです</td></tr>
+<tr><th>初速を除いた速さ</th><td>初速の時間と1打目を除いて計算した速さ。打ち始めてからの指の速さそのものです</td></tr>
+<tr><th>正確率</th><td>打った数のうち、正しかった割合</td></tr>
+<tr><th>打鍵の間隔</th><td>1打ごとの時間の平均と、そのばらつき（標準偏差）。ばらつきが小さいほどリズムが一定です</td></tr>
+<tr><th>最高の速さ（5秒）</th><td>5秒ごとに区切ったうち、いちばん速かった区間の速さ</td></tr>
+<tr><th>スコア</th><td>速さ × 正確率 × 正確率。ミスが多いと大きく下がります</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>段位の目安</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>スコア</th><th>段位</th><th>目安</th></tr></thead>
+<tbody>
+<tr><td>〜99</td><td>10級〜7級</td><td>キーの位置を覚えているところ</td></tr>
+<tr><td>100〜249</td><td>6級〜1級</td><td>手元を見ずに打てるようになってきた</td></tr>
+<tr><td>250〜449</td><td>初段〜四段</td><td>仕事で困らない速さ</td></tr>
+<tr><td>450〜649</td><td>五段〜八段</td><td>かなり速い。周りから驚かれる</td></tr>
+<tr><td>650〜899</td><td>九段・十段</td><td>上級者</td></tr>
+<tr><td>900〜</td><td>名人</td><td>トップクラス</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>ローマ字の打ち方</h2>
+<p>「し」は si・shi・ci、「ち」は ti・chi、「つ」は tu・tsu、「ふ」は fu・hu、「じ」は ji・zi のように、どの打ち方でも正解になります。「ん」は次の文字が子音なら n 1回でも進みます。「っ」は次の子音を重ねる（kka）ほか、xtu・ltu でも打てます。</p>
+<p>ローマ字の表示は、あなたがよく使う打ち方に自動で合わせます。shi で打つ人には shi と表示されます。</p>
+
+<h2>速く打つためのコツ</h2>
+<ul>
+<li><strong>苦手なキーを知る</strong>：分析の「遅いキー」「ミスの多いキー」に出たキーは、ほかより時間を使っています。「苦手なキーの多い問題を多めに出す」をオンにすると、そのキーを含む問題が多く出ます</li>
+<li><strong>同じ指の連続を意識する</strong>：同じ指で別のキーを続けて打つ並び（例：ed・ju）は遅くなりがちです。「指と手の動き」の表で差を確かめられます</li>
+<li><strong>最短の打ち方を使う</strong>：shi より si、tsu より tu のほうが1打少なく済みます。ローマ字のクセの表に、余分に打った数が出ます</li>
+<li><strong>次の問題を見ておく</strong>：画面の下に次の問題が出ています。打ちながら読んでおくと初速が縮まります</li>
+</ul>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 記録はどこに保存されますか？</strong><br>A. このブラウザの中だけに保存されます。サーバーには送信しません。「記録を消す」で消せます。</p>
+<p><strong>Q. スマートフォンでも遊べますか？</strong><br>A. 画面のキーボードでも打てますが、分析はパソコンのキーボード向けです（指ごとの分析は、標準的な指の割り当てで計算しています）。</p>
+<p><strong>Q. 大文字で打ってしまいました。</strong><br>A. 大文字・小文字はどちらでも正解にしています。</p>
+
+</article>
+
 <script>
-// ============================================================
-// 単語データ — 各ジャンル×各難易度 100単語以上
-// ============================================================
-const words = [
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const STORE = "tooldock:typing:v2";
 
-  // ─── IT × easy ───────────────────────────────────────────
-  { genre:"IT", level:"easy", jp:"ウェブ",         roma:"web" },
-  { genre:"IT", level:"easy", jp:"アプリ",         roma:"app" },
-  { genre:"IT", level:"easy", jp:"バグ",           roma:"bug" },
-  { genre:"IT", level:"easy", jp:"ログ",           roma:"log" },
-  { genre:"IT", level:"easy", jp:"ファイル",       roma:"file" },
-  { genre:"IT", level:"easy", jp:"データ",         roma:"data" },
-  { genre:"IT", level:"easy", jp:"コード",         roma:"code" },
-  { genre:"IT", level:"easy", jp:"メール",         roma:"mail" },
-  { genre:"IT", level:"easy", jp:"リンク",         roma:"link" },
-  { genre:"IT", level:"easy", jp:"フォント",       roma:"font" },
-  { genre:"IT", level:"easy", jp:"ポート",         roma:"port" },
-  { genre:"IT", level:"easy", jp:"ノード",         roma:"node" },
-  { genre:"IT", level:"easy", jp:"ループ",         roma:"loop" },
-  { genre:"IT", level:"easy", jp:"クラス",         roma:"class" },
-  { genre:"IT", level:"easy", jp:"スタック",       roma:"stack" },
-  { genre:"IT", level:"easy", jp:"キャッシュ",     roma:"cache" },
-  { genre:"IT", level:"easy", jp:"クラウド",       roma:"cloud" },
-  { genre:"IT", level:"easy", jp:"サーバ",         roma:"server" },
-  { genre:"IT", level:"easy", jp:"クライアント",   roma:"client" },
-  { genre:"IT", level:"easy", jp:"システム",       roma:"system" },
-  { genre:"IT", level:"easy", jp:"バックアップ",   roma:"backup" },
-  { genre:"IT", level:"easy", jp:"スクリプト",     roma:"script" },
-  { genre:"IT", level:"easy", jp:"ドメイン",       roma:"domain" },
-  { genre:"IT", level:"easy", jp:"ブラウザ",       roma:"browser" },
-  { genre:"IT", level:"easy", jp:"フォルダ",       roma:"folder" },
-  { genre:"IT", level:"easy", jp:"ウイルス",       roma:"virus" },
-  { genre:"IT", level:"easy", jp:"モデム",         roma:"modem" },
-  { genre:"IT", level:"easy", jp:"ルーター",       roma:"router" },
-  { genre:"IT", level:"easy", jp:"スキャン",       roma:"scan" },
-  { genre:"IT", level:"easy", jp:"プリント",       roma:"print" },
-  { genre:"IT", level:"easy", jp:"タブレット",     roma:"tablet" },
-  { genre:"IT", level:"easy", jp:"ドライブ",       roma:"drive" },
-  { genre:"IT", level:"easy", jp:"モニター",       roma:"monitor" },
-  { genre:"IT", level:"easy", jp:"カーソル",       roma:"cursor" },
-  { genre:"IT", level:"easy", jp:"ウィンドウ",     roma:"window" },
-  { genre:"IT", level:"easy", jp:"ピクセル",       roma:"pixel" },
-  { genre:"IT", level:"easy", jp:"ログイン",       roma:"login" },
-  { genre:"IT", level:"easy", jp:"パスワード",     roma:"password" },
-  { genre:"IT", level:"easy", jp:"メモリ",         roma:"memory" },
-  { genre:"IT", level:"easy", jp:"プロキシ",       roma:"proxy" },
-  { genre:"IT", level:"easy", jp:"テスト",         roma:"test" },
-  { genre:"IT", level:"easy", jp:"ビルド",         roma:"build" },
-  { genre:"IT", level:"easy", jp:"マージ",         roma:"merge" },
-  { genre:"IT", level:"easy", jp:"フォーク",       roma:"fork" },
-  { genre:"IT", level:"easy", jp:"クエリ",         roma:"query" },
-  { genre:"IT", level:"easy", jp:"インデックス",   roma:"index" },
-  { genre:"IT", level:"easy", jp:"トークン",       roma:"token" },
-  { genre:"IT", level:"easy", jp:"モジュール",     roma:"module" },
-  { genre:"IT", level:"easy", jp:"プラグイン",     roma:"plugin" },
-  { genre:"IT", level:"easy", jp:"フレームワーク", roma:"framework" },
-  { genre:"IT", level:"easy", jp:"ライブラリ",     roma:"library" },
-  { genre:"IT", level:"easy", jp:"インターフェース", roma:"interface" },
-  { genre:"IT", level:"easy", jp:"パケット",       roma:"packet" },
-  { genre:"IT", level:"easy", jp:"プロトコル",     roma:"protocol" },
-  { genre:"IT", level:"easy", jp:"ネットワーク",   roma:"network" },
-  { genre:"IT", level:"easy", jp:"デバッグ",       roma:"debug" },
-  { genre:"IT", level:"easy", jp:"コンパイル",     roma:"compile" },
-  { genre:"IT", level:"easy", jp:"ランタイム",     roma:"runtime" },
-  { genre:"IT", level:"easy", jp:"セッション",     roma:"session" },
-  { genre:"IT", level:"easy", jp:"クッキー",       roma:"cookie" },
-  { genre:"IT", level:"easy", jp:"スレッド",       roma:"thread" },
-  { genre:"IT", level:"easy", jp:"プロセス",       roma:"process" },
-  { genre:"IT", level:"easy", jp:"コンテナ",       roma:"container" },
-  { genre:"IT", level:"easy", jp:"イメージ",       roma:"image" },
-  { genre:"IT", level:"easy", jp:"ボリューム",     roma:"volume" },
-  { genre:"IT", level:"easy", jp:"クラスタ",       roma:"cluster" },
-  { genre:"IT", level:"easy", jp:"デプロイ",       roma:"deploy" },
-  { genre:"IT", level:"easy", jp:"パイプライン",   roma:"pipeline" },
-  { genre:"IT", level:"easy", jp:"レポジトリ",     roma:"repository" },
-  { genre:"IT", level:"easy", jp:"コミット",       roma:"commit" },
-  { genre:"IT", level:"easy", jp:"ブランチ",       roma:"branch" },
-  { genre:"IT", level:"easy", jp:"プルリクエスト", roma:"pullrequest" },
-  { genre:"IT", level:"easy", jp:"イシュー",       roma:"issue" },
-  { genre:"IT", level:"easy", jp:"タグ",           roma:"tag" },
-  { genre:"IT", level:"easy", jp:"リリース",       roma:"release" },
-  { genre:"IT", level:"easy", jp:"バージョン",     roma:"version" },
-  { genre:"IT", level:"easy", jp:"パッチ",         roma:"patch" },
-  { genre:"IT", level:"easy", jp:"ロールバック",   roma:"rollback" },
-  { genre:"IT", level:"easy", jp:"スナップショット", roma:"snapshot" },
-  { genre:"IT", level:"easy", jp:"ジョブ",         roma:"job" },
-  { genre:"IT", level:"easy", jp:"タスク",         roma:"task" },
-  { genre:"IT", level:"easy", jp:"ワークフロー",   roma:"workflow" },
-  { genre:"IT", level:"easy", jp:"エラー",         roma:"error" },
-  { genre:"IT", level:"easy", jp:"ステータス",     roma:"status" },
-  { genre:"IT", level:"easy", jp:"コンフィグ",     roma:"config" },
-  { genre:"IT", level:"easy", jp:"環境変数",       roma:"env" },
-  { genre:"IT", level:"easy", jp:"エンドポイント", roma:"endpoint" },
-  { genre:"IT", level:"easy", jp:"レスポンス",     roma:"response" },
-  { genre:"IT", level:"easy", jp:"リクエスト",     roma:"request" },
-  { genre:"IT", level:"easy", jp:"ヘッダー",       roma:"header" },
-  { genre:"IT", level:"easy", jp:"ボディ",         roma:"body" },
-  { genre:"IT", level:"easy", jp:"ペイロード",     roma:"payload" },
-  { genre:"IT", level:"easy", jp:"レイテンシ",     roma:"latency" },
-  { genre:"IT", level:"easy", jp:"スループット",   roma:"throughput" },
-  { genre:"IT", level:"easy", jp:"バッファ",       roma:"buffer" },
-  { genre:"IT", level:"easy", jp:"キュー",         roma:"queue" },
-  { genre:"IT", level:"easy", jp:"スケール",       roma:"scale" },
-  { genre:"IT", level:"easy", jp:"サービス",       roma:"service" },
-  { genre:"IT", level:"easy", jp:"マイクロサービス", roma:"microservice" },
+/* =========================================================
+   問題（表示|よみ）
+========================================================= */
+const SENT = `今日はいい天気ですね|きょうはいいてんきですね
+明日の朝は早めに起きます|あしたのあさははやめにおきます
+駅の近くに新しいパン屋ができた|えきのちかくにあたらしいぱんやができた
+冷蔵庫のプリンを食べたのは誰だ|れいぞうこのぷりんをたべたのはだれだ
+週末は家でゆっくり映画を見たい|しゅうまつはいえでゆっくりえいがをみたい
+傘を持っていけばよかった|かさをもっていけばよかった
+締め切りは来週の金曜日です|しめきりはらいしゅうのきんようびです
+電車が遅れているらしい|でんしゃがおくれているらしい
+猫が日なたで丸くなっている|ねこがひなたでまるくなっている
+夏休みの宿題がまだ終わらない|なつやすみのしゅくだいがまだおわらない
+一度決めたことは最後までやり通す|いちどきめたことはさいごまでやりとおす
+失敗は成功のもと|しっぱいはせいこうのもと
+急がば回れ|いそがばまわれ
+石の上にも三年|いしのうえにもさんねん
+早起きは三文の徳|はやおきはさんもんのとく
+好きこそものの上手なれ|すきこそもののじょうずなれ
+塵も積もれば山となる|ちりもつもればやまとなる
+百聞は一見にしかず|ひゃくぶんはいっけんにしかず
+七転び八起き|ななころびやおき
+雨降って地固まる|あめふってじかたまる
+備えあれば憂いなし|そなえあればうれいなし
+習うより慣れろ|ならうよりなれろ
+能ある鷹は爪を隠す|のうあるたかはつめをかくす
+犬も歩けば棒に当たる|いぬもあるけばぼうにあたる
+花より団子|はなよりだんご
+九回裏ツーアウト満塁のチャンス|きゅうかいうらつーあうとまんるいのちゃんす
+コンビニでおにぎりを二つ買った|こんびにでおにぎりをふたつかった
+スマートフォンの充電が切れそうだ|すまーとふぉんのじゅうでんがきれそうだ
+来月から新しいプロジェクトが始まる|らいげつからあたらしいぷろじぇくとがはじまる
+会議の資料を印刷しておいてください|かいぎのしりょうをいんさつしておいてください
+お先に失礼します|おさきにしつれいします
+よろしくお願いいたします|よろしくおねがいいたします
+少々お待ちください|しょうしょうおまちください
+図書館で静かに本を読む|としょかんでしずかにほんをよむ
+自転車で海沿いの道を走る|じてんしゃでうみぞいのみちをはしる
+晩ごはんはカレーライスにしよう|ばんごはんはかれーらいすにしよう
+窓を開けると涼しい風が入ってきた|まどをあけるとすずしいかぜがはいってきた
+指を正しい位置に置いてから打ち始めよう|ゆびをただしいいちにおいてからうちはじめよう
+手元を見ないで打てるようになりたい|てもとをみないでうてるようになりたい
+正確に打つことが速さへの近道|せいかくにうつことがはやさへのちかみち
+春になると桜の花が咲きます|はるになるとさくらのはながさきます
+秋は食欲の季節だ|あきはしょくよくのきせつだ
+冬の夜空に星がきらめく|ふゆのよぞらにほしがきらめく
+夕焼けで空がオレンジ色に染まる|ゆうやけでそらがおれんじいろにそまる
+引っ越しの荷物がようやく片付いた|ひっこしのにもつがようやくかたづいた
+新幹線の切符を予約した|しんかんせんのきっぷをよやくした
+熱いお茶をいれて一休みしよう|あついおちゃをいれてひとやすみしよう
+ファミリーレストランで待ち合わせ|ふぁみりーれすとらんでまちあわせ
+パーティーの準備はもう済んだ|ぱーてぃーのじゅんびはもうすんだ
+ヴァイオリンの音色が美しい|ゔぁいおりんのねいろがうつくしい
+待ちに待った週末がやってきた|まちにまったしゅうまつがやってきた
+思い立ったが吉日|おもいたったがきちじつ
+宝くじが当たったら何をしよう|たからくじがあたったらなにをしよう
+打ち間違えても落ち着いて続けよう|うちまちがえてもおちついてつづけよう
+地図アプリを見ながら歩く|ちずあぷりをみながらあるく
+洗濯物を取り込むのを忘れていた|せんたくものをとりこむのをわすれていた
+机の上を片付けると集中できる|つくえのうえをかたづけるとしゅうちゅうできる
+朝の満員電車はとても疲れる|あさのまんいんでんしゃはとてもつかれる
+野菜もしっかり食べましょう|やさいもしっかりたべましょう
+目覚まし時計が鳴る前に起きた|めざましどけいがなるまえにおきた
+旅行の写真を整理する|りょこうのしゃしんをせいりする
+雪が降ったら雪だるまを作ろう|ゆきがふったらゆきだるまをつくろう
+夜更かしは体によくない|よふかしはからだによくない
+昨日より今日、今日より明日|きのうよりきょうきょうよりあした
+一歩ずつ前に進もう|いっぽずつまえにすすもう
+お気に入りの喫茶店で読書する|おきにいりのきっさてんでどくしょする
+次の駅で乗り換えてください|つぎのえきでのりかえてください
+ご注文はお決まりですか|ごちゅうもんはおきまりですか
+領収書をいただけますか|りょうしゅうしょをいただけますか
+鉛筆を削ってから試験に臨む|えんぴつをけずってからしけんにのぞむ
+本日は晴天なり|ほんじつはせいてんなり
+月がとてもきれいですね|つきがとてもきれいですね
+打鍵の音が心地よい|だけんのおとがここちよい
+キーボードを新しくしたら速くなった|きーぼーどをあたらしくしたらはやくなった
+練習は裏切らない|れんしゅうはうらぎらない
+迷ったら楽しいほうを選ぶ|まよったらたのしいほうをえらぶ
+東京駅から新大阪駅まで|とうきょうえきからしんおおさかえきまで
+北海道でおいしい海鮮丼を食べた|ほっかいどうでおいしいかいせんどんをたべた
+沖縄の海は透き通っている|おきなわのうみはすきとおっている
+富士山の頂上で日の出を見る|ふじさんのちょうじょうでひのでをみる
+締めの一杯はラーメンに限る|しめのいっぱいはらーめんにかぎる
+ちょっとそこまで散歩してくる|ちょっとそこまでさんぽしてくる
+雨の日は家でのんびり過ごす|あめのひはいえでのんびりすごす
+年末は大掃除で忙しい|ねんまつはおおそうじでいそがしい
+新しい靴で出かけよう|あたらしいくつででかけよう
+温泉に入って疲れを取る|おんせんにはいってつかれをとる
+誕生日おめでとうございます|たんじょうびおめでとうございます
+最後まで諦めない|さいごまであきらめない
+継続は力なり|けいぞくはちからなり
+案ずるより産むが易し|あんずるよりうむがやすし
+笑う門には福来る|わらうかどにはふくきたる
+千里の道も一歩から|せんりのみちもいっぽから
+チームワークで勝利をつかむ|ちーむわーくでしょうりをつかむ
+ウェブサイトを毎日更新する|うぇぶさいとをまいにちこうしんする
+ティッシュを箱ごと持ってきて|てぃっしゅをはこごともってきて
+フォークとナイフを並べる|ふぉーくとないふをならべる
+ジェットコースターに乗りたい|じぇっとこーすたーにのりたい
+金曜日の夜は気分が軽い|きんようびのよるはきぶんがかるい
+ペンギンがよちよち歩いている|ぺんぎんがよちよちあるいている
+入場券は窓口で買えます|にゅうじょうけんはまどぐちでかえます
+六時に駅の改札で会おう|ろくじにえきのかいさつであおう
+隣の家から焼き魚のにおいがする|となりのいえからやきざかなのにおいがする`;
 
-  // ─── IT × normal ─────────────────────────────────────────
-  { genre:"IT", level:"normal", jp:"アルゴリズム",       roma:"algorithm" },
-  { genre:"IT", level:"normal", jp:"データベース",       roma:"database" },
-  { genre:"IT", level:"normal", jp:"オープンソース",     roma:"opensource" },
-  { genre:"IT", level:"normal", jp:"アーキテクチャ",     roma:"architecture" },
-  { genre:"IT", level:"normal", jp:"ファイアウォール",   roma:"firewall" },
-  { genre:"IT", level:"normal", jp:"エンクリプション",   roma:"encryption" },
-  { genre:"IT", level:"normal", jp:"アジャイル",         roma:"agile" },
-  { genre:"IT", level:"normal", jp:"スクラム",           roma:"scrum" },
-  { genre:"IT", level:"normal", jp:"スプリント",         roma:"sprint" },
-  { genre:"IT", level:"normal", jp:"カンバン",           roma:"kanban" },
-  { genre:"IT", level:"normal", jp:"リファクタリング",   roma:"refactoring" },
-  { genre:"IT", level:"normal", jp:"ユニットテスト",     roma:"unittest" },
-  { genre:"IT", level:"normal", jp:"インテグレーション", roma:"integration" },
-  { genre:"IT", level:"normal", jp:"コンティニュアス",   roma:"continuous" },
-  { genre:"IT", level:"normal", jp:"デリバリー",         roma:"delivery" },
-  { genre:"IT", level:"normal", jp:"マイクロサービス",   roma:"microservice" },
-  { genre:"IT", level:"normal", jp:"サーバレス",         roma:"serverless" },
-  { genre:"IT", level:"normal", jp:"コンテナリゼーション", roma:"containerization" },
-  { genre:"IT", level:"normal", jp:"オーケストレーション", roma:"orchestration" },
-  { genre:"IT", level:"normal", jp:"モノリシック",       roma:"monolithic" },
-  { genre:"IT", level:"normal", jp:"ロードバランサー",   roma:"loadbalancer" },
-  { genre:"IT", level:"normal", jp:"フェイルオーバー",   roma:"failover" },
-  { genre:"IT", level:"normal", jp:"レプリケーション",   roma:"replication" },
-  { genre:"IT", level:"normal", jp:"シャーディング",     roma:"sharding" },
-  { genre:"IT", level:"normal", jp:"インデキシング",     roma:"indexing" },
-  { genre:"IT", level:"normal", jp:"キャッシング",       roma:"caching" },
-  { genre:"IT", level:"normal", jp:"メッセージキュー",   roma:"messagequeue" },
-  { genre:"IT", level:"normal", jp:"イベントドリブン",   roma:"eventdriven" },
-  { genre:"IT", level:"normal", jp:"ポリモーフィズム",   roma:"polymorphism" },
-  { genre:"IT", level:"normal", jp:"カプセル化",         roma:"encapsulation" },
-  { genre:"IT", level:"normal", jp:"インヘリタンス",     roma:"inheritance" },
-  { genre:"IT", level:"normal", jp:"アブストラクション", roma:"abstraction" },
-  { genre:"IT", level:"normal", jp:"デザインパターン",   roma:"designpattern" },
-  { genre:"IT", level:"normal", jp:"シングルトン",       roma:"singleton" },
-  { genre:"IT", level:"normal", jp:"ファクトリー",       roma:"factory" },
-  { genre:"IT", level:"normal", jp:"オブザーバー",       roma:"observer" },
-  { genre:"IT", level:"normal", jp:"ストラテジー",       roma:"strategy" },
-  { genre:"IT", level:"normal", jp:"デコレーター",       roma:"decorator" },
-  { genre:"IT", level:"normal", jp:"プロキシパターン",   roma:"proxypattern" },
-  { genre:"IT", level:"normal", jp:"イミュータブル",     roma:"immutable" },
-  { genre:"IT", level:"normal", jp:"リアクティブ",       roma:"reactive" },
-  { genre:"IT", level:"normal", jp:"ファンクショナル",   roma:"functional" },
-  { genre:"IT", level:"normal", jp:"プロシージャル",     roma:"procedural" },
-  { genre:"IT", level:"normal", jp:"スタティック",       roma:"static" },
-  { genre:"IT", level:"normal", jp:"ダイナミック",       roma:"dynamic" },
-  { genre:"IT", level:"normal", jp:"インタープリター",   roma:"interpreter" },
-  { genre:"IT", level:"normal", jp:"コンパイラー",       roma:"compiler" },
-  { genre:"IT", level:"normal", jp:"リンカー",           roma:"linker" },
-  { genre:"IT", level:"normal", jp:"アセンブラー",       roma:"assembler" },
-  { genre:"IT", level:"normal", jp:"バイナリ",           roma:"binary" },
-  { genre:"IT", level:"normal", jp:"ヘキサデシマル",     roma:"hexadecimal" },
-  { genre:"IT", level:"normal", jp:"オクタル",           roma:"octal" },
-  { genre:"IT", level:"normal", jp:"ビットマスク",       roma:"bitmask" },
-  { genre:"IT", level:"normal", jp:"シフトオペレーター", roma:"shiftoperator" },
-  { genre:"IT", level:"normal", jp:"ポインター",         roma:"pointer" },
-  { genre:"IT", level:"normal", jp:"ガベージコレクション", roma:"garbagecollection" },
-  { genre:"IT", level:"normal", jp:"ヒープメモリ",       roma:"heapmemory" },
-  { genre:"IT", level:"normal", jp:"スタックオーバーフロー", roma:"stackoverflow" },
-  { genre:"IT", level:"normal", jp:"セグメンテーション", roma:"segmentation" },
-  { genre:"IT", level:"normal", jp:"バーチャルマシン",   roma:"virtualmachine" },
-  { genre:"IT", level:"normal", jp:"ハイパーバイザー",   roma:"hypervisor" },
-  { genre:"IT", level:"normal", jp:"エミュレーター",     roma:"emulator" },
-  { genre:"IT", level:"normal", jp:"サンドボックス",     roma:"sandbox" },
-  { genre:"IT", level:"normal", jp:"コードレビュー",     roma:"codereview" },
-  { genre:"IT", level:"normal", jp:"ドキュメンテーション", roma:"documentation" },
-  { genre:"IT", level:"normal", jp:"テクニカルデット",   roma:"technicaldebt" },
-  { genre:"IT", level:"normal", jp:"スパゲティコード",   roma:"spaghetticode" },
-  { genre:"IT", level:"normal", jp:"クリーンコード",     roma:"cleancode" },
-  { genre:"IT", level:"normal", jp:"ソリッド原則",       roma:"solid" },
-  { genre:"IT", level:"normal", jp:"ドメイン駆動設計",   roma:"ddd" },
-  { genre:"IT", level:"normal", jp:"テスト駆動開発",     roma:"tdd" },
-  { genre:"IT", level:"normal", jp:"ビヘイビア駆動開発", roma:"bdd" },
-  { genre:"IT", level:"normal", jp:"エクストリームプログラミング", roma:"xp" },
-  { genre:"IT", level:"normal", jp:"ペアプログラミング", roma:"pairprogramming" },
-  { genre:"IT", level:"normal", jp:"モブプログラミング", roma:"mobprogramming" },
-  { genre:"IT", level:"normal", jp:"コードスニペット",   roma:"codesnippet" },
-  { genre:"IT", level:"normal", jp:"ボイラープレート",   roma:"boilerplate" },
-  { genre:"IT", level:"normal", jp:"スキャフォールディング", roma:"scaffolding" },
-  { genre:"IT", level:"normal", jp:"テンプレートエンジン", roma:"templateengine" },
-  { genre:"IT", level:"normal", jp:"シリアライゼーション", roma:"serialization" },
-  { genre:"IT", level:"normal", jp:"デシリアライゼーション", roma:"deserialization" },
-  { genre:"IT", level:"normal", jp:"マーシャリング",     roma:"marshaling" },
-  { genre:"IT", level:"normal", jp:"バリデーション",     roma:"validation" },
-  { genre:"IT", level:"normal", jp:"サニタイゼーション", roma:"sanitization" },
-  { genre:"IT", level:"normal", jp:"認証",               roma:"authentication" },
-  { genre:"IT", level:"normal", jp:"認可",               roma:"authorization" },
-  { genre:"IT", level:"normal", jp:"オーセンティケーション", roma:"authentication" },
-  { genre:"IT", level:"normal", jp:"オートライゼーション", roma:"authorization" },
-  { genre:"IT", level:"normal", jp:"オーバーライド",     roma:"override" },
-  { genre:"IT", level:"normal", jp:"オーバーロード",     roma:"overload" },
-  { genre:"IT", level:"normal", jp:"レガシーコード",     roma:"legacycode" },
-  { genre:"IT", level:"normal", jp:"テストカバレッジ",   roma:"testcoverage" },
-  { genre:"IT", level:"normal", jp:"モッキング",         roma:"mocking" },
-  { genre:"IT", level:"normal", jp:"スタビング",         roma:"stubbing" },
-  { genre:"IT", level:"normal", jp:"フィクスチャ",       roma:"fixture" },
-  { genre:"IT", level:"normal", jp:"アサーション",       roma:"assertion" },
-  { genre:"IT", level:"normal", jp:"スモークテスト",     roma:"smoketest" },
-  { genre:"IT", level:"normal", jp:"リグレッションテスト", roma:"regressiontest" },
-  { genre:"IT", level:"normal", jp:"エンドツーエンドテスト", roma:"endtoendtest" },
-  { genre:"IT", level:"normal", jp:"パフォーマンステスト", roma:"performancetest" },
-  { genre:"IT", level:"normal", jp:"ロードテスト",       roma:"loadtest" },
+const WORDS = `猫|ねこ
+桜|さくら
+新幹線|しんかんせん
+図書館|としょかん
+自転車|じてんしゃ
+冷蔵庫|れいぞうこ
+洗濯機|せんたくき
+扇風機|せんぷうき
+加湿器|かしつき
+電子レンジ|でんしれんじ
+天気予報|てんきよほう
+誕生日|たんじょうび
+夏休み|なつやすみ
+運動会|うんどうかい
+修学旅行|しゅうがくりょこう
+卒業式|そつぎょうしき
+入学式|にゅうがくしき
+遊園地|ゆうえんち
+水族館|すいぞくかん
+動物園|どうぶつえん
+美術館|びじゅつかん
+映画館|えいがかん
+喫茶店|きっさてん
+郵便局|ゆうびんきょく
+交差点|こうさてん
+横断歩道|おうだんほどう
+駐車場|ちゅうしゃじょう
+北海道|ほっかいどう
+沖縄|おきなわ
+名古屋|なごや
+富士山|ふじさん
+太平洋|たいへいよう
+地球儀|ちきゅうぎ
+望遠鏡|ぼうえんきょう
+顕微鏡|けんびきょう
+時刻表|じこくひょう
+目覚まし時計|めざましどけい
+鉛筆|えんぴつ
+消しゴム|けしごむ
+教科書|きょうかしょ
+黒板|こくばん
+給食|きゅうしょく
+体育館|たいいくかん
+満塁ホームラン|まんるいほーむらん
+卓球|たっきゅう
+陸上競技|りくじょうきょうぎ
+将棋|しょうぎ
+切手|きって
+小包|こづつみ
+新聞|しんぶん
+辞書|じしょ
+百科事典|ひゃっかじてん
+炊飯器|すいはんき
+味噌汁|みそしる
+卵焼き|たまごやき
+唐揚げ|からあげ
+茶碗蒸し|ちゃわんむし
+肉じゃが|にくじゃが
+お好み焼き|おこのみやき
+回転寿司|かいてんずし
+抹茶|まっちゃ
+金平糖|こんぺいとう
+天ぷら|てんぷら
+牛丼|ぎゅうどん
+親子丼|おやこどん
+紅茶|こうちゃ
+牛乳|ぎゅうにゅう
+一石二鳥|いっせきにちょう
+十人十色|じゅうにんといろ
+一期一会|いちごいちえ
+試行錯誤|しこうさくご
+臨機応変|りんきおうへん
+起承転結|きしょうてんけつ
+以心伝心|いしんでんしん
+自画自賛|じがじさん
+半信半疑|はんしんはんぎ
+前代未聞|ぜんだいみもん
+温故知新|おんこちしん
+一生懸命|いっしょうけんめい
+有言実行|ゆうげんじっこう
+電光石火|でんこうせっか
+春夏秋冬|しゅんかしゅうとう
+花鳥風月|かちょうふうげつ
+七転八倒|しちてんばっとう
+紆余曲折|うよきょくせつ
+単刀直入|たんとうちょくにゅう
+優柔不断|ゆうじゅうふだん
+正々堂々|せいせいどうどう
+一心不乱|いっしんふらん
+冒険|ぼうけん
+宇宙|うちゅう
+銀河|ぎんが
+流れ星|ながれぼし
+台風|たいふう
+紅葉|こうよう
+雪だるま|ゆきだるま
+風鈴|ふうりん
+花火|はなび
+盆踊り|ぼんおどり
+年賀状|ねんがじょう
+お年玉|おとしだま
+鏡餅|かがみもち
+節分|せつぶん
+雛祭り|ひなまつり
+七夕|たなばた
+大晦日|おおみそか
+キーボード|きーぼーど
+ショートカット|しょーとかっと
+フォルダ|ふぉるだ
+チョコレート|ちょこれーと
+シュークリーム|しゅーくりーむ
+ヴィンテージ|ゔぃんてーじ
+ディナー|でぃなー
+ジェラート|じぇらーと
+ウォーターサーバー|うぉーたーさーばー
+チャンピオン|ちゃんぴおん
+ファインプレー|ふぁいんぷれー
+ティーカップ|てぃーかっぷ
+しゃっくり|しゃっくり
+ぎっくり腰|ぎっくりごし
+きゅうり|きゅうり
+ちょうちょ|ちょうちょ`;
 
-  // ─── IT × hard ────────────────────────────────────────────
-  { genre:"IT", level:"hard", jp:"インフラストラクチャ",         roma:"infrastructure" },
-  { genre:"IT", level:"hard", jp:"マイクロプロセッサー",         roma:"microprocessor" },
-  { genre:"IT", level:"hard", jp:"ポリモーフィズム",             roma:"polymorphism" },
-  { genre:"IT", level:"hard", jp:"マルチスレッディング",         roma:"multithreading" },
-  { genre:"IT", level:"hard", jp:"非同期プログラミング",         roma:"asynchronousprogramming" },
-  { genre:"IT", level:"hard", jp:"コンカレンシー",               roma:"concurrency" },
-  { genre:"IT", level:"hard", jp:"ディストリビューテッドシステム", roma:"distributedsystem" },
-  { genre:"IT", level:"hard", jp:"キャパシティプランニング",     roma:"capacityplanning" },
-  { genre:"IT", level:"hard", jp:"アベイラビリティーゾーン",     roma:"availabilityzone" },
-  { genre:"IT", level:"hard", jp:"クロスオリジンリソースシェアリング", roma:"crossoriginresourcesharing" },
-  { genre:"IT", level:"hard", jp:"コンテンツデリバリーネットワーク", roma:"contentdeliverynetwork" },
-  { genre:"IT", level:"hard", jp:"トランスポートレイヤーセキュリティ", roma:"transportlayersecurity" },
-  { genre:"IT", level:"hard", jp:"パブリックキーインフラストラクチャ", roma:"publickeyinfrastructure" },
-  { genre:"IT", level:"hard", jp:"インターネットオブシングス",   roma:"internetofthings" },
-  { genre:"IT", level:"hard", jp:"マシンラーニング",             roma:"machinelearning" },
-  { genre:"IT", level:"hard", jp:"ディープラーニング",           roma:"deeplearning" },
-  { genre:"IT", level:"hard", jp:"ニューラルネットワーク",       roma:"neuralnetwork" },
-  { genre:"IT", level:"hard", jp:"自然言語処理",                 roma:"naturallanguageprocessing" },
-  { genre:"IT", level:"hard", jp:"コンピュータービジョン",       roma:"computervision" },
-  { genre:"IT", level:"hard", jp:"リインフォースメントラーニング", roma:"reinforcementlearning" },
-  { genre:"IT", level:"hard", jp:"トランスフォーマーモデル",     roma:"transformermodel" },
-  { genre:"IT", level:"hard", jp:"ジェネレーティブAI",           roma:"generativeai" },
-  { genre:"IT", level:"hard", jp:"ラージランゲージモデル",       roma:"largelanguagemodel" },
-  { genre:"IT", level:"hard", jp:"プロンプトエンジニアリング",   roma:"promptengineering" },
-  { genre:"IT", level:"hard", jp:"ファインチューニング",         roma:"finetuning" },
-  { genre:"IT", level:"hard", jp:"エンベッディング",             roma:"embedding" },
-  { genre:"IT", level:"hard", jp:"ベクターデータベース",         roma:"vectordatabase" },
-  { genre:"IT", level:"hard", jp:"リトリーバルオーグメンテッドジェネレーション", roma:"rag" },
-  { genre:"IT", level:"hard", jp:"マルチモーダル",               roma:"multimodal" },
-  { genre:"IT", level:"hard", jp:"ブロックチェーン",             roma:"blockchain" },
-  { genre:"IT", level:"hard", jp:"スマートコントラクト",         roma:"smartcontract" },
-  { genre:"IT", level:"hard", jp:"分散型台帳技術",               roma:"distributedledgertechnology" },
-  { genre:"IT", level:"hard", jp:"ゼロナレッジプルーフ",         roma:"zeroknowledgeproof" },
-  { genre:"IT", level:"hard", jp:"クオンタムコンピューティング", roma:"quantumcomputing" },
-  { genre:"IT", level:"hard", jp:"スーパーコンダクター",         roma:"superconductor" },
-  { genre:"IT", level:"hard", jp:"エッジコンピューティング",     roma:"edgecomputing" },
-  { genre:"IT", level:"hard", jp:"フォグコンピューティング",     roma:"fogcomputing" },
-  { genre:"IT", level:"hard", jp:"グリーンコンピューティング",   roma:"greencomputing" },
-  { genre:"IT", level:"hard", jp:"ニューロモーフィックコンピューティング", roma:"neuromorphiccomputing" },
-  { genre:"IT", level:"hard", jp:"フォトニックコンピューティング", roma:"photoniccomputing" },
-  { genre:"IT", level:"hard", jp:"ホモモーフィック暗号",         roma:"homomorphicencryption" },
-  { genre:"IT", level:"hard", jp:"ゼロトラストセキュリティ",     roma:"zerotrustsecurity" },
-  { genre:"IT", level:"hard", jp:"セキュアバイデザイン",         roma:"securebydesign" },
-  { genre:"IT", level:"hard", jp:"スレットインテリジェンス",     roma:"threatintelligence" },
-  { genre:"IT", level:"hard", jp:"インシデントレスポンス",       roma:"incidentresponse" },
-  { genre:"IT", level:"hard", jp:"ペネトレーションテスト",       roma:"penetrationtest" },
-  { genre:"IT", level:"hard", jp:"レッドチームエクササイズ",     roma:"redteamexercise" },
-  { genre:"IT", level:"hard", jp:"ブルーチームオペレーション",   roma:"blueteamoperation" },
-  { genre:"IT", level:"hard", jp:"セキュリティオペレーションセンター", roma:"securityoperationcenter" },
-  { genre:"IT", level:"hard", jp:"エンドポイントディテクション", roma:"endpointdetection" },
-  { genre:"IT", level:"hard", jp:"セキュリティインフォメーションイベントマネジメント", roma:"siem" },
-  { genre:"IT", level:"hard", jp:"スタティックアプリケーションセキュリティテスト", roma:"sast" },
-  { genre:"IT", level:"hard", jp:"ダイナミックアプリケーションセキュリティテスト", roma:"dast" },
-  { genre:"IT", level:"hard", jp:"インタラクティブアプリケーションセキュリティテスト", roma:"iast" },
-  { genre:"IT", level:"hard", jp:"ソフトウェアコンポジションアナリシス", roma:"softwarecompositionanalysis" },
-  { genre:"IT", level:"hard", jp:"マイクロセグメンテーション",   roma:"microsegmentation" },
-  { genre:"IT", level:"hard", jp:"ディセプションテクノロジー",   roma:"deceptiontechnology" },
-  { genre:"IT", level:"hard", jp:"スーパービジョンドコンストラクティブアルゴリズム", roma:"supervisedlearning" },
-  { genre:"IT", level:"hard", jp:"アンスーパービジョンドラーニング", roma:"unsupervisedlearning" },
-  { genre:"IT", level:"hard", jp:"セミスーパービジョンドラーニング", roma:"semisupervisedlearning" },
-  { genre:"IT", level:"hard", jp:"フェデレーテッドラーニング",   roma:"federatedlearning" },
-  { genre:"IT", level:"hard", jp:"トランスファーラーニング",     roma:"transferlearning" },
-  { genre:"IT", level:"hard", jp:"メタラーニング",               roma:"metalearning" },
-  { genre:"IT", level:"hard", jp:"コントラスティブラーニング",   roma:"contrastivelearning" },
-  { genre:"IT", level:"hard", jp:"セルフスーパービジョンドラーニング", roma:"selfsupervisedlearning" },
-  { genre:"IT", level:"hard", jp:"マルチタスクラーニング",       roma:"multitasklearning" },
-  { genre:"IT", level:"hard", jp:"カリキュラムラーニング",       roma:"curriculumlearning" },
-  { genre:"IT", level:"hard", jp:"アクティブラーニング",         roma:"activelearning" },
-  { genre:"IT", level:"hard", jp:"アンサンブルラーニング",       roma:"ensemblelearning" },
-  { genre:"IT", level:"hard", jp:"バギングとブースティング",     roma:"baggingboosting" },
-  { genre:"IT", level:"hard", jp:"ランダムフォレスト",           roma:"randomforest" },
-  { genre:"IT", level:"hard", jp:"グラジエントブースティング",   roma:"gradientboosting" },
-  { genre:"IT", level:"hard", jp:"サポートベクターマシン",       roma:"supportvectormachine" },
-  { genre:"IT", level:"hard", jp:"ロジスティックリグレッション", roma:"logisticregression" },
-  { genre:"IT", level:"hard", jp:"プリンシパルコンポーネントアナリシス", roma:"principalcomponentanalysis" },
-  { genre:"IT", level:"hard", jp:"ハイパーパラメーターチューニング", roma:"hyperparametertuning" },
-  { genre:"IT", level:"hard", jp:"クロスバリデーション",         roma:"crossvalidation" },
-  { genre:"IT", level:"hard", jp:"オーバーフィッティング",       roma:"overfitting" },
-  { genre:"IT", level:"hard", jp:"アンダーフィッティング",       roma:"underfitting" },
-  { genre:"IT", level:"hard", jp:"レギュラリゼーション",         roma:"regularization" },
-  { genre:"IT", level:"hard", jp:"ドロップアウトレイヤー",       roma:"dropoutlayer" },
-  { genre:"IT", level:"hard", jp:"バッチノーマリゼーション",     roma:"batchnormalization" },
-  { genre:"IT", level:"hard", jp:"アテンションメカニズム",       roma:"attentionmechanism" },
-  { genre:"IT", level:"hard", jp:"マルチヘッドアテンション",     roma:"multiheadattention" },
-  { genre:"IT", level:"hard", jp:"ポジショナルエンコーディング", roma:"positionalencoding" },
-  { genre:"IT", level:"hard", jp:"トークナイゼーション",         roma:"tokenization" },
-  { genre:"IT", level:"hard", jp:"バイトペアエンコーディング",   roma:"bytepairencoding" },
-  { genre:"IT", level:"hard", jp:"ワードエンベッディング",       roma:"wordembedding" },
-  { genre:"IT", level:"hard", jp:"セマンティックシミラリティ",   roma:"semanticsimilarity" },
-  { genre:"IT", level:"hard", jp:"コサインシミラリティ",         roma:"cosinesimilarity" },
-  { genre:"IT", level:"hard", jp:"アノマリーディテクション",     roma:"anomalydetection" },
-  { genre:"IT", level:"hard", jp:"タイムシリーズアナリシス",     roma:"timeseriesanalysis" },
-  { genre:"IT", level:"hard", jp:"コンボリューショナルニューラルネットワーク", roma:"cnn" },
-  { genre:"IT", level:"hard", jp:"リカレントニューラルネットワーク", roma:"rnn" },
-  { genre:"IT", level:"hard", jp:"ロングショートタームメモリ",   roma:"lstm" },
-  { genre:"IT", level:"hard", jp:"ジェネラティブアドバーサリアルネットワーク", roma:"gan" },
-  { genre:"IT", level:"hard", jp:"バリエーショナルオートエンコーダー", roma:"variationalautoencoder" },
-  { genre:"IT", level:"hard", jp:"ディフュージョンモデル",       roma:"diffusionmodel" },
-  { genre:"IT", level:"hard", jp:"オブジェクトディテクション",   roma:"objectdetection" },
-  { genre:"IT", level:"hard", jp:"インスタンスセグメンテーション", roma:"instancesegmentation" },
+const EN = `apple|りんご
+banana|バナナ
+keyboard|キーボード
+practice|練習
+accuracy|正確さ
+rhythm|リズム
+finger|指
+morning|朝
+evening|夕方
+weather|天気
+umbrella|傘
+station|駅
+library|図書館
+bicycle|自転車
+mountain|山
+river|川
+ocean|海
+island|島
+forest|森
+window|窓
+kitchen|台所
+breakfast|朝ごはん
+dinner|夕ごはん
+coffee|コーヒー
+chocolate|チョコレート
+birthday|誕生日
+holiday|休日
+weekend|週末
+journey|旅
+adventure|冒険
+history|歴史
+science|科学
+language|言語
+question|質問
+answer|答え
+problem|問題
+solution|解決策
+important|大切な
+beautiful|美しい
+different|ちがう
+possible|できる
+necessary|必要な
+quickly|速く
+slowly|ゆっくり
+carefully|注意深く
+together|いっしょに
+tomorrow|明日
+yesterday|昨日
+tonight|今夜
+already|もう
+almost|ほとんど
+always|いつも
+sometimes|ときどき
+between|あいだに
+through|通りぬけて
+without|なしで
+because|なぜなら
+although|けれども
+knowledge|知識
+experience|経験
+challenge|挑戦
+victory|勝利
+champion|王者
+baseball|野球
+stadium|球場
+pitcher|投手
+catcher|捕手
+computer|コンピューター
+internet|インターネット
+password|パスワード
+software|ソフトウェア
+message|伝言
+picture|写真
+music|音楽
+guitar|ギター
+piano|ピアノ
+festival|祭り
+fireworks|花火
+summer|夏
+winter|冬
+spring|春
+autumn|秋
+rainbow|虹
+thunder|雷
+sunshine|日光
+moonlight|月明かり
+universe|宇宙
+galaxy|銀河
+planet|惑星
+energy|エネルギー
+quality|品質
+quantity|量
+journal|日誌
+puzzle|パズル
+quiz|クイズ
+zebra|シマウマ
+jazz|ジャズ
+oxygen|酸素
+yellow|黄色
+purple|紫
+crystal|水晶
+freedom|自由
+friendship|友情
+patience|忍耐
+courage|勇気
+wisdom|知恵
+strength|強さ
+mystery|なぞ
+treasure|宝物
+whisper|ささやき
+squirrel|リス
+jungle|ジャングル
+volcano|火山
+earthquake|地震
+environment|環境
+university|大学
+restaurant|レストラン
+vegetable|野菜
+strawberry|いちご
+watermelon|スイカ
+pineapple|パイナップル
+sandwich|サンドイッチ
+elephant|ゾウ
+giraffe|キリン
+penguin|ペンギン
+dolphin|イルカ
+butterfly|チョウ`;
 
-  // ─── Business × easy ─────────────────────────────────────
-  { genre:"Business", level:"easy", jp:"プレゼン",     roma:"presentation" },
-  { genre:"Business", level:"easy", jp:"ミーティング", roma:"meeting" },
-  { genre:"Business", level:"easy", jp:"レポート",     roma:"report" },
-  { genre:"Business", level:"easy", jp:"メモ",         roma:"memo" },
-  { genre:"Business", level:"easy", jp:"アジェンダ",   roma:"agenda" },
-  { genre:"Business", level:"easy", jp:"ミッション",   roma:"mission" },
-  { genre:"Business", level:"easy", jp:"ビジョン",     roma:"vision" },
-  { genre:"Business", level:"easy", jp:"バリュー",     roma:"value" },
-  { genre:"Business", level:"easy", jp:"ゴール",       roma:"goal" },
-  { genre:"Business", level:"easy", jp:"ターゲット",   roma:"target" },
-  { genre:"Business", level:"easy", jp:"プラン",       roma:"plan" },
-  { genre:"Business", level:"easy", jp:"バジェット",   roma:"budget" },
-  { genre:"Business", level:"easy", jp:"コスト",       roma:"cost" },
-  { genre:"Business", level:"easy", jp:"プロフィット", roma:"profit" },
-  { genre:"Business", level:"easy", jp:"マーケット",   roma:"market" },
-  { genre:"Business", level:"easy", jp:"ブランド",     roma:"brand" },
-  { genre:"Business", level:"easy", jp:"プロダクト",   roma:"product" },
-  { genre:"Business", level:"easy", jp:"サービス",     roma:"service" },
-  { genre:"Business", level:"easy", jp:"セールス",     roma:"sales" },
-  { genre:"Business", level:"easy", jp:"マーケティング", roma:"marketing" },
-  { genre:"Business", level:"easy", jp:"リサーチ",     roma:"research" },
-  { genre:"Business", level:"easy", jp:"アナリシス",   roma:"analysis" },
-  { genre:"Business", level:"easy", jp:"データ",       roma:"data" },
-  { genre:"Business", level:"easy", jp:"インサイト",   roma:"insight" },
-  { genre:"Business", level:"easy", jp:"フィードバック", roma:"feedback" },
-  { genre:"Business", level:"easy", jp:"チーム",       roma:"team" },
-  { genre:"Business", level:"easy", jp:"リーダー",     roma:"leader" },
-  { genre:"Business", level:"easy", jp:"マネージャー", roma:"manager" },
-  { genre:"Business", level:"easy", jp:"クライアント", roma:"client" },
-  { genre:"Business", level:"easy", jp:"パートナー",   roma:"partner" },
-  { genre:"Business", level:"easy", jp:"ベンダー",     roma:"vendor" },
-  { genre:"Business", level:"easy", jp:"サプライヤー", roma:"supplier" },
-  { genre:"Business", level:"easy", jp:"ステークホルダー", roma:"stakeholder" },
-  { genre:"Business", level:"easy", jp:"インベスター",  roma:"investor" },
-  { genre:"Business", level:"easy", jp:"プロジェクト", roma:"project" },
-  { genre:"Business", level:"easy", jp:"タスク",       roma:"task" },
-  { genre:"Business", level:"easy", jp:"デッドライン", roma:"deadline" },
-  { genre:"Business", level:"easy", jp:"スケジュール", roma:"schedule" },
-  { genre:"Business", level:"easy", jp:"マイルストーン", roma:"milestone" },
-  { genre:"Business", level:"easy", jp:"デリバラブル", roma:"deliverable" },
-  { genre:"Business", level:"easy", jp:"ローンチ",     roma:"launch" },
-  { genre:"Business", level:"easy", jp:"リリース",     roma:"release" },
-  { genre:"Business", level:"easy", jp:"パイロット",   roma:"pilot" },
-  { genre:"Business", level:"easy", jp:"テスト",       roma:"test" },
-  { genre:"Business", level:"easy", jp:"レビュー",     roma:"review" },
-  { genre:"Business", level:"easy", jp:"アップデート", roma:"update" },
-  { genre:"Business", level:"easy", jp:"バージョン",   roma:"version" },
-  { genre:"Business", level:"easy", jp:"ロールアウト", roma:"rollout" },
-  { genre:"Business", level:"easy", jp:"ピボット",     roma:"pivot" },
-  { genre:"Business", level:"easy", jp:"スケールアップ", roma:"scaleup" },
-  { genre:"Business", level:"easy", jp:"エクジット",   roma:"exit" },
-  { genre:"Business", level:"easy", jp:"スタートアップ", roma:"startup" },
-  { genre:"Business", level:"easy", jp:"イノベーション", roma:"innovation" },
-  { genre:"Business", level:"easy", jp:"インキュベーター", roma:"incubator" },
-  { genre:"Business", level:"easy", jp:"アクセラレーター", roma:"accelerator" },
-  { genre:"Business", level:"easy", jp:"ベンチャー",   roma:"venture" },
-  { genre:"Business", level:"easy", jp:"エクイティ",   roma:"equity" },
-  { genre:"Business", level:"easy", jp:"ファンド",     roma:"fund" },
-  { genre:"Business", level:"easy", jp:"バリュエーション", roma:"valuation" },
-  { genre:"Business", level:"easy", jp:"リターン",     roma:"return" },
-  { genre:"Business", level:"easy", jp:"キャッシュフロー", roma:"cashflow" },
-  { genre:"Business", level:"easy", jp:"レベニュー",   roma:"revenue" },
-  { genre:"Business", level:"easy", jp:"マージン",     roma:"margin" },
-  { genre:"Business", level:"easy", jp:"グロース",     roma:"growth" },
-  { genre:"Business", level:"easy", jp:"トラクション", roma:"traction" },
-  { genre:"Business", level:"easy", jp:"チャーン",     roma:"churn" },
-  { genre:"Business", level:"easy", jp:"リテンション", roma:"retention" },
-  { genre:"Business", level:"easy", jp:"コンバージョン", roma:"conversion" },
-  { genre:"Business", level:"easy", jp:"エンゲージメント", roma:"engagement" },
-  { genre:"Business", level:"easy", jp:"リーチ",       roma:"reach" },
-  { genre:"Business", level:"easy", jp:"インプレッション", roma:"impression" },
-  { genre:"Business", level:"easy", jp:"クリック",     roma:"click" },
-  { genre:"Business", level:"easy", jp:"ビュー",       roma:"view" },
-  { genre:"Business", level:"easy", jp:"セッション",   roma:"session" },
-  { genre:"Business", level:"easy", jp:"ユーザー",     roma:"user" },
-  { genre:"Business", level:"easy", jp:"アカウント",   roma:"account" },
-  { genre:"Business", level:"easy", jp:"プロフィール", roma:"profile" },
-  { genre:"Business", level:"easy", jp:"ダッシュボード", roma:"dashboard" },
-  { genre:"Business", level:"easy", jp:"レポート",     roma:"report" },
-  { genre:"Business", level:"easy", jp:"メトリクス",   roma:"metrics" },
-  { genre:"Business", level:"easy", jp:"KPI",          roma:"kpi" },
-  { genre:"Business", level:"easy", jp:"OKR",          roma:"okr" },
-  { genre:"Business", level:"easy", jp:"KGI",          roma:"kgi" },
-  { genre:"Business", level:"easy", jp:"ロードマップ", roma:"roadmap" },
-  { genre:"Business", level:"easy", jp:"ポートフォリオ", roma:"portfolio" },
-  { genre:"Business", level:"easy", jp:"ブレーンストーミング", roma:"brainstorming" },
-  { genre:"Business", level:"easy", jp:"ホワイトボード", roma:"whiteboard" },
-  { genre:"Business", level:"easy", jp:"ワークショップ", roma:"workshop" },
-  { genre:"Business", level:"easy", jp:"セミナー",     roma:"seminar" },
-  { genre:"Business", level:"easy", jp:"カンファレンス", roma:"conference" },
-  { genre:"Business", level:"easy", jp:"ウェビナー",   roma:"webinar" },
-  { genre:"Business", level:"easy", jp:"ネットワーキング", roma:"networking" },
-  { genre:"Business", level:"easy", jp:"コネクション", roma:"connection" },
-  { genre:"Business", level:"easy", jp:"オンボーディング", roma:"onboarding" },
-  { genre:"Business", level:"easy", jp:"リクルーティング", roma:"recruiting" },
-  { genre:"Business", level:"easy", jp:"インタビュー", roma:"interview" },
-  { genre:"Business", level:"easy", jp:"オファー",     roma:"offer" },
-  { genre:"Business", level:"easy", jp:"コンプライアンス", roma:"compliance" },
+const parse = s => s.trim().split("\n").map(l => { const [a, b] = l.split("|"); return { d: a, r: b }; });
+const POOL = { sent: parse(SENT), word: parse(WORDS), en: parse(EN) };
 
-  // ─── Business × normal ───────────────────────────────────
-  { genre:"Business", level:"normal", jp:"マネジメント",         roma:"management" },
-  { genre:"Business", level:"normal", jp:"ストラテジー",         roma:"strategy" },
-  { genre:"Business", level:"normal", jp:"エグゼクティブ",       roma:"executive" },
-  { genre:"Business", level:"normal", jp:"オペレーション",       roma:"operation" },
-  { genre:"Business", level:"normal", jp:"リーダーシップ",       roma:"leadership" },
-  { genre:"Business", level:"normal", jp:"エンパワーメント",     roma:"empowerment" },
-  { genre:"Business", level:"normal", jp:"アカウンタビリティ",   roma:"accountability" },
-  { genre:"Business", level:"normal", jp:"トランスペアレンシー", roma:"transparency" },
-  { genre:"Business", level:"normal", jp:"オートノミー",         roma:"autonomy" },
-  { genre:"Business", level:"normal", jp:"パフォーマンスレビュー", roma:"performancereview" },
-  { genre:"Business", level:"normal", jp:"ストラテジックプランニング", roma:"strategicplanning" },
-  { genre:"Business", level:"normal", jp:"タクティカルエグゼキューション", roma:"tacticalexecution" },
-  { genre:"Business", level:"normal", jp:"オペレーショナルエフィシエンシー", roma:"operationalefficiency" },
-  { genre:"Business", level:"normal", jp:"コスト最適化",         roma:"costoptimization" },
-  { genre:"Business", level:"normal", jp:"プロセス改善",         roma:"processimprovement" },
-  { genre:"Business", level:"normal", jp:"ビジネスプロセスリエンジニアリング", roma:"bpr" },
-  { genre:"Business", level:"normal", jp:"リーンマネジメント",   roma:"leanmanagement" },
-  { genre:"Business", level:"normal", jp:"シックスシグマ",       roma:"sixsigma" },
-  { genre:"Business", level:"normal", jp:"カイゼン",             roma:"kaizen" },
-  { genre:"Business", level:"normal", jp:"TOC理論",              roma:"toc" },
-  { genre:"Business", level:"normal", jp:"オムニチャネル",       roma:"omnichannel" },
-  { genre:"Business", level:"normal", jp:"オムニチャネル戦略",   roma:"omnichannelstrategy" },
-  { genre:"Business", level:"normal", jp:"カスタマーエクスペリエンス", roma:"customerexperience" },
-  { genre:"Business", level:"normal", jp:"カスタマーサクセス",   roma:"customersuccess" },
-  { genre:"Business", level:"normal", jp:"カスタマージャーニー", roma:"customerjourney" },
-  { genre:"Business", level:"normal", jp:"ライフタイムバリュー", roma:"lifetimevalue" },
-  { genre:"Business", level:"normal", jp:"カスタマーアクイジション", roma:"customeracquisition" },
-  { genre:"Business", level:"normal", jp:"アクイジションコスト", roma:"acquisitioncost" },
-  { genre:"Business", level:"normal", jp:"プロダクトマーケットフィット", roma:"productmarketfit" },
-  { genre:"Business", level:"normal", jp:"ゴートゥーマーケット",   roma:"gotomarket" },
-  { genre:"Business", level:"normal", jp:"アドレッサブルマーケット", roma:"addressablemarket" },
-  { genre:"Business", level:"normal", jp:"ニッチマーケット",     roma:"nichemarket" },
-  { genre:"Business", level:"normal", jp:"バリュープロポジション", roma:"valueproposition" },
-  { genre:"Business", level:"normal", jp:"コンペティティブアドバンテージ", roma:"competitiveadvantage" },
-  { genre:"Business", level:"normal", jp:"ディファレンシエーション", roma:"differentiation" },
-  { genre:"Business", level:"normal", jp:"ポジショニング",       roma:"positioning" },
-  { genre:"Business", level:"normal", jp:"ブランディング",       roma:"branding" },
-  { genre:"Business", level:"normal", jp:"リブランディング",     roma:"rebranding" },
-  { genre:"Business", level:"normal", jp:"コーポレートアイデンティティ", roma:"corporateidentity" },
-  { genre:"Business", level:"normal", jp:"ブランドアンバサダー", roma:"brandambassador" },
-  { genre:"Business", level:"normal", jp:"コンテンツマーケティング", roma:"contentmarketing" },
-  { genre:"Business", level:"normal", jp:"インバウンドマーケティング", roma:"inboundmarketing" },
-  { genre:"Business", level:"normal", jp:"アウトバウンドマーケティング", roma:"outboundmarketing" },
-  { genre:"Business", level:"normal", jp:"パフォーマンスマーケティング", roma:"performancemarketing" },
-  { genre:"Business", level:"normal", jp:"デジタルマーケティング", roma:"digitalmarketing" },
-  { genre:"Business", level:"normal", jp:"グロースハッキング",   roma:"growthhacking" },
-  { genre:"Business", level:"normal", jp:"バイラルマーケティング", roma:"viralmarketing" },
-  { genre:"Business", level:"normal", jp:"リターゲティング",     roma:"retargeting" },
-  { genre:"Business", level:"normal", jp:"ファネルマーケティング", roma:"funnelmarketing" },
-  { genre:"Business", level:"normal", jp:"コンバージョンレート最適化", roma:"cro" },
-  { genre:"Business", level:"normal", jp:"サーチエンジンオプティミゼーション", roma:"seo" },
-  { genre:"Business", level:"normal", jp:"サーチエンジンマーケティング", roma:"sem" },
-  { genre:"Business", level:"normal", jp:"ペイパークリック",     roma:"ppc" },
-  { genre:"Business", level:"normal", jp:"アフィリエイトマーケティング", roma:"affiliatemarketing" },
-  { genre:"Business", level:"normal", jp:"メールマーケティング", roma:"emailmarketing" },
-  { genre:"Business", level:"normal", jp:"マーケティングオートメーション", roma:"marketingautomation" },
-  { genre:"Business", level:"normal", jp:"カスタマーリレーションシップマネジメント", roma:"crm" },
-  { genre:"Business", level:"normal", jp:"エンタープライズリソースプランニング", roma:"erp" },
-  { genre:"Business", level:"normal", jp:"サプライチェーンマネジメント", roma:"scm" },
-  { genre:"Business", level:"normal", jp:"ビジネスインテリジェンス", roma:"businessintelligence" },
-  { genre:"Business", level:"normal", jp:"データアナリティクス",  roma:"dataanalytics" },
-  { genre:"Business", level:"normal", jp:"ビッグデータ",          roma:"bigdata" },
-  { genre:"Business", level:"normal", jp:"データドリブン",        roma:"datadriven" },
-  { genre:"Business", level:"normal", jp:"アジャイルトランスフォーメーション", roma:"agiletransformation" },
-  { genre:"Business", level:"normal", jp:"デジタルトランスフォーメーション", roma:"digitaltransformation" },
-  { genre:"Business", level:"normal", jp:"クラウドトランスフォーメーション", roma:"cloudtransformation" },
-  { genre:"Business", level:"normal", jp:"チェンジマネジメント",  roma:"changemanagement" },
-  { genre:"Business", level:"normal", jp:"イノベーションマネジメント", roma:"innovationmanagement" },
-  { genre:"Business", level:"normal", jp:"プロジェクトマネジメント", roma:"projectmanagement" },
-  { genre:"Business", level:"normal", jp:"リスクマネジメント",    roma:"riskmanagement" },
-  { genre:"Business", level:"normal", jp:"クライシスマネジメント", roma:"crisismanagement" },
-  { genre:"Business", level:"normal", jp:"ステークホルダーマネジメント", roma:"stakeholdermanagement" },
-  { genre:"Business", level:"normal", jp:"タレントマネジメント",  roma:"talentmanagement" },
-  { genre:"Business", level:"normal", jp:"パフォーマンスマネジメント", roma:"performancemanagement" },
-  { genre:"Business", level:"normal", jp:"ナレッジマネジメント",  roma:"knowledgemanagement" },
-  { genre:"Business", level:"normal", jp:"イントレプレナーシップ", roma:"intrapreneurship" },
-  { genre:"Business", level:"normal", jp:"アントレプレナーシップ", roma:"entrepreneurship" },
-  { genre:"Business", level:"normal", jp:"コーポレートガバナンス", roma:"corporategovernance" },
-  { genre:"Business", level:"normal", jp:"ESG投資",              roma:"esg" },
-  { genre:"Business", level:"normal", jp:"サステナビリティ",      roma:"sustainability" },
-  { genre:"Business", level:"normal", jp:"コーポレートソーシャルリスポンシビリティ", roma:"csr" },
-  { genre:"Business", level:"normal", jp:"ダイバーシティアンドインクルージョン", roma:"dei" },
-  { genre:"Business", level:"normal", jp:"ウェルビーイング",      roma:"wellbeing" },
-  { genre:"Business", level:"normal", jp:"エンプロイーエクスペリエンス", roma:"employeeexperience" },
-  { genre:"Business", level:"normal", jp:"リモートワーク",        roma:"remotework" },
-  { genre:"Business", level:"normal", jp:"ハイブリッドワーク",    roma:"hybridwork" },
-  { genre:"Business", level:"normal", jp:"アジャイルワーク",      roma:"agilework" },
-  { genre:"Business", level:"normal", jp:"フレキシブルワーク",    roma:"flexiblework" },
-  { genre:"Business", level:"normal", jp:"コワーキングスペース",  roma:"coworkingspace" },
-  { genre:"Business", level:"normal", jp:"ホットデスキング",      roma:"hotdesking" },
-  { genre:"Business", level:"normal", jp:"ワークライフバランス",  roma:"worklifebalance" },
-  { genre:"Business", level:"normal", jp:"エンプロイーエンゲージメント", roma:"employeeengagement" },
-  { genre:"Business", level:"normal", jp:"チームビルディング",    roma:"teambuilding" },
-  { genre:"Business", level:"normal", jp:"オーガニゼーションデザイン", roma:"organizationdesign" },
-  { genre:"Business", level:"normal", jp:"フラットオーガニゼーション", roma:"flatorganization" },
-  { genre:"Business", level:"normal", jp:"マトリックスオーガニゼーション", roma:"matrixorganization" },
-  { genre:"Business", level:"normal", jp:"ティール組織",          roma:"tealorganization" },
-  { genre:"Business", level:"normal", jp:"ホラクラシー",          roma:"holacracy" },
-  { genre:"Business", level:"normal", jp:"スクワッドモデル",      roma:"squadmodel" },
-  { genre:"Business", level:"normal", jp:"トライブモデル",        roma:"tribemodel" },
-  { genre:"Business", level:"normal", jp:"ギルドモデル",          roma:"guildmodel" },
-  { genre:"Business", level:"normal", jp:"センターオブエクセレンス", roma:"centerofexcellence" },
+/* =========================================================
+   ローマ字（かな → 打ち方の候補）
+========================================================= */
+const K1 = {
+  "あ":["a"],"い":["i","yi"],"う":["u","wu","whu"],"え":["e"],"お":["o"],
+  "か":["ka","ca"],"き":["ki"],"く":["ku","cu","qu"],"け":["ke"],"こ":["ko","co"],
+  "さ":["sa"],"し":["si","shi","ci"],"す":["su"],"せ":["se","ce"],"そ":["so"],
+  "た":["ta"],"ち":["ti","chi"],"つ":["tu","tsu"],"て":["te"],"と":["to"],
+  "な":["na"],"に":["ni"],"ぬ":["nu"],"ね":["ne"],"の":["no"],
+  "は":["ha"],"ひ":["hi"],"ふ":["fu","hu"],"へ":["he"],"ほ":["ho"],
+  "ま":["ma"],"み":["mi"],"む":["mu"],"め":["me"],"も":["mo"],
+  "や":["ya"],"ゆ":["yu"],"よ":["yo"],
+  "ら":["ra"],"り":["ri"],"る":["ru"],"れ":["re"],"ろ":["ro"],
+  "わ":["wa"],"を":["wo"],
+  "が":["ga"],"ぎ":["gi"],"ぐ":["gu"],"げ":["ge"],"ご":["go"],
+  "ざ":["za"],"じ":["ji","zi"],"ず":["zu"],"ぜ":["ze"],"ぞ":["zo"],
+  "だ":["da"],"ぢ":["di"],"づ":["du"],"で":["de"],"ど":["do"],
+  "ば":["ba"],"び":["bi"],"ぶ":["bu"],"べ":["be"],"ぼ":["bo"],
+  "ぱ":["pa"],"ぴ":["pi"],"ぷ":["pu"],"ぺ":["pe"],"ぽ":["po"],
+  "ぁ":["xa","la"],"ぃ":["xi","li"],"ぅ":["xu","lu"],"ぇ":["xe","le"],"ぉ":["xo","lo"],
+  "ゃ":["xya","lya"],"ゅ":["xyu","lyu"],"ょ":["xyo","lyo"],"ゎ":["xwa","lwa"],
+  "ゔ":["vu"],"ー":["-"],"、":[","],"。":["."]
+};
+const TSU = ["xtu","ltu","xtsu","ltsu"];
+const COMP = {};
+const SM = { "ゃ":"a","ぃ":"i","ゅ":"u","ぇ":"e","ょ":"o" };
+for (const [k, p] of Object.entries({ "き":"ky","ぎ":"gy","に":"ny","ひ":"hy","び":"by","ぴ":"py","み":"my","り":"ry","ぢ":"dy" }))
+  for (const [s, v] of Object.entries(SM)) COMP[k + s] = [p + v];
+const add = (k, ...v) => { COMP[k] = v; };
+add("しゃ","sha","sya"); add("しぃ","syi"); add("しゅ","shu","syu"); add("しぇ","she","sye"); add("しょ","sho","syo");
+add("ちゃ","cha","tya","cya"); add("ちぃ","tyi","cyi"); add("ちゅ","chu","tyu","cyu"); add("ちぇ","che","tye","cye"); add("ちょ","cho","tyo","cyo");
+add("じゃ","ja","jya","zya"); add("じぃ","jyi","zyi"); add("じゅ","ju","jyu","zyu"); add("じぇ","je","jye","zye"); add("じょ","jo","jyo","zyo");
+add("ふぁ","fa"); add("ふぃ","fi","fyi"); add("ふぇ","fe","fye"); add("ふぉ","fo"); add("ふゃ","fya"); add("ふゅ","fyu"); add("ふょ","fyo");
+add("てぃ","thi"); add("てゃ","tha"); add("てゅ","thu"); add("てぇ","the"); add("てょ","tho");
+add("でぃ","dhi"); add("でゃ","dha"); add("でゅ","dhu"); add("でぇ","dhe"); add("でょ","dho");
+add("とぅ","twu"); add("どぅ","dwu");
+add("うぃ","wi","whi"); add("うぇ","we","whe"); add("うぉ","who");
+add("ゔぁ","va"); add("ゔぃ","vi"); add("ゔぇ","ve"); add("ゔぉ","vo"); add("ゔゅ","vyu");
+add("つぁ","tsa"); add("つぃ","tsi"); add("つぇ","tse"); add("つぉ","tso");
+add("くぁ","kwa","qa"); add("くぃ","qi"); add("くぇ","qe"); add("くぉ","qo"); add("ぐぁ","gwa");
+add("いぇ","ye"); add("すぃ","swi");
+const uniq = a => [...new Set(a)];
+for (const k of Object.keys(COMP)) {
+  const a = K1[k[0]] || [], b = K1[k[1]] || [];
+  const cross = []; for (const x of a) for (const y of b) cross.push(x + y);
+  COMP[k] = uniq([...COMP[k], ...cross]);
+}
+const CONS = /^[bcdfghjklmpqrstvwxyz]/;
+const CONS_N = /^[bcdfghjklmpqrstvwxz]/;   // ん を n 1回で打てる次の頭文字（y・n・母音以外）
 
-  // ─── Business × hard ─────────────────────────────────────
-  { genre:"Business", level:"hard", jp:"コンフィデンシャル",                   roma:"confidential" },
-  { genre:"Business", level:"hard", jp:"コーポレートガバナンスフレームワーク", roma:"corporategovernanceframework" },
-  { genre:"Business", level:"hard", jp:"ステークホルダーエンゲージメント",     roma:"stakeholderengagement" },
-  { genre:"Business", level:"hard", jp:"コンプリヘンシブマーケットアナリシス", roma:"comprehensivemarketanalysis" },
-  { genre:"Business", level:"hard", jp:"コンペティティブインテリジェンス",     roma:"competitiveintelligence" },
-  { genre:"Business", level:"hard", jp:"マーケットセグメンテーション",         roma:"marketsegmentation" },
-  { genre:"Business", level:"hard", jp:"ターゲットオーディエンスプロファイリング", roma:"targetaudienceprofiling" },
-  { genre:"Business", level:"hard", jp:"バイヤーペルソナデベロップメント",     roma:"buyerpersonadevelopment" },
-  { genre:"Business", level:"hard", jp:"カスタマーライフタイムバリューオプティミゼーション", roma:"clvoptimization" },
-  { genre:"Business", level:"hard", jp:"ネットプロモータースコア",             roma:"netpromoterscore" },
-  { genre:"Business", level:"hard", jp:"カスタマーサティスファクションスコア", roma:"customersatisfactionscore" },
-  { genre:"Business", level:"hard", jp:"カスタマーエフォートスコア",           roma:"customereffortscore" },
-  { genre:"Business", level:"hard", jp:"ボイスオブカスタマー",                 roma:"voiceofthecustomer" },
-  { genre:"Business", level:"hard", jp:"ジョブズトゥービーダン",               roma:"jobstobedone" },
-  { genre:"Business", level:"hard", jp:"デザインシンキング",                   roma:"designthinking" },
-  { genre:"Business", level:"hard", jp:"ダブルダイヤモンドプロセス",           roma:"doublediamondprocess" },
-  { genre:"Business", level:"hard", jp:"スタンフォードデザインスプリント",     roma:"designsprint" },
-  { genre:"Business", level:"hard", jp:"ユーザーセントリックデザイン",         roma:"usercentricdesign" },
-  { genre:"Business", level:"hard", jp:"ヒューマンセントリックデザイン",       roma:"humancentricdesign" },
-  { genre:"Business", level:"hard", jp:"エンパシーマッピング",                 roma:"empathymapping" },
-  { genre:"Business", level:"hard", jp:"カスタマージャーニーマッピング",       roma:"customerjourneymapping" },
-  { genre:"Business", level:"hard", jp:"サービスブループリンティング",         roma:"serviceblueprinting" },
-  { genre:"Business", level:"hard", jp:"バリューストリームマッピング",         roma:"valuestreammapping" },
-  { genre:"Business", level:"hard", jp:"アーカイブドバリューチェーン",         roma:"valuechainanalysis" },
-  { genre:"Business", level:"hard", jp:"ポーターズファイブフォーシーズ",       roma:"porterfiveforces" },
-  { genre:"Business", level:"hard", jp:"スウォット分析",                       roma:"swotanalysis" },
-  { genre:"Business", level:"hard", jp:"ペストレ分析",                         roma:"pestleanalysis" },
-  { genre:"Business", level:"hard", jp:"アンソフマトリックス",                 roma:"ansoffmatrix" },
-  { genre:"Business", level:"hard", jp:"BCGマトリックス",                      roma:"bcgmatrix" },
-  { genre:"Business", level:"hard", jp:"マッキンゼーセブンエス",               roma:"mckinsey7s" },
-  { genre:"Business", level:"hard", jp:"バランスドスコアカード",               roma:"balancedscorecard" },
-  { genre:"Business", level:"hard", jp:"オーケービーアール",                   roma:"okr" },
-  { genre:"Business", level:"hard", jp:"リーンスタートアップ方法論",           roma:"leanstartupmethodology" },
-  { genre:"Business", level:"hard", jp:"ブルーオーシャンストラテジー",         roma:"blueocesstrategy" },
-  { genre:"Business", level:"hard", jp:"ディスラプティブイノベーション",       roma:"disruptiveinnovation" },
-  { genre:"Business", level:"hard", jp:"サステイナブルコンペティティブアドバンテージ", roma:"sustainablecompetitiveadvantage" },
-  { genre:"Business", level:"hard", jp:"コアコンピタンスストラテジー",         roma:"corecompetencystrategy" },
-  { genre:"Business", level:"hard", jp:"リソースベースドビュー",               roma:"resourcebasedview" },
-  { genre:"Business", level:"hard", jp:"ダイナミックキャパビリティフレームワーク", roma:"dynamiccapabilityframework" },
-  { genre:"Business", level:"hard", jp:"インスティテューショナルセオリー",     roma:"institutionaltheory" },
-  { genre:"Business", level:"hard", jp:"トランザクションコストセオリー",       roma:"transactioncosttheory" },
-  { genre:"Business", level:"hard", jp:"プリンシパルエージェントプロブレム",   roma:"principalagentproblem" },
-  { genre:"Business", level:"hard", jp:"インフォメーションアシンメトリー",     roma:"informationasymmetry" },
-  { genre:"Business", level:"hard", jp:"モラルハザード",                       roma:"moralhazard" },
-  { genre:"Business", level:"hard", jp:"アドバースセレクション",               roma:"adverseselection" },
-  { genre:"Business", level:"hard", jp:"マーケットフェイラー",                 roma:"marketfailure" },
-  { genre:"Business", level:"hard", jp:"エクスターナリティ",                   roma:"externality" },
-  { genre:"Business", level:"hard", jp:"パブリックグッズプロブレム",           roma:"publicgoodsproblem" },
-  { genre:"Business", level:"hard", jp:"コモンズトラジェディ",                 roma:"tragedyofthecommons" },
-  { genre:"Business", level:"hard", jp:"ゲームセオリーアプリケーション",       roma:"gametheoryapplication" },
-  { genre:"Business", level:"hard", jp:"ナッシュイクイリブリアム",             roma:"nashequilibrium" },
-  { genre:"Business", level:"hard", jp:"パレートオプティマリティ",             roma:"paretooptimality" },
-  { genre:"Business", level:"hard", jp:"メカニズムデザイン",                   roma:"mechanismdesign" },
-  { genre:"Business", level:"hard", jp:"オークションセオリー",                 roma:"auctiontheory" },
-  { genre:"Business", level:"hard", jp:"ビヘイビアラルエコノミクス",           roma:"behavioraleconomics" },
-  { genre:"Business", level:"hard", jp:"プロスペクトセオリー",                 roma:"prospecttheory" },
-  { genre:"Business", level:"hard", jp:"ナッジセオリー",                       roma:"nudgetheory" },
-  { genre:"Business", level:"hard", jp:"コグニティブバイアス",                 roma:"cognitivebias" },
-  { genre:"Business", level:"hard", jp:"ヒューリスティックス",                 roma:"heuristics" },
-  { genre:"Business", level:"hard", jp:"スシステム1とシステム2",               roma:"system1system2" },
-  { genre:"Business", level:"hard", jp:"アンカリングバイアス",                 roma:"anchoringbias" },
-  { genre:"Business", level:"hard", jp:"コンファメーションバイアス",           roma:"confirmationbias" },
-  { genre:"Business", level:"hard", jp:"サンクコストファラシー",               roma:"sunkcoastfallacy" },
-  { genre:"Business", level:"hard", jp:"フレーミングエフェクト",               roma:"framingeffect" },
-  { genre:"Business", level:"hard", jp:"エビデンスベースドマネジメント",       roma:"evidencebasedmanagement" },
-  { genre:"Business", level:"hard", jp:"ランダムコントロールドトライアル",     roma:"randomizedcontrolledtrial" },
-  { genre:"Business", level:"hard", jp:"アブダクティブリーズニング",           roma:"abductivereasoning" },
-  { genre:"Business", level:"hard", jp:"インダクティブリーズニング",           roma:"inductivereasoning" },
-  { genre:"Business", level:"hard", jp:"デダクティブリーズニング",             roma:"deductivereasoning" },
-  { genre:"Business", level:"hard", jp:"ストラクチャードプロブレムソルビング", roma:"structuredproblemsolving" },
-  { genre:"Business", level:"hard", jp:"ハイポセシスドリブンアプローチ",       roma:"hypothesisdriverapproach" },
-  { genre:"Business", level:"hard", jp:"イシューツリーアナリシス",             roma:"issuetreeanalysis" },
-  { genre:"Business", level:"hard", jp:"ミシーフレームワーク",                 roma:"mece" },
-  { genre:"Business", level:"hard", jp:"ロジックツリーデコンストラクション",   roma:"logictree" },
-  { genre:"Business", level:"hard", jp:"ピラミッドプリンシプル",               roma:"pyramidprinciple" },
-  { genre:"Business", level:"hard", jp:"ストーリーラインデベロップメント",     roma:"storylinedevelopment" },
-  { genre:"Business", level:"hard", jp:"エグゼクティブサマリーライティング",   roma:"executivesummary" },
-  { genre:"Business", level:"hard", jp:"インフルエンシングウィズアウトオーソリティ", roma:"influencingwithoutauthority" },
-  { genre:"Business", level:"hard", jp:"コンフリクトリソリューション",         roma:"conflictresolution" },
-  { genre:"Business", level:"hard", jp:"ネゴシエーションタクティクス",         roma:"negotiationtactics" },
-  { genre:"Business", level:"hard", jp:"コンセンサスビルディング",             roma:"consensusbuilding" },
-  { genre:"Business", level:"hard", jp:"ファシリテーションスキルズ",           roma:"facilitationskills" },
-  { genre:"Business", level:"hard", jp:"エクゼクティブコミュニケーション",     roma:"executivecommunication" },
-  { genre:"Business", level:"hard", jp:"クロスカルチャーコミュニケーション",   roma:"crossculturalcommunication" },
-  { genre:"Business", level:"hard", jp:"コミュニケーションフレームワーク",     roma:"communicationframework" },
-  { genre:"Business", level:"hard", jp:"フィードバックカルチャー",             roma:"feedbackculture" },
-  { genre:"Business", level:"hard", jp:"サイコロジカルセーフティ",             roma:"psychologicalsafety" },
-  { genre:"Business", level:"hard", jp:"エモーショナルインテリジェンス",       roma:"emotionalintelligence" },
-  { genre:"Business", level:"hard", jp:"グロースマインドセット",               roma:"growthmindset" },
-  { genre:"Business", level:"hard", jp:"コーチングアンドメンタリング",         roma:"coachingandmentoring" },
-  { genre:"Business", level:"hard", jp:"インクルーシブリーダーシップ",         roma:"inclusiveleadership" },
-  { genre:"Business", level:"hard", jp:"サーバントリーダーシップ",             roma:"servantleadership" },
-  { genre:"Business", level:"hard", jp:"トランスフォーメーショナルリーダーシップ", roma:"transformationalleadership" },
-  { genre:"Business", level:"hard", jp:"シチュエーショナルリーダーシップ",     roma:"situationalleadership" },
-  { genre:"Business", level:"hard", jp:"アダプティブリーダーシップ",           roma:"adaptiveleadership" },
-  { genre:"Business", level:"hard", jp:"ディシプリンドアジャイルデリバリー",   roma:"disciplinedagiledelivery" },
-  { genre:"Business", level:"hard", jp:"スケールドアジャイルフレームワーク",   roma:"scaledagileframework" },
-  { genre:"Business", level:"hard", jp:"ラージスケールスクラム",               roma:"largescalescrum" },
-  { genre:"Business", level:"hard", jp:"ネクサス統合フレームワーク",           roma:"nexusframework" },
-  { genre:"Business", level:"hard", jp:"スポティファイエンジニアリングカルチャー", roma:"spotifyengineering" },
+function tokenize(read, en) {
+  if (en) return [...read].map(ch => ({ k: ch, c: [ch] }));
+  let u = [];
+  for (let i = 0; i < read.length; ) {
+    const two = read.slice(i, i + 2);
+    if (two.length === 2 && COMP[two]) { u.push({ k: two, c: COMP[two].slice() }); i += 2; continue; }
+    const ch = read[i];
+    u.push({ k: ch, c: (K1[ch] || [ch]).slice() }); i++;
+  }
+  // っ は次の音と1まとまりにする（子音を重ねる / xtu・ltu ＋ 次）
+  const out = [];
+  for (let i = 0; i < u.length; i++) {
+    const x = u[i], nx = u[i + 1];
+    if (x.k === "っ" && nx && nx.k !== "っ" && nx.k !== "ん") {
+      const dbl = nx.c.filter(c => CONS.test(c)).map(c => c[0] + c);
+      const sm = []; for (const t of TSU) for (const c of nx.c) sm.push(t + c);
+      if (dbl.length) { out.push({ k: "っ" + nx.k, c: uniq([...dbl, ...sm]), sok: true, inner: nx.k }); i++; continue; }
+    }
+    if (x.k === "っ") { out.push({ k: "っ", c: TSU.slice() }); continue; }
+    out.push(x);
+  }
+  // ん：次が子音（y・n 以外）なら n 1回でもよい
+  for (let i = 0; i < out.length; i++) {
+    if (out[i].k !== "ん") continue;
+    const nx = out[i + 1];
+    const single = !!nx && nx.c.every(c => CONS_N.test(c));
+    out[i].c = single ? ["n", "nn", "xn"] : ["nn", "xn"];
+    out[i].nOk = single;
+  }
+  return out;
+}
+function splitSok(c) {
+  for (const t of ["xtsu","ltsu","xtu","ltu"]) if (c.startsWith(t)) return [t, c.slice(t.length)];
+  return ["重ねる", c.slice(1)];
+}
 
-  // ─── SNS × easy ──────────────────────────────────────────
-  { genre:"SNS", level:"easy", jp:"フォロー",       roma:"follow" },
-  { genre:"SNS", level:"easy", jp:"いいね",         roma:"like" },
-  { genre:"SNS", level:"easy", jp:"シェア",         roma:"share" },
-  { genre:"SNS", level:"easy", jp:"コメント",       roma:"comment" },
-  { genre:"SNS", level:"easy", jp:"リツイート",     roma:"retweet" },
-  { genre:"SNS", level:"easy", jp:"ストーリー",     roma:"story" },
-  { genre:"SNS", level:"easy", jp:"リール",         roma:"reel" },
-  { genre:"SNS", level:"easy", jp:"ライブ",         roma:"live" },
-  { genre:"SNS", level:"easy", jp:"ポスト",         roma:"post" },
-  { genre:"SNS", level:"easy", jp:"ツイート",       roma:"tweet" },
-  { genre:"SNS", level:"easy", jp:"ハッシュタグ",   roma:"hashtag" },
-  { genre:"SNS", level:"easy", jp:"メンション",     roma:"mention" },
-  { genre:"SNS", level:"easy", jp:"DM",             roma:"dm" },
-  { genre:"SNS", level:"easy", jp:"プロフィール",   roma:"profile" },
-  { genre:"SNS", level:"easy", jp:"アイコン",       roma:"icon" },
-  { genre:"SNS", level:"easy", jp:"バナー",         roma:"banner" },
-  { genre:"SNS", level:"easy", jp:"フィード",       roma:"feed" },
-  { genre:"SNS", level:"easy", jp:"タイムライン",   roma:"timeline" },
-  { genre:"SNS", level:"easy", jp:"トレンド",       roma:"trend" },
-  { genre:"SNS", level:"easy", jp:"バイラル",       roma:"viral" },
-  { genre:"SNS", level:"easy", jp:"インフルエンサー", roma:"influencer" },
-  { genre:"SNS", level:"easy", jp:"フォロワー",     roma:"follower" },
-  { genre:"SNS", level:"easy", jp:"フォロー中",     roma:"following" },
-  { genre:"SNS", level:"easy", jp:"ブロック",       roma:"block" },
-  { genre:"SNS", level:"easy", jp:"ミュート",       roma:"mute" },
-  { genre:"SNS", level:"easy", jp:"リポスト",       roma:"repost" },
-  { genre:"SNS", level:"easy", jp:"クリエーター",   roma:"creator" },
-  { genre:"SNS", level:"easy", jp:"コンテンツ",     roma:"content" },
-  { genre:"SNS", level:"easy", jp:"サムネイル",     roma:"thumbnail" },
-  { genre:"SNS", level:"easy", jp:"キャプション",   roma:"caption" },
-  { genre:"SNS", level:"easy", jp:"フィルター",     roma:"filter" },
-  { genre:"SNS", level:"easy", jp:"スタンプ",       roma:"stamp" },
-  { genre:"SNS", level:"easy", jp:"ステッカー",     roma:"sticker" },
-  { genre:"SNS", level:"easy", jp:"アニメーション", roma:"animation" },
-  { genre:"SNS", level:"easy", jp:"テンプレート",   roma:"template" },
-  { genre:"SNS", level:"easy", jp:"チャンネル",     roma:"channel" },
-  { genre:"SNS", level:"easy", jp:"サブスクライブ", roma:"subscribe" },
-  { genre:"SNS", level:"easy", jp:"プレイリスト",   roma:"playlist" },
-  { genre:"SNS", level:"easy", jp:"ポッドキャスト", roma:"podcast" },
-  { genre:"SNS", level:"easy", jp:"ライブ配信",     roma:"livestreaming" },
-  { genre:"SNS", level:"easy", jp:"スペース",       roma:"spaces" },
-  { genre:"SNS", level:"easy", jp:"クラブハウス",   roma:"clubhouse" },
-  { genre:"SNS", level:"easy", jp:"コミュニティ",   roma:"community" },
-  { genre:"SNS", level:"easy", jp:"グループ",       roma:"group" },
-  { genre:"SNS", level:"easy", jp:"ページ",         roma:"page" },
-  { genre:"SNS", level:"easy", jp:"イベント",       roma:"event" },
-  { genre:"SNS", level:"easy", jp:"アルバム",       roma:"album" },
-  { genre:"SNS", level:"easy", jp:"チェックイン",   roma:"checkin" },
-  { genre:"SNS", level:"easy", jp:"タグ付け",       roma:"tagging" },
-  { genre:"SNS", level:"easy", jp:"エモジ",         roma:"emoji" },
-  { genre:"SNS", level:"easy", jp:"リアクション",   roma:"reaction" },
-  { genre:"SNS", level:"easy", jp:"インプレッション", roma:"impression" },
-  { genre:"SNS", level:"easy", jp:"リーチ",         roma:"reach" },
-  { genre:"SNS", level:"easy", jp:"エンゲージメント", roma:"engagement" },
-  { genre:"SNS", level:"easy", jp:"クリックスルーレート", roma:"ctr" },
-  { genre:"SNS", level:"easy", jp:"コンバージョン", roma:"conversion" },
-  { genre:"SNS", level:"easy", jp:"アナリティクス", roma:"analytics" },
-  { genre:"SNS", level:"easy", jp:"インサイト",     roma:"insight" },
-  { genre:"SNS", level:"easy", jp:"オーガニックリーチ", roma:"organicreach" },
-  { genre:"SNS", level:"easy", jp:"ペイドリーチ",   roma:"paidreach" },
-  { genre:"SNS", level:"easy", jp:"ブースト",       roma:"boost" },
-  { genre:"SNS", level:"easy", jp:"スポンサード",   roma:"sponsored" },
-  { genre:"SNS", level:"easy", jp:"プロモート",     roma:"promote" },
-  { genre:"SNS", level:"easy", jp:"アド",           roma:"ad" },
-  { genre:"SNS", level:"easy", jp:"キャンペーン",   roma:"campaign" },
-  { genre:"SNS", level:"easy", jp:"インフード広告", roma:"infeedads" },
-  { genre:"SNS", level:"easy", jp:"ストーリー広告", roma:"storyadvertising" },
-  { genre:"SNS", level:"easy", jp:"リターゲット",   roma:"retarget" },
-  { genre:"SNS", level:"easy", jp:"カスタムオーディエンス", roma:"customaudience" },
-  { genre:"SNS", level:"easy", jp:"ルックアライク",  roma:"lookalike" },
-  { genre:"SNS", level:"easy", jp:"アンフォロー",   roma:"unfollow" },
-  { genre:"SNS", level:"easy", jp:"ブラックリスト", roma:"blacklist" },
-  { genre:"SNS", level:"easy", jp:"スパム",         roma:"spam" },
-  { genre:"SNS", level:"easy", jp:"フィッシング",   roma:"phishing" },
-  { genre:"SNS", level:"easy", jp:"フェイクニュース", roma:"fakenews" },
-  { genre:"SNS", level:"easy", jp:"ミスインフォメーション", roma:"misinformation" },
-  { genre:"SNS", level:"easy", jp:"デジタルデトックス", roma:"digitaldetox" },
-  { genre:"SNS", level:"easy", jp:"スクリーンタイム", roma:"screentime" },
-  { genre:"SNS", level:"easy", jp:"ノーティフィケーション", roma:"notification" },
-  { genre:"SNS", level:"easy", jp:"プッシュ通知",   roma:"pushnotification" },
-  { genre:"SNS", level:"easy", jp:"プライバシー設定", roma:"privacysetting" },
-  { genre:"SNS", level:"easy", jp:"アカウント設定", roma:"accountsetting" },
-  { genre:"SNS", level:"easy", jp:"ツーファクター認証", roma:"twofactorauthentication" },
-  { genre:"SNS", level:"easy", jp:"ログアウト",     roma:"logout" },
-  { genre:"SNS", level:"easy", jp:"セッション",     roma:"session" },
-  { genre:"SNS", level:"easy", jp:"クロスポスト",   roma:"crosspost" },
-  { genre:"SNS", level:"easy", jp:"シェアボタン",   roma:"sharebutton" },
-  { genre:"SNS", level:"easy", jp:"エンベッド",     roma:"embed" },
-  { genre:"SNS", level:"easy", jp:"スクリーンショット", roma:"screenshot" },
-  { genre:"SNS", level:"easy", jp:"リンクコピー",   roma:"linkcopy" },
-  { genre:"SNS", level:"easy", jp:"バイオ",         roma:"bio" },
-  { genre:"SNS", level:"easy", jp:"ウェブサイトリンク", roma:"websitelink" },
-  { genre:"SNS", level:"easy", jp:"ビジネスアカウント", roma:"businessaccount" },
-  { genre:"SNS", level:"easy", jp:"クリエーターアカウント", roma:"creatoraccount" },
-  { genre:"SNS", level:"easy", jp:"パーソナルアカウント", roma:"personalaccount" },
-  { genre:"SNS", level:"easy", jp:"シェアボタン",     roma:"sharebutton" },
-  { genre:"SNS", level:"easy", jp:"ブックマーク",     roma:"bookmark" },
-  { genre:"SNS", level:"easy", jp:"アーカイブ",       roma:"archive" },
-  { genre:"SNS", level:"easy", jp:"ピン留め",         roma:"pin" },
-  { genre:"SNS", level:"easy", jp:"ハイライト",       roma:"highlight" },
+/* =========================================================
+   保存
+========================================================= */
+const emptyAgg = () => ({ keys:{}, bi:{}, conf:{}, pat:{same:[0,0],finger:[0,0],hand:[0,0],alt:[0,0]}, lat:[0,0], hab:{}, extra:[0,0] });
+let S = { pref:{}, hist:[], agg: emptyAgg(), opt:{ mode:"sent", sec:60, guide:true, weak:false, sound:true } };
+try { const j = JSON.parse(localStorage.getItem(STORE) || "null"); if (j) S = Object.assign(S, j); } catch (e) {}
+S.opt = Object.assign({ mode:"sent", sec:60, guide:true, weak:false, sound:true }, S.opt || {});
+S.agg = Object.assign(emptyAgg(), S.agg || {});
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} };
 
-  // ─── SNS × normal ────────────────────────────────────────
-  { genre:"SNS", level:"normal", jp:"インフルエンサーマーケティング", roma:"influencermarketing" },
-  { genre:"SNS", level:"normal", jp:"マイクロインフルエンサー",       roma:"microinfluencer" },
-  { genre:"SNS", level:"normal", jp:"ナノインフルエンサー",           roma:"nanoinfluencer" },
-  { genre:"SNS", level:"normal", jp:"メガインフルエンサー",           roma:"megainfluencer" },
-  { genre:"SNS", level:"normal", jp:"マクロインフルエンサー",         roma:"macroinfluencer" },
-  { genre:"SNS", level:"normal", jp:"コラボレーション",               roma:"collaboration" },
-  { genre:"SNS", level:"normal", jp:"スポンサーシップ",               roma:"sponsorship" },
-  { genre:"SNS", level:"normal", jp:"ブランドアンバサダー",           roma:"brandambassador" },
-  { genre:"SNS", level:"normal", jp:"アフィリエイト",                 roma:"affiliate" },
-  { genre:"SNS", level:"normal", jp:"プロモーションコード",           roma:"promotioncode" },
-  { genre:"SNS", level:"normal", jp:"ユーザージェネレーテッドコンテンツ", roma:"ugc" },
-  { genre:"SNS", level:"normal", jp:"コンテンツカレンダー",           roma:"contentcalendar" },
-  { genre:"SNS", level:"normal", jp:"ソーシャルメディアストラテジー", roma:"socialmediastategy" },
-  { genre:"SNS", level:"normal", jp:"コンテンツミックス",             roma:"contentmix" },
-  { genre:"SNS", level:"normal", jp:"ピラーコンテンツ",               roma:"pillarcontent" },
-  { genre:"SNS", level:"normal", jp:"エバーグリーンコンテンツ",       roma:"evergreencontent" },
-  { genre:"SNS", level:"normal", jp:"トレンドジャッキング",           roma:"trendjacking" },
-  { genre:"SNS", level:"normal", jp:"ニュースジャッキング",           roma:"newsjacking" },
-  { genre:"SNS", level:"normal", jp:"リアルタイムマーケティング",     roma:"realtimemarketing" },
-  { genre:"SNS", level:"normal", jp:"ソーシャルリスニング",           roma:"sociallistening" },
-  { genre:"SNS", level:"normal", jp:"センチメントアナリシス",         roma:"sentimentanalysis" },
-  { genre:"SNS", level:"normal", jp:"ブランドメンション",             roma:"brandmention" },
-  { genre:"SNS", level:"normal", jp:"ブランドセンチメント",           roma:"brandsentiment" },
-  { genre:"SNS", level:"normal", jp:"コミュニティマネジメント",       roma:"communitymanagement" },
-  { genre:"SNS", level:"normal", jp:"コミュニティビルディング",       roma:"communitybuilding" },
-  { genre:"SNS", level:"normal", jp:"コミュニティガイドライン",       roma:"communityguidelines" },
-  { genre:"SNS", level:"normal", jp:"モデレーション",                 roma:"moderation" },
-  { genre:"SNS", level:"normal", jp:"コンテンツモデレーション",       roma:"contentmoderation" },
-  { genre:"SNS", level:"normal", jp:"クライシスコミュニケーション",   roma:"crisiscommunication" },
-  { genre:"SNS", level:"normal", jp:"レピュテーションマネジメント",   roma:"reputationmanagement" },
-  { genre:"SNS", level:"normal", jp:"オンラインレピュテーション",     roma:"onlinereputation" },
-  { genre:"SNS", level:"normal", jp:"デジタルPR",                     roma:"digitalpr" },
-  { genre:"SNS", level:"normal", jp:"ソーシャルプルーフ",             roma:"socialproof" },
-  { genre:"SNS", level:"normal", jp:"バンドワゴン効果",               roma:"bandwagoneffect" },
-  { genre:"SNS", level:"normal", jp:"フォモ",                         roma:"fomo" },
-  { genre:"SNS", level:"normal", jp:"フォジョ",                       roma:"fojo" },
-  { genre:"SNS", level:"normal", jp:"インターネットカルチャー",       roma:"internetculture" },
-  { genre:"SNS", level:"normal", jp:"ミーム",                         roma:"meme" },
-  { genre:"SNS", level:"normal", jp:"インターネットスラング",         roma:"internetslang" },
-  { genre:"SNS", level:"normal", jp:"エコーチェンバー",               roma:"echochamber" },
-  { genre:"SNS", level:"normal", jp:"フィルターバブル",               roma:"filterbubble" },
-  { genre:"SNS", level:"normal", jp:"アルゴリズムバイアス",           roma:"algorithmbias" },
-  { genre:"SNS", level:"normal", jp:"ソーシャルメディアバブル",       roma:"socialmediabubble" },
-  { genre:"SNS", level:"normal", jp:"デジタルフットプリント",         roma:"digitalfootprint" },
-  { genre:"SNS", level:"normal", jp:"オンラインプレゼンス",           roma:"onlinepresence" },
-  { genre:"SNS", level:"normal", jp:"パーソナルブランディング",       roma:"personalbranding" },
-  { genre:"SNS", level:"normal", jp:"ソートリーダーシップ",           roma:"thoughtleadership" },
-  { genre:"SNS", level:"normal", jp:"リンクドインオプティマイゼーション", roma:"linkedinoptimization" },
-  { genre:"SNS", level:"normal", jp:"ツイッターエンゲージメント",     roma:"twitterengagement" },
-  { genre:"SNS", level:"normal", jp:"インスタグラムグロース",         roma:"instagramgrowth" },
-  { genre:"SNS", level:"normal", jp:"ティックトックバイラリティ",     roma:"tiktokvirality" },
-  { genre:"SNS", level:"normal", jp:"ユーチューブSEO",               roma:"youtubeseo" },
-  { genre:"SNS", level:"normal", jp:"スナップチャットストーリー",     roma:"snapchatstory" },
-  { genre:"SNS", level:"normal", jp:"ピンタレストマーケティング",     roma:"pinterestmarketing" },
-  { genre:"SNS", level:"normal", jp:"レディットマーケティング",       roma:"redditmarketing" },
-  { genre:"SNS", level:"normal", jp:"クワーラ最適化",                 roma:"quoraoptimization" },
-  { genre:"SNS", level:"normal", jp:"ソーシャルシェアリング",         roma:"socialsharing" },
-  { genre:"SNS", level:"normal", jp:"バイラルループ",                 roma:"viralloop" },
-  { genre:"SNS", level:"normal", jp:"グロースループ",                 roma:"growthloop" },
-  { genre:"SNS", level:"normal", jp:"バイラル係数",                   roma:"viralcoefficient" },
-  { genre:"SNS", level:"normal", jp:"ネットワーク効果",               roma:"networkeffect" },
-  { genre:"SNS", level:"normal", jp:"プラットフォームエフェクト",     roma:"platformeffect" },
-  { genre:"SNS", level:"normal", jp:"メトカーフの法則",               roma:"metcalfeslaw" },
-  { genre:"SNS", level:"normal", jp:"ロングテール理論",               roma:"longtailtheory" },
-  { genre:"SNS", level:"normal", jp:"パレートの法則",                 roma:"paretolaw" },
-  { genre:"SNS", level:"normal", jp:"アテンションエコノミー",         roma:"attentioneconomy" },
-  { genre:"SNS", level:"normal", jp:"エンゲージメントレート",         roma:"engagementrate" },
-  { genre:"SNS", level:"normal", jp:"フォロワーグロースレート",       roma:"followergrowthrate" },
-  { genre:"SNS", level:"normal", jp:"コンテンツパフォーマンス",       roma:"contentperformance" },
-  { genre:"SNS", level:"normal", jp:"ポストフリクエンシー",           roma:"postfrequency" },
-  { genre:"SNS", level:"normal", jp:"ベストタイムトゥポスト",         roma:"besttimetopost" },
-  { genre:"SNS", level:"normal", jp:"クロスプラットフォームストラテジー", roma:"crossplatformstrategy" },
-  { genre:"SNS", level:"normal", jp:"オムニチャネルソーシャル",       roma:"omnichannelsocial" },
-  { genre:"SNS", level:"normal", jp:"ソーシャルコマース",             roma:"socialcommerce" },
-  { genre:"SNS", level:"normal", jp:"ライブショッピング",             roma:"liveshopping" },
-  { genre:"SNS", level:"normal", jp:"インスタグラムショッピング",     roma:"instagramshopping" },
-  { genre:"SNS", level:"normal", jp:"ティックトックショップ",         roma:"tiktokshop" },
-  { genre:"SNS", level:"normal", jp:"ピンタレストショッピング",       roma:"pinterestshopping" },
-  { genre:"SNS", level:"normal", jp:"ソーシャルメディアROI",          roma:"socialmediasroi" },
-  { genre:"SNS", level:"normal", jp:"ブランドリフト",                 roma:"brandlift" },
-  { genre:"SNS", level:"normal", jp:"アドリコール",                   roma:"adrecall" },
-  { genre:"SNS", level:"normal", jp:"ブランドアウェアネス",           roma:"brandawareness" },
-  { genre:"SNS", level:"normal", jp:"ブランドコンシダレーション",     roma:"brandconsideration" },
-  { genre:"SNS", level:"normal", jp:"インテントトゥパーチェス",       roma:"intenttopurchase" },
-  { genre:"SNS", level:"normal", jp:"メッセージアソシエーション",     roma:"messageassociation" },
-  { genre:"SNS", level:"normal", jp:"アットリビューションモデリング", roma:"attributionmodeling" },
-  { genre:"SNS", level:"normal", jp:"マルチタッチアットリビューション", roma:"multitouchattribution" },
-  { genre:"SNS", level:"normal", jp:"ラストクリックアットリビューション", roma:"lastclickattribution" },
-  { genre:"SNS", level:"normal", jp:"ファーストクリックアットリビューション", roma:"firstclickattribution" },
-  { genre:"SNS", level:"normal", jp:"リニアアットリビューション",     roma:"linearattribution" },
-  { genre:"SNS", level:"normal", jp:"タイムディケイアットリビューション", roma:"timedecayattribution" },
-  { genre:"SNS", level:"normal", jp:"データドリブンアットリビューション", roma:"datadrivenattribution" },
-  { genre:"SNS", level:"normal", jp:"コホートアナリシス",             roma:"cohortanalysis" },
-  { genre:"SNS", level:"normal", jp:"カスタマーセグメンテーション",   roma:"customersegmentation" },
-  { genre:"SNS", level:"normal", jp:"パーソナライゼーション",         roma:"personalization" },
-  { genre:"SNS", level:"normal", jp:"ダイナミックコンテンツ",         roma:"dynamiccontent" },
-  { genre:"SNS", level:"normal", jp:"ABテスト",                       roma:"abtest" },
-  { genre:"SNS", level:"normal", jp:"マルチバリアントテスト",         roma:"multivariatetest" },
+const pc = (k, c) => (S.pref[k] && S.pref[k][c]) || 0;
+function score(u, c) {
+  if (u.sok) { const [st, inner] = splitSok(c); return pc("っ", st) * 1e6 + pc(u.inner, inner); }
+  return pc(u.k, c);
+}
+function pick(u, b) {
+  let best = null, bs = -1;
+  for (const c of u.c) { if (!c.startsWith(b)) continue; const s = score(u, c); if (s > bs) { bs = s; best = c; } }
+  return best;
+}
+function learnKey(k, c) { (S.pref[k] = S.pref[k] || {})[c] = (S.pref[k][c] || 0) + 1; }
 
-  // ─── SNS × hard ──────────────────────────────────────────
-  { genre:"SNS", level:"hard", jp:"コミュニケーション",                         roma:"communication" },
-  { genre:"SNS", level:"hard", jp:"アルゴリズムオプティミゼーション",           roma:"algorithmoptimization" },
-  { genre:"SNS", level:"hard", jp:"コンテンツディストリビューションネットワーク", roma:"contentdistributionnetwork" },
-  { genre:"SNS", level:"hard", jp:"ソーシャルメディアインフラストラクチャ",     roma:"socialmediainfrastructure" },
-  { genre:"SNS", level:"hard", jp:"ユーザーエクスペリエンスデザイン",           roma:"userexperiencedesign" },
-  { genre:"SNS", level:"hard", jp:"プロダクトレッドグロース",                   roma:"productledgrowth" },
-  { genre:"SNS", level:"hard", jp:"バイラルグロースエンジニアリング",           roma:"viralgrowthengineering" },
-  { genre:"SNS", level:"hard", jp:"ソーシャルグラフアナリシス",                 roma:"socialgraphanalysis" },
-  { genre:"SNS", level:"hard", jp:"インフルエンスプロパゲーション",             roma:"influencepropagation" },
-  { genre:"SNS", level:"hard", jp:"ネットワークエフェクトモデリング",           roma:"networkeffectmodeling" },
-  { genre:"SNS", level:"hard", jp:"コミュニティエコノミクス",                   roma:"communityeconomics" },
-  { genre:"SNS", level:"hard", jp:"クリエーターエコノミープラットフォーム",     roma:"creatoreconomyplatform" },
-  { genre:"SNS", level:"hard", jp:"トークンゲーテッドコミュニティ",             roma:"tokengatedcommunity" },
-  { genre:"SNS", level:"hard", jp:"デセントラライズドソーシャルネットワーク",   roma:"decentralizedsocialnetwork" },
-  { genre:"SNS", level:"hard", jp:"フェデレーテッドソーシャルプロトコル",       roma:"federatedsocialprotocol" },
-  { genre:"SNS", level:"hard", jp:"アクティビティパブプロトコル",               roma:"activitypubprotocol" },
-  { genre:"SNS", level:"hard", jp:"アウトレンジメントマシン",                   roma:"outragementmachine" },
-  { genre:"SNS", level:"hard", jp:"ディスインフォメーションキャンペーン",       roma:"disinformationcampaign" },
-  { genre:"SNS", level:"hard", jp:"コーディネーテッドイナウセンティックビヘイビア", roma:"coordinatedauthenticbehavior" },
-  { genre:"SNS", level:"hard", jp:"ソーシャルエンジニアリングアタック",         roma:"socialengineeringattack" },
-  { genre:"SNS", level:"hard", jp:"インフォメーションウォーフェア",             roma:"informationwarfare" },
-  { genre:"SNS", level:"hard", jp:"サイバーバリング",                           roma:"cyberbullying" },
-  { genre:"SNS", level:"hard", jp:"オンラインハラスメント",                     roma:"onlineharassment" },
-  { genre:"SNS", level:"hard", jp:"デオキシジェネレーション",                   roma:"doxing" },
-  { genre:"SNS", level:"hard", jp:"プラットフォームモデレーションポリシー",     roma:"platformmoderationpolicy" },
-  { genre:"SNS", level:"hard", jp:"コンテンツポリシーエンフォースメント",       roma:"contentpolicyenforcement" },
-  { genre:"SNS", level:"hard", jp:"トラストアンドセーフティチーム",             roma:"trustandsafetyteam" },
-  { genre:"SNS", level:"hard", jp:"オートメイテッドコンテントリムーバル",       roma:"automatedcontentremoval" },
-  { genre:"SNS", level:"hard", jp:"ヒューマンリビューオペレーション",           roma:"humanreviewoperation" },
-  { genre:"SNS", level:"hard", jp:"アピールプロセス",                           roma:"appealprocess" },
-  { genre:"SNS", level:"hard", jp:"アカウントサスペンション",                   roma:"accountsuspension" },
-  { genre:"SNS", level:"hard", jp:"プラットフォームディモネタイゼーション",     roma:"platformdemonetization" },
-  { genre:"SNS", level:"hard", jp:"シャドーバン",                               roma:"shadowban" },
-  { genre:"SNS", level:"hard", jp:"レピュテーションスコアシステム",             roma:"reputationscoresystem" },
-  { genre:"SNS", level:"hard", jp:"クリエーターモネタイゼーション",             roma:"creatormonetization" },
-  { genre:"SNS", level:"hard", jp:"サブスクリプションベースドコンテンツ",       roma:"subscriptionbasedcontent" },
-  { genre:"SNS", level:"hard", jp:"チップスアンドドネーション",                 roma:"tipsanddonations" },
-  { genre:"SNS", level:"hard", jp:"ペイパービューコンテンツ",                   roma:"payperviewcontent" },
-  { genre:"SNS", level:"hard", jp:"エクスクルーシブコンテンツストラテジー",     roma:"exclusivecontentstrategy" },
-  { genre:"SNS", level:"hard", jp:"パトロンエコシステム",                       roma:"patronecosystem" },
-  { genre:"SNS", level:"hard", jp:"メンバーシップコミュニティプラットフォーム", roma:"membershipcommunityplatform" },
-  { genre:"SNS", level:"hard", jp:"コースプラットフォームインテグレーション",   roma:"courseplatformintegration" },
-  { genre:"SNS", level:"hard", jp:"ニュースレタームネタイゼーション",           roma:"newslettermonetization" },
-  { genre:"SNS", level:"hard", jp:"ポッドキャストモネタイゼーション",           roma:"podcastmonetization" },
-  { genre:"SNS", level:"hard", jp:"ライブストリームモネタイゼーション",         roma:"livestreammonetization" },
-  { genre:"SNS", level:"hard", jp:"バーチャルギフティングエコノミー",           roma:"virtualgiftingeconomy" },
-  { genre:"SNS", level:"hard", jp:"デジタルグッズマーケットプレイス",           roma:"digitalgoodsmarketplace" },
-  { genre:"SNS", level:"hard", jp:"NFTベースドコンテンツ",                      roma:"nftbasedcontent" },
-  { genre:"SNS", level:"hard", jp:"ウェブスリーソーシャルプラットフォーム",     roma:"web3socialplatform" },
-  { genre:"SNS", level:"hard", jp:"トークンナイズドコミュニティガバナンス",     roma:"tokenizedcommunitygovernance" },
-  { genre:"SNS", level:"hard", jp:"プルーフオブパーティシペーション",           roma:"proofofparticipation" },
-  { genre:"SNS", level:"hard", jp:"ソーシャルキャピタルメトリクス",             roma:"socialcapitalmetrics" },
-  { genre:"SNS", level:"hard", jp:"フォーラムモデレーションフレームワーク",     roma:"forummoderationframework" },
-  { genre:"SNS", level:"hard", jp:"コミュニティアンバサダープログラム",         roma:"communityambassadorprogram" },
-  { genre:"SNS", level:"hard", jp:"ゲーミフィケーション",                       roma:"gamification" },
-  { genre:"SNS", level:"hard", jp:"ポイントベースリワードシステム",             roma:"pointbasedrewardsystem" },
-  { genre:"SNS", level:"hard", jp:"バッジシステム",                             roma:"badgesystem" },
-  { genre:"SNS", level:"hard", jp:"リーダーボードエンゲージメント",             roma:"leaderboardengagement" },
-  { genre:"SNS", level:"hard", jp:"チャレンジベースドエンゲージメント",         roma:"challengebasedengagement" },
-  { genre:"SNS", level:"hard", jp:"ユーザーリテンションメカニズム",             roma:"userretentionmechanism" },
-  { genre:"SNS", level:"hard", jp:"スティッキーフィーチャーデザイン",           roma:"stickyfeaturedesign" },
-  { genre:"SNS", level:"hard", jp:"ダークパターンインUX",                       roma:"darkpatternux" },
-  { genre:"SNS", level:"hard", jp:"エシカルデザインフレームワーク",             roma:"ethicaldesignframework" },
-  { genre:"SNS", level:"hard", jp:"ヒューメインテクノロジーデザイン",           roma:"humanetech" },
-  { genre:"SNS", level:"hard", jp:"デジタルウェルビーイングフィーチャー",       roma:"digitalwellbeingfeature" },
-  { genre:"SNS", level:"hard", jp:"スクリーンタイムマネジメント",               roma:"screentimemanagement" },
-  { genre:"SNS", level:"hard", jp:"ドーパミンデトックスプロトコル",             roma:"dopaminedetoxprotocol" },
-  { genre:"SNS", level:"hard", jp:"マインドフルソーシャルメディアユース",       roma:"mindfulsocialmediause" },
-  { genre:"SNS", level:"hard", jp:"デジタルリテラシーエデュケーション",         roma:"digitalliteracyeducation" },
-  { genre:"SNS", level:"hard", jp:"メディアリテラシープログラム",               roma:"medialiteracyprogram" },
-  { genre:"SNS", level:"hard", jp:"クリティカルシンキングオンライン",           roma:"criticalthinkingonline" },
-  { genre:"SNS", level:"hard", jp:"インフォメーションベリフィケーション",       roma:"informationverification" },
-  { genre:"SNS", level:"hard", jp:"ファクトチェッキングプロセス",               roma:"factcheckingprocess" },
-  { genre:"SNS", level:"hard", jp:"ソースクレディビリティアセスメント",         roma:"sourcecredibilityassessment" },
-  { genre:"SNS", level:"hard", jp:"ラテラルリーディングストラテジー",           roma:"lateralreadingstrategy" },
-  { genre:"SNS", level:"hard", jp:"リバースイメージサーチ",                     roma:"reverseimagesearch" },
-  { genre:"SNS", level:"hard", jp:"メタデータアナリシス",                       roma:"metadataanalysis" },
-  { genre:"SNS", level:"hard", jp:"ディープフェイクディテクション",             roma:"deepfakedetection" },
-  { genre:"SNS", level:"hard", jp:"シンセティックメディアアウェアネス",         roma:"syntheticmediaawareness" },
-  { genre:"SNS", level:"hard", jp:"AIジェネレーテッドコンテント",               roma:"aigeneratedcontent" },
-  { genre:"SNS", level:"hard", jp:"ウォーターマーキングテクノロジー",           roma:"watermarkingtechnology" },
-  { genre:"SNS", level:"hard", jp:"プロベナンスベリフィケーション",             roma:"provenanceverification" },
-  { genre:"SNS", level:"hard", jp:"コンテンツオーセンティシティイニシアティブ", roma:"contentauthenticityinitiative" },
-  { genre:"SNS", level:"hard", jp:"クリプトグラフィックシグニング",             roma:"cryptographicsigning" },
-  { genre:"SNS", level:"hard", jp:"ブロックチェーンベースドベリフィケーション", roma:"blockchainverification" },
-  { genre:"SNS", level:"hard", jp:"デジタルシグニチャー",                       roma:"digitalsignature" },
-  { genre:"SNS", level:"hard", jp:"ソーシャルメディアフォレンシックス",         roma:"socialmediaforensics" },
-  { genre:"SNS", level:"hard", jp:"オープンソースインテリジェンス",             roma:"osint" },
-  { genre:"SNS", level:"hard", jp:"ジオロケーションベリフィケーション",         roma:"geolocationverification" },
-  { genre:"SNS", level:"hard", jp:"タイムスタンプアナリシス",                   roma:"timestampanalysis" },
-  { genre:"SNS", level:"hard", jp:"ネットワークトラフィックアナリシス",         roma:"networktrafficanalysis" },
-  { genre:"SNS", level:"hard", jp:"ボットディテクションシステム",               roma:"botdetectionsystem" },
-  { genre:"SNS", level:"hard", jp:"オートメイテッドソーシャルメディアサーベイランス", roma:"automatedsocialmediasurveillance" },
-  { genre:"SNS", level:"hard", jp:"プライバシープリザービングアナリシス",       roma:"privacypreservinganalysis" },
-  { genre:"SNS", level:"hard", jp:"アノニマイゼーションテクニクス",             roma:"anonymizationtechniques" },
-  { genre:"SNS", level:"hard", jp:"ディファレンシャルプライバシー",             roma:"differentialprivacy" },
-  { genre:"SNS", level:"hard", jp:"フェデレーテッドアナリシス",                 roma:"federatedanalysis" },
-  { genre:"SNS", level:"hard", jp:"インフォメーションエコシステム",             roma:"informationecosystem" },
-  { genre:"SNS", level:"hard", jp:"デジタルパブリックスフィア",                 roma:"digitalpublicsphere" },
-  { genre:"SNS", level:"hard", jp:"コンテンツキュレーションアルゴリズム",       roma:"contentcurationalgorithm" },
-  { genre:"IT",  level:"easy", jp:"スマートフォン",                             roma:"smartphone" },
-  { genre:"IT",  level:"easy", jp:"インターネット",                             roma:"internet" },
-  { genre:"Business", level:"easy", jp:"フィードバックループ",                  roma:"feedbackloop" },
-  { genre:"Business", level:"easy", jp:"アイデアソン",                          roma:"ideathon" },
-  { genre:"SNS", level:"normal", jp:"プラットフォームエコノミー",               roma:"platformeconomy" },
-  { genre:"SNS", level:"normal", jp:"クリエーターファンド",                     roma:"creatorfund" }
-];
+/* =========================================================
+   指の割り当て（標準的なホームポジション）
+========================================================= */
+const FINGERS = ["左小指","左薬指","左中指","左人差し指","右人差し指","右中指","右薬指","右小指"];
+const FMAP = {};
+["1qaz","2wsx","3edc","45rtfgvb","67yuhjnm","8ik,","9ol.","0p;-/"].forEach((s, i) => { for (const ch of s) FMAP[ch] = i; });
+const hand = k => FMAP[k] == null ? null : (FMAP[k] < 4 ? 0 : 1);
 
-// ============================================================
-// ゲームロジック
-// ============================================================
+/* =========================================================
+   ゲーム
+========================================================= */
+const G = { playing:false };
+let recent = [];
+let audio = null;
+function click(ok) {
+  if (!S.opt.sound) return;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const t = audio.currentTime, o = audio.createOscillator(), g = audio.createGain();
+    o.connect(g); g.connect(audio.destination);
+    o.type = ok ? "triangle" : "sine";
+    o.frequency.setValueAtTime(ok ? 1500 : 220, t);
+    o.frequency.exponentialRampToValueAtTime(ok ? 900 : 140, t + 0.04);
+    g.gain.setValueAtTime(ok ? 0.05 : 0.08, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + (ok ? 0.045 : 0.12));
+    o.start(t); o.stop(t + 0.13);
+  } catch (e) {}
+}
 
-const katakanaEl   = document.getElementById("katakana");
-const romaEl       = document.getElementById("roma");
-const inputView    = document.getElementById("inputView");
-const messageEl    = document.getElementById("message");
-const comboText    = document.getElementById("comboText");
-const startBtn     = document.getElementById("startBtn");
-const resultEl     = document.getElementById("result");
-const finalScore   = document.getElementById("finalScore");
-const wpmEl        = document.getElementById("wpm");
-const accuracyEl   = document.getElementById("accuracy");
-const comboEl      = document.getElementById("combo");
-const timeEl       = document.getElementById("time");
-const genreSelect  = document.getElementById("genre");
-const difficultySelect = document.getElementById("difficulty");
+function weakWeights() {
+  const ks = S.agg.keys; let sum = 0, n = 0;
+  for (const k in ks) { if (ks[k][1]) { sum += ks[k][2]; n += ks[k][1]; } }
+  const avg = n ? sum / n : 0;
+  const w = {};
+  for (const k in ks) {
+    const [ok, tn, ms, miss] = ks[k];
+    const sp = tn >= 5 && avg ? (ms / tn) / avg : 1;
+    const mr = ok + miss ? miss / (ok + miss) : 0;
+    w[k] = sp + mr * 6;
+  }
+  return w;
+}
+function defaultRoma(units) { return units.map(u => pick(u, "")).join(""); }
 
-let currentWord  = null;
-let currentIndex = 0;
-let combo        = 0;
-let correct      = 0;
-let miss         = 0;
-let typed        = 0;
-let gameTime     = 60;
-let timer        = null;
-let started      = false;
-
-// 直近に出た単語をトラッキングして重複を防ぐ
-let recentWords  = [];
-const RECENT_MAX = 10;
-
-function createKeyboard() {
-  const rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
-  const keyboard = document.getElementById("keyboard");
-  rows.forEach(row => {
-    const rowEl = document.createElement("div");
-    rowEl.className = "key-row";
-    row.split("").forEach(char => {
-      const key = document.createElement("div");
-      key.className = "key";
-      key.textContent = char;
-      key.id = `key-${char}`;
-      rowEl.appendChild(key);
+function newProblem() {
+  const en = S.opt.mode === "en";
+  const pool = POOL[S.opt.mode];
+  let cand = pool.filter(p => !recent.includes(p.d));
+  if (!cand.length) cand = pool;
+  let p;
+  if (S.opt.weak) {
+    const w = weakWeights();
+    const ws = cand.map(q => {
+      const r = defaultRoma(tokenize(q.r.toLowerCase(), en));
+      let s = 0; for (const ch of r) s += (w[ch] || 1);
+      return Math.pow(s / r.length, 4);
     });
-    keyboard.appendChild(rowEl);
+    let tot = ws.reduce((a, b) => a + b, 0), x = Math.random() * tot;
+    p = cand[cand.length - 1];
+    for (let i = 0; i < cand.length; i++) { x -= ws[i]; if (x <= 0) { p = cand[i]; break; } }
+  } else p = cand[Math.floor(Math.random() * cand.length)];
+  recent.push(p.d); if (recent.length > Math.min(30, Math.floor(pool.length / 2))) recent.shift();
+  return en ? { disp: p.d, kana: p.r, read: p.d, en: true } : { disp: p.d, kana: p.r, read: p.r, en: false };
+}
+
+function startRound() {
+  if (G.playing) return;
+  $("imeWarn").hidden = true;
+  Object.assign(G, {
+    playing: true, limit: S.opt.sec * 1000, t0: performance.now(), lastT: 0,
+    log: [], probs: [], hab: {}, extra: [0, 0], prevOk: null, keys: 0, miss: 0,
   });
+  recent = [];
+  G.next = newProblem();
+  loadProblem(0);
+  $("qIdle").hidden = true; $("qPlay").hidden = false;
+  $("stage").classList.add("playing");
+  focusTrap();
+  tick();
 }
-
-createKeyboard();
-
-function pickWord() {
-  const genre = genreSelect.value;
-  const level = difficultySelect.value;
-
-  let filtered = words.filter(w => w.level === level);
-  if (genre !== "all") {
-    filtered = filtered.filter(w => w.genre === genre);
+function loadProblem(now) {
+  const p = G.next; G.next = newProblem();
+  G.cur = { p, units: tokenize(p.read.toLowerCase(), p.en), u: 0, b: "", shown: now, started: false, lat: 0, keys: 0, miss: 0 };
+  G.prevOk = null;
+  render();
+}
+function expected() {
+  const c = G.cur, u = c.units[c.u];
+  if (!u) return "";
+  const g = pick(u, c.b);
+  if (g && c.b.length < g.length) return g[c.b.length];
+  const nu = c.units[c.u + 1];
+  return nu ? pick(nu, "")[0] : "";
+}
+function commit(used) {
+  const c = G.cur, u = c.units[c.u];
+  // クセの記録
+  if (u.sok) {
+    const [st, inner] = splitSok(used);
+    learnKey("っ", st); habit("っ", st);
+    const innerU = { k: u.inner, c: (COMP[u.inner] || K1[u.inner] || [inner]) };
+    if (innerU.c.length > 1) { learnKey(u.inner, inner); habit(u.inner, inner); }
+  } else if (u.k === "ん") {
+    if (u.nOk) { learnKey("ん", used); habit("ん（子音の前）", used); }
+  } else if (u.c.length > 1) { learnKey(u.k, used); habit(u.k, used); }
+  u._used = used;
+  const min = Math.min(...u.c.map(x => x.length));
+  G.extra[0] += used.length - min; G.extra[1] += used.length;
+  c.u++; c.b = "";
+}
+function habit(k, c) { (G.hab[k] = G.hab[k] || {})[c] = (G.hab[k][c] || 0) + 1; }
+function feed(k) {
+  const c = G.cur, u = c.units[c.u];
+  const nb = c.b + k;
+  const m = u.c.filter(x => x.startsWith(nb));
+  if (m.length) {
+    c.b = nb;
+    if (m.includes(nb) && (m.every(x => x === nb) || c.u === c.units.length - 1)) commit(nb);
+    return true;
   }
-
-  // 直近に出た単語を避ける（候補が十分あれば）
-  let pool = filtered.filter(w => !recentWords.includes(w.roma));
-  if (pool.length === 0) pool = filtered;
-
-  currentWord  = pool[Math.floor(Math.random() * pool.length)];
-  currentIndex = 0;
-
-  recentWords.push(currentWord.roma);
-  if (recentWords.length > RECENT_MAX) recentWords.shift();
-
-  katakanaEl.textContent = currentWord.jp;
-  romaEl.textContent     = currentWord.roma;
-
-  updateInputView();
-}
-
-function updateInputView() {
-  const typedPart   = currentWord.roma.slice(0, currentIndex);
-  const currentChar = currentWord.roma[currentIndex] || "";
-  const remainPart  = currentWord.roma.slice(currentIndex + 1);
-
-  inputView.innerHTML = `
-    <span class="correct">${typedPart}</span>
-    <span class="current">${currentChar}</span>
-    <span class="remaining">${remainPart}</span>
-  `;
-}
-
-function updateStats() {
-  const total    = correct + miss;
-  const accuracy = total === 0 ? 100 : Math.round((correct / total) * 100);
-  accuracyEl.textContent = accuracy + "%";
-  comboEl.textContent    = combo;
-
-  const minutes = (60 - gameTime) / 60;
-  if (minutes > 0) {
-    wpmEl.textContent = Math.round((typed / 5) / minutes);
+  if (c.b && u.c.includes(c.b)) {        // 「n」のように、打ち切ったかどうか次の1打で決まるもの
+    const nu = c.units[c.u + 1];
+    if (nu && nu.c.some(x => x.startsWith(k))) { commit(c.b); return feed(k); }
   }
+  return false;
 }
-
-function startGame() {
-  started      = true;
-  combo        = 0;
-  correct      = 0;
-  miss         = 0;
-  typed        = 0;
-  gameTime     = 60;
-  recentWords  = [];
-
-  resultEl.style.display = "none";
-  messageEl.textContent  = "";
-  comboText.textContent  = "";
-
-  pickWord();
-  updateStats();
-  timeEl.textContent = gameTime;
-
-  clearInterval(timer);
-  timer = setInterval(() => {
-    gameTime--;
-    timeEl.textContent = gameTime;
-    updateStats();
-    if (gameTime <= 0) endGame();
-  }, 1000);
-}
-
-function endGame() {
-  started = false;
-  clearInterval(timer);
-
-  katakanaEl.textContent = "FINISHED";
-  romaEl.textContent     = "";
-  inputView.innerHTML    = "";
-
-  resultEl.style.display = "block";
-  finalScore.innerHTML   = `
-    WPM: ${wpmEl.textContent}<br>
-    Accuracy: ${accuracyEl.textContent}<br>
-    Max Combo: ${combo}
-  `;
-}
-
-startBtn.addEventListener("click", prepareGame);
-
-// ── Web Audio Context（遅延初期化） ──────────────────────────
-let audioCtx = null;
-function getAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
-
-// キータイプ音：短いクリック
-function playKeyClick() {
-  const ctx = getAudio();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain); gain.connect(ctx.destination);
-  osc.type = "square";
-  osc.frequency.setValueAtTime(1200, ctx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.04);
-  gain.gain.setValueAtTime(0.07, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.05);
-}
-
-// 単語クリア音：ピン！
-function playPing() {
-  const ctx = getAudio();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain); gain.connect(ctx.destination);
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(1800, ctx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(2400, ctx.currentTime + 0.03);
-  osc.frequency.exponentialRampToValueAtTime(1600, ctx.currentTime + 0.18);
-  gain.gain.setValueAtTime(0.18, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.22);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.22);
-}
-
-// ミス音：boo（低くこもった音）
-function playBoo() {
-  const ctx = getAudio();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  const filter = ctx.createBiquadFilter();
-  osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
-  osc.type = "sawtooth";
-  filter.type = "lowpass";
-  filter.frequency.value = 300;
-  osc.frequency.setValueAtTime(160, ctx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.18);
-  gain.gain.setValueAtTime(0.12, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.22);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.22);
-}
-
-// ── 待機状態フラグ ─────────────────────────────────────────
-let waiting = false;  // ゲーム開始ボタン押後・スペース待ち
-
-function prepareGame() {
-  // すでにゲーム中なら無視
-  if (started) return;
-
-  waiting = true;
-  katakanaEl.textContent = "SPACE でスタート";
-  romaEl.textContent     = "";
-  inputView.innerHTML    = "";
-  messageEl.textContent  = "";
-  comboText.textContent  = "";
-  startBtn.textContent   = "待機中…";
-  startBtn.disabled      = true;
-}
-
-function startGame() {
-  waiting      = false;
-  started      = true;
-  combo        = 0;
-  correct      = 0;
-  miss         = 0;
-  typed        = 0;
-  gameTime     = 60;
-  recentWords  = [];
-
-  startBtn.textContent = "ゲーム開始";
-  startBtn.disabled    = false;
-
-  resultEl.style.display = "none";
-  messageEl.textContent  = "";
-  comboText.textContent  = "";
-
-  pickWord();
-  updateStats();
-  timeEl.textContent = gameTime;
-
-  clearInterval(timer);
-  timer = setInterval(() => {
-    gameTime--;
-    timeEl.textContent = gameTime;
-    updateStats();
-    if (gameTime <= 0) endGame();
-  }, 1000);
-}
-
-function endGame() {
-  started = false;
-  clearInterval(timer);
-
-  startBtn.textContent = "ゲーム開始";
-  startBtn.disabled    = false;
-
-  katakanaEl.textContent = "FINISHED";
-  romaEl.textContent     = "";
-  inputView.innerHTML    = "";
-
-  resultEl.style.display = "block";
-  finalScore.innerHTML   = `
-    WPM: ${wpmEl.textContent}<br>
-    Accuracy: ${accuracyEl.textContent}<br>
-    Max Combo: ${combo}
-  `;
-}
-
-function activateKey(key) {
-  const el = document.getElementById(`key-${key.toUpperCase()}`);
-  if (!el) return;
-  el.classList.add("active");
-  setTimeout(() => el.classList.remove("active"), 80);
-}
-
-function shakeMissArea() {
-  const area = document.querySelector(".word-area");
-  area.classList.add("miss-shake");
-  setTimeout(() => area.classList.remove("miss-shake"), 250);
-}
-
-document.addEventListener("keydown", e => {
-  // スペースキーで待機状態からスタート
-  if (waiting && e.code === "Space") {
-    e.preventDefault();
-    startGame();
-    return;
-  }
-
-  if (!started) return;
-  if (!/^[a-zA-Z]$/.test(e.key)) return;
-
-  activateKey(e.key);
-
-  const expected = currentWord.roma[currentIndex];
-
-  if (e.key.toLowerCase() === expected.toLowerCase()) {
-    currentIndex++;
-    correct++;
-    typed++;
-    combo++;
-
-    playKeyClick();
-    comboText.textContent = `${combo} COMBO`;
-    messageEl.textContent = "";
-
-    updateInputView();
-    if (currentIndex >= currentWord.roma.length) {
-      playPing();
-      pickWord();
+function onChar(ch) {
+  if (!G.playing) return;
+  const now = performance.now() - G.t0;
+  if (now >= G.limit) { finish(); return; }
+  const k = ch.toLowerCase();
+  const c = G.cur;
+  const exp = expected();
+  const first = !c.started;
+  const dt = first ? now - c.shown : now - G.lastT;
+  if (first) { c.started = true; c.lat = dt; }
+  G.lastT = now;
+  if (feed(k)) {
+    G.log.push({ t: now, k, dt, f: first ? 1 : 0, ok: 1, p: G.prevOk });
+    G.prevOk = k; G.keys++; c.keys++;
+    click(true);
+    if (c.u >= c.units.length) {
+      G.probs.push({ d: c.p.disp, keys: c.keys, miss: c.miss, lat: c.lat, time: now - c.shown, done: true });
+      loadProblem(now);
+      return;
     }
   } else {
-    miss++;
-    combo = 0;
-    playBoo();
-    shakeMissArea();
-    comboText.textContent = "";
-    messageEl.textContent = "MISS";
+    G.log.push({ t: now, k, e: exp, dt, f: first ? 1 : 0, ok: 0 });
+    G.prevOk = null; G.miss++; c.miss++;
+    click(false);
+    const q = $("q"); q.classList.remove("miss"); void q.offsetWidth; q.classList.add("miss");
   }
+  render();
+}
 
-  updateStats();
+function render() {
+  const c = G.cur; if (!c) return;
+  const p = c.p;
+  $("qDisp").textContent = p.disp;
+  // かな（打ち終えた分を薄く）
+  if (p.en) $("qKana").textContent = p.kana;
+  else {
+    let done = 0; for (let i = 0; i < c.u; i++) done += c.units[i].k.length;
+    $("qKana").innerHTML = `<span class="done">${esc(p.kana.slice(0, done))}</span>${esc(p.kana.slice(done))}`;
+  }
+  // ローマ字
+  let typed = "", rest = "";
+  for (let i = 0; i < c.units.length; i++) {
+    const u = c.units[i];
+    if (i < c.u) typed += u._used;
+    else if (i === c.u) { const g = pick(u, c.b); typed += c.b; rest += g.slice(c.b.length); }
+    else rest += pick(u, "");
+  }
+  if (S.opt.guide) {
+    $("qRoma").innerHTML = `<span class="done">${esc(typed)}</span><span class="next">${esc(rest[0] || "")}</span><span class="rest">${esc(rest.slice(1))}</span>`;
+  } else {
+    $("qRoma").innerHTML = `<span class="done">${esc(typed)}</span><span class="next">&nbsp;</span>`;
+  }
+  $("qNext").textContent = "次：" + G.next.disp;
+  hud();
+}
+function hud() {
+  const now = G.playing ? performance.now() - G.t0 : (G.limit || S.opt.sec * 1000);
+  const left = Math.max(0, (G.limit || S.opt.sec * 1000) - now);
+  $("hTime").textContent = (left / 1000).toFixed(1);
+  $("hKeys").textContent = G.keys || 0;
+  $("hMiss").textContent = G.miss || 0;
+  $("hKpm").textContent = now > 1000 ? Math.round((G.keys || 0) / now * 60000) : 0;
+  const tot = (G.keys || 0) + (G.miss || 0);
+  $("hAcc").textContent = tot ? ((G.keys / tot) * 100).toFixed(1) : "100.0";
+  $("hBar").style.transform = `scaleX(${left / (G.limit || 1)})`;
+}
+function tick() {
+  if (!G.playing) return;
+  if (performance.now() - G.t0 >= G.limit) { finish(); return; }
+  hud();
+  requestAnimationFrame(tick);
+}
+function idle() {
+  $("qIdle").hidden = false; $("qPlay").hidden = true;
+  $("stage").classList.remove("playing");
+  G.cur = null;
+  $("hTime").textContent = S.opt.sec.toFixed(1);
+  $("hBar").style.transform = "scaleX(1)";
+}
+function abort() {
+  G.playing = false; G.keys = 0; G.miss = 0; idle(); hud();
+  $("hTime").textContent = S.opt.sec.toFixed(1);
+}
+
+/* =========================================================
+   集計
+========================================================= */
+const MAXDT = 3000;  // これより長い間は手が止まっていたとみなし、速さの計算から外す
+function buildAgg(log, hab, extra) {
+  const a = emptyAgg();
+  const K = k => (a.keys[k] = a.keys[k] || [0, 0, 0, 0]);  // [正しく打った数, 計った数, 合計ms, ミス]
+  for (const e of log) {
+    if (e.f) { a.lat[0]++; a.lat[1] += e.dt; }
+    if (!e.ok) {
+      if (e.e) { K(e.e)[3]++; const ck = e.e + ">" + e.k; a.conf[ck] = (a.conf[ck] || 0) + 1; }
+      continue;
+    }
+    const s = K(e.k); s[0]++;
+    if (e.f || e.dt > MAXDT) continue;
+    s[1]++; s[2] += e.dt;
+    if (e.p) {
+      const bk = e.p + e.k; const b = (a.bi[bk] = a.bi[bk] || [0, 0]); b[0]++; b[1] += e.dt;
+      const fp = FMAP[e.p], fk = FMAP[e.k];
+      if (fp != null && fk != null) {
+        const t = e.p === e.k ? "same" : fp === fk ? "finger" : hand(e.p) === hand(e.k) ? "hand" : "alt";
+        a.pat[t][0]++; a.pat[t][1] += e.dt;
+      }
+    }
+  }
+  a.hab = JSON.parse(JSON.stringify(hab || {}));
+  a.extra = (extra || [0, 0]).slice();
+  return a;
+}
+function mergeAgg(dst, src) {
+  for (const k in src.keys) { const d = (dst.keys[k] = dst.keys[k] || [0, 0, 0, 0]); src.keys[k].forEach((v, i) => d[i] += v); }
+  for (const k in src.bi) { const d = (dst.bi[k] = dst.bi[k] || [0, 0]); d[0] += src.bi[k][0]; d[1] += src.bi[k][1]; }
+  for (const k in src.conf) dst.conf[k] = (dst.conf[k] || 0) + src.conf[k];
+  for (const k in src.pat) { dst.pat[k][0] += src.pat[k][0]; dst.pat[k][1] += src.pat[k][1]; }
+  dst.lat[0] += src.lat[0]; dst.lat[1] += src.lat[1];
+  for (const k in src.hab) { const d = (dst.hab[k] = dst.hab[k] || {}); for (const c in src.hab[k]) d[c] = (d[c] || 0) + src.hab[k][c]; }
+  dst.extra[0] += src.extra[0]; dst.extra[1] += src.extra[1];
+}
+
+const RANKS = [[0,"10級"],[50,"9級"],[75,"8級"],[90,"7級"],[100,"6級"],[130,"5級"],[160,"4級"],[190,"3級"],[220,"2級"],[235,"1級"],
+  [250,"初段"],[300,"二段"],[350,"三段"],[400,"四段"],[450,"五段"],[500,"六段"],[550,"七段"],[600,"八段"],[650,"九段"],[750,"十段"],[900,"名人"]];
+const rankOf = s => { let r = RANKS[0][1]; for (const [t, n] of RANKS) if (s >= t) r = n; return r; };
+
+let lastRound = null;
+function finish() {
+  if (!G.playing) return;
+  G.playing = false;
+  const dur = G.limit;
+  const c = G.cur;
+  if (c && c.started) G.probs.push({ d: c.p.disp, keys: c.keys, miss: c.miss, lat: c.lat, time: dur - c.shown, done: false });
+  const ok = G.keys, miss = G.miss;
+  if (ok + miss === 0) { abort(); return; }
+  const firsts = G.log.filter(e => e.f);
+  const sumLat = firsts.reduce((s, e) => s + e.dt, 0);
+  const firstOk = firsts.filter(e => e.ok).length;
+  const waitTail = c && !c.started ? dur - c.shown : 0;
+  const rDur = dur - sumLat - waitTail;
+  const kpm = ok / dur * 60000;
+  const rkpm = rDur > 0 ? (ok - firstOk) / rDur * 60000 : 0;
+  const acc = ok / (ok + miss);
+  const sc = Math.round(kpm * acc * acc);
+  const ivs = G.log.filter(e => e.ok && !e.f && e.dt <= MAXDT).map(e => e.dt);
+  const mean = ivs.length ? ivs.reduce((a, b) => a + b, 0) / ivs.length : 0;
+  const sd = ivs.length > 1 ? Math.sqrt(ivs.reduce((a, b) => a + (b - mean) ** 2, 0) / (ivs.length - 1)) : 0;
+  const BIN = 5000, nb = Math.ceil(dur / BIN);
+  const bins = Array.from({ length: nb }, () => [0, 0]);
+  for (const e of G.log) { const i = Math.min(nb - 1, Math.floor(e.t / BIN)); bins[i][e.ok ? 0 : 1]++; }
+  const peak = Math.max(...bins.map(b => b[0] * 60000 / BIN));
+  const agg = buildAgg(G.log, G.hab, G.extra);
+  mergeAgg(S.agg, agg);
+
+  const run = { at: Date.now(), m: S.opt.mode, s: S.opt.sec, sc, kpm: Math.round(kpm), rkpm: Math.round(rkpm), acc: +(acc * 100).toFixed(1),
+    ok, miss, lat: firsts.length ? Math.round(sumLat / firsts.length) : 0 };
+  const same = S.hist.filter(h => h.m === run.m && h.s === run.s);
+  const prevBest = same.length ? Math.max(...same.map(h => h.sc)) : null;
+  S.hist.push(run); if (S.hist.length > 500) S.hist.shift();
+  save();
+
+  lastRound = { run, prevBest, kpm, rkpm, acc, mean, sd, peak, bins, BIN, agg, probs: G.probs.slice() };
+  idle();
+  renderResult();
+  anaView = "round"; renderAna();
+  renderHist();
+  $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* =========================================================
+   結果の表示
+========================================================= */
+const MODE_NAME = { sent:"日本語の短文", word:"日本語の単語", en:"英単語" };
+const f0 = n => Math.round(n).toLocaleString();
+function renderResult() {
+  const R = lastRound; if (!R) return;
+  $("result").hidden = false;
+  const r = R.run;
+  $("rScore").textContent = f0(r.sc);
+  $("rRank").textContent = rankOf(r.sc);
+  $("rPb").innerHTML = R.prevBest == null
+    ? `${MODE_NAME[r.m]}・${r.s}秒の<strong>はじめての記録</strong>`
+    : r.sc > R.prevBest
+      ? `<strong>自己ベスト更新！</strong><br>${MODE_NAME[r.m]}・${r.s}秒（前回まで ${f0(R.prevBest)}）`
+      : `${MODE_NAME[r.m]}・${r.s}秒の自己ベスト ${f0(R.prevBest)}<br>あと <strong>${f0(R.prevBest - r.sc + 1)}</strong> で更新`;
+  const kpi = (k, v, u, s) => `<div class="kpi"><div class="k">${k}</div><div class="v">${v}<small>${u || ""}</small></div>${s ? `<div class="s">${s}</div>` : ""}</div>`;
+  $("rKpis").innerHTML =
+    kpi("速さ", f0(R.kpm), "打/分", `1秒あたり ${(R.kpm / 60).toFixed(2)} 打`) +
+    kpi("初速を除いた速さ", f0(R.rkpm), "打/分", "打ち始めてからの指の速さ") +
+    kpi("平均の初速", (r.lat / 1000).toFixed(2), "秒", "問題が出てから1打目まで") +
+    kpi("正確率", r.acc.toFixed(1), "%", `ミス ${r.miss} 回`) +
+    kpi("正しく打った数", f0(r.ok), "打", `問題 ${R.probs.filter(p => p.done).length} 個を打ち切り`) +
+    kpi("打鍵の間隔", f0(R.mean), "ms", `ばらつき ±${f0(R.sd)}ms`) +
+    kpi("最高の速さ（5秒）", f0(R.peak), "打/分", "いちばん速かった5秒間") +
+    kpi("余分に打った数", f0(R.agg.extra[0]), "打", "最短の打ち方と比べて");
+  $("rTimeline").innerHTML = timelineSvg(R.bins, R.BIN);
+  // 問題ごと
+  const pr = R.probs;
+  if (!pr.length) { $("rProbs").innerHTML = `<div class="empty">記録がありません</div>`; return; }
+  const speed = p => p.keys && p.time > 0 ? p.keys / p.time * 60000 : 0;
+  const done = pr.filter(p => p.done);
+  const slow = done.length ? done.reduce((a, b) => speed(a) < speed(b) ? a : b) : null;
+  $("rProbs").innerHTML = `<table class="t"><thead><tr><th>#</th><th>問題</th><th class="r">時間</th><th class="r">速さ</th><th class="r">初速</th><th class="r">ミス</th></tr></thead><tbody>` +
+    pr.map((p, i) => `<tr class="${p === slow ? "slow" : ""}"><td class="r">${i + 1}</td><td>${esc(p.d)}${p.done ? "" : ' <span class="muted small">（時間切れ）</span>'}</td><td class="r">${(p.time / 1000).toFixed(2)}秒</td><td class="r">${f0(speed(p))}</td><td class="r">${(p.lat / 1000).toFixed(2)}秒</td><td class="r">${p.miss}</td></tr>`).join("") +
+    `</tbody></table>`;
+}
+
+function niceMax(v) { const s = [50, 100, 200, 250, 500, 1000]; for (const x of s) if (v <= x * 4) return Math.ceil(v / x) * x || x; return Math.ceil(v / 1000) * 1000; }
+function timelineSvg(bins, BIN) {
+  const W = 640, H = 190, L = 40, B = 24, T = 18, R = 8;
+  const vals = bins.map(b => b[0] * 60000 / BIN);
+  const max = niceMax(Math.max(100, ...vals));
+  const n = bins.length, gw = (W - L - R) / n, bw = Math.max(4, gw - 2);
+  const y = v => T + (H - T - B) * (1 - v / max);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="5秒ごとの速さ">`;
+  for (let i = 0; i <= 4; i++) { const v = max * i / 4, yy = y(v); s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}"/><text x="${L - 6}" y="${yy + 4}" text-anchor="end">${f0(v)}</text>`; }
+  bins.forEach((b, i) => {
+    const v = vals[i], x = L + i * gw + (gw - bw) / 2, yy = y(v), h = Math.max(0, H - B - yy);
+    s += `<rect class="barr" x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${i * BIN / 1000}〜${(i + 1) * BIN / 1000}秒：${f0(v)} 打/分・ミス ${b[1]}回</title></rect>`;
+    if (b[1]) s += `<text x="${(x + bw / 2).toFixed(1)}" y="${(yy - 4).toFixed(1)}" text-anchor="middle">×${b[1]}</text>`;
+    if (n <= 12 || i % 2 === 1) s += `<text x="${(x + bw / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle">${(i + 1) * BIN / 1000}秒</text>`;
+  });
+  s += `<line class="base" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/></svg>`;
+  s += `<div class="note">棒の上の「×」はその5秒間のミスの数です。</div>`;
+  return s;
+}
+
+/* =========================================================
+   分析
+========================================================= */
+let anaView = "round", kbMode = "speed";
+const KB_ROWS = ["1234567890-", "qwertyuiop", "asdfghjkl;", "zxcvbnm,./"];
+function renderAna() {
+  document.querySelectorAll("#anaTabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.v === anaView));
+  const a = anaView === "round" ? (lastRound && lastRound.agg) : S.agg;
+  const tot = a ? Object.values(a.keys).reduce((s, v) => s + v[0], 0) : 0;
+  if (!a || !tot) {
+    $("ana").innerHTML = `<div class="empty" style="padding:16px 0">${anaView === "round" ? "1回遊ぶと、ここに今回の分析が出ます。" : "まだ記録がありません。遊んだ分がここにたまっていきます。"}</div>`;
+    return;
+  }
+  const K = a.keys;
+  const avgMs = k => K[k] && K[k][1] ? K[k][2] / K[k][1] : null;
+  const missR = k => K[k] && (K[k][0] + K[k][3]) ? K[k][3] / (K[k][0] + K[k][3]) : null;
+  let h = "";
+
+  // ---- キーボード
+  const vals = [];
+  for (const k in K) { const v = kbMode === "speed" ? (K[k][1] >= 3 ? avgMs(k) : null) : ((K[k][0] + K[k][3]) >= 3 ? missR(k) : null); if (v != null) vals.push(v); }
+  const lo = vals.length ? Math.min(...vals) : 0, hi = vals.length ? Math.max(...vals) : 1;
+  h += `<h3>キーごとの${kbMode === "speed" ? "速さ" : "ミス率"}<span>${kbMode === "speed" ? "濃いほど遅い（数字は平均ms）" : "濃いほどミスが多い（数字はミス率）"}</span></h3>
+  <div class="seg sm" id="kbSeg" style="margin-bottom:8px"><button type="button" data-v="speed" aria-pressed="${kbMode === "speed"}">速さ</button><button type="button" data-v="miss" aria-pressed="${kbMode === "miss"}">ミス率</button></div>
+  <div class="kb-wrap"><div class="kb">`;
+  KB_ROWS.forEach((row, ri) => {
+    h += `<div class="kb-row" style="padding-left:${ri * 14}px">`;
+    for (const k of row) {
+      const v = kbMode === "speed" ? (K[k] && K[k][1] >= 3 ? avgMs(k) : null) : (K[k] && (K[k][0] + K[k][3]) >= 3 ? missR(k) : null);
+      const tip = K[k] ? `${k}：平均 ${avgMs(k) != null ? f0(avgMs(k)) + "ms" : "-"}（${K[k][0]}回）・ミス ${K[k][3]}回` : `${k}：まだ打っていません`;
+      if (v == null) { h += `<div class="kb-key none" title="${esc(tip)}"><span class="c">${esc(k)}</span></div>`; continue; }
+      const t = hi > lo ? (v - lo) / (hi - lo) : 0;
+      const pct = Math.round(6 + 84 * t);
+      const lab = kbMode === "speed" ? f0(v) : (v * 100).toFixed(v < 0.1 ? 1 : 0) + "%";
+      h += `<div class="kb-key${pct > 50 ? " dark" : ""}" style="background:color-mix(in srgb, var(--c) ${pct}%, #fff)" title="${esc(tip)}"><span class="c">${esc(k)}</span><span class="n tnum">${lab}</span></div>`;
+    }
+    h += `</div>`;
+  });
+  h += `</div></div><div class="kb-legend"><span>${kbMode === "speed" ? "速い" : "少ない"}</span><i></i><span>${kbMode === "speed" ? "遅い" : "多い"}</span><span style="margin-left:12px">点線は3回未満のキー</span></div>`;
+
+  // ---- 苦手キー
+  const slowK = Object.keys(K).filter(k => K[k][1] >= 5).sort((x, y) => avgMs(y) - avgMs(x)).slice(0, 6);
+  const missK = Object.keys(K).filter(k => K[k][3] >= 2).sort((x, y) => missR(y) - missR(x)).slice(0, 6);
+  const bar = (v, m) => `<span class="mb" style="width:${Math.max(2, Math.round(60 * v / (m || 1)))}px"></span>`;
+  h += `<div class="two"><div><h3>遅いキー<span>5回以上打ったキー</span></h3>`;
+  h += slowK.length ? `<table class="t"><thead><tr><th>キー</th><th class="r">平均</th><th class="r">回数</th></tr></thead><tbody>${slowK.map(k => `<tr><td class="kc">${esc(k)}</td><td class="r">${bar(avgMs(k), avgMs(slowK[0]))}${f0(avgMs(k))}ms</td><td class="r">${K[k][1]}</td></tr>`).join("")}</tbody></table>` : `<div class="empty">まだ数が足りません</div>`;
+  h += `</div><div><h3>ミスの多いキー<span>2回以上ミスしたキー</span></h3>`;
+  h += missK.length ? `<table class="t"><thead><tr><th>キー</th><th class="r">ミス率</th><th class="r">ミス</th></tr></thead><tbody>${missK.map(k => `<tr><td class="kc">${esc(k)}</td><td class="r">${bar(missR(k), missR(missK[0]))}${(missR(k) * 100).toFixed(1)}%</td><td class="r">${K[k][3]}</td></tr>`).join("")}</tbody></table>` : `<div class="empty">ミスが少なく、目立つキーはありません</div>`;
+  h += `</div></div>`;
+
+  // ---- 打ち間違いの組み合わせ
+  const conf = Object.entries(a.conf).sort((x, y) => y[1] - x[1]).slice(0, 8);
+  h += `<h3>打ち間違いの傾向<span>打つはずだったキー → 実際に打ったキー</span></h3>`;
+  h += conf.length ? `<table class="t"><thead><tr><th>打つはず</th><th>打ったキー</th><th>どんなミスか</th><th class="r">回数</th></tr></thead><tbody>${conf.map(([ck, n]) => { const [e, t] = ck.split(">"); return `<tr><td class="kc">${esc(e)}</td><td class="kc">${esc(t)}</td><td class="small">${missKind(e, t)}</td><td class="r">${n}</td></tr>`; }).join("")}</tbody></table>` : `<div class="empty">ミスはありませんでした</div>`;
+
+  // ---- 並び
+  const bi = Object.entries(a.bi).filter(([, v]) => v[0] >= 3).map(([k, v]) => [k, v[1] / v[0], v[0]]);
+  const slowB = bi.slice().sort((x, y) => y[1] - x[1]).slice(0, 8);
+  const fastB = bi.slice().sort((x, y) => x[1] - y[1]).slice(0, 8);
+  const biT = arr => `<table class="t"><thead><tr><th>並び</th><th>指</th><th class="r">平均</th><th class="r">回数</th></tr></thead><tbody>${arr.map(([k, ms, n]) => `<tr><td class="kc">${esc(k[0])} → ${esc(k[1])}</td><td class="small">${fingerPair(k[0], k[1])}</td><td class="r">${f0(ms)}ms</td><td class="r">${n}</td></tr>`).join("")}</tbody></table>`;
+  h += `<div class="two"><div><h3>遅い並び<span>続けて打つ2文字（3回以上）</span></h3>${slowB.length ? biT(slowB) : `<div class="empty">まだ数が足りません</div>`}</div>`;
+  h += `<div><h3>速い並び<span>得意な続き</span></h3>${fastB.length ? biT(fastB) : `<div class="empty">まだ数が足りません</div>`}</div></div>`;
+
+  // ---- 指と手
+  const fs = FINGERS.map(() => [0, 0, 0, 0]);
+  for (const k in K) { const f = FMAP[k]; if (f == null) continue; K[k].forEach((v, i) => fs[f][i] += v); }
+  const fMax = Math.max(1, ...fs.map(v => v[1] ? v[2] / v[1] : 0));
+  h += `<div class="two"><div><h3>指ごとの速さ<span>標準的な指の割り当てで計算</span></h3><table class="t"><thead><tr><th>指</th><th class="r">平均</th><th class="r">打鍵</th><th class="r">ミス率</th></tr></thead><tbody>`;
+  fs.forEach((v, i) => {
+    const ms = v[1] ? v[2] / v[1] : null, mr = v[0] + v[3] ? v[3] / (v[0] + v[3]) : null;
+    h += `<tr><td>${FINGERS[i]}</td><td class="r">${ms != null ? bar(ms, fMax) + f0(ms) + "ms" : "-"}</td><td class="r">${v[0]}</td><td class="r">${mr != null ? (mr * 100).toFixed(1) + "%" : "-"}</td></tr>`;
+  });
+  h += `</tbody></table></div><div><h3>指と手の動き<span>1つ前のキーとの関係ごとの平均</span></h3><table class="t"><thead><tr><th>続け方</th><th class="r">平均</th><th class="r">回数</th></tr></thead><tbody>`;
+  const PN = { alt: "左右の手を交互に", hand: "同じ手の別の指", finger: "同じ指で別のキー", same: "同じキーを連打" };
+  const pMax = Math.max(1, ...Object.values(a.pat).map(v => v[0] ? v[1] / v[0] : 0));
+  for (const t of ["alt", "hand", "finger", "same"]) { const v = a.pat[t]; h += `<tr><td>${PN[t]}</td><td class="r">${v[0] ? bar(v[1] / v[0], pMax) + f0(v[1] / v[0]) + "ms" : "-"}</td><td class="r">${v[0]}</td></tr>`; }
+  h += `</tbody></table>`;
+  const pa = a.pat;
+  if (pa.alt[0] >= 10 && pa.finger[0] >= 5) {
+    const d = pa.finger[1] / pa.finger[0] - pa.alt[1] / pa.alt[0];
+    h += `<div class="note">同じ指で別のキーを続けるときは、左右交互より平均 <strong>${f0(d)}ms</strong> ${d >= 0 ? "遅くなっています" : "速く打てています"}。</div>`;
+  }
+  h += `</div></div>`;
+
+  // ---- ローマ字のクセ
+  const KEYK = new Set(["し","ち","つ","ふ","じ","ん（子音の前）","っ"]);
+  const hb = Object.entries(a.hab).filter(([k, m]) => {
+    const used = Object.keys(m);
+    if (KEYK.has(k) || k.length === 2 || used.length > 1) return true;
+    const opts = COMP[k] || K1[k] || [];
+    return opts.length && used[0].length > Math.min(...opts.map(x => x.length));
+  });
+  h += `<h3>ローマ字のクセ<span>何通りかの打ち方がある文字で、どれを使ったか</span></h3>`;
+  if (!hb.length) h += `<div class="empty">日本語の問題を打つと、ここに出ます</div>`;
+  else {
+    hb.sort((x, y) => Object.values(y[1]).reduce((s, v) => s + v, 0) - Object.values(x[1]).reduce((s, v) => s + v, 0));
+    h += `<div class="tbl-scroll"><table class="t"><thead><tr><th>文字</th><th>使った打ち方</th><th>最短</th></tr></thead><tbody>`;
+    for (const [k, m] of hb.slice(0, 14)) {
+      const list = Object.entries(m).sort((x, y) => y[1] - x[1]);
+      const opts = k === "っ" ? ["重ねる"] : k.startsWith("ん") ? ["n"] : (COMP[k] || K1[k] || []);
+      const minL = Math.min(...opts.map(x => x === "重ねる" ? 1 : x.length));
+      const shortest = k === "っ" ? "次の子音を重ねる" : opts.filter(x => x.length === minL).slice(0, 2).join("・");
+      h += `<tr><td style="white-space:nowrap">${esc(k)}</td><td class="mono">${list.map(([c, n]) => `${esc(c)} <span class="muted small">${n}回</span>`).join("　")}</td><td class="mono">${esc(shortest)}</td></tr>`;
+    }
+    h += `</tbody></table></div>`;
+    if (a.extra[1]) h += `<div class="note">最短の打ち方で打っていれば、<strong>${f0(a.extra[0])}打</strong>少なく済みました（打った数の ${(a.extra[0] / a.extra[1] * 100).toFixed(1)}%）。</div>`;
+  }
+  $("ana").innerHTML = h;
+  document.querySelectorAll("#kbSeg button").forEach(b => b.onclick = () => { kbMode = b.dataset.v; renderAna(); });
+}
+function missKind(e, t) {
+  const fe = FMAP[e], ft = FMAP[t];
+  if (fe == null || ft == null) return "";
+  if (fe === ft) return "同じ指の隣のキー";
+  if (hand(e) !== hand(t)) return "左右の手の取り違え";
+  const pos = k => { for (let r = 0; r < KB_ROWS.length; r++) { const c = KB_ROWS[r].indexOf(k); if (c >= 0) return [r, c]; } return null; };
+  const a = pos(e), b = pos(t);
+  if (a && b && Math.abs(a[0] - b[0]) <= 1 && Math.abs(a[1] - b[1]) <= 1) return "隣のキー";
+  return "同じ手の別の指";
+}
+function fingerPair(p, k) {
+  const a = FMAP[p], b = FMAP[k];
+  if (a == null || b == null) return "";
+  if (p === k) return "連打";
+  if (a === b) return "同じ指";
+  return hand(p) === hand(k) ? "同じ手" : "左右交互";
+}
+
+/* =========================================================
+   記録の推移
+========================================================= */
+function renderHist() {
+  const m = S.opt.mode, s = S.opt.sec;
+  const runs = S.hist.filter(h => h.m === m && h.s === s);
+  let h = `<div class="hist-ctl"><div class="muted small">${MODE_NAME[m]}・${s}秒の記録（問題と時間を切り替えると、その記録に変わります）</div><button type="button" class="linkbtn" id="clearBtn">記録を消す</button></div>`;
+  if (!runs.length) { $("hist").innerHTML = h + `<div class="empty" style="padding:12px 0">まだ記録がありません。</div>`; bindClear(); return; }
+  const best = runs.reduce((a, b) => b.sc > a.sc ? b : a);
+  const last10 = runs.slice(-10);
+  const avg = k => last10.reduce((x, r) => x + r[k], 0) / last10.length;
+  const totalKeys = S.hist.reduce((x, r) => x + r.ok, 0), totalSec = S.hist.reduce((x, r) => x + r.s, 0);
+  const kpi = (k, v, u, sub) => `<div class="kpi"><div class="k">${k}</div><div class="v">${v}<small>${u || ""}</small></div>${sub ? `<div class="s">${sub}</div>` : ""}</div>`;
+  h += `<div class="kpis tnum">` +
+    kpi("自己ベスト", f0(best.sc), "", `${rankOf(best.sc)}・${f0(best.kpm)}打/分・${best.acc}%`) +
+    kpi("直近10回の平均", f0(avg("sc")), "", `${f0(avg("kpm"))}打/分・${avg("acc").toFixed(1)}%`) +
+    kpi("遊んだ回数", runs.length, "回", `全部の問題・時間で ${S.hist.length} 回`) +
+    kpi("これまでに打った数", f0(totalKeys), "打", `合計 ${Math.floor(totalSec / 60)}分${totalSec % 60}秒`) + `</div>`;
+  h += `<h3 style="font-size:1rem;margin:20px 0 6px;">スコアの推移 <span class="muted small" style="font-weight:400">直近${Math.min(50, runs.length)}回</span></h3>` + histSvg(runs.slice(-50));
+  h += `<div class="tbl-scroll" style="margin-top:12px"><table class="t"><thead><tr><th>日時</th><th class="r">スコア</th><th>段位</th><th class="r">速さ</th><th class="r">初速抜き</th><th class="r">初速</th><th class="r">正確率</th></tr></thead><tbody>` +
+    runs.slice(-10).reverse().map(r => { const d = new Date(r.at); return `<tr${r === best ? ' class="slow"' : ""}><td>${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}</td><td class="r">${f0(r.sc)}</td><td>${rankOf(r.sc)}</td><td class="r">${f0(r.kpm)}</td><td class="r">${f0(r.rkpm)}</td><td class="r">${(r.lat / 1000).toFixed(2)}秒</td><td class="r">${r.acc}%</td></tr>`; }).join("") +
+    `</tbody></table></div><div class="note">色の付いた行が自己ベストです。</div>`;
+  $("hist").innerHTML = h;
+  bindClear();
+}
+function histSvg(runs) {
+  const W = 640, H = 180, L = 40, B = 20, T = 12, R = 12;
+  const max = niceMax(Math.max(100, ...runs.map(r => r.sc)));
+  const n = runs.length;
+  const x = i => n === 1 ? (L + W - R) / 2 : L + (W - L - R) * i / (n - 1);
+  const y = v => T + (H - T - B) * (1 - v / max);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="スコアの推移">`;
+  for (let i = 0; i <= 4; i++) { const v = max * i / 4, yy = y(v); s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}"/><text x="${L - 6}" y="${yy + 4}" text-anchor="end">${f0(v)}</text>`; }
+  if (n > 1) s += `<polyline class="ln" points="${runs.map((r, i) => `${x(i).toFixed(1)},${y(r.sc).toFixed(1)}`).join(" ")}"/>`;
+  runs.forEach((r, i) => {
+    const d = new Date(r.at);
+    s += `<g><circle class="hit" cx="${x(i).toFixed(1)}" cy="${y(r.sc).toFixed(1)}" r="12"><title>${d.getMonth() + 1}/${d.getDate()}：スコア ${r.sc}（${f0(r.kpm)}打/分・${r.acc}%）</title></circle><circle class="dot" cx="${x(i).toFixed(1)}" cy="${y(r.sc).toFixed(1)}" r="4" pointer-events="none"/></g>`;
+  });
+  s += `<line class="base" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/><text x="${L}" y="${H - 4}">古い</text><text x="${W - R}" y="${H - 4}" text-anchor="end">新しい</text></svg>`;
+  return s;
+}
+function bindClear() {
+  const b = $("clearBtn"); if (!b) return;
+  b.onclick = () => {
+    if (!confirm("これまでの記録・分析・ローマ字のクセをすべて消します。よろしいですか？")) return;
+    S.hist = []; S.agg = emptyAgg(); S.pref = {}; save();
+    renderHist(); renderAna();
+  };
+}
+
+/* =========================================================
+   設定と入力
+========================================================= */
+function syncSeg(id, v) { document.querySelectorAll(`#${id} button`).forEach(b => b.setAttribute("aria-pressed", b.dataset.v === String(v))); }
+function applyOpt() {
+  syncSeg("segMode", S.opt.mode); syncSeg("segSec", S.opt.sec);
+  $("optGuide").checked = S.opt.guide; $("optWeak").checked = S.opt.weak; $("optSound").checked = S.opt.sound;
+  if (!G.playing) { $("hTime").textContent = S.opt.sec.toFixed(1); }
+}
+document.querySelectorAll("#segMode button").forEach(b => b.onclick = () => { if (G.playing) return; S.opt.mode = b.dataset.v; save(); applyOpt(); renderHist(); b.blur(); });
+document.querySelectorAll("#segSec button").forEach(b => b.onclick = () => { if (G.playing) return; S.opt.sec = +b.dataset.v; save(); applyOpt(); renderHist(); b.blur(); });
+$("optGuide").onchange = e => { S.opt.guide = e.target.checked; save(); if (G.playing) render(); };
+$("optWeak").onchange = e => { S.opt.weak = e.target.checked; save(); };
+$("optSound").onchange = e => { S.opt.sound = e.target.checked; save(); };
+document.querySelectorAll("#anaTabs button").forEach(b => b.onclick = () => { anaView = b.dataset.v; renderAna(); });
+$("startBtn").onclick = () => startRound();
+$("stage").addEventListener("pointerdown", () => { if (G.playing) setTimeout(focusTrap, 0); });
+
+function focusTrap() { try { $("trap").focus({ preventScroll: true }); } catch (e) { $("trap").focus(); } }
+function imeWarn() { $("imeWarn").hidden = false; }
+const isField = el => el && (el.tagName === "INPUT" && el.id !== "trap" || el.tagName === "SELECT" || el.tagName === "TEXTAREA" || el.isContentEditable);
+
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (!G.playing) {
+    if (e.code === "Space" && !isField(e.target) && !(e.target && e.target.tagName === "BUTTON")) { e.preventDefault(); startRound(); }
+    return;
+  }
+  if (e.key === "Escape") { e.preventDefault(); abort(); return; }
+  if (e.key === "Process") { imeWarn(); return; }
+  if (e.isComposing || e.keyCode === 229) return;   // スマホの画面キーボードは input で受ける
+  if (e.key.length === 1) {
+    e.preventDefault();
+    if (e.key === " ") return;
+    if (!$("imeWarn").hidden) $("imeWarn").hidden = true;
+    onChar(e.key);
+  }
 });
+const trap = $("trap");
+trap.addEventListener("compositionstart", () => { if (G.playing) imeWarn(); });
+trap.addEventListener("input", e => {
+  const v = trap.value; trap.value = "";
+  if (!G.playing) return;
+  if (e.isComposing || e.inputType === "insertCompositionText") { imeWarn(); return; }
+  for (const ch of v) if (/^[\x21-\x7e]$/.test(ch)) onChar(ch);
+});
+
+applyOpt(); idle(); hud(); renderAna(); renderHist();
+})();
 </script>
 
 <div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
