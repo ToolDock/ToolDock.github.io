@@ -74,6 +74,9 @@ h2.sec{ margin:30px 0 12px; font-size:1.1rem; padding-bottom:4px; border-bottom:
 .q.miss .q-roma .next{ background:color-mix(in srgb, var(--c) 18%, #fff); }
 .q-msg{ font-size:1.05rem; color:#3a3d42; }
 .q-msg kbd{ font-family:inherit; font-size:.9rem; border:1px solid var(--line-input); border-bottom-width:2px; border-radius:4px; padding:1px 8px; background:#fff; }
+.q-count{ font-size:4.2rem; font-weight:800; color:var(--c); line-height:1.1; margin-top:6px; }
+.q-count.pop{ animation:tdpop .5s ease-out; }
+@keyframes tdpop{ from{ transform:scale(1.35); opacity:.4; } to{ transform:scale(1); opacity:1; } }
 .warn{ margin:8px auto 0; max-width:30em; font-size:.88rem; color:#b42318; }
 .start{ font:inherit; font-size:1.05rem; font-weight:700; padding:10px 28px; margin-top:14px; border:0; border-radius:var(--r-ctl); background:var(--c); color:#fff; cursor:pointer; }
 .trap{ position:absolute; left:0; top:0; width:1px; height:1px; opacity:0; border:0; padding:0; pointer-events:none; }
@@ -188,9 +191,9 @@ tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
   </div>
   <div class="lab">時間</div>
   <div class="seg" id="segSec">
-    <button type="button" data-v="30">30秒</button>
+    <button type="button" data-v="120">120秒（標準）</button>
     <button type="button" data-v="60">60秒</button>
-    <button type="button" data-v="120">120秒</button>
+    <button type="button" data-v="30">30秒</button>
   </div>
   <div class="lab">設定</div>
   <div class="opts">
@@ -212,9 +215,14 @@ tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
   <div class="bar"><i id="hBar"></i></div>
   <div class="q" id="q">
     <div id="qIdle">
-      <div class="q-msg"><kbd>Space</kbd> キーか下のボタンで開始</div>
+      <div class="q-msg"><kbd>Space</kbd> キーか下のボタンを押すと、5秒数えてから始まります</div>
       <button type="button" class="start" id="startBtn">開始する</button>
       <div class="note">入力は半角英数（日本語入力オフ）で。<kbd style="font-size:.8rem">Esc</kbd> で中断できます。</div>
+    </div>
+    <div id="qCount" hidden>
+      <div class="q-count tnum" id="qCountN">5</div>
+      <div class="q-msg">指をホームポジションに置いて待ってください</div>
+      <div class="note"><kbd style="font-size:.8rem">Esc</kbd> でやめる</div>
     </div>
     <div id="qPlay" hidden>
       <div class="q-disp" id="qDisp"></div>
@@ -352,9 +360,10 @@ const { POOL, K1, COMP, tokenize, splitSok } = TDT;
    保存
 ========================================================= */
 const emptyAgg = () => ({ keys:{}, bi:{}, conf:{}, pat:{same:[0,0],finger:[0,0],hand:[0,0],alt:[0,0]}, lat:[0,0], hab:{}, extra:[0,0] });
-let S = { pref:{}, hist:[], agg: emptyAgg(), opt:{ mode:"sent", sec:60, guide:true, weak:false, sound:true } };
+let S = { pref:{}, hist:[], agg: emptyAgg(), opt:{ mode:"sent", sec:120, guide:true, weak:false, sound:true, v:2 } };
 try { const j = JSON.parse(localStorage.getItem(STORE) || "null"); if (j) S = Object.assign(S, j); } catch (e) {}
-S.opt = Object.assign({ mode:"sent", sec:60, guide:true, weak:false, sound:true }, S.opt || {});
+S.opt = Object.assign({ mode:"sent", sec:120, guide:true, weak:false, sound:true }, S.opt || {});
+if (S.opt.v !== 2) { S.opt.sec = 120; S.opt.v = 2; }   // 標準を120秒にした（2026-11）
 S.agg = Object.assign(emptyAgg(), S.agg || {});
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} };
 
@@ -570,15 +579,16 @@ function render() {
   hud();
 }
 function hud() {
-  const now = G.playing ? performance.now() - G.t0 : (G.limit || S.opt.sec * 1000);
-  const left = Math.max(0, (G.limit || S.opt.sec * 1000) - now);
+  const lim = G.playing ? G.limit : S.opt.sec * 1000;
+  const now = G.playing ? performance.now() - G.t0 : 0;
+  const left = Math.max(0, lim - now);
   $("hTime").textContent = (left / 1000).toFixed(1);
   $("hKeys").textContent = G.keys || 0;
   $("hMiss").textContent = G.miss || 0;
-  $("hKpm").textContent = now > 1000 ? Math.round((G.keys || 0) / now * 60000) : 0;
+  if (G.playing) $("hKpm").textContent = now > 1000 ? Math.round((G.keys || 0) / now * 60000) : 0;
   const tot = (G.keys || 0) + (G.miss || 0);
   $("hAcc").textContent = tot ? ((G.keys / tot) * 100).toFixed(1) : "100.0";
-  $("hBar").style.transform = `scaleX(${left / (G.limit || 1)})`;
+  $("hBar").style.transform = `scaleX(${left / lim})`;
 }
 function tick() {
   if (!G.playing) return;
@@ -586,8 +596,41 @@ function tick() {
   hud();
   requestAnimationFrame(tick);
 }
+/* 開始の前に5秒数える */
+function countdown() {
+  if (G.playing || G.counting) return;
+  G.counting = true;
+  $("imeWarn").hidden = true;
+  $("qIdle").hidden = true; $("qCount").hidden = false;
+  $("stage").classList.add("playing");
+  focusTrap();
+  let n = 5;
+  const show = () => { const el = $("qCountN"); el.textContent = n; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); if (S.opt.sound) beep(n); };
+  show();
+  G.cdTimer = setInterval(() => {
+    n--;
+    if (n > 0) { show(); return; }
+    clearInterval(G.cdTimer); G.counting = false;
+    $("qCount").hidden = true;
+    startRound();
+  }, 1000);
+}
+function stopCountdown() {
+  clearInterval(G.cdTimer); G.counting = false;
+  $("qCount").hidden = true; idle();
+}
+function beep(n) {
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const t = audio.currentTime, o = audio.createOscillator(), g = audio.createGain();
+    o.connect(g); g.connect(audio.destination);
+    o.type = "sine"; o.frequency.setValueAtTime(n === 1 ? 880 : 660, t);
+    g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+    o.start(t); o.stop(t + 0.16);
+  } catch (e) {}
+}
 function idle() {
-  $("qIdle").hidden = false; $("qPlay").hidden = true;
+  $("qIdle").hidden = false; $("qPlay").hidden = true; $("qCount").hidden = true;
   $("stage").classList.remove("playing");
   G.cur = null;
   $("hTime").textContent = S.opt.sec.toFixed(1);
@@ -985,15 +1028,15 @@ function applyOpt() {
   $("optGuide").checked = S.opt.guide; $("optWeak").checked = S.opt.weak; $("optSound").checked = S.opt.sound;
   if (!G.playing) { $("hTime").textContent = S.opt.sec.toFixed(1); }
 }
-document.querySelectorAll("#segMode button").forEach(b => b.onclick = () => { if (G.playing) return; S.opt.mode = b.dataset.v; save(); applyOpt(); renderHist(); loadRanking(); b.blur(); });
-document.querySelectorAll("#segSec button").forEach(b => b.onclick = () => { if (G.playing) return; S.opt.sec = +b.dataset.v; save(); applyOpt(); renderHist(); loadRanking(); b.blur(); });
+document.querySelectorAll("#segMode button").forEach(b => b.onclick = () => { if (G.playing || G.counting) return; S.opt.mode = b.dataset.v; save(); applyOpt(); renderHist(); loadRanking(); b.blur(); });
+document.querySelectorAll("#segSec button").forEach(b => b.onclick = () => { if (G.playing || G.counting) return; S.opt.sec = +b.dataset.v; save(); applyOpt(); renderHist(); loadRanking(); b.blur(); });
 $("rankSend").onclick = sendRank;
 $("rankName").addEventListener("keydown", e => { if (e.key === "Enter") sendRank(); });
 $("optGuide").onchange = e => { S.opt.guide = e.target.checked; save(); if (G.playing) render(); };
 $("optWeak").onchange = e => { S.opt.weak = e.target.checked; save(); badge(); };
 $("optSound").onchange = e => { S.opt.sound = e.target.checked; save(); };
 document.querySelectorAll("#anaTabs button").forEach(b => b.onclick = () => { anaView = b.dataset.v; renderAna(); });
-$("startBtn").onclick = () => startRound();
+$("startBtn").onclick = () => countdown();
 $("stage").addEventListener("pointerdown", () => { if (G.playing) setTimeout(focusTrap, 0); });
 
 function focusTrap() { try { $("trap").focus({ preventScroll: true }); } catch (e) { $("trap").focus(); } }
@@ -1002,8 +1045,13 @@ const isField = el => el && (el.tagName === "INPUT" && el.id !== "trap" || el.ta
 
 document.addEventListener("keydown", e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (G.counting) {
+    if (e.key === "Escape") stopCountdown();
+    if (e.key.length === 1 || e.key === "Escape") e.preventDefault();   // 数えているあいだの打鍵は数えない
+    return;
+  }
   if (!G.playing) {
-    if (e.code === "Space" && !isField(e.target) && !(e.target && e.target.tagName === "BUTTON")) { e.preventDefault(); startRound(); }
+    if (e.code === "Space" && !isField(e.target) && !(e.target && e.target.tagName === "BUTTON")) { e.preventDefault(); countdown(); }
     return;
   }
   if (e.key === "Escape") { e.preventDefault(); abort(); return; }
