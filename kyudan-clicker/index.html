@@ -773,7 +773,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
     if (key === townKey) return; townKey = key;
     const box = $("town"); box.textContent = ""; Object.keys(townCv).forEach(k => delete townCv[k]);
     if (!owned.length) { box.innerHTML = '<div class="empty">「施設」のタブで施設を建てると、ここに並んでいきます。強化すると見た目も豪華になります。</div>'; return; }
-    owned.slice().reverse().forEach(b => {
+    owned.forEach(b => {
       const row = document.createElement("div"); row.className = "kc-row";
       const l = document.createElement("span"); l.className = "lbl"; row.appendChild(l);
       const c = document.createElement("canvas"); c.width = 240; c.height = 28; row.appendChild(c);
