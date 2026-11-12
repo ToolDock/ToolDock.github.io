@@ -527,11 +527,12 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   function fsGap() { let m = Math.pow(0.85, pk("fs") + rk("speed")) * (isMon(6) ? 0.7 : 1); S.ups.forEach(u => { const x = upById(u); if (x && x.fs) m *= x.fs; }); return m; }
   const frenzyLen = () => (30 + 15 * pk("frenzy")) * (has("fs3") ? 2 : 1) * 1000;
 
-  const UNITS = [[1e20, "垓"], [1e16, "京"], [1e12, "兆"], [1e8, "億"], [1e4, "万"]];
+  /* 垓の上は「万垓」で数え、10の28乗から「穣」（𥝱はドット文字に無いので使わない） */
+  const UNITS = [[1e32, "万穣"], [1e28, "穣"], [1e24, "万垓"], [1e20, "垓"], [1e16, "京"], [1e12, "兆"], [1e8, "億"], [1e4, "万"]];
   function fmt(v, dec) {
     if (!isFinite(v)) return "∞";
     if (v < 1e4) return dec && v < 100 ? (Math.floor(v * 10) / 10).toLocaleString("ja-JP") : Math.floor(v).toLocaleString("ja-JP");
-    if (v >= 1e24) return v.toExponential(2);
+    if (v >= 1e36) return v.toExponential(2);
     for (const [u, name] of UNITS) if (v >= u) {
       const x = v / u, d = x < 10 ? 2 : x < 100 ? 1 : 0;
       return (Math.floor(x * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d) + name;
@@ -584,7 +585,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
   A("time100", "野球に恋する", "合わせて100時間遊ぶ", s => s.playSec >= 360000);
   A("c1e6", "百万回の素振り", "100万回バットを振る", s => s.clicks >= 1e6);
   A("hr1e4", "一万本の放物線", "ホームランを1万本", s => s.hr >= 1e4);
-  [[1e21, "次元を超えた人気", "10垓"], [1e24, "数えきれないファン", "1万垓"]].forEach(([n, nm, t]) => A("f" + n, nm, "通算 " + t + "人のファン", s => s.allTime >= n));
+  [[1e21, "次元を超えた人気", "10垓"], [1e28, "数えきれないファン", "1穣"]].forEach(([n, nm, t]) => A("f" + n, nm, "通算 " + t + "人のファン", s => s.allTime >= n));
   [[1e11, "ファンの洪水"], [1e13, "銀河を我が手に"]].forEach(([n, nm]) => A("fps" + n, nm, "毎秒 " + fmtN(n) + "人", () => fpsBase() >= n));
   [[2000, "野球の大陸"], [3000, "野球の惑星"]].forEach(([n, nm]) => A("ball" + n, nm, "施設を合わせて" + n + "持つ", () => totalOwned() >= n));
   [[100, "人気者"], [250, "球界のアイドル"]].forEach(([n, nm]) => A("fs" + n, nm, "ファンサービスを" + n + "回", s => s.fsHits >= n));
