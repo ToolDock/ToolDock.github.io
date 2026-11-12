@@ -284,6 +284,7 @@ tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
 <li><strong>指ごとの速さ</strong>と、<strong>左右交互・同じ手・同じ指</strong>で続けたときの差</li>
 <li><strong>ローマ字のクセ</strong>（「し」を si と shi のどちらで打ったか、最短の打ち方より何打多いか）</li>
 </ul>
+<p>スコアはランキングに登録して、ほかの人と競えます。ランキングは問題の種類（短文・単語・英単語）と時間（30・60・120秒）ごとに分かれています。</p>
 <p>「これまで全部」に切り替えると、これまで遊んだ全部の打鍵をまとめた分析になります。1回分より数が多いので、苦手なキーがはっきり出ます。</p>
 
 <h2>数字の意味</h2>
@@ -329,8 +330,10 @@ tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
 </ul>
 
 <h2>よくある質問</h2>
-<p><strong>Q. 記録はどこに保存されますか？</strong><br>A. このブラウザの中だけに保存されます。サーバーには送信しません。「記録を消す」で消せます。</p>
+<p><strong>Q. 記録はどこに保存されますか？</strong><br>A. 記録と分析は、このブラウザの中だけに保存されます。「記録を消す」で消せます。ランキングに登録したときだけ、名前とスコアをランキングのサーバーに送ります。</p>
 <p><strong>Q. スマートフォンでも遊べますか？</strong><br>A. 画面のキーボードでも打てますが、分析はパソコンのキーボード向けです（指ごとの分析は、標準的な指の割り当てで計算しています）。</p>
+<p><strong>Q. ランキングにはどうやって載りますか？</strong><br>A. 「ランキング対象」と出ている回を打ち終えると、結果の下に名前の欄が出ます。名前を入れて登録すると、問題の種類と時間ごとのランキングに載ります。1つの区分に残るのは自己ベストだけです。「苦手なキーの多い問題を多めに出す」がオンの回は対象外です。</p>
+<p><strong>Q. ランキングに送られるものは何ですか？</strong><br>A. 入れた名前・スコアと、スコアを確かめるための打鍵の記録（どのキーを何秒目に打ったか）だけです。本名やメールアドレスは入れないでください。</p>
 <p><strong>Q. 大文字で打ってしまいました。</strong><br>A. 大文字・小文字はどちらでも正解にしています。</p>
 
 </article>
@@ -415,7 +418,7 @@ function defaultRoma(units) { return units.map(u => pick(u, "")).join(""); }
    ランキング（Google Apps Script。scripts/gas/typing-ranking.gs）
    URL が空のあいだは、ランキングの表示を出さない
 ========================================================= */
-const RANK_URL = "";
+const RANK_URL = "https://script.google.com/macros/s/AKfycbzA-eEy2K2LXUIAIC7IO9Lg69dQvUq59ZEV2Sl-PoHsF_Z3MNYunrrgslqedYrZ_cJD/exec";
 let token = null, tokenBusy = false, rankDown = "";
 if (!S.pid) {
   try { const a = new Uint8Array(8); crypto.getRandomValues(a); S.pid = [...a].map(x => x.toString(16).padStart(2, "0")).join(""); }

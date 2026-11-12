@@ -30,6 +30,7 @@ window.CATEGORY_NAMES = {
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-12", id: "typing-game", kind: "update", text: "タイピング練習にランキングを追加。問題の種類と時間ごとに、自己ベストで順位を競えます" },
   { date: "2026-11-12", id: "typing-game", kind: "update", text: "タイピングゲームを「タイピング練習（打鍵分析つき）」に作り直し。日本語の短文・単語、英単語を打てて、キーごとの速さとミス、指ごとの速さ、遅い並び、ローマ字のクセまで分析します" },
   { date: "2026-11-12", id: "kyudan-clicker", kind: "update", text: "球団経営クリッカーに「永久欠番」を追加。優勝のとき新人を1人選ぶと、背番号が欠番になり能力がずっと残ります" },
   { date: "2026-11-12", id: "kyudan-clicker", kind: "update", text: "球団経営クリッカーを夜の球場のデザインに一新。建てた施設が並んで見える「球団の施設」と、強化するほど河川敷から夢の球場まで建て替わる本拠地を追加" },
