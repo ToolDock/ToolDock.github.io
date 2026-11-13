@@ -158,6 +158,7 @@ def is_kok(k):
 
 
 GROUP = {"にじさんじ": 1, "ダイヤのA": 2}
+POS_ORDER = {"投": 0, "捕": 1, "一": 2, "二": 3, "三": 4, "遊": 5, "外": 6}
 
 
 def group(r):
@@ -199,18 +200,16 @@ def build_table(rows):
         co_cls = ' class="co"' if r["collab"] else ""
         q = kana(" ".join([r["name"], r["pref"], r["pos"]] + r["kins"] + (["歴代レジェンド", "dlc"] if r["dlc"] else []))).lower().replace(" ", "")
         out.append(
-            f'<tr{co_cls} data-q="{e(q)}" data-tags="{" ".join(tags)}" data-co="{group(r)}" data-star="{r["star"]}" data-kin="{len(r["kins"])}" data-year="{yv}" data-order="{n}">'
+            f'<tr{co_cls} data-q="{e(q)}" data-tags="{" ".join(tags)}" data-co="{group(r)}" data-star="{r["star"]}" data-kin="{len(r["kins"])}" data-year="{yv}" data-pos="{POS_ORDER.get(r["pos"], 9)}" data-name="{e(r["name"])}" data-order="{n}">'
             f'<td class="pn">{e(dname(r))}{tag_html(r)}</td><td>{e(r["pref"])}</td><td>{year}</td>'
             f'<td>{e(r["pos"])}</td><td class="r">{r["star"]}</td><td>{kin_links(r["kins"])}</td></tr>')
     return (
         '<div class="card pf" id="players">\n'
         '    <h2>金特を持つ選手から探す</h2>\n'
         '    <p class="lead">選手名・都道府県・作品名・金特・守備で探せます（例：イチロー、兵庫、にじさんじ、怪童、捕）。'
-        '<b class="nk-legend">太字の金特</b>は国際大会では取れない金特です。</p>\n'
+        '<b class="nk-legend">太字の金特</b>は国際大会では取れない金特です。列の見出しを押すと並べ替えられます（もう一度押すと逆順）。</p>\n'
         '    <div class="kt-filter">\n'
         '        <input type="search" id="pq" placeholder="選手名・都道府県・作品・金特で検索" aria-label="選手名・都道府県・作品・金特で検索" autocomplete="off">\n'
-        '        <select id="psort" aria-label="並べ替え"><option value="order">都道府県順</option><option value="star">☆が高い順</option>'
-        '<option value="kin">金特が多い順</option><option value="year">年度が古い順</option></select>\n'
         '        <div class="kt-chips" id="pChips">\n'
         '            <label><input type="checkbox" value="multi"> 金特を2つ以上</label>\n'
         '            <label><input type="checkbox" value="nokok"> 国際大会で取れない金特を持つ</label>\n'
@@ -221,7 +220,14 @@ def build_table(rows):
         f'        <span class="filter-count"><strong id="pCount">{len(rows)}</strong> 人を表示中</span>\n'
         '    </div>\n'
         '    <div class="scroll"><table class="tensei" id="pTable">\n'
-        '    <thead><tr><th>選手</th><th>都道府県・作品</th><th>年度</th><th>守備</th><th class="r">☆</th><th>持っている金特</th></tr></thead>\n'
+        '    <thead><tr>'
+        '<th aria-sort="none"><button type="button" class="th-s" data-k="name">選手</button></th>'
+        '<th aria-sort="ascending"><button type="button" class="th-s" data-k="order">都道府県・作品</button></th>'
+        '<th aria-sort="none"><button type="button" class="th-s" data-k="year">年度</button></th>'
+        '<th aria-sort="none"><button type="button" class="th-s" data-k="pos">守備</button></th>'
+        '<th class="r" aria-sort="none"><button type="button" class="th-s" data-k="star" data-first="desc">☆</button></th>'
+        '<th aria-sort="none"><button type="button" class="th-s" data-k="kin" data-first="desc">持っている金特</button></th>'
+        '</tr></thead>\n'
         '    <tbody>\n' + "\n".join(out) + '\n    </tbody></table></div>\n'
         '    <p class="empty" id="pEmpty" hidden>あてはまる選手がいません</p>\n'
         '</div>'
