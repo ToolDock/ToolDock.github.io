@@ -178,55 +178,6 @@ main{
 }
 
 /* =========================
-   手段の早見
-========================= */
-
-.ways{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:14px;
-    margin-bottom:22px;
-}
-
-.way{
-    background:#fff;
-    padding:16px 18px;
-    border: 1px solid var(--line);
-}
-
-.way .num{
-    display:inline-block;
-    min-width:26px;
-    height:26px;
-    margin-bottom:8px;
-    background:var(--ink);
-    color:#fff;
-    font-size:14px;
-    font-weight:700;
-    line-height:26px;
-    text-align:center;
-}
-
-.way h3{
-    margin:0 0 6px;
-    color:var(--ink-strong);
-    font-size:1.02rem;
-    font-weight:700;
-    line-height:1.5;
-}
-
-.way p{
-    margin:0;
-    color:var(--ink-sub);
-    font-size:14px;
-    line-height:1.7;
-}
-
-.way a{
-    color:var(--accent);
-}
-
-/* =========================
    絞り込み
 ========================= */
 
@@ -406,7 +357,6 @@ figure.shot figcaption{
 }
 
 @media (max-width:820px){
-    .ways{ grid-template-columns:1fr; }
 }
 
 @media (max-width:600px){
@@ -420,27 +370,47 @@ figure.shot figcaption{
     .card table{ font-size:14px; }
 }
 
-.ways-note{ margin:-6px 0 18px; font-size:.9rem; }
 
 
-/* ===== ページ先頭のジャンプ ===== */
-.jump{ margin:0 0 18px; }
-.jump-main{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.jump-btn{ display:flex; align-items:center; gap:12px; padding:14px 18px; background:var(--ink); color:#fff; text-decoration:none; border-radius:6px; }
-.jump-btn:hover{ opacity:.9; }
-.jump-btn b{ display:block; font-size:1.08rem; }
-.jump-btn small{ display:block; font-size:.8rem; opacity:.8; }
-.jump-ic{ font-size:1.4rem; line-height:1; }
-.jump-sub{ display:flex; flex-wrap:wrap; gap:6px 8px; margin-top:10px; }
-.jump-sub a{ font-size:.85rem; padding:4px 12px; border:1px solid var(--line-input); border-radius:999px; background:var(--surface); color:var(--ink); text-decoration:none; }
-.jump-sub a:hover{ border-color:var(--ink); }
+
+
+/* 投手・野手の印と「金特」の印は、塗りつぶさず控えめに */
+.badge{ background:none !important; border:1px solid currentColor; padding:1px 7px; }
+.badge.p{ color:var(--c-pitcher); }
+.badge.b{ color:var(--c-batter); }
+.badge.n{ color:#6b7280; }
+.skill.kin::after{ background:#fbf3dc; color:#8a5a00; border:1px solid #e2c77d; padding:0 5px; font-size:10px; }
+/* ===== ページ上部：検索ツールへの入口と、取り方の早見 ===== */
+.top{ background:var(--surface); border:1px solid var(--line); padding:18px 20px 16px; margin-bottom:22px; }
+.jump{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.jump-btn{ display:flex; align-items:center; gap:12px; padding:13px 16px; border:2px solid var(--ink); border-radius:8px; color:var(--ink); text-decoration:none; background:#fff; transition:background .15s; }
+.jump-btn:hover{ background:var(--surface-2); }
+.jump-btn .ic{ flex:none; width:34px; height:34px; border-radius:50%; background:var(--ink); color:#fff; display:grid; place-items:center; }
+.jump-btn .ic svg{ width:17px; height:17px; }
+.jump-btn b{ display:block; font-size:1.05rem; line-height:1.35; }
+.jump-btn small{ display:block; font-size:.8rem; color:#5c6470; }
+.jump-btn .go{ margin-left:auto; color:#8a8f98; font-size:1.1rem; }
+.ways{ display:grid; grid-template-columns:repeat(3,1fr); margin-top:16px; border-top:1px solid var(--line-soft); }
+.way{ display:block; padding:12px 14px 4px; color:var(--ink); text-decoration:none; border-right:1px solid var(--line-soft); }
+.way:last-child{ border-right:0; }
+.way:hover b{ text-decoration:underline; }
+.way .k{ display:block; font-size:.72rem; font-weight:700; color:var(--c-kin); letter-spacing:.06em; }
+.way b{ display:block; font-size:.98rem; margin:1px 0 3px; }
+.way span.d{ display:block; font-size:.8rem; color:#5c6470; line-height:1.6; }
+.top-note{ margin:12px 0 0; padding-top:10px; border-top:1px solid var(--line-soft); font-size:.82rem; color:#3a3d42; line-height:1.9; }
+.top-note a{ color:var(--accent); margin-right:12px; white-space:nowrap; }
+.top-note a.in{ margin-right:0; }
 @media (max-width:600px){
-    .jump-btn{ padding:11px 12px; gap:8px; }
-    .jump-btn b{ font-size:1rem; }
-    .jump-btn small{ display:none; }
-    .jump-ic{ font-size:1.05rem; }
-    .jump-sub{ gap:5px 6px; }
-    .jump-sub a{ font-size:.78rem; padding:3px 10px; }
+    .top{ padding:14px 14px 12px; }
+    .jump{ gap:8px; }
+    .jump-btn{ padding:9px 10px; gap:7px; }
+    .jump-btn .ic{ width:24px; height:24px; }
+    .jump-btn .ic svg{ width:13px; height:13px; }
+    .jump-btn small, .jump-btn .go{ display:none; }
+    .jump-btn b{ font-size:.9rem; white-space:nowrap; }
+    .way{ padding:10px 8px 2px; }
+    .way b{ font-size:.84rem; line-height:1.4; }
+    .way span.d{ display:none; }
 }
 /* ===== 選手から探す・ピックアップ ===== */
 /* 記事の中に置いたカード（国際大会の評価・選手から探す）の見出しは、記事の h2 の飾りを打ち消す */
@@ -471,24 +441,29 @@ table.tensei tr.co td{ background:#fdf2f8; }
 #ktq{ font:inherit; font-size:1rem; padding:8px 10px; border:1px solid var(--line-input); border-radius:var(--r-ctl); flex:1 1 16em; min-width:0; background:#fff; }
 .kt-chips{ display:flex; flex-wrap:wrap; gap:4px 14px; font-size:.88rem; }
 .kt-chips label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
-.kt-list{ display:grid; grid-template-columns:1fr 1fr; }
-.kt{ padding:14px 22px 12px; border-bottom:1px solid var(--line-soft); min-width:0; }
+.kt-list{ display:grid; grid-template-columns:1fr 1fr; background:var(--surface); }
+.kt{ padding:12px 20px 12px; border-bottom:1px solid var(--line-soft); min-width:0; }
 .kt:nth-child(odd){ border-right:1px solid var(--line-soft); }
-.kt-name{ margin:0; font-size:1.08rem; color:var(--c-kin); display:flex; align-items:center; gap:8px; }
-.kt-base{ display:block; font-size:.8rem; color:#5c6470; margin-top:2px; }
-.kt-ways{ list-style:none; margin:8px 0 0; padding:0; }
-.kt-ways li{ display:flex; gap:8px; font-size:.88rem; line-height:1.6; margin:5px 0; }
+.kt-name{ margin:0; font-size:1rem; display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 8px; line-height:1.5; }
+.kt-n{ color:var(--c-kin); font-weight:800; font-size:1.06rem; }
+.sd{ font-size:.7rem; font-weight:700; padding:0 6px; border-radius:3px; border:1px solid currentColor; line-height:1.6; }
+.sd.b{ color:var(--c-batter); }
+.sd.p{ color:var(--c-pitcher); }
+.sd.n{ color:#6b7280; }
+.kt-base{ font-size:.78rem; font-weight:400; color:#8a8f98; }
+.kt-ways{ list-style:none; margin:6px 0 0; padding:0; }
+.kt-ways li{ display:flex; gap:10px; font-size:.86rem; line-height:1.65; margin:3px 0; }
 .kt-ways .wd{ min-width:0; }
-.w{ flex:none; font-size:.72rem; font-weight:700; padding:1px 0; width:5.6em; text-align:center; border-radius:3px; color:#fff; height:fit-content; margin-top:2px; }
-.w-book{ background:var(--c-kin); }
-.w-kok{ background:#1d4ed8; }
-.w-ten{ background:#6d28d9; }
-.w-col{ background:#be185d; }
-.w-train{ background:#15803d; }
-.w-none{ background:#c4c8cf; }
-.w-none + .wd{ color:#8a8f98; }
-.wk{ color:#5c6470; font-size:.8rem; }
-.dlc{ display:inline-block; font-size:.66rem; font-weight:700; border:1px solid #b45309; color:#b45309; border-radius:3px; padding:0 4px; margin-left:4px; vertical-align:1px; line-height:1.4; }
+.w{ flex:none; font-size:.7rem; font-weight:700; width:5.2em; text-align:center; border-radius:3px; height:fit-content; margin-top:2px; padding:1px 0; }
+.w-kok{ background:#e8eefc; color:#1d4ed8; }
+.w-ten{ background:#eef0f3; color:#374151; }
+.w-col{ background:#fce7f3; color:#be185d; }
+.w-train{ background:#e7f5ec; color:#15803d; }
+.pl{ display:inline-block; margin-right:10px; white-space:nowrap; }
+.wk{ color:#8a8f98; font-size:.76rem; }
+.kt-only{ margin:4px 0 0; font-size:.8rem; color:#8a8f98; }
+.kt-o .kt-n{ color:#9a6b2f; }
+.dlc{ display:inline-block; font-size:.66rem; font-weight:700; border:1px solid #be185d; color:#be185d; border-radius:3px; padding:0 4px; margin-left:4px; vertical-align:1px; line-height:1.4; }
 .kt:target{ background:#fff8e6; }
 table.tensei td.r, table.tensei th.r{ text-align:right; }
 table.tensei td{ white-space:nowrap; }
@@ -499,6 +474,7 @@ table.tensei td:last-child{ white-space:normal; }
 }
 @media (max-width:600px){
     .kt-filter, .kt{ padding-left:16px; padding-right:16px; }
+    .pl{ white-space:normal; }
 }
 </style>
 
@@ -519,59 +495,27 @@ table.tensei td:last-child{ white-space:normal; }
 
 <main>
 
-<nav class="jump" aria-label="検索ツールと一覧">
-    <div class="jump-main">
-        <a href="#search" class="jump-btn"><span class="jump-ic">🔍</span><span><b>金特から探す</b><small>欲しい金特の入手方法（56種）</small></span></a>
-        <a href="#players" class="jump-btn"><span class="jump-ic">🔍</span><span><b>選手から探す</b><small>金特を持つ転生選手（65人）</small></span></a>
+<section class="top" aria-label="検索ツールと取り方の早見">
+    <nav class="jump" aria-label="検索ツール">
+        <a href="#search" class="jump-btn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></span><span><b>金特から探す</b><small>欲しい金特の取り方・56種</small></span><span class="go" aria-hidden="true">↓</span></a>
+        <a href="#players" class="jump-btn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></span><span><b>選手から探す</b><small>金特を持つ転生選手・65人</small></span><span class="go" aria-hidden="true">↓</span></a>
+    </nav>
+    <div class="ways">
+        <a class="way" href="#book"><span class="k">手段1</span><b>金特本を使う</b><span class="d">威圧感以外の55種すべてが出る。OBの祝いの品・アイテム業者で</span></a>
+        <a class="way" href="#kokusai"><span class="k">手段2</span><b>国際大会で活躍する</b><span class="d">野手5つ・投手5つ。タイトルを取れば狙った金特が確定</span></a>
+        <a class="way" href="#tensei"><span class="k">手段3</span><b>転生選手を獲得する</b><span class="d">金特を持つOB・プロ・コラボの選手を入部させる</span></a>
     </div>
-    <div class="jump-sub">
-        <a href="#book-only">金特本でしか取れない金特</a>
-        <a href="#multi">金特を2つ以上持つ選手</a>
-        <a href="#nokok">国際大会で取れない金特を持つ選手</a>
-        <a href="#tbl">国際大会の評価と特殊能力</a>
-        <a href="#tensei">転生選手が出てくる条件</a>
-    </div>
-</nav>
-
-<div class="ways">
-
-    <div class="way">
-        <span class="num">1</span>
-        <h3>金特本を使う</h3>
-        <p>
-        すべての金特が出ます（おかわり・ストレートキラーも）。甲子園のOBの祝いの品か、アイテム業者で。
-        <a href="#book">くわしく</a>
-        </p>
-    </div>
-
-    <div class="way">
-        <span class="num">2</span>
-        <h3>国際大会で活躍する</h3>
-        <p>
-        野手5つ・投手5つの金特が対象。タイトルを取れば、狙った金特が確定で手に入ります。
-        <a href="#kokusai">くわしく</a>
-        </p>
-    </div>
-
-    <div class="way">
-        <span class="num">3</span>
-        <h3>転生選手を獲得する</h3>
-        <p>
-        金特を最初から持っている転生OB・転生プロ・転生コラボの選手を入部させます。
-        <a href="#tensei">くわしく</a>
-        </p>
-    </div>
-
-</div>
-
-<p class="ways-note">このほか、<strong>威圧感だけは特訓や合宿でも取れます</strong>（<a href="#iatsu">例外</a>）。</p>
+    <p class="top-note">
+        <strong>威圧感だけは特訓や合宿でも取れます</strong>（<a href="#iatsu" class="in">例外</a>）<br>
+        <a href="#book-only">金特本でしか取れない金特</a><a href="#multi">金特を2つ以上持つ選手</a><a href="#nokok">国際大会で取れない金特を持つ選手</a><a href="#tbl">国際大会の評価と特殊能力</a>
+    </p>
+</section>
 
 <div class="card" id="search">
     <h2>金特から入手方法を探す</h2>
     <p class="lead">
     金特の名前・元になる青特・選手名で探せます（例：アーチスト、パワーヒッター、王貞治）。
-    「転生」は年度と都道府県が合えば新入生として出てくる選手、「コラボ」はパワプロショップの履歴書で獲得できる選手です。
-    選手から探すなら<a href="#players">金特を持つ選手から探す</a>へ。
+    <strong>威圧感以外の55種は、どれも金特本で出ます</strong>。ここには、金特本以外の取り方（国際大会・転生選手・転生コラボ）を載せています。
     </p>
     <div class="kt-filter">
         <input type="search" id="ktq" placeholder="金特・青特・選手名で検索" aria-label="金特・青特・選手名で検索" autocomplete="off">
@@ -591,396 +535,320 @@ table.tensei td:last-child{ white-space:normal; }
     <div class="kt-list" id="ktList">
 <!-- KT-LIST -->
   <div class="kt" id="kt-安打製造機" data-side="b" data-ways="book col kok ten" data-q="安打製造機アベレージヒッター榎本喜八イチロー新井宏昌張本勲川上哲治小湊春市ダイヤノa">
-    <h3 class="kt-name">安打製造機 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：アベレージヒッター</span>
+    <h3 class="kt-name"><span class="kt-n">安打製造機</span><span class="sd b">野手</span><span class="kt-base">← アベレージヒッター</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会首位打者</strong>で確定、大会MVP（野手）でランダム</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">榎本喜八<span class="wk">（東京・1952年度・一・☆290）</span>、イチロー<span class="wk">（愛知・1989年度・外・☆415）</span>、新井宏昌<span class="wk">（大阪・1968年度・外・☆279）</span>、張本勲<span class="wk">（岡山・1956年度・外・☆333）</span>、川上哲治<span class="wk">（熊本・1935年度・一・☆300）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">小湊春市<span class="wk">（ダイヤのA・二・☆225）</span></span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会首位打者</strong>で確定・大会MVPでランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="一・☆290">榎本喜八<span class="wk">（東京・1952）</span></span><span class="pl" title="外・☆415">イチロー<span class="wk">（愛知・1989）</span></span><span class="pl" title="外・☆279">新井宏昌<span class="wk">（大阪・1968）</span></span><span class="pl" title="外・☆333">張本勲<span class="wk">（岡山・1956）</span></span><span class="pl" title="一・☆300">川上哲治<span class="wk">（熊本・1935）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="二・☆225">小湊春市<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-アーチスト" data-side="b" data-ways="book col kok ten" data-q="アーチストパワーヒッター王貞治王貞治田淵幸一江藤智結城将司轟雷市ダイヤノa">
-    <h3 class="kt-name">アーチスト <span class="badge b">野手</span></h3><span class="kt-base">元の青特：パワーヒッター</span>
+    <h3 class="kt-name"><span class="kt-n">アーチスト</span><span class="sd b">野手</span><span class="kt-base">← パワーヒッター</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最多本塁打</strong>で確定、大会MVP（野手）でランダム</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">王貞治（DLC）<span class="wk">（東京・1956年度・一・☆400）</span>、王貞治<span class="wk">（東京・1956年度・一・☆391）</span>、田淵幸一<span class="wk">（東京・1962年度・捕・☆365）</span>、江藤智<span class="wk">（東京・1986年度・三・☆300）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">結城将司<span class="wk">（ダイヤのA・外・☆175）</span>、轟雷市<span class="wk">（ダイヤのA・三・☆284）</span></span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最多本塁打</strong>で確定・大会MVPでランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="一・☆400">王貞治（DLC）<span class="wk">（東京・1956）</span></span><span class="pl" title="一・☆391">王貞治<span class="wk">（東京・1956）</span></span><span class="pl" title="捕・☆365">田淵幸一<span class="wk">（東京・1962）</span></span><span class="pl" title="三・☆300">江藤智<span class="wk">（東京・1986）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="外・☆175">結城将司<span class="wk">（ダイヤのA）</span></span><span class="pl" title="三・☆284">轟雷市<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-広角砲" data-side="b" data-ways="book only" data-q="広角砲広角打法">
-    <h3 class="kt-name">広角砲 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：広角打法</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-広角砲" data-side="b" data-ways="book only" data-q="広角砲広角打法">
+    <h3 class="kt-name"><span class="kt-n">広角砲</span><span class="sd b">野手</span><span class="kt-base">← 広角打法</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
   <div class="kt" id="kt-引っ張り屋" data-side="b" data-ways="book ten" data-q="引ッ張リ屋プルヒッター土井正博">
-    <h3 class="kt-name">引っ張り屋 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：プルヒッター</span>
+    <h3 class="kt-name"><span class="kt-n">引っ張り屋</span><span class="sd b">野手</span><span class="kt-base">← プルヒッター</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">土井正博<span class="wk">（大阪・1959年度・外・☆303）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="外・☆303">土井正博<span class="wk">（大阪・1959）</span></span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-芸術的流し打ち" data-side="b" data-ways="book only" data-q="芸術的流シ打チ流シ打チ">
-    <h3 class="kt-name">芸術的流し打ち <span class="badge b">野手</span></h3><span class="kt-base">元の青特：流し打ち</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-芸術的流し打ち" data-side="b" data-ways="book only" data-q="芸術的流シ打チ流シ打チ">
+    <h3 class="kt-name"><span class="kt-n">芸術的流し打ち</span><span class="sd b">野手</span><span class="kt-base">← 流し打ち</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
   <div class="kt" id="kt-勝負師" data-side="b" data-ways="book col kok ten" data-q="勝負師チャンスa落合博満椎名唯華ニジサンジ">
-    <h3 class="kt-name">勝負師 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：チャンスA</span>
+    <h3 class="kt-name"><span class="kt-n">勝負師</span><span class="sd b">野手</span><span class="kt-base">← チャンスA</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最多打点</strong>で確定、大会MVP（野手）でランダム</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">落合博満<span class="wk">（秋田・1969年度・三・☆373）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">椎名唯華<span class="wk">（にじさんじ・一・☆271）</span></span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最多打点</strong>で確定・大会MVPでランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="三・☆373">落合博満<span class="wk">（秋田・1969）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="一・☆271">椎名唯華<span class="wk">（にじさんじ）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-恐怖の満塁男" data-side="b" data-ways="book ten" data-q="恐怖ノ満塁男満塁男駒田徳広今岡誠">
-    <h3 class="kt-name">恐怖の満塁男 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：満塁男</span>
+    <h3 class="kt-name"><span class="kt-n">恐怖の満塁男</span><span class="sd b">野手</span><span class="kt-base">← 満塁男</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">駒田徳広<span class="wk">（奈良・1978年度・一・☆260）</span>、今岡誠<span class="wk">（兵庫・1990年度・二・☆253）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="一・☆260">駒田徳広<span class="wk">（奈良・1978）</span></span><span class="pl" title="二・☆253">今岡誠<span class="wk">（兵庫・1990）</span></span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-伝説のサヨナラ男" data-side="b" data-ways="book only" data-q="伝説ノサヨナラ男サヨナラ男">
-    <h3 class="kt-name">伝説のサヨナラ男 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：サヨナラ男</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-伝説のサヨナラ男" data-side="b" data-ways="book only" data-q="伝説ノサヨナラ男サヨナラ男">
+    <h3 class="kt-name"><span class="kt-n">伝説のサヨナラ男</span><span class="sd b">野手</span><span class="kt-base">← サヨナラ男</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
   <div class="kt" id="kt-代打の神様" data-side="b" data-ways="book ten" data-q="代打ノ神様代打〇高井保弘">
-    <h3 class="kt-name">代打の神様 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：代打〇</span>
+    <h3 class="kt-name"><span class="kt-n">代打の神様</span><span class="sd b">野手</span><span class="kt-base">← 代打〇</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">高井保弘<span class="wk">（愛媛・1960年度・一・☆264）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="一・☆264">高井保弘<span class="wk">（愛媛・1960）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-切り込み隊長" data-side="b" data-ways="book ten" data-q="切リ込ミ隊長チャンスメーカー石毛宏典松井稼頭央">
-    <h3 class="kt-name">切り込み隊長 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：チャンスメーカー</span>
+    <h3 class="kt-name"><span class="kt-n">切り込み隊長</span><span class="sd b">野手</span><span class="kt-base">← チャンスメーカー</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">石毛宏典<span class="wk">（千葉・1972年度・三・☆299）</span>、松井稼頭央（DLC）<span class="wk">（大阪・1991年度・遊・☆376）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="三・☆299">石毛宏典<span class="wk">（千葉・1972）</span></span><span class="pl" title="遊・☆376">松井稼頭央（DLC）<span class="wk">（大阪・1991）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-大番狂わせ" data-side="b" data-ways="book col" data-q="大番狂ワセ意外性椎名唯華御幸一也梅宮聖一ニジサンジダイヤノa">
-    <h3 class="kt-name">大番狂わせ <span class="badge b">野手</span></h3><span class="kt-base">元の青特：意外性</span>
+    <h3 class="kt-name"><span class="kt-n">大番狂わせ</span><span class="sd b">野手</span><span class="kt-base">← 意外性</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">椎名唯華<span class="wk">（にじさんじ・一・☆271）</span>、御幸一也<span class="wk">（ダイヤのA・捕・☆330）</span>、梅宮聖一<span class="wk">（ダイヤのA・投・☆228）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="一・☆271">椎名唯華<span class="wk">（にじさんじ）</span></span><span class="pl" title="捕・☆330">御幸一也<span class="wk">（ダイヤのA）</span></span><span class="pl" title="投・☆228">梅宮聖一<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-火事場の馬鹿力" data-side="b" data-ways="book only" data-q="火事場ノ馬鹿力逆境〇">
-    <h3 class="kt-name">火事場の馬鹿力 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：逆境〇</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-火事場の馬鹿力" data-side="b" data-ways="book only" data-q="火事場ノ馬鹿力逆境〇">
+    <h3 class="kt-name"><span class="kt-n">火事場の馬鹿力</span><span class="sd b">野手</span><span class="kt-base">← 逆境〇</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-メッタ打ち" data-side="b" data-ways="book only" data-q="メッタ打チ固メ打チ">
-    <h3 class="kt-name">メッタ打ち <span class="badge b">野手</span></h3><span class="kt-base">元の青特：固め打ち</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-メッタ打ち" data-side="b" data-ways="book only" data-q="メッタ打チ固メ打チ">
+    <h3 class="kt-name"><span class="kt-n">メッタ打ち</span><span class="sd b">野手</span><span class="kt-base">← 固め打ち</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-一球入魂" data-side="b" data-ways="book only" data-q="一球入魂初球〇">
-    <h3 class="kt-name">一球入魂 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：初球〇</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-一球入魂" data-side="b" data-ways="book only" data-q="一球入魂初球〇">
+    <h3 class="kt-name"><span class="kt-n">一球入魂</span><span class="sd b">野手</span><span class="kt-base">← 初球〇</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-左腕キラー" data-side="b" data-ways="book only" data-q="左腕キラー対左投手a">
-    <h3 class="kt-name">左腕キラー <span class="badge b">野手</span></h3><span class="kt-base">元の青特：対左投手A</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-左腕キラー" data-side="b" data-ways="book only" data-q="左腕キラー対左投手a">
+    <h3 class="kt-name"><span class="kt-n">左腕キラー</span><span class="sd b">野手</span><span class="kt-base">← 対左投手A</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-ストレートキラー" data-side="b" data-ways="book only" data-q="ストレートキラー対ストレート〇">
-    <h3 class="kt-name">ストレートキラー <span class="badge b">野手</span></h3><span class="kt-base">元の青特：対ストレート〇</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-ストレートキラー" data-side="b" data-ways="book only" data-q="ストレートキラー対ストレート〇">
+    <h3 class="kt-name"><span class="kt-n">ストレートキラー</span><span class="sd b">野手</span><span class="kt-base">← 対ストレート〇</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
   <div class="kt" id="kt-おかわり" data-side="b" data-ways="book ten" data-q="オカワリマルチ弾中村剛也">
-    <h3 class="kt-name">おかわり <span class="badge b">野手</span></h3><span class="kt-base">元の青特：マルチ弾</span>
+    <h3 class="kt-name"><span class="kt-n">おかわり</span><span class="sd b">野手</span><span class="kt-base">← マルチ弾</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">中村剛也<span class="wk">（大阪・1999年度・三・☆307）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="三・☆307">中村剛也<span class="wk">（大阪・1999）</span></span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-高球必打" data-side="b" data-ways="book only" data-q="高球必打ハイボールヒッター">
-    <h3 class="kt-name">高球必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ハイボールヒッター</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-高球必打" data-side="b" data-ways="book only" data-q="高球必打ハイボールヒッター">
+    <h3 class="kt-name"><span class="kt-n">高球必打</span><span class="sd b">野手</span><span class="kt-base">← ハイボールヒッター</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-低球必打" data-side="b" data-ways="book only" data-q="低球必打ローボールヒッター">
-    <h3 class="kt-name">低球必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ローボールヒッター</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-低球必打" data-side="b" data-ways="book only" data-q="低球必打ローボールヒッター">
+    <h3 class="kt-name"><span class="kt-n">低球必打</span><span class="sd b">野手</span><span class="kt-base">← ローボールヒッター</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-内角必打" data-side="b" data-ways="book only" data-q="内角必打インコースヒッター">
-    <h3 class="kt-name">内角必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：インコースヒッター</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-内角必打" data-side="b" data-ways="book only" data-q="内角必打インコースヒッター">
+    <h3 class="kt-name"><span class="kt-n">内角必打</span><span class="sd b">野手</span><span class="kt-base">← インコースヒッター</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-外角必打" data-side="b" data-ways="book only" data-q="外角必打アウトコースヒッター">
-    <h3 class="kt-name">外角必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：アウトコースヒッター</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-外角必打" data-side="b" data-ways="book only" data-q="外角必打アウトコースヒッター">
+    <h3 class="kt-name"><span class="kt-n">外角必打</span><span class="sd b">野手</span><span class="kt-base">← アウトコースヒッター</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
   <div class="kt" id="kt-精神的支柱" data-side="b" data-ways="book col ten" data-q="精神的支柱ムード〇毒島章一リゼ・ヘルエスタニジサンジ">
-    <h3 class="kt-name">精神的支柱 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ムード〇</span>
+    <h3 class="kt-name"><span class="kt-n">精神的支柱</span><span class="sd b">野手</span><span class="kt-base">← ムード〇</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">毒島章一<span class="wk">（群馬・1951年度・外・☆260）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">リゼ・ヘルエスタ<span class="wk">（にじさんじ・二・☆249）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="外・☆260">毒島章一<span class="wk">（群馬・1951）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="二・☆249">リゼ・ヘルエスタ<span class="wk">（にじさんじ）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-トリックスター" data-side="b" data-ways="book col" data-q="トリックスターカク乱倉持洋一ダイヤノa">
-    <h3 class="kt-name">トリックスター <span class="badge b">野手</span></h3><span class="kt-base">元の青特：かく乱</span>
+    <h3 class="kt-name"><span class="kt-n">トリックスター</span><span class="sd b">野手</span><span class="kt-base">← かく乱</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">倉持洋一<span class="wk">（ダイヤのA・遊・☆293）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="遊・☆293">倉持洋一<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-電光石火" data-side="b" data-ways="book col kok ten" data-q="電光石火盗塁a赤星憲広福本豊リゼ・ヘルエスタ倉持洋一ニジサンジダイヤノa">
-    <h3 class="kt-name">電光石火 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：盗塁A</span>
+    <h3 class="kt-name"><span class="kt-n">電光石火</span><span class="sd b">野手</span><span class="kt-base">← 盗塁A</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最多盗塁</strong>で確定、大会MVP（野手）でランダム</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">赤星憲広<span class="wk">（愛知・1992年度・外・☆298）</span>、福本豊<span class="wk">（大阪・1963年度・外・☆294）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">リゼ・ヘルエスタ<span class="wk">（にじさんじ・二・☆249）</span>、倉持洋一<span class="wk">（ダイヤのA・遊・☆293）</span></span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最多盗塁</strong>で確定・大会MVPでランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="外・☆298">赤星憲広<span class="wk">（愛知・1992）</span></span><span class="pl" title="外・☆294">福本豊<span class="wk">（大阪・1963）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="二・☆249">リゼ・ヘルエスタ<span class="wk">（にじさんじ）</span></span><span class="pl" title="遊・☆293">倉持洋一<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-高速ベースラン" data-side="b" data-ways="book only" data-q="高速ベースラン走塁a">
-    <h3 class="kt-name">高速ベースラン <span class="badge b">野手</span></h3><span class="kt-base">元の青特：走塁A</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-高速ベースラン" data-side="b" data-ways="book only" data-q="高速ベースラン走塁a">
+    <h3 class="kt-name"><span class="kt-n">高速ベースラン</span><span class="sd b">野手</span><span class="kt-base">← 走塁A</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-ロケットスタート" data-side="b" data-ways="book only" data-q="ロケットスタート内野安打〇">
-    <h3 class="kt-name">ロケットスタート <span class="badge b">野手</span></h3><span class="kt-base">元の青特：内野安打〇</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-ロケットスタート" data-side="b" data-ways="book only" data-q="ロケットスタート内野安打〇">
+    <h3 class="kt-name"><span class="kt-n">ロケットスタート</span><span class="sd b">野手</span><span class="kt-base">← 内野安打〇</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-重戦車" data-side="b" data-ways="book only" data-q="重戦車ホーム突入">
-    <h3 class="kt-name">重戦車 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ホーム突入</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-重戦車" data-side="b" data-ways="book only" data-q="重戦車ホーム突入">
+    <h3 class="kt-name"><span class="kt-n">重戦車</span><span class="sd b">野手</span><span class="kt-base">← ホーム突入</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-気迫ヘッド" data-side="b" data-ways="book only" data-q="気迫ヘッドヘッドスライディング">
-    <h3 class="kt-name">気迫ヘッド <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ヘッドスライディング</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-気迫ヘッド" data-side="b" data-ways="book only" data-q="気迫ヘッドヘッドスライディング">
+    <h3 class="kt-name"><span class="kt-n">気迫ヘッド</span><span class="sd b">野手</span><span class="kt-base">← ヘッドスライディング</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
   <div class="kt" id="kt-魔術師" data-side="b" data-ways="book kok ten" data-q="魔術師守備職人小坂誠菊池涼介吉田義男">
-    <h3 class="kt-name">魔術師 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：守備職人</span>
+    <h3 class="kt-name"><span class="kt-n">魔術師</span><span class="sd b">野手</span><span class="kt-base">← 守備職人</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最優秀守備選手</strong>で確定、大会MVP（野手）でランダム</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">小坂誠<span class="wk">（宮城・1989年度・遊・☆282）</span>、菊池涼介（DLC）<span class="wk">（東京・2005年度・二・☆363）</span>、吉田義男<span class="wk">（京都・1949年度・遊・☆287）</span></span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最優秀守備選手</strong>で確定・大会MVPでランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="遊・☆282">小坂誠<span class="wk">（宮城・1989）</span></span><span class="pl" title="二・☆363">菊池涼介（DLC）<span class="wk">（東京・2005）</span></span><span class="pl" title="遊・☆287">吉田義男<span class="wk">（京都・1949）</span></span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-高速レーザー" data-side="b" data-ways="book only" data-q="高速レーザーレーザービーム">
-    <h3 class="kt-name">高速レーザー <span class="badge b">野手</span></h3><span class="kt-base">元の青特：レーザービーム</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-高速レーザー" data-side="b" data-ways="book only" data-q="高速レーザーレーザービーム">
+    <h3 class="kt-name"><span class="kt-n">高速レーザー</span><span class="sd b">野手</span><span class="kt-base">← レーザービーム</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
   <div class="kt" id="kt-ストライク送球" data-side="b" data-ways="book col" data-q="ストライク送球送球a御幸一也ダイヤノa">
-    <h3 class="kt-name">ストライク送球 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：送球A</span>
+    <h3 class="kt-name"><span class="kt-n">ストライク送球</span><span class="sd b">野手</span><span class="kt-base">← 送球A</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">御幸一也<span class="wk">（ダイヤのA・捕・☆330）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="捕・☆330">御幸一也<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-バズーカ送球" data-side="b" data-ways="book ten" data-q="バズーカ送球城島健司">
-    <h3 class="kt-name">バズーカ送球 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：なし（金特だけの特殊能力）</span>
+    <h3 class="kt-name"><span class="kt-n">バズーカ送球</span><span class="sd b">野手</span><span class="kt-base">青特なし（金特だけ）</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">城島健司<span class="wk">（長崎・1992年度・捕・☆324）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="捕・☆324">城島健司<span class="wk">（長崎・1992）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-球界の頭脳" data-side="b" data-ways="book col ten" data-q="球界ノ頭脳キャッチャーa野村克也古田敦也御幸一也ダイヤノa">
-    <h3 class="kt-name">球界の頭脳 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：キャッチャーA</span>
+    <h3 class="kt-name"><span class="kt-n">球界の頭脳</span><span class="sd b">野手</span><span class="kt-base">← キャッチャーA</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">野村克也<span class="wk">（京都・1951年度・捕・☆344）</span>、古田敦也<span class="wk">（兵庫・1981年度・捕・☆392）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">御幸一也<span class="wk">（ダイヤのA・捕・☆330）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="捕・☆344">野村克也<span class="wk">（京都・1951）</span></span><span class="pl" title="捕・☆392">古田敦也<span class="wk">（兵庫・1981）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="捕・☆330">御幸一也<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-鉄の壁" data-side="b" data-ways="book only" data-q="鉄ノ壁ホーム死守">
-    <h3 class="kt-name">鉄の壁 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ホーム死守</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-鉄の壁" data-side="b" data-ways="book only" data-q="鉄ノ壁ホーム死守">
+    <h3 class="kt-name"><span class="kt-n">鉄の壁</span><span class="sd b">野手</span><span class="kt-base">← ホーム死守</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
   <div class="kt" id="kt-ささやき戦術" data-side="b" data-ways="book col ten" data-q="ササヤキ戦術野村克也舞元啓介ニジサンジ">
-    <h3 class="kt-name">ささやき戦術 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：なし（金特だけの特殊能力）</span>
+    <h3 class="kt-name"><span class="kt-n">ささやき戦術</span><span class="sd b">野手</span><span class="kt-base">青特なし（金特だけ）</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">野村克也<span class="wk">（京都・1951年度・捕・☆344）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">舞元啓介<span class="wk">（にじさんじ・捕・☆209）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="捕・☆344">野村克也<span class="wk">（京都・1951）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="捕・☆209">舞元啓介<span class="wk">（にじさんじ）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-鉄人" data-side="a" data-ways="book ten" data-q="鉄人ケガシニクサa山口鉄也岩瀬仁紀衣笠祥雄別所昭金本知憲">
-    <h3 class="kt-name">鉄人 <span class="badge n">投手・野手</span></h3><span class="kt-base">元の青特：ケガしにくさA</span>
+    <h3 class="kt-name"><span class="kt-n">鉄人</span><span class="sd n">投手・野手</span><span class="kt-base">← ケガしにくさA</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">山口鉄也（DLC）<span class="wk">（神奈川・1999年度・投・☆308）</span>、岩瀬仁紀<span class="wk">（愛知・1990年度・投・☆314）</span>、衣笠祥雄<span class="wk">（京都・1962年度・三・☆304）</span>、別所昭<span class="wk">（兵庫・1938年度・投・☆384）</span>、金本知憲<span class="wk">（岡山・1984年度・外・☆352）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆308">山口鉄也（DLC）<span class="wk">（神奈川・1999）</span></span><span class="pl" title="投・☆314">岩瀬仁紀<span class="wk">（愛知・1990）</span></span><span class="pl" title="三・☆304">衣笠祥雄<span class="wk">（京都・1962）</span></span><span class="pl" title="投・☆384">別所昭<span class="wk">（兵庫・1938）</span></span><span class="pl" title="外・☆352">金本知憲<span class="wk">（岡山・1984）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-怪物球威" data-side="p" data-ways="book col kok ten" data-q="怪物球威重イ球平松政次降谷暁本郷正宗ダイヤノa">
-    <h3 class="kt-name">怪物球威 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：重い球</span>
+    <h3 class="kt-name"><span class="kt-n">怪物球威</span><span class="sd p">投手</span><span class="kt-base">← 重い球</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVP（投手）でランダム</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">平松政次<span class="wk">（岡山・1963年度・投・☆326）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">降谷 暁<span class="wk">（ダイヤのA・投・☆271）</span>、本郷正宗<span class="wk">（ダイヤのA・投・☆300）</span></span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVPでランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆326">平松政次<span class="wk">（岡山・1963）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="投・☆271">降谷 暁<span class="wk">（ダイヤのA）</span></span><span class="pl" title="投・☆300">本郷正宗<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-ドクターK" data-side="p" data-ways="book col kok" data-q="ドクターk奪三振成宮鳴本郷正宗ダイヤノa">
-    <h3 class="kt-name">ドクターK <span class="badge p">投手</span></h3><span class="kt-base">元の青特：奪三振</span>
+    <h3 class="kt-name"><span class="kt-n">ドクターK</span><span class="sd p">投手</span><span class="kt-base">← 奪三振</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVP（投手）でランダム</span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">成宮鳴<span class="wk">（ダイヤのA・投・☆343）</span>、本郷正宗<span class="wk">（ダイヤのA・投・☆300）</span></span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVPでランダム</span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="投・☆343">成宮鳴<span class="wk">（ダイヤのA）</span></span><span class="pl" title="投・☆300">本郷正宗<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-変幻自在" data-side="p" data-ways="book col kok" data-q="変幻自在緩急〇五十嵐梨花梅宮聖一ニジサンジダイヤノa">
-    <h3 class="kt-name">変幻自在 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：緩急〇</span>
+    <h3 class="kt-name"><span class="kt-n">変幻自在</span><span class="sd p">投手</span><span class="kt-base">← 緩急〇</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVP（投手）でランダム</span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">五十嵐梨花<span class="wk">（にじさんじ・投・☆215）</span>、梅宮聖一<span class="wk">（ダイヤのA・投・☆228）</span></span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVPでランダム</span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="投・☆215">五十嵐梨花<span class="wk">（にじさんじ）</span></span><span class="pl" title="投・☆228">梅宮聖一<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-精密機械" data-side="p" data-ways="book col kok ten" data-q="精密機械低メ〇小山正明北別府学向井太陽ダイヤノa">
-    <h3 class="kt-name">精密機械 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：低め〇</span>
+    <h3 class="kt-name"><span class="kt-n">精密機械</span><span class="sd p">投手</span><span class="kt-base">← 低め〇</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVP（投手）でランダム</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">小山正明<span class="wk">（兵庫・1950年度・投・☆340）</span>、北別府学<span class="wk">（鹿児島・1973年度・投・☆308）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">向井太陽<span class="wk">（ダイヤのA・投・☆279）</span></span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVPでランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆340">小山正明<span class="wk">（兵庫・1950）</span></span><span class="pl" title="投・☆308">北別府学<span class="wk">（鹿児島・1973）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="投・☆279">向井太陽<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-驚異の切れ味" data-side="p" data-ways="book col ten" data-q="驚異ノ切レ味キレ〇岩瀬仁紀伊藤智仁成宮鳴ダイヤノa">
-    <h3 class="kt-name">驚異の切れ味 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：キレ〇</span>
+    <h3 class="kt-name"><span class="kt-n">驚異の切れ味</span><span class="sd p">投手</span><span class="kt-base">← キレ〇</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">岩瀬仁紀<span class="wk">（愛知・1990年度・投・☆314）</span>、伊藤智仁<span class="wk">（京都・1986年度・投・☆275）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">成宮鳴<span class="wk">（ダイヤのA・投・☆343）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆314">岩瀬仁紀<span class="wk">（愛知・1990）</span></span><span class="pl" title="投・☆275">伊藤智仁<span class="wk">（京都・1986）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="投・☆343">成宮鳴<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-怪童" data-side="p" data-ways="book col ten" data-q="怪童ノビa江川卓金田正一尾崎行雄江夏豊藤川球児藤川球児降谷暁本郷正宗ダイヤノa">
-    <h3 class="kt-name">怪童 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：ノビA</span>
+    <h3 class="kt-name"><span class="kt-n">怪童</span><span class="sd p">投手</span><span class="kt-base">← ノビA</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">江川卓<span class="wk">（福島・1971年度・投・☆343）</span>、金田正一<span class="wk">（愛知・1949年度・投・☆349）</span>、尾崎行雄<span class="wk">（大阪・1960年度・投・☆306）</span>、江夏豊<span class="wk">（兵庫・1964年度・投・☆382）</span>、藤川球児（DLC）<span class="wk">（高知・1996年度・投・☆310）</span>、藤川球児<span class="wk">（高知・1996年度・投・☆307）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">降谷 暁<span class="wk">（ダイヤのA・投・☆271）</span>、本郷正宗<span class="wk">（ダイヤのA・投・☆300）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆343">江川卓<span class="wk">（福島・1971）</span></span><span class="pl" title="投・☆349">金田正一<span class="wk">（愛知・1949）</span></span><span class="pl" title="投・☆306">尾崎行雄<span class="wk">（大阪・1960）</span></span><span class="pl" title="投・☆382">江夏豊<span class="wk">（兵庫・1964）</span></span><span class="pl" title="投・☆310">藤川球児（DLC）<span class="wk">（高知・1996）</span></span><span class="pl" title="投・☆307">藤川球児<span class="wk">（高知・1996）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="投・☆271">降谷 暁<span class="wk">（ダイヤのA）</span></span><span class="pl" title="投・☆300">本郷正宗<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-強心臓" data-side="p" data-ways="book kok" data-q="強心臓対ピンチa">
-    <h3 class="kt-name">強心臓 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：対ピンチA</span>
+    <h3 class="kt-name"><span class="kt-n">強心臓</span><span class="sd p">投手</span><span class="kt-base">← 対ピンチA</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会の最優秀防御率</strong>で確定、大会MVP（投手）でランダム</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会の最優秀防御率</strong>で確定・大会MVPでランダム</span></li>
     </ul>
   </div>
   <div class="kt" id="kt-不屈の魂" data-side="p" data-ways="book ten" data-q="不屈ノ魂打タレ強サa鈴木啓示">
-    <h3 class="kt-name">不屈の魂 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：打たれ強さA</span>
+    <h3 class="kt-name"><span class="kt-n">不屈の魂</span><span class="sd p">投手</span><span class="kt-base">← 打たれ強さA</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">鈴木啓示<span class="wk">（兵庫・1963年度・投・☆335）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆335">鈴木啓示<span class="wk">（兵庫・1963）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-鉄腕" data-side="p" data-ways="book ten" data-q="鉄腕投手調子安定岩瀬仁紀宮西尚生宮西尚生稲尾和久">
-    <h3 class="kt-name">鉄腕 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：投手調子安定</span>
+    <h3 class="kt-name"><span class="kt-n">鉄腕</span><span class="sd p">投手</span><span class="kt-base">← 投手調子安定</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">岩瀬仁紀<span class="wk">（愛知・1990年度・投・☆314）</span>、宮西尚生（DLC）<span class="wk">（兵庫・2001年度・投・☆282）</span>、宮西尚生<span class="wk">（兵庫・2001年度・投・☆250）</span>、稲尾和久<span class="wk">（大分・1953年度・投・☆366）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆314">岩瀬仁紀<span class="wk">（愛知・1990）</span></span><span class="pl" title="投・☆282">宮西尚生（DLC）<span class="wk">（兵庫・2001）</span></span><span class="pl" title="投・☆250">宮西尚生<span class="wk">（兵庫・2001）</span></span><span class="pl" title="投・☆366">稲尾和久<span class="wk">（大分・1953）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-ガソリンタンク" data-side="p" data-ways="book ten" data-q="ガソリンタンク回復a米田哲也稲尾和久">
-    <h3 class="kt-name">ガソリンタンク <span class="badge p">投手</span></h3><span class="kt-base">元の青特：回復A</span>
+    <h3 class="kt-name"><span class="kt-n">ガソリンタンク</span><span class="sd p">投手</span><span class="kt-base">← 回復A</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">米田哲也<span class="wk">（鳥取・1953年度・投・☆281）</span>、稲尾和久<span class="wk">（大分・1953年度・投・☆366）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆281">米田哲也<span class="wk">（鳥取・1953）</span></span><span class="pl" title="投・☆366">稲尾和久<span class="wk">（大分・1953）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-本塁打厳禁" data-side="p" data-ways="book ten" data-q="本塁打厳禁逃ゲ球西村健太朗武田久">
-    <h3 class="kt-name">本塁打厳禁 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：逃げ球</span>
+    <h3 class="kt-name"><span class="kt-n">本塁打厳禁</span><span class="sd p">投手</span><span class="kt-base">← 逃げ球</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">西村健太朗<span class="wk">（岡山・2001年度・投・☆283）</span>、武田久<span class="wk">（香川・1994年度・投・☆278）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆283">西村健太朗<span class="wk">（岡山・2001）</span></span><span class="pl" title="投・☆278">武田久<span class="wk">（香川・1994）</span></span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-走者釘付" data-side="p" data-ways="book only" data-q="走者釘付クイックa">
-    <h3 class="kt-name">走者釘付 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：クイックA</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-走者釘付" data-side="p" data-ways="book only" data-q="走者釘付クイックa">
+    <h3 class="kt-name"><span class="kt-n">走者釘付</span><span class="sd p">投手</span><span class="kt-base">← クイックA</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
-  <div class="kt" id="kt-左キラー" data-side="p" data-ways="book only" data-q="左キラー対左打者a">
-    <h3 class="kt-name">左キラー <span class="badge p">投手</span></h3><span class="kt-base">元の青特：対左打者A</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-左キラー" data-side="p" data-ways="book only" data-q="左キラー対左打者a">
+    <h3 class="kt-name"><span class="kt-n">左キラー</span><span class="sd p">投手</span><span class="kt-base">← 対左打者A</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
   <div class="kt" id="kt-内角無双" data-side="p" data-ways="book ten" data-q="内角無双内角攻メ東尾修">
-    <h3 class="kt-name">内角無双 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：内角攻め</span>
+    <h3 class="kt-name"><span class="kt-n">内角無双</span><span class="sd p">投手</span><span class="kt-base">← 内角攻め</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">東尾修（DLC）<span class="wk">（和歌山・1966年度・投・☆268）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆268">東尾修（DLC）<span class="wk">（和歌山・1966）</span></span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-ハイスピンジャイロ" data-side="p" data-ways="book only" data-q="ハイスピンジャイロジャイロボール">
-    <h3 class="kt-name">ハイスピンジャイロ <span class="badge p">投手</span></h3><span class="kt-base">元の青特：ジャイロボール</span>
-    <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-    </ul>
+  <div class="kt kt-o" id="kt-ハイスピンジャイロ" data-side="p" data-ways="book only" data-q="ハイスピンジャイロジャイロボール">
+    <h3 class="kt-name"><span class="kt-n">ハイスピンジャイロ</span><span class="sd p">投手</span><span class="kt-base">← ジャイロボール</span></h3>
+    <p class="kt-only">金特本でしか取れません</p>
   </div>
   <div class="kt" id="kt-闘魂" data-side="p" data-ways="book col ten" data-q="闘魂闘志金田正一沢村栄純ダイヤノa">
-    <h3 class="kt-name">闘魂 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：闘志</span>
+    <h3 class="kt-name"><span class="kt-n">闘魂</span><span class="sd p">投手</span><span class="kt-base">← 闘志</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">金田正一<span class="wk">（愛知・1949年度・投・☆349）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">沢村栄純<span class="wk">（ダイヤのA・投・☆286）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆349">金田正一<span class="wk">（愛知・1949）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="投・☆286">沢村栄純<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-勝利の星" data-side="p" data-ways="book col ten" data-q="勝利ノ星勝チ運田中将大五十嵐梨花ニジサンジ">
-    <h3 class="kt-name">勝利の星 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：勝ち運</span>
+    <h3 class="kt-name"><span class="kt-n">勝利の星</span><span class="sd p">投手</span><span class="kt-base">← 勝ち運</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">田中将大（DLC）<span class="wk">（兵庫・2004年度・投・☆417）</span></span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">五十嵐梨花<span class="wk">（にじさんじ・投・☆215）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆417">田中将大（DLC）<span class="wk">（兵庫・2004）</span></span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="投・☆215">五十嵐梨花<span class="wk">（にじさんじ）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-ギアチェンジ" data-side="p" data-ways="book ten" data-q="ギアチェンジ田中将大">
-    <h3 class="kt-name">ギアチェンジ <span class="badge p">投手</span></h3><span class="kt-base">元の青特：なし（金特だけの特殊能力）</span>
+    <h3 class="kt-name"><span class="kt-n">ギアチェンジ</span><span class="sd p">投手</span><span class="kt-base">青特なし（金特だけ）</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-ten">転生</span><span class="wd">田中将大（DLC）<span class="wk">（兵庫・2004年度・投・☆417）</span></span></li>
+      <li><span class="w w-ten">転生</span><span class="wd"><span class="pl" title="投・☆417">田中将大（DLC）<span class="wk">（兵庫・2004）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-クロスキャノン" data-side="p" data-ways="book col" data-q="クロスキャノンクロスファイヤー向井太陽ダイヤノa">
-    <h3 class="kt-name">クロスキャノン <span class="badge p">投手</span></h3><span class="kt-base">元の青特：クロスファイヤー</span>
+    <h3 class="kt-name"><span class="kt-n">クロスキャノン</span><span class="sd p">投手</span><span class="kt-base">← クロスファイヤー</span></h3>
     <ul class="kt-ways">
-      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
-      <li><span class="w w-col">コラボ</span><span class="wd">向井太陽<span class="wk">（ダイヤのA・投・☆279）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd"><span class="pl" title="投・☆279">向井太陽<span class="wk">（ダイヤのA）</span></span></span></li>
     </ul>
   </div>
   <div class="kt" id="kt-威圧感" data-side="p" data-ways="kok train" data-q="威圧感存在感">
-    <h3 class="kt-name">威圧感 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：存在感</span>
+    <h3 class="kt-name"><span class="kt-n">威圧感</span><span class="sd p">投手</span><span class="kt-base">← 存在感</span></h3>
     <ul class="kt-ways">
       <li><span class="w w-kok">国際大会</span><span class="wd">大会最優秀救援投手（存在感との2択）</span></li>
-      <li><span class="w w-train">特訓・合宿</span><span class="wd">ほかの青特と同じように取れる（金特の例外）</span></li>
+      <li><span class="w w-train">特訓・合宿</span><span class="wd">ほかの青特と同じように取れる</span></li>
     </ul>
   </div>
 <!-- /KT-LIST -->
@@ -1125,16 +993,6 @@ MVPとタイトルは<strong>最大1名までしか選ばれません</strong>�
 また、<strong>日本の順位が高いほど、MVP・タイトル・ベストナインに入る見込みが上がります</strong>。
 </p>
 
-<div class="filter-panel">
-    <div class="filter-row">
-        <div class="seg" id="seg">
-            <button type="button" data-side="all" aria-pressed="true">すべて</button>
-            <button type="button" data-side="p" aria-pressed="false">投手</button>
-            <button type="button" data-side="b" aria-pressed="false">野手</button>
-        </div>
-        <span class="filter-count"><strong id="count">0</strong> 件を表示中</span>
-    </div>
-</div>
 
 <div class="card">
     <h2>国際大会の評価と、覚える特殊能力</h2>
@@ -1142,6 +1000,14 @@ MVPとタイトルは<strong>最大1名までしか選ばれません</strong>�
     9/6のイベントで、大会での評価に応じて能力が上がり、特殊能力を覚えます。
     MVPとタイトルは最大1名まで、ベストナインは人数の制限がありません。
     </p>
+<div class="kt-filter">
+            <div class="seg" id="seg">
+            <button type="button" data-side="all" aria-pressed="true">すべて</button>
+            <button type="button" data-side="p" aria-pressed="false">投手</button>
+            <button type="button" data-side="b" aria-pressed="false">野手</button>
+        </div>
+        <span class="filter-count"><strong id="count">0</strong> 件を表示中</span>
+</div>
     <div class="scroll">
     <table id="tbl">
         <thead>
