@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>タイピング練習ゲーム｜打鍵の速さ・苦手キー・ローマ字のクセまで分析【無料】</title>
-<meta name="description" content="日本語の短文・単語、英単語で練習できる無料のタイピングゲーム。KPM・初速・正確率だけでなく、キーごとの速さとミス、指ごとの速さ、遅い並び、打ち間違いの傾向、ローマ字の打ち方のクセまで細かく分析します。記録はブラウザに保存され、成長の推移も見られます。">
+<title>タイピング診断・速度測定｜苦手キーとKPMを分析する無料タイピングゲーム【ランキング】</title>
+<meta name="description" content="無料のタイピング診断・タイピング速度測定。日本語の短文・単語、英単語を打つと、KPM（1分あたりの打鍵数）・初速・正確率を測り、苦手キー・ミスの多いキー・指ごとの速さ・遅い並び・ローマ字のクセまで分析します。全国ランキングつき、登録不要。">
 <link rel="canonical" href="https://tooldock.github.io/typing-game/">
 
 <!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ToolDock">
-<meta property="og:title" content="タイピング練習ゲーム｜打鍵の速さ・苦手キー・ローマ字のクセまで分析【無料】 | ToolDock">
-<meta property="og:description" content="日本語の短文・単語、英単語で練習できる無料のタイピングゲーム。KPM・初速・正確率だけでなく、キーごとの速さとミス、指ごとの速さ、遅い並び、打ち間違いの傾向、ローマ字の打ち方のクセまで細かく分析します。記録はブラウザに保存され、成長の推移も見られます。">
+<meta property="og:title" content="タイピング診断・速度測定｜苦手キーとKPMを分析する無料タイピングゲーム【ランキング】 | ToolDock">
+<meta property="og:description" content="無料のタイピング診断・タイピング速度測定。日本語の短文・単語、英単語を打つと、KPM（1分あたりの打鍵数）・初速・正確率を測り、苦手キー・ミスの多いキー・指ごとの速さ・遅い並び・ローマ字のクセまで分析します。全国ランキングつき、登録不要。">
 <meta property="og:url" content="https://tooldock.github.io/typing-game/">
 <meta property="og:image" content="https://tooldock.github.io/ogp/typing-game.png">
 <meta property="og:image:width" content="1200">
@@ -28,7 +28,7 @@
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
 
-<meta name="keywords" content="タイピング,タイピング練習,タイピングゲーム,無料,ローマ字入力,KPM,初速,正確率,苦手キー,打鍵分析">
+<meta name="keywords" content="タイピング診断,タイピング速度測定,タイピング,タイピング練習,タイピングゲーム,無料,KPM,苦手キー,初速,正確率,ランキング,ローマ字入力">
 
 <style>
 body{
@@ -163,6 +163,10 @@ tr.slow td{ background:color-mix(in srgb, var(--c) 6%, #fff); }
 .rank-msg.ok{ color:var(--ink); font-weight:700; }
 .rank-msg.ng{ color:#b42318; }
 tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
+.ex-fig{ margin:10px 0 18px; }
+.ex-fig img{ max-width:100%; height:auto; border:1px solid var(--line); display:block; }
+.share-row{ margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.x-btn{ font:inherit; font-size:.92rem; font-weight:700; padding:7px 16px; border:0; border-radius:var(--r-ctl); background:#000; color:#fff; cursor:pointer; }
 .tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
 .tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
 .tool-article th{ background:var(--surface-2); white-space:nowrap; }
@@ -171,15 +175,15 @@ tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
 </head>
 <body>
 <!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
-<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=game">ゲーム</a> <span class="bc-sep">›</span> <span>タイピング練習（打鍵分析つき）</span></nav>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "ゲーム", "item": "https://tooldock.github.io/category/?cat=game"}, {"@type": "ListItem", "position": 3, "name": "タイピング練習（打鍵分析つき）", "item": "https://tooldock.github.io/typing-game/"}]}</script>
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=game">ゲーム</a> <span class="bc-sep">›</span> <span>タイピング診断・速度測定（苦手キー分析つき）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "ゲーム", "item": "https://tooldock.github.io/category/?cat=game"}, {"@type": "ListItem", "position": 3, "name": "タイピング診断・速度測定（苦手キー分析つき）", "item": "https://tooldock.github.io/typing-game/"}]}</script>
 <!-- /BREADCRUMB -->
 
 <div class="container">
 
 <div class="td-banner">
-  <h1>タイピング練習（打鍵分析つき）</h1>
-  <p>日本語の短文・単語、英単語を打って、速さと正確さを測ります。打ち終わると、キーごとの速さとミス、指ごとの速さ、遅い並び、打ち間違いの傾向、ローマ字の打ち方のクセまで細かく分析します。</p>
+  <h1>タイピング診断・速度測定（苦手キー分析つき）</h1>
+  <p>打つだけで、タイピングの速さ（KPM）と正確率を測り、<strong>どのキー・どの指・どの並びで遅れているか</strong>まで診断します。日本語の短文・単語、英単語から選べて、全国ランキングにも登録できます。登録・インストール不要の無料タイピングゲームです。</p>
 </div>
 
 <div class="setup">
@@ -243,6 +247,7 @@ tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
     <div class="pb" id="rPb"></div>
   </div>
   <div class="kpis tnum" id="rKpis"></div>
+  <div class="share-row"><button type="button" class="x-btn" id="shareX">𝕏 結果をポストする</button><span class="muted small">スコアと苦手なキーをポストできます</span></div>
   <div class="rank-box" id="rankBox" hidden>
     <div class="rank-form">
       <input id="rankName" maxlength="12" placeholder="名前（12文字まで）" autocomplete="nickname" aria-label="ランキングに載せる名前">
@@ -283,7 +288,31 @@ tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
 
 <article class="tool-article">
 
-<h2>このタイピング練習でわかること</h2>
+<h2>ほかのタイピングゲームとのちがい</h2>
+<p>多くのタイピングゲームは、打ち終わったあとに出るのが速さ・正確率・スコアまでです。このページは1打ごとの時刻を記録しているので、<strong>「なぜ遅いのか」</strong>まで分かります。</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>分かること</th><th>よくあるタイピングゲーム</th><th>このページ</th></tr></thead>
+<tbody>
+<tr><td>速さ・正確率・スコア</td><td>○</td><td>○（KPM・正確率・段位）</td></tr>
+<tr><td>初速（読んでから打ち始めるまで）</td><td>出ないことが多い</td><td>○ 初速と、初速を除いた速さを別々に</td></tr>
+<tr><td>苦手キー</td><td>×</td><td>○ キーボードの図で、遅いキー・ミスの多いキーを色の濃さで</td></tr>
+<tr><td>打ち間違いの傾向</td><td>×</td><td>○「f を打つところで g」のような組み合わせ</td></tr>
+<tr><td>指ごとの速さ</td><td>×</td><td>○ 8本の指それぞれの平均と、左右交互・同じ指の差</td></tr>
+<tr><td>ローマ字のクセ</td><td>×</td><td>○ si / shi などどれで打ったか、最短より何打多いか</td></tr>
+<tr><td>苦手を重点的に練習</td><td>×</td><td>○ 苦手なキーの多い問題を多めに出す</td></tr>
+<tr><td>成長の記録</td><td>サイトによる</td><td>○ スコアの推移と、これまで全部の打鍵の分析</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>診断結果の例</h2>
+<p>60秒、日本語の短文を打ったときの結果の例です。スコアと段位、速さ（KPM）、初速、正確率などが出ます。</p>
+<figure class="ex-fig"><img src="/typing-game/sample-result.jpg" width="846" height="316" loading="lazy" alt="タイピング診断の結果の例。スコア382・三段、速さ394打/分、初速0.18秒、正確率98.5%"></figure>
+<p>その下に、キーごとの速さがキーボードの図で出ます。この例では y と b と p が濃く、ほかのキーより時間がかかっていることが分かります。y と b は人差し指を大きく伸ばすキーで、遅くなりやすい場所です。</p>
+<figure class="ex-fig"><img src="/typing-game/sample-analysis.jpg" width="846" height="615" loading="lazy" alt="キーごとの速さを色の濃さで表したキーボードの図と、遅いキー・ミスの多いキーの表"></figure>
+
+<h2>このタイピング診断でわかること</h2>
 <p>速さと正確率だけでは、どこで時間を落としているのかまでは分かりません。このページは1打ごとの時刻を記録して、打ち終わったあとに次のことを出します。</p>
 <ul>
 <li><strong>キーごとの速さとミス率</strong>（キーボードの図で、遅いキー・ミスの多いキーほど濃く表示）</li>
@@ -328,6 +357,31 @@ tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
 <h2>ローマ字の打ち方</h2>
 <p>「し」は si・shi・ci、「ち」は ti・chi、「つ」は tu・tsu、「ふ」は fu・hu、「じ」は ji・zi のように、どの打ち方でも正解になります。「ん」は次の文字が子音なら n 1回でも進みます。「っ」は次の子音を重ねる（kka）ほか、xtu・ltu でも打てます。</p>
 <p>ローマ字の表示は、あなたがよく使う打ち方に自動で合わせます。shi で打つ人には shi と表示されます。</p>
+
+<h2>KPM（タイピングの速さ）の換算</h2>
+<p>KPM は1分あたりに正しく打った打鍵数です。日本語のローマ字入力では、かな1文字がおよそ1.5〜2打になります。英語の WPM（1分あたりの単語数）は、ふつう5打を1語として数えるので、KPM を5で割るとおおよその WPM になります。</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>KPM（打/分）</th><th>1秒あたり</th><th>1打あたり</th><th>WPM の目安</th></tr></thead>
+<tbody>
+<tr><td>100</td><td>約1.7打</td><td>600ms</td><td>20</td></tr>
+<tr><td>200</td><td>約3.3打</td><td>300ms</td><td>40</td></tr>
+<tr><td>300</td><td>5打</td><td>200ms</td><td>60</td></tr>
+<tr><td>400</td><td>約6.7打</td><td>150ms</td><td>80</td></tr>
+<tr><td>500</td><td>約8.3打</td><td>120ms</td><td>100</td></tr>
+<tr><td>600</td><td>10打</td><td>100ms</td><td>120</td></tr>
+<tr><td>800</td><td>約13.3打</td><td>75ms</td><td>160</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>苦手キーの直し方</h2>
+<ol>
+<li><strong>診断で苦手キーを見つける</strong>：「これまで全部」に切り替えると、何回分もの打鍵から苦手キーが出るので、1回だけより確かです</li>
+<li><strong>どの指の問題かを見る</strong>：苦手キーが同じ指に集まっていれば、その指の動かし方の問題です。「打ち間違いの傾向」で隣のキーを打っていれば、指の届く距離が足りていません</li>
+<li><strong>苦手を多めに出して練習する</strong>：「苦手なキーの多い問題を多めに出す」をオンにして、何回か続けて打ちます</li>
+<li><strong>もう一度診断する</strong>：キーボードの図で、そのキーの色が薄くなったかを確かめます</li>
+</ol>
 
 <h2>速く打つためのコツ</h2>
 <ul>
@@ -1037,6 +1091,14 @@ $("optWeak").onchange = e => { S.opt.weak = e.target.checked; save(); badge(); }
 $("optSound").onchange = e => { S.opt.sound = e.target.checked; save(); };
 document.querySelectorAll("#anaTabs button").forEach(b => b.onclick = () => { anaView = b.dataset.v; renderAna(); });
 $("startBtn").onclick = () => countdown();
+$("shareX").onclick = () => {
+  const R = lastRound; if (!R) return;
+  const K = R.agg.keys;
+  const slow = Object.keys(K).filter(k => K[k][1] >= 3 && /^[a-z]$/.test(k)).sort((a, b) => K[b][2] / K[b][1] - K[a][2] / K[a][1]).slice(0, 2);
+  const text = `タイピング診断の結果\nスコア ${f0(R.run.sc)}（${rankOf(R.run.sc)}）／${MODE_NAME[R.run.m]}・${R.run.s}秒\n速さ ${f0(R.kpm)}打/分・正確率 ${R.run.acc}%` +
+    (slow.length ? `\n苦手なキーは「${slow.join("」「")}」でした` : "") + "\n#タイピング診断";
+  window.open("https://x.com/intent/post?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent("https://tooldock.github.io/typing-game/"), "_blank", "noopener");
+};
 $("stage").addEventListener("pointerdown", () => { if (G.playing) setTimeout(focusTrap, 0); });
 
 function focusTrap() { try { $("trap").focus({ preventScroll: true }); } catch (e) { $("trap").focus(); } }

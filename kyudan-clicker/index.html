@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>球団経営クリッカー｜ブラウザで遊べる無料の野球クリッカーゲーム【ダウンロード無し】</title>
+<title>球団経営クリッカー｜ブラウザで遊べる無料の野球クリッカー・放置ゲーム【ダウンロード無し】</title>
 <meta name="description" content="球場をタップしてバットを振り、ファンを増やしていく無料の野球クリッカーゲーム。集めたファンで応援団・売店・ナイター照明・ドーム球場などを建てると、放置していてもファンが増えていきます。優勝してペナントを集め、次のシーズンへ。ドット絵・ブラウザで遊べて、データは自動で保存されます。">
 <link rel="canonical" href="https://tooldock.github.io/kyudan-clicker/">
 
 <!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ToolDock">
-<meta property="og:title" content="球団経営クリッカー｜ブラウザで遊べる無料の野球クリッカーゲーム【ダウンロード無し】 | ToolDock">
+<meta property="og:title" content="球団経営クリッカー｜ブラウザで遊べる無料の野球クリッカー・放置ゲーム【ダウンロード無し】 | ToolDock">
 <meta property="og:description" content="球場をタップしてバットを振り、ファンを増やしていく無料の野球クリッカーゲーム。集めたファンで応援団・売店・ナイター照明・ドーム球場などを建てると、放置していてもファンが増えていきます。優勝してペナントを集め、次のシーズンへ。ドット絵・ブラウザで遊べて、データは自動で保存されます。">
 <meta property="og:url" content="https://tooldock.github.io/kyudan-clicker/">
 <meta property="og:image" content="https://tooldock.github.io/ogp/kyudan-clicker.png">
@@ -305,6 +305,7 @@ a{ color:#ffd166; }
       <div id="retired" class="kc-note"></div>
     </div>
     <div class="kc-win kc-pane" id="pane-rec" hidden>
+      <button type="button" class="kc-btn" id="shareX" style="margin-bottom:10px">𝕏 球団の記録をポストする</button>
       <div class="kc-stats" id="stats"></div>
       <h3 id="achHead">実績</h3>
       <p class="kc-note">実績を1つ達成するごとに、すべての生産が1%上がります。紫の枠は「隠し実績」で、条件はひみつです。</p>
@@ -351,12 +352,113 @@ a{ color:#ffd166; }
 <tr><th>雨</th><td>ときどき雨が降り、1分間生産が半分になります。ドーム球場があれば、逆に満員になって生産が2倍に。</td></tr>
 <tr><th>月のイベント</th><td>お正月・春季キャンプ・開幕ダッシュ・オールスター・ストーブリーグなど、月ごとに違うボーナスがつきます（端末の日付で決まります）。</td></tr>
 <tr><th>来場ボーナス</th><td>1日1回、最初に開いたときにボーナスがもらえます。毎日続けて開くと、7日目まで大きくなります。</td></tr>
-<tr><th>実績</th><td>175個の実績があり、1つ達成するごとにすべての生産が1%上がります。そのうち26個は条件がひみつの「隠し実績」です。いろいろ試して見つけてください。</td></tr>
+<tr><th>実績</th><td>181個の実績があり、1つ達成するごとにすべての生産が1%上がります。そのうち26個は条件がひみつの「隠し実績」です。いろいろ試して見つけてください。</td></tr>
 <tr><th>速報</th><td>球場の下に、球団の様子に合わせたスポーツ新聞の見出しが流れます。</td></tr>
 <tr><th>球団づくり</th><td>「球団」のタブで、球団名とユニフォームの色（メイン・アクセント・生地）を決められます。打者と応援団の旗、観客席のファンの服が球団カラーになります。</td></tr>
 </tbody>
 </table>
 </div>
+
+
+<h2>こんな人におすすめ</h2>
+<ul>
+<li>クッキークリッカーのような、<strong>クリックと放置で数字が増えていくゲーム</strong>が好きな人</li>
+<li>野球が好きで、<strong>自分だけの球団を育てたい</strong>人（球団名とユニフォームの色を決められます）</li>
+<li>アプリを入れずに、<strong>ブラウザですぐ遊べる無料ゲーム</strong>を探している人（スマホ・パソコンどちらでも）</li>
+</ul>
+
+<h2>施設の一覧</h2>
+<p>施設は14種類。値段は1つ建てるごとに15%ずつ上がります。表の「毎秒のファン」は、強化をしていない1つあたりの数です。</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>施設</th><th>説明</th><th>最初の値段</th><th>毎秒のファン</th></tr></thead>
+<tbody>
+<tr><td>少年野球教室</td><td>未来のファンを育てる</td><td>15人</td><td>0.1人</td></tr>
+<tr><td>応援団</td><td>外野席が盛り上がる</td><td>100人</td><td>1人</td></tr>
+<tr><td>売店</td><td>名物グルメで人を呼ぶ</td><td>1100人</td><td>8人</td></tr>
+<tr><td>二軍球場</td><td>若手の成長を見守るファン</td><td>1.2万人</td><td>47人</td></tr>
+<tr><td>スカウト網</td><td>全国のスターを発掘</td><td>13万人</td><td>260人</td></tr>
+<tr><td>ナイター照明</td><td>仕事帰りにも観に来られる</td><td>140万人</td><td>1400人</td></tr>
+<tr><td>大型ビジョン</td><td>名場面をくり返し流す</td><td>2000万人</td><td>7800人</td></tr>
+<tr><td>ドーム球場</td><td>雨の日も試合ができる</td><td>3.3億人</td><td>4.4万人</td></tr>
+<tr><td>球団テレビ局</td><td>全試合を生中継</td><td>51億人</td><td>26万人</td></tr>
+<tr><td>世界ツアー</td><td>海の向こうにもファンを</td><td>750億人</td><td>160万人</td></tr>
+<tr><td>月面球場</td><td>重力が軽くて場外連発</td><td>1兆人</td><td>1000万人</td></tr>
+<tr><td>銀河リーグ</td><td>星々の球団と真剣勝負</td><td>14兆人</td><td>6500万人</td></tr>
+<tr><td>時空スタジアム</td><td>過去と未来のファンも集合</td><td>170兆人</td><td>4.3億人</td></tr>
+<tr><td>多元宇宙シリーズ</td><td>あらゆる世界の頂上決戦</td><td>2100兆人</td><td>29億人</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>殿堂ボーナスの一覧</h2>
+<p>優勝でもらえる殿堂ポイントで買える、シーズンをまたいでずっと残る力です。</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>名前</th><th>効果（1段ごと）</th><th>最大</th><th>必要なポイント</th></tr></thead>
+<tbody>
+<tr><td>黄金時代</td><td>すべての生産 +25%</td><td>20</td><td>5・10・15…</td></tr>
+<tr><td>伝説のバット</td><td>1回で集まるファン ×2</td><td>6</td><td>1・2・4…</td></tr>
+<tr><td>応援バット</td><td>毎秒1回ずつ、自動でバットを振る</td><td>10</td><td>5・10・20…</td></tr>
+<tr><td>名スカウトの目</td><td>施設の値段 -3%</td><td>5</td><td>2・4・6…</td></tr>
+<tr><td>長距離砲</td><td>ホームランの出る確率 +1%</td><td>5</td><td>1・3・5…</td></tr>
+<tr><td>満員御礼のロングラン</td><td>満員御礼の時間 +15秒</td><td>4</td><td>2・4・8…</td></tr>
+<tr><td>ファンサの達人</td><td>ファンサービスの出る間隔 -15%</td><td>3</td><td>3・6・12</td></tr>
+<tr><td>名将</td><td>試合の勝率 +3%</td><td>5</td><td>2・4・6…</td></tr>
+<tr><td>常勝軍団の貯金</td><td>留守中のペースと上限が上がる（最大100%・24時間）</td><td>2</td><td>3・8</td></tr>
+<tr><td>名門の伝統</td><td>少年野球教室・応援団・売店を10ずつ持ってシーズンを始める</td><td>1</td><td>3</td></tr>
+<tr><td>伝統の継承</td><td>優勝しても施設の10%・30%・50%を持ち越す</td><td>3</td><td>10・25・50</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>ドラフトの新人の種類</h2>
+<p>シーズン中にファンが1万・1000万・100億・10兆人に届くたび、3人の候補から1人を指名できます。名前は能力に合わせて決まります。</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>タイプ</th><th>効果（そのシーズンのあいだ）</th><th>名前の例</th></tr></thead>
+<tbody>
+<tr><td>大砲</td><td>ホームランの確率 +2%、ホームランのファン +5倍</td><td>ゴリ山 ゴリ太郎、場外 飛ば助</td></tr>
+<tr><td>安打製造機</td><td>1回で集まるファン ×1.5</td><td>たかだ 三安打、打率 三割男</td></tr>
+<tr><td>エース</td><td>試合の勝率 +5%</td><td>剛速 球太郎、奪三 振丸</td></tr>
+<tr><td>人気者</td><td>すべての生産 +10%</td><td>握手 会太郎、推川 キラ男</td></tr>
+<tr><td>守備職人</td><td>施設の値段 -5%</td><td>鉄壁 守男、併殺 ゲッツ男</td></tr>
+<tr><td>俊足</td><td>ファンサービスの出る間隔 -15%</td><td>韋駄天 走之助、疾風 迅</td></tr>
+<tr><td>勝負強さ</td><td>勝ったときのファン ×1.5</td><td>佐藤 満塁男、得点圏 強男</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>月ごとのイベント</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>月</th><th>イベント</th><th>ボーナス</th></tr></thead>
+<tbody>
+<tr><td>1月</td><td>お正月</td><td>来場ボーナスが3倍</td></tr>
+<tr><td>2月</td><td>春季キャンプ</td><td>1回で集まるファンが2倍</td></tr>
+<tr><td>3月</td><td>オープン戦</td><td>試合の間隔が半分</td></tr>
+<tr><td>4月</td><td>開幕ダッシュ</td><td>勝ったときのファンが2倍</td></tr>
+<tr><td>5月</td><td>大型連休</td><td>すべての生産 +10%</td></tr>
+<tr><td>6月</td><td>梅雨</td><td>雨がよく降る（ドームがあれば生産 +20%）</td></tr>
+<tr><td>7月</td><td>オールスター</td><td>ファンサービスの出る間隔 -30%</td></tr>
+<tr><td>8月</td><td>夏休み</td><td>留守中のペース +25%</td></tr>
+<tr><td>9月</td><td>優勝争い</td><td>連勝ボーナスが2倍</td></tr>
+<tr><td>10月</td><td>ポストシーズン</td><td>ホームランの確率 +3%</td></tr>
+<tr><td>11月</td><td>ファン感謝デー</td><td>実績のボーナスが1.5倍</td></tr>
+<tr><td>12月</td><td>ストーブリーグ</td><td>施設の値段 -10%</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>効率よく進めるコツ</h2>
+<ul>
+<li><strong>最初はタップで稼ぐ</strong>：少年野球教室と応援団を建てるまでは、タップがいちばんの稼ぎです。「ファンサ!」が出たらすぐ押しましょう</li>
+<li><strong>強化はすぐ買う</strong>：施設の強化は生産が2倍になるので、同じ値段なら新しい施設より得なことがほとんどです</li>
+<li><strong>ドラフトは「人気者」か「安打製造機」</strong>：放置中心なら人気者（生産 +10%）、タップ中心なら安打製造機が効きます</li>
+<li><strong>最初の殿堂ポイントは「名門の伝統」か「応援バット」</strong>：シーズンの立ち上がりが速くなり、2回目以降の優勝が早くなります</li>
+<li><strong>やり込んでから優勝する</strong>：本拠地の格・施設の数・強化・勝利・ドラフトが多いほど、殿堂ポイントが大きく増えます</li>
+<li><strong>ドーム球場を早めに</strong>：雨の日に生産が半分になるのを防ぎ、逆に2倍にできます</li>
+</ul>
 
 <h2>よくある質問</h2>
 <p><strong>Q. データは保存されますか？</strong><br>
@@ -1015,6 +1117,10 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
 
   /* 球団の設定 */
   const nameEl = $("tName"), mainEl = $("tMain"), accEl = $("tAcc"), bodyEl = $("tBody");
+  $("shareX").addEventListener("click", () => {
+    const text = "【球団経営クリッカー】" + S.team.name + "\n通算ファン " + fmt(S.allTime) + "人・ペナント " + S.flags + "本・通算 " + S.winsAll + "勝\n実績 " + S.ach.length + " / " + ACH.length + "\n#球団経営クリッカー";
+    window.open("https://x.com/intent/post?text=" + encodeURIComponent(text) + "&url=" + encodeURIComponent("https://tooldock.github.io/kyudan-clicker/"), "_blank", "noopener");
+  });
   function syncTeamForm() { nameEl.value = S.team.name; mainEl.value = S.team.main; accEl.value = S.team.acc; bodyEl.value = S.team.body; drawPreview(); }
   function drawPreview() { const p = $("preview").getContext("2d"); p.clearRect(0, 0, 30, 44); p.imageSmoothingEnabled = false; drawSprite(p, BATTER[0], 3, 2, 2, teamPal()); }
   $("presets").innerHTML = PRESETS.map((p, i) => `<button type="button" data-i="${i}"><i style="background:${p[1]}"></i><i style="background:${p[2]}"></i>${p[0]}</button>`).join("");
@@ -1226,7 +1332,7 @@ A. 出てきません。登場する球場・施設・対戦相手はすべて�
 <section class="related-tools-section">
 <h2>同じカテゴリのツール</h2>
 <div class="related-tools-grid">
-<a href="/typing-game/" class="related-tool-card"><h3>タイピング練習（打鍵分析つき）</h3><p>日本語の短文・単語、英単語で練習できるタイピングゲーム。キーごとの速さとミス、指ごとの速さ、遅い並び、ローマ字のクセまで細かく分析します。</p></a>
+<a href="/typing-game/" class="related-tool-card"><h3>タイピング診断・速度測定（苦手キー分析つき）</h3><p>打つだけでタイピングの速さ（KPM）と正確率を測り、苦手キー・指ごとの速さ・遅い並び・ローマ字のクセまで診断する無料タイピングゲーム。ランキングつき。</p></a>
 <a href="/mylife-start/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ アピールポイントのすゝめ</h3><p>経歴・ドラフト順位・アピールポイント・ウィークポイントによる初期能力とボーナスの解説です。</p></a>
 <a href="/eikan-kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 栄冠ナイン 金特の入手方法まとめ</h3><p>金特本・国際大会・特訓の3つの手段。欲しい金特から狙う評価を逆引きできます。</p></a>
 <a href="/shippo/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 尻尾 入手方法一覧</h3><p>尻尾12種の入手方法とオススメ度。9個でMAXになるので、あと何個かも分かります。</p></a>
