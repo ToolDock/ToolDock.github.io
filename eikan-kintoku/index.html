@@ -426,19 +426,22 @@ figure.shot figcaption{
 /* ===== ページ先頭のジャンプ ===== */
 .jump{ margin:0 0 18px; }
 .jump-main{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.jump-btn{ display:flex; align-items:center; gap:12px; padding:14px 18px; background:var(--ink); color:#fff; text-decoration:none; border-radius:6px; }
-.jump-btn:hover{ opacity:.9; }
-.jump-btn b{ display:block; font-size:1.08rem; }
-.jump-btn small{ display:block; font-size:.8rem; opacity:.8; }
-.jump-ic{ font-size:1.4rem; line-height:1; }
+.jump-btn{ display:flex; align-items:center; gap:12px; padding:13px 16px; border:2px solid var(--ink); border-radius:8px; color:var(--ink); text-decoration:none; background:#fff; transition:background .15s; }
+.jump-btn:hover{ background:var(--surface-2); }
+.jump-btn .ic{ flex:none; width:34px; height:34px; border-radius:50%; background:var(--ink); color:#fff; display:grid; place-items:center; }
+.jump-btn .ic svg{ width:17px; height:17px; }
+.jump-btn b{ display:block; font-size:1.05rem; line-height:1.35; }
+.jump-btn small{ display:block; font-size:.8rem; color:#5c6470; }
+.jump-btn .go{ margin-left:auto; color:#8a8f98; font-size:1.1rem; }
 .jump-sub{ display:flex; flex-wrap:wrap; gap:6px 8px; margin-top:10px; }
 .jump-sub a{ font-size:.85rem; padding:4px 12px; border:1px solid var(--line-input); border-radius:999px; background:var(--surface); color:var(--ink); text-decoration:none; }
 .jump-sub a:hover{ border-color:var(--ink); }
 @media (max-width:600px){
-    .jump-btn{ padding:11px 12px; gap:8px; }
-    .jump-btn b{ font-size:1rem; }
-    .jump-btn small{ display:none; }
-    .jump-ic{ font-size:1.05rem; }
+    .jump-btn{ padding:9px 10px; gap:7px; }
+    .jump-btn .ic{ width:24px; height:24px; }
+    .jump-btn .ic svg{ width:13px; height:13px; }
+    .jump-btn small, .jump-btn .go{ display:none; }
+    .jump-btn b{ font-size:.9rem; white-space:nowrap; }
     .jump-sub{ gap:5px 6px; }
     .jump-sub a{ font-size:.78rem; padding:3px 10px; }
 }
@@ -521,8 +524,8 @@ table.tensei td:last-child{ white-space:normal; }
 
 <nav class="jump" aria-label="検索ツールと一覧">
     <div class="jump-main">
-        <a href="#search" class="jump-btn"><span class="jump-ic">🔍</span><span><b>金特から探す</b><small>欲しい金特の入手方法（56種）</small></span></a>
-        <a href="#players" class="jump-btn"><span class="jump-ic">🔍</span><span><b>選手から探す</b><small>金特を持つ転生選手（65人）</small></span></a>
+        <a href="#search" class="jump-btn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></span><span><b>金特から探す</b><small>欲しい金特の取り方・56種</small></span><span class="go" aria-hidden="true">↓</span></a>
+        <a href="#players" class="jump-btn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg></span><span><b>選手から探す</b><small>金特を持つ転生選手・65人</small></span><span class="go" aria-hidden="true">↓</span></a>
     </div>
     <div class="jump-sub">
         <a href="#book-only">金特本でしか取れない金特</a>
