@@ -175,8 +175,8 @@ tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
 </head>
 <body>
 <!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
-<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=game">ゲーム</a> <span class="bc-sep">›</span> <span>タイピング診断・速度測定（苦手キー分析つき）</span></nav>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "ゲーム", "item": "https://tooldock.github.io/category/?cat=game"}, {"@type": "ListItem", "position": 3, "name": "タイピング診断・速度測定（苦手キー分析つき）", "item": "https://tooldock.github.io/typing-game/"}]}</script>
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=study">学習</a> <span class="bc-sep">›</span> <span>タイピング診断・速度測定（苦手キー分析つき）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "学習", "item": "https://tooldock.github.io/category/?cat=study"}, {"@type": "ListItem", "position": 3, "name": "タイピング診断・速度測定（苦手キー分析つき）", "item": "https://tooldock.github.io/typing-game/"}]}</script>
 <!-- /BREADCRUMB -->
 
 <div class="container">
@@ -308,8 +308,8 @@ tr.me td{ background:color-mix(in srgb, var(--c) 8%, #fff); font-weight:700; }
 
 <h2>診断結果の例</h2>
 <p>60秒、日本語の短文を打ったときの結果の例です。スコアと段位、速さ（KPM）、初速、正確率などが出ます。</p>
-<figure class="ex-fig"><img src="/typing-game/sample-result.jpg" width="846" height="316" loading="lazy" alt="タイピング診断の結果の例。スコア382・三段、速さ394打/分、初速0.18秒、正確率98.5%"></figure>
-<p>その下に、キーごとの速さがキーボードの図で出ます。この例では y と b と p が濃く、ほかのキーより時間がかかっていることが分かります。y と b は人差し指を大きく伸ばすキーで、遅くなりやすい場所です。</p>
+<figure class="ex-fig"><img src="/typing-game/sample-result.jpg" width="846" height="316" loading="lazy" alt="タイピング診断の結果の例。スコア409・四段、速さ415打/分、初速0.14秒、正確率99.3%"></figure>
+<p>その下に、キーごとの速さがキーボードの図で出ます。この例では b と y と z が濃く、ほかのキーより時間がかかっていることが分かります。b と y は人差し指を大きく伸ばすキー、z は小指で下の段を打つキーで、どちらも遅くなりやすい場所です。</p>
 <figure class="ex-fig"><img src="/typing-game/sample-analysis.jpg" width="846" height="615" loading="lazy" alt="キーごとの速さを色の濃さで表したキーボードの図と、遅いキー・ミスの多いキーの表"></figure>
 
 <h2>このタイピング診断でわかること</h2>
@@ -1143,17 +1143,11 @@ applyOpt(); idle(); hud(); renderAna(); renderHist(); badge(); fetchToken(); loa
 <section class="related-tools-section">
 <h2>同じカテゴリのツール</h2>
 <div class="related-tools-grid">
-<a href="/kyudan-clicker/" class="related-tool-card"><h3>球団経営クリッカー</h3><p>球場をタップしてファンを増やす、ドット絵の野球クリッカーゲーム。施設・試合・優勝・殿堂・実績とやり込み要素たっぷり。球団名とユニフォームの色も決められます。</p></a>
-<a href="/mylife-start/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ アピールポイントのすゝめ</h3><p>経歴・ドラフト順位・アピールポイント・ウィークポイントによる初期能力とボーナスの解説です。</p></a>
-<a href="/eikan-kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 栄冠ナイン 金特の入手方法まとめ</h3><p>金特本・国際大会・特訓の3つの手段。欲しい金特から狙う評価を逆引きできます。</p></a>
-<a href="/shippo/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 尻尾 入手方法一覧</h3><p>尻尾12種の入手方法とオススメ度。9個でMAXになるので、あと何個かも分かります。</p></a>
-<a href="/crystal-banno/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 万能クリスタル（小）（大）入手方法一覧</h3><p>万能クリスタル（小）9通りと（大）の入手方法を、チェックしながら管理できる一覧。</p></a>
-<a href="/crystal/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ イベントクリスタル（小）（大）入手方法一覧</h3><p>特殊能力ファイルに使うイベントクリスタルの入手方法と、怪しい露店の交換レート一覧。</p></a>
-<a href="/kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 能力研究所の金特ミッション一覧</h3><p>マイライフの能力研究所で受けられる金特ミッションの内容と取得条件の一覧。2024-2025 とも共通です。</p></a>
-<a href="/satei/" class="related-tool-card"><h3>パワプロ2026-2027 ⭐︎(星)計算ツール</h3><p>能力値と所持する特殊能力を入力すると、査定である☆(星)を計算します。</p></a>
-<a href="/nouryoku/" class="related-tool-card"><h3>パワプロ風 能力画像ジェネレーター（野手）</h3><p>パワプロ風の能力画像を作れる能力メーカー。野手の能力値と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
-<a href="/nouryoku-pitcher/" class="related-tool-card"><h3>パワプロ風 能力画像ジェネレーター（投手）</h3><p>パワプロ風の能力画像を作れる能力メーカー。投手の能力値・変化球と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
-<a href="/stamen/" class="related-tool-card"><h3>パワプロ風 スタメン画像ジェネレーター</h3><p>名前・守備位置・調子を入れるだけで、パワプロ風のスターティングオーダーを画像・GIFアニメ・動画にできます。</p></a>
+<a href="/gpa/" class="related-tool-card"><h3>GPA計算ツール（目標から逆算）</h3><p>科目の単位と成績から学期・通算のGPAを計算。目標のGPAに必要な平均と、Sがあと何単位必要かを逆算できます。</p></a>
+<a href="/naishin/aichi/" class="related-tool-card"><h3>愛知県 内申点・校内順位の計算（2027年入試）</h3><p>中3の評定から評定得点（90点）を出し、志望校の方式（Ⅰ〜Ⅴ）で学力検査（110点）と合わせた数値を計算。目標に必要な当日点も逆算。</p></a>
+<a href="/naishin/kanagawa/" class="related-tool-card"><h3>神奈川県 内申点・S値計算（2027年入試）</h3><p>志望校の比率で内申点・S1値・S2値を計算し、目標のS値に必要な当日点も逆算できるツール。普通科109校の選考基準を収録。</p></a>
+<a href="/naishin/osaka/" class="related-tool-card"><h3>大阪府 内申点・総合点計算（2027年入試）</h3><p>中1〜中3の評定から内申点（450点）を出し、志望校の倍率タイプで総合点（900点）を計算。目標に必要な当日点も逆算。全日制124校を収録。</p></a>
+<a href="/naishin/tokyo/" class="related-tool-card"><h3>東京都 内申点・換算内申計算（2027年都立入試）</h3><p>中3の評定から換算内申・調査書点を出し、当日点とスピーキングテストを足した総合得点（1020点）と、目標に必要な当日点を計算。</p></a>
 </div>
 </section>
 <!-- /RELATED --></div>
