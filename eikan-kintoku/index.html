@@ -421,6 +421,27 @@ figure.shot figcaption{
 }
 
 .ways-note{ margin:-6px 0 18px; font-size:.9rem; }
+
+/* ===== 選手から探す・ピックアップ ===== */
+/* 記事の中に置いたカード（国際大会の評価・選手から探す）の見出しは、記事の h2 の飾りを打ち消す */
+.tool-article .card{ margin:16px 0 22px; }
+.tool-article .card h2{ margin:0; padding:16px 22px; background:var(--ink); color:#fff; border:0; font-size:1.15rem; }
+.tool-article .card h2::before, .tool-article .card h2::after{ display:none; }
+#pq{ font:inherit; font-size:1rem; padding:8px 10px; border:1px solid var(--line-input); border-radius:var(--r-ctl); flex:1 1 16em; min-width:0; background:#fff; }
+#psort{ font:inherit; font-size:.92rem; padding:7px 8px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; }
+.pf .scroll{ border-top:0; }
+table.tensei .pn{ font-weight:700; }
+a.nk, .nk-legend{ font-weight:800; }
+.chips{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 16px; }
+a.chip{ display:inline-block; font-size:.85rem; font-weight:700; padding:3px 10px; border:1px solid var(--c-kin); color:var(--c-kin); border-radius:999px; text-decoration:none; background:#fff; }
+a.chip.nk{ background:#fff8e6; }
+.pk-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:10px; margin:10px 0 18px; }
+.pk{ border:1px solid var(--line); background:var(--surface); padding:10px 12px; }
+.pk-n{ font-weight:800; font-size:1rem; }
+.pk-s{ font-size:.78rem; color:#5c6470; margin:2px 0 6px; }
+.pk-k{ display:flex; flex-wrap:wrap; gap:4px; }
+.pk-k a.chip{ font-size:.78rem; padding:1px 8px; }
+.muted{ color:#8a8f98; }
 /* ===== 金特から入手方法を探す ===== */
 .kt-filter{ display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; padding:14px 22px; border-bottom:1px solid var(--line); background:var(--surface); }
 #ktq{ font:inherit; font-size:1rem; padding:8px 10px; border:1px solid var(--line-input); border-radius:var(--r-ctl); flex:1 1 16em; min-width:0; background:#fff; }
@@ -512,6 +533,7 @@ table.tensei td:last-child{ white-space:normal; }
     <p class="lead">
     金特の名前・元になる青特・選手名で探せます（例：アーチスト、パワーヒッター、王貞治）。
     「転生」は年度と都道府県が合えば新入生として出てくる選手、「コラボ」はパワプロショップの履歴書で仲間にできる選手です。
+    選手から探すなら<a href="#players">金特を持つ選手から探す</a>へ。
     </p>
     <div class="kt-filter">
         <input type="search" id="ktq" placeholder="金特・青特・選手名で検索" aria-label="金特・青特・選手名で検索" autocomplete="off">
@@ -524,6 +546,7 @@ table.tensei td:last-child{ white-space:normal; }
             <label><input type="checkbox" value="kok"> 国際大会で取れる</label>
             <label><input type="checkbox" value="ten"> 転生OB・プロが持つ</label>
             <label><input type="checkbox" value="col"> 転生コラボが持つ</label>
+            <label><input type="checkbox" value="only"> 金特本でしか取れない</label>
         </div>
         <span class="filter-count"><strong id="ktCount">0</strong> 種を表示中</span>
     </div>
@@ -547,7 +570,7 @@ table.tensei td:last-child{ white-space:normal; }
       <li><span class="w w-col">コラボ</span><span class="wd">結城将司<span class="wk">（ダイヤのA・外・☆175）</span>、轟雷市<span class="wk">（ダイヤのA・三・☆284）</span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-広角砲" data-side="b" data-ways="book" data-q="広角砲広角打法">
+  <div class="kt" id="kt-広角砲" data-side="b" data-ways="book only" data-q="広角砲広角打法">
     <h3 class="kt-name">広角砲 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：広角打法</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
@@ -560,7 +583,7 @@ table.tensei td:last-child{ white-space:normal; }
       <li><span class="w w-ten">転生</span><span class="wd">土井正博<span class="wk">（大阪・1959年度・外・☆303）</span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-芸術的流し打ち" data-side="b" data-ways="book" data-q="芸術的流シ打チ流シ打チ">
+  <div class="kt" id="kt-芸術的流し打ち" data-side="b" data-ways="book only" data-q="芸術的流シ打チ流シ打チ">
     <h3 class="kt-name">芸術的流し打ち <span class="badge b">野手</span></h3><span class="kt-base">元の青特：流し打ち</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
@@ -582,7 +605,7 @@ table.tensei td:last-child{ white-space:normal; }
       <li><span class="w w-ten">転生</span><span class="wd">駒田徳広<span class="wk">（奈良・1978年度・一・☆260）</span>、今岡誠<span class="wk">（兵庫・1990年度・二・☆253）</span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-伝説のサヨナラ男" data-side="b" data-ways="book" data-q="伝説ノサヨナラ男サヨナラ男">
+  <div class="kt" id="kt-伝説のサヨナラ男" data-side="b" data-ways="book only" data-q="伝説ノサヨナラ男サヨナラ男">
     <h3 class="kt-name">伝説のサヨナラ男 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：サヨナラ男</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
@@ -609,31 +632,31 @@ table.tensei td:last-child{ white-space:normal; }
       <li><span class="w w-col">コラボ</span><span class="wd">椎名唯華<span class="wk">（にじさんじ・一・☆271）</span>、御幸一也<span class="wk">（ダイヤのA・捕・☆330）</span>、梅宮聖一<span class="wk">（ダイヤのA・投・☆228）</span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-火事場の馬鹿力" data-side="b" data-ways="book" data-q="火事場ノ馬鹿力逆境〇">
+  <div class="kt" id="kt-火事場の馬鹿力" data-side="b" data-ways="book only" data-q="火事場ノ馬鹿力逆境〇">
     <h3 class="kt-name">火事場の馬鹿力 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：逆境〇</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-メッタ打ち" data-side="b" data-ways="book" data-q="メッタ打チ固メ打チ">
+  <div class="kt" id="kt-メッタ打ち" data-side="b" data-ways="book only" data-q="メッタ打チ固メ打チ">
     <h3 class="kt-name">メッタ打ち <span class="badge b">野手</span></h3><span class="kt-base">元の青特：固め打ち</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-一球入魂" data-side="b" data-ways="book" data-q="一球入魂初球〇">
+  <div class="kt" id="kt-一球入魂" data-side="b" data-ways="book only" data-q="一球入魂初球〇">
     <h3 class="kt-name">一球入魂 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：初球〇</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-左腕キラー" data-side="b" data-ways="book" data-q="左腕キラー対左投手a">
+  <div class="kt" id="kt-左腕キラー" data-side="b" data-ways="book only" data-q="左腕キラー対左投手a">
     <h3 class="kt-name">左腕キラー <span class="badge b">野手</span></h3><span class="kt-base">元の青特：対左投手A</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-ストレートキラー" data-side="b" data-ways="book" data-q="ストレートキラー対ストレート〇">
+  <div class="kt" id="kt-ストレートキラー" data-side="b" data-ways="book only" data-q="ストレートキラー対ストレート〇">
     <h3 class="kt-name">ストレートキラー <span class="badge b">野手</span></h3><span class="kt-base">元の青特：対ストレート〇</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
@@ -646,25 +669,25 @@ table.tensei td:last-child{ white-space:normal; }
       <li><span class="w w-ten">転生</span><span class="wd">中村剛也<span class="wk">（大阪・1999年度・三・☆307）</span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-高球必打" data-side="b" data-ways="book" data-q="高球必打ハイボールヒッター">
+  <div class="kt" id="kt-高球必打" data-side="b" data-ways="book only" data-q="高球必打ハイボールヒッター">
     <h3 class="kt-name">高球必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ハイボールヒッター</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-低球必打" data-side="b" data-ways="book" data-q="低球必打ローボールヒッター">
+  <div class="kt" id="kt-低球必打" data-side="b" data-ways="book only" data-q="低球必打ローボールヒッター">
     <h3 class="kt-name">低球必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ローボールヒッター</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-内角必打" data-side="b" data-ways="book" data-q="内角必打インコースヒッター">
+  <div class="kt" id="kt-内角必打" data-side="b" data-ways="book only" data-q="内角必打インコースヒッター">
     <h3 class="kt-name">内角必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：インコースヒッター</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-外角必打" data-side="b" data-ways="book" data-q="外角必打アウトコースヒッター">
+  <div class="kt" id="kt-外角必打" data-side="b" data-ways="book only" data-q="外角必打アウトコースヒッター">
     <h3 class="kt-name">外角必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：アウトコースヒッター</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
@@ -694,25 +717,25 @@ table.tensei td:last-child{ white-space:normal; }
       <li><span class="w w-col">コラボ</span><span class="wd">リゼ・ヘルエスタ<span class="wk">（にじさんじ・二・☆249）</span>、倉持洋一<span class="wk">（ダイヤのA・遊・☆293）</span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-高速ベースラン" data-side="b" data-ways="book" data-q="高速ベースラン走塁a">
+  <div class="kt" id="kt-高速ベースラン" data-side="b" data-ways="book only" data-q="高速ベースラン走塁a">
     <h3 class="kt-name">高速ベースラン <span class="badge b">野手</span></h3><span class="kt-base">元の青特：走塁A</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-ロケットスタート" data-side="b" data-ways="book" data-q="ロケットスタート内野安打〇">
+  <div class="kt" id="kt-ロケットスタート" data-side="b" data-ways="book only" data-q="ロケットスタート内野安打〇">
     <h3 class="kt-name">ロケットスタート <span class="badge b">野手</span></h3><span class="kt-base">元の青特：内野安打〇</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-重戦車" data-side="b" data-ways="book" data-q="重戦車ホーム突入">
+  <div class="kt" id="kt-重戦車" data-side="b" data-ways="book only" data-q="重戦車ホーム突入">
     <h3 class="kt-name">重戦車 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ホーム突入</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-気迫ヘッド" data-side="b" data-ways="book" data-q="気迫ヘッドヘッドスライディング">
+  <div class="kt" id="kt-気迫ヘッド" data-side="b" data-ways="book only" data-q="気迫ヘッドヘッドスライディング">
     <h3 class="kt-name">気迫ヘッド <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ヘッドスライディング</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
@@ -726,7 +749,7 @@ table.tensei td:last-child{ white-space:normal; }
       <li><span class="w w-ten">転生</span><span class="wd">小坂誠<span class="wk">（宮城・1989年度・遊・☆282）</span>、菊池涼介<span class="dlc">歴代レジェンド</span><span class="wk">（東京・2005年度・二・☆363）</span>、吉田義男<span class="wk">（京都・1949年度・遊・☆287）</span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-高速レーザー" data-side="b" data-ways="book" data-q="高速レーザーレーザービーム">
+  <div class="kt" id="kt-高速レーザー" data-side="b" data-ways="book only" data-q="高速レーザーレーザービーム">
     <h3 class="kt-name">高速レーザー <span class="badge b">野手</span></h3><span class="kt-base">元の青特：レーザービーム</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
@@ -754,7 +777,7 @@ table.tensei td:last-child{ white-space:normal; }
       <li><span class="w w-col">コラボ</span><span class="wd">御幸一也<span class="wk">（ダイヤのA・捕・☆330）</span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-鉄の壁" data-side="b" data-ways="book" data-q="鉄ノ壁ホーム死守">
+  <div class="kt" id="kt-鉄の壁" data-side="b" data-ways="book only" data-q="鉄ノ壁ホーム死守">
     <h3 class="kt-name">鉄の壁 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ホーム死守</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
@@ -860,13 +883,13 @@ table.tensei td:last-child{ white-space:normal; }
       <li><span class="w w-ten">転生</span><span class="wd">西村健太朗<span class="wk">（岡山・2001年度・投・☆283）</span>、武田久<span class="wk">（香川・1994年度・投・☆278）</span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-走者釘付" data-side="p" data-ways="book" data-q="走者釘付クイックa">
+  <div class="kt" id="kt-走者釘付" data-side="p" data-ways="book only" data-q="走者釘付クイックa">
     <h3 class="kt-name">走者釘付 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：クイックA</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-左キラー" data-side="p" data-ways="book" data-q="左キラー対左打者a">
+  <div class="kt" id="kt-左キラー" data-side="p" data-ways="book only" data-q="左キラー対左打者a">
     <h3 class="kt-name">左キラー <span class="badge p">投手</span></h3><span class="kt-base">元の青特：対左打者A</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
@@ -879,7 +902,7 @@ table.tensei td:last-child{ white-space:normal; }
       <li><span class="w w-ten">転生</span><span class="wd">東尾修<span class="dlc">歴代レジェンド</span><span class="wk">（和歌山・1966年度・投・☆268）</span></span></li>
     </ul>
   </div>
-  <div class="kt" id="kt-ハイスピンジャイロ" data-side="p" data-ways="book" data-q="ハイスピンジャイロジャイロボール">
+  <div class="kt" id="kt-ハイスピンジャイロ" data-side="p" data-ways="book only" data-q="ハイスピンジャイロジャイロボール">
     <h3 class="kt-name">ハイスピンジャイロ <span class="badge p">投手</span></h3><span class="kt-base">元の青特：ジャイロボール</span>
     <ul class="kt-ways">
       <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
@@ -1012,14 +1035,22 @@ table.tensei td:last-child{ white-space:normal; }
 </figcaption>
 </figure>
 
-<h3 id="genteikintoku">おかわり・ストレートキラーも金特本で出る</h3>
+<h3 id="genteikintoku">おかわり・ストレートキラー</h3>
 
 <p>
 <strong>おかわり</strong>（マルチ弾の上位。ホームランを打っているとパワーがとても上がる）と
 <strong>ストレートキラー</strong>（対ストレート○の上位。ストレートを打つのがとても上手くなる）は、
-パワプロ2026から加わった金特です。国際大会や転生選手では手に入らず、栄冠ナインでは金特本で出るのを待つことになります。
+パワプロ2026から加わった金特です。どちらも国際大会では取れません。
+おかわりは転生OBの<a href="#kt-おかわり">中村剛也（大阪・1999年度）</a>が持っていますが、
+ストレートキラーを持つ転生選手はいないので、金特本で出るのを待つことになります。
 なお、マイライフでも<a href="/kintoku/#okawari-sk">世界大会の遠征中に能力研究所で</a>取れます。
 </p>
+
+<!-- BOOK-ONLY -->
+<h3 id="book-only">金特本でしか取れない金特（21種）</h3>
+<p>次の金特は、国際大会では取れず、持っている転生選手もいません（2026年11月時点で分かっている範囲）。栄冠ナインで付けるには、<strong>金特本が出るのを待つしかありません</strong>。OBの祝いの品とアイテム業者を毎回確かめておきましょう。</p>
+<div class="chips"><a href="#kt-広角砲" class="chip">広角砲</a><a href="#kt-芸術的流し打ち" class="chip">芸術的流し打ち</a><a href="#kt-伝説のサヨナラ男" class="chip">伝説のサヨナラ男</a><a href="#kt-火事場の馬鹿力" class="chip">火事場の馬鹿力</a><a href="#kt-メッタ打ち" class="chip">メッタ打ち</a><a href="#kt-一球入魂" class="chip">一球入魂</a><a href="#kt-左腕キラー" class="chip">左腕キラー</a><a href="#kt-ストレートキラー" class="chip">ストレートキラー</a><a href="#kt-高球必打" class="chip">高球必打</a><a href="#kt-低球必打" class="chip">低球必打</a><a href="#kt-内角必打" class="chip">内角必打</a><a href="#kt-外角必打" class="chip">外角必打</a><a href="#kt-高速ベースラン" class="chip">高速ベースラン</a><a href="#kt-ロケットスタート" class="chip">ロケットスタート</a><a href="#kt-重戦車" class="chip">重戦車</a><a href="#kt-気迫ヘッド" class="chip">気迫ヘッド</a><a href="#kt-高速レーザー" class="chip">高速レーザー</a><a href="#kt-鉄の壁" class="chip">鉄の壁</a><a href="#kt-走者釘付" class="chip">走者釘付</a><a href="#kt-左キラー" class="chip">左キラー</a><a href="#kt-ハイスピンジャイロ" class="chip">ハイスピンジャイロ</a></div>
+<!-- /BOOK-ONLY -->
 
 <h2 id="kokusai">手段2｜国際大会で活躍する</h2>
 
@@ -1376,88 +1407,150 @@ MVPは金特を5つのうちから1つ、ランダムで覚えます。
 ダイヤのAには、御幸一也（大番狂わせ・球界の頭脳・ストライク送球）や本郷正宗（怪童・怪物球威・ドクターK）のように、金特を3つ持つ選手もいます。
 </div>
 
-<h3>金特を持つ転生選手の一覧</h3>
+<!-- PICKUP -->
+<h3 id="multi">金特を2つ以上持つ選手（15人）</h3>
+<p>1人で金特を2つ・3つ持っている選手です。入部させるだけで、金特を一度に複数手に入れられます。</p>
+<div class="pk-grid">
+<div class="pk"><div class="pk-n">御幸一也<span class="dlc">DLC</span></div><div class="pk-s">ダイヤのA・捕・☆330</div><div class="pk-k"><a href="#kt-大番狂わせ" class="chip nk">大番狂わせ</a><a href="#kt-球界の頭脳" class="chip nk">球界の頭脳</a><a href="#kt-ストライク送球" class="chip nk">ストライク送球</a></div></div>
+<div class="pk"><div class="pk-n">岩瀬仁紀</div><div class="pk-s">愛知・1990年度・投・☆314</div><div class="pk-k"><a href="#kt-驚異の切れ味" class="chip nk">驚異の切れ味</a><a href="#kt-鉄人" class="chip nk">鉄人</a><a href="#kt-鉄腕" class="chip nk">鉄腕</a></div></div>
+<div class="pk"><div class="pk-n">本郷正宗<span class="dlc">DLC</span></div><div class="pk-s">ダイヤのA・投・☆300</div><div class="pk-k"><a href="#kt-怪童" class="chip nk">怪童</a><a href="#kt-怪物球威" class="chip">怪物球威</a><a href="#kt-ドクターK" class="chip">ドクターK</a></div></div>
+<div class="pk"><div class="pk-n">田中将大<span class="dlc">歴代レジェンド</span></div><div class="pk-s">兵庫・2004年度・投・☆417</div><div class="pk-k"><a href="#kt-勝利の星" class="chip nk">勝利の星</a><a href="#kt-ギアチェンジ" class="chip nk">ギアチェンジ</a></div></div>
+<div class="pk"><div class="pk-n">稲尾和久</div><div class="pk-s">大分・1953年度・投・☆366</div><div class="pk-k"><a href="#kt-鉄腕" class="chip nk">鉄腕</a><a href="#kt-ガソリンタンク" class="chip nk">ガソリンタンク</a></div></div>
+<div class="pk"><div class="pk-n">金田正一</div><div class="pk-s">愛知・1949年度・投・☆349</div><div class="pk-k"><a href="#kt-闘魂" class="chip nk">闘魂</a><a href="#kt-怪童" class="chip nk">怪童</a></div></div>
+<div class="pk"><div class="pk-n">野村克也</div><div class="pk-s">京都・1951年度・捕・☆344</div><div class="pk-k"><a href="#kt-球界の頭脳" class="chip nk">球界の頭脳</a><a href="#kt-ささやき戦術" class="chip nk">ささやき戦術</a></div></div>
+<div class="pk"><div class="pk-n">成宮鳴<span class="dlc">DLC</span></div><div class="pk-s">ダイヤのA・投・☆343</div><div class="pk-k"><a href="#kt-驚異の切れ味" class="chip nk">驚異の切れ味</a><a href="#kt-ドクターK" class="chip">ドクターK</a></div></div>
+<div class="pk"><div class="pk-n">倉持洋一<span class="dlc">DLC</span></div><div class="pk-s">ダイヤのA・遊・☆293</div><div class="pk-k"><a href="#kt-トリックスター" class="chip nk">トリックスター</a><a href="#kt-電光石火" class="chip">電光石火</a></div></div>
+<div class="pk"><div class="pk-n">向井太陽<span class="dlc">DLC</span></div><div class="pk-s">ダイヤのA・投・☆279</div><div class="pk-k"><a href="#kt-精密機械" class="chip">精密機械</a><a href="#kt-クロスキャノン" class="chip nk">クロスキャノン</a></div></div>
+<div class="pk"><div class="pk-n">椎名唯華</div><div class="pk-s">にじさんじ・一・☆271</div><div class="pk-k"><a href="#kt-勝負師" class="chip">勝負師</a><a href="#kt-大番狂わせ" class="chip nk">大番狂わせ</a></div></div>
+<div class="pk"><div class="pk-n">降谷 暁<span class="dlc">DLC</span></div><div class="pk-s">ダイヤのA・投・☆271</div><div class="pk-k"><a href="#kt-怪童" class="chip nk">怪童</a><a href="#kt-怪物球威" class="chip">怪物球威</a></div></div>
+<div class="pk"><div class="pk-n">リゼ・ヘルエスタ</div><div class="pk-s">にじさんじ・二・☆249</div><div class="pk-k"><a href="#kt-精神的支柱" class="chip nk">精神的支柱</a><a href="#kt-電光石火" class="chip">電光石火</a></div></div>
+<div class="pk"><div class="pk-n">梅宮聖一<span class="dlc">DLC</span></div><div class="pk-s">ダイヤのA・投・☆228</div><div class="pk-k"><a href="#kt-変幻自在" class="chip">変幻自在</a><a href="#kt-大番狂わせ" class="chip nk">大番狂わせ</a></div></div>
+<div class="pk"><div class="pk-n">五十嵐梨花</div><div class="pk-s">にじさんじ・投・☆215</div><div class="pk-k"><a href="#kt-勝利の星" class="chip nk">勝利の星</a><a href="#kt-変幻自在" class="chip">変幻自在</a></div></div>
+</div>
+<h3 id="nokok">国際大会では取れない金特を持つ選手（24種）</h3>
+<p>国際大会で取れる金特は、野手5つ（安打製造機・アーチスト・電光石火・勝負師・魔術師）と投手5つ（強心臓・怪物球威・ドクターK・変幻自在・精密機械）、それに威圧感だけです。それ以外の金特を狙うなら、金特本を待つか、その金特を持つ転生選手を仲間にすることになります。</p>
+<div class="table-scroll"><table class="tensei">
+<thead><tr><th>金特</th><th>持っている選手</th><th>ほかの取り方</th></tr></thead>
+<tbody>
+<tr><td><a href="#kt-引っ張り屋" class="nk">引っ張り屋</a></td><td>土井正博<span class="wk">（大阪・1959年度・☆303）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-恐怖の満塁男" class="nk">恐怖の満塁男</a></td><td>駒田徳広<span class="wk">（奈良・1978年度・☆260）</span>、今岡誠<span class="wk">（兵庫・1990年度・☆253）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-代打の神様" class="nk">代打の神様</a></td><td>高井保弘<span class="wk">（愛媛・1960年度・☆264）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-切り込み隊長" class="nk">切り込み隊長</a></td><td>石毛宏典<span class="wk">（千葉・1972年度・☆299）</span>、松井稼頭央<span class="dlc">歴代レジェンド</span><span class="wk">（大阪・1991年度・☆376）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-大番狂わせ" class="nk">大番狂わせ</a></td><td>椎名唯華<span class="wk">（にじさんじ・☆271）</span>、御幸一也<span class="dlc">DLC</span><span class="wk">（ダイヤのA・☆330）</span>、梅宮聖一<span class="dlc">DLC</span><span class="wk">（ダイヤのA・☆228）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-おかわり" class="nk">おかわり</a></td><td>中村剛也<span class="wk">（大阪・1999年度・☆307）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-精神的支柱" class="nk">精神的支柱</a></td><td>毒島章一<span class="wk">（群馬・1951年度・☆260）</span>、リゼ・ヘルエスタ<span class="wk">（にじさんじ・☆249）</span></td><td><span class="muted">金特本は未確認</span></td></tr>
+<tr><td><a href="#kt-トリックスター" class="nk">トリックスター</a></td><td>倉持洋一<span class="dlc">DLC</span><span class="wk">（ダイヤのA・☆293）</span></td><td><span class="muted">金特本は未確認</span></td></tr>
+<tr><td><a href="#kt-ストライク送球" class="nk">ストライク送球</a></td><td>御幸一也<span class="dlc">DLC</span><span class="wk">（ダイヤのA・☆330）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-バズーカ送球" class="nk">バズーカ送球</a></td><td>城島健司<span class="wk">（長崎・1992年度・☆324）</span></td><td><span class="muted">金特本は未確認</span></td></tr>
+<tr><td><a href="#kt-球界の頭脳" class="nk">球界の頭脳</a></td><td>野村克也<span class="wk">（京都・1951年度・☆344）</span>、古田敦也<span class="wk">（兵庫・1981年度・☆392）</span>、御幸一也<span class="dlc">DLC</span><span class="wk">（ダイヤのA・☆330）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-ささやき戦術" class="nk">ささやき戦術</a></td><td>野村克也<span class="wk">（京都・1951年度・☆344）</span>、舞元啓介<span class="wk">（にじさんじ・☆209）</span></td><td><span class="muted">金特本は未確認</span></td></tr>
+<tr><td><a href="#kt-鉄人" class="nk">鉄人</a></td><td>山口鉄也<span class="dlc">歴代レジェンド</span><span class="wk">（神奈川・1999年度・☆308）</span>、岩瀬仁紀<span class="wk">（愛知・1990年度・☆314）</span>、衣笠祥雄<span class="wk">（京都・1962年度・☆304）</span>、別所昭<span class="wk">（兵庫・1938年度・☆384）</span>、金本知憲<span class="wk">（岡山・1984年度・☆352）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-驚異の切れ味" class="nk">驚異の切れ味</a></td><td>岩瀬仁紀<span class="wk">（愛知・1990年度・☆314）</span>、伊藤智仁<span class="wk">（京都・1986年度・☆275）</span>、成宮鳴<span class="dlc">DLC</span><span class="wk">（ダイヤのA・☆343）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-怪童" class="nk">怪童</a></td><td>江川卓<span class="wk">（福島・1971年度・☆343）</span>、金田正一<span class="wk">（愛知・1949年度・☆349）</span>、尾崎行雄<span class="wk">（大阪・1960年度・☆306）</span>、江夏豊<span class="wk">（兵庫・1964年度・☆382）</span>、藤川球児<span class="dlc">歴代レジェンド</span><span class="wk">（高知・1996年度・☆310）</span>、藤川球児<span class="wk">（高知・1996年度・☆307）</span>、降谷 暁<span class="dlc">DLC</span><span class="wk">（ダイヤのA・☆271）</span>、本郷正宗<span class="dlc">DLC</span><span class="wk">（ダイヤのA・☆300）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-不屈の魂" class="nk">不屈の魂</a></td><td>鈴木啓示<span class="wk">（兵庫・1963年度・☆335）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-鉄腕" class="nk">鉄腕</a></td><td>岩瀬仁紀<span class="wk">（愛知・1990年度・☆314）</span>、宮西尚生<span class="dlc">歴代レジェンド</span><span class="wk">（兵庫・2001年度・☆282）</span>、宮西尚生<span class="wk">（兵庫・2001年度・☆250）</span>、稲尾和久<span class="wk">（大分・1953年度・☆366）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-ガソリンタンク" class="nk">ガソリンタンク</a></td><td>米田哲也<span class="wk">（鳥取・1953年度・☆281）</span>、稲尾和久<span class="wk">（大分・1953年度・☆366）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-本塁打厳禁" class="nk">本塁打厳禁</a></td><td>西村健太朗<span class="wk">（岡山・2001年度・☆283）</span>、武田久<span class="wk">（香川・1994年度・☆278）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-内角無双" class="nk">内角無双</a></td><td>東尾修<span class="dlc">歴代レジェンド</span><span class="wk">（和歌山・1966年度・☆268）</span></td><td>金特本</td></tr>
+<tr><td><a href="#kt-闘魂" class="nk">闘魂</a></td><td>金田正一<span class="wk">（愛知・1949年度・☆349）</span>、沢村栄純<span class="dlc">DLC</span><span class="wk">（ダイヤのA・☆286）</span></td><td><span class="muted">金特本は未確認</span></td></tr>
+<tr><td><a href="#kt-勝利の星" class="nk">勝利の星</a></td><td>田中将大<span class="dlc">歴代レジェンド</span><span class="wk">（兵庫・2004年度・☆417）</span>、五十嵐梨花<span class="wk">（にじさんじ・☆215）</span></td><td><span class="muted">金特本は未確認</span></td></tr>
+<tr><td><a href="#kt-ギアチェンジ" class="nk">ギアチェンジ</a></td><td>田中将大<span class="dlc">歴代レジェンド</span><span class="wk">（兵庫・2004年度・☆417）</span></td><td><span class="muted">金特本は未確認</span></td></tr>
+<tr><td><a href="#kt-クロスキャノン" class="nk">クロスキャノン</a></td><td>向井太陽<span class="dlc">DLC</span><span class="wk">（ダイヤのA・☆279）</span></td><td><span class="muted">金特本は未確認</span></td></tr>
+</tbody></table></div>
+<!-- /PICKUP -->
 
 <p>
-金特を持つ選手だけを載せています（威圧感だけを持つ選手は除いています）。金特の名前を押すと、その金特の入手方法に移ります。
+下の表は、金特を持つ転生選手の全員です（威圧感だけを持つ選手は除いています）。
+選手名や都道府県で探したり、☆の高い順に並べ替えたりできます。金特の名前を押すと、その金特の入手方法に移ります。
 </p>
 
 <!-- TENSEI-TABLE -->
-<h3 id="tensei-ob">転生OB・転生プロ（50人）</h3>
-<div class="table-scroll"><table class="tensei">
-<thead><tr><th>選手</th><th>都道府県</th><th>年度</th><th>守備</th><th class="r">☆</th><th>持っている金特</th></tr></thead>
-<tbody>
-<tr><td>落合博満</td><td>秋田</td><td>1969年度</td><td>三</td><td class="r">373</td><td><a href="#kt-勝負師">勝負師</a></td></tr>
-<tr><td>小坂誠</td><td>宮城</td><td>1989年度</td><td>遊</td><td class="r">282</td><td><a href="#kt-魔術師">魔術師</a></td></tr>
-<tr><td>江川卓</td><td>福島</td><td>1971年度</td><td>投</td><td class="r">343</td><td><a href="#kt-怪童">怪童</a></td></tr>
-<tr><td>石毛宏典</td><td>千葉</td><td>1972年度</td><td>三</td><td class="r">299</td><td><a href="#kt-切り込み隊長">切り込み隊長</a></td></tr>
-<tr><td>山口鉄也<span class="dlc">歴代レジェンド</span></td><td>神奈川</td><td>1999年度</td><td>投</td><td class="r">308</td><td><a href="#kt-鉄人">鉄人</a></td></tr>
-<tr><td>王貞治<span class="dlc">歴代レジェンド</span></td><td>東京</td><td>1956年度</td><td>一</td><td class="r">400</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
-<tr><td>王貞治</td><td>東京</td><td>1956年度</td><td>一</td><td class="r">391</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
-<tr><td>田淵幸一</td><td>東京</td><td>1962年度</td><td>捕</td><td class="r">365</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
-<tr><td>菊池涼介<span class="dlc">歴代レジェンド</span></td><td>東京</td><td>2005年度</td><td>二</td><td class="r">363</td><td><a href="#kt-魔術師">魔術師</a></td></tr>
-<tr><td>江藤智</td><td>東京</td><td>1986年度</td><td>三</td><td class="r">300</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
-<tr><td>榎本喜八</td><td>東京</td><td>1952年度</td><td>一</td><td class="r">290</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
-<tr><td>毒島章一</td><td>群馬</td><td>1951年度</td><td>外</td><td class="r">260</td><td><a href="#kt-精神的支柱">精神的支柱</a></td></tr>
-<tr><td>イチロー</td><td>愛知</td><td>1989年度</td><td>外</td><td class="r">415</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
-<tr><td>金田正一</td><td>愛知</td><td>1949年度</td><td>投</td><td class="r">349</td><td><a href="#kt-闘魂">闘魂</a>、<a href="#kt-怪童">怪童</a></td></tr>
-<tr><td>岩瀬仁紀</td><td>愛知</td><td>1990年度</td><td>投</td><td class="r">314</td><td><a href="#kt-驚異の切れ味">驚異の切れ味</a>、<a href="#kt-鉄人">鉄人</a>、<a href="#kt-鉄腕">鉄腕</a></td></tr>
-<tr><td>赤星憲広</td><td>愛知</td><td>1992年度</td><td>外</td><td class="r">298</td><td><a href="#kt-電光石火">電光石火</a></td></tr>
-<tr><td>野村克也</td><td>京都</td><td>1951年度</td><td>捕</td><td class="r">344</td><td><a href="#kt-球界の頭脳">球界の頭脳</a>、<a href="#kt-ささやき戦術">ささやき戦術</a></td></tr>
-<tr><td>衣笠祥雄</td><td>京都</td><td>1962年度</td><td>三</td><td class="r">304</td><td><a href="#kt-鉄人">鉄人</a></td></tr>
-<tr><td>吉田義男</td><td>京都</td><td>1949年度</td><td>遊</td><td class="r">287</td><td><a href="#kt-魔術師">魔術師</a></td></tr>
-<tr><td>伊藤智仁</td><td>京都</td><td>1986年度</td><td>投</td><td class="r">275</td><td><a href="#kt-驚異の切れ味">驚異の切れ味</a></td></tr>
-<tr><td>駒田徳広</td><td>奈良</td><td>1978年度</td><td>一</td><td class="r">260</td><td><a href="#kt-恐怖の満塁男">恐怖の満塁男</a></td></tr>
-<tr><td>東尾修<span class="dlc">歴代レジェンド</span></td><td>和歌山</td><td>1966年度</td><td>投</td><td class="r">268</td><td><a href="#kt-内角無双">内角無双</a></td></tr>
-<tr><td>松井稼頭央<span class="dlc">歴代レジェンド</span></td><td>大阪</td><td>1991年度</td><td>遊</td><td class="r">376</td><td><a href="#kt-切り込み隊長">切り込み隊長</a></td></tr>
-<tr><td>中村剛也</td><td>大阪</td><td>1999年度</td><td>三</td><td class="r">307</td><td><a href="#kt-おかわり">おかわり</a></td></tr>
-<tr><td>尾崎行雄</td><td>大阪</td><td>1960年度</td><td>投</td><td class="r">306</td><td><a href="#kt-怪童">怪童</a></td></tr>
-<tr><td>土井正博</td><td>大阪</td><td>1959年度</td><td>外</td><td class="r">303</td><td><a href="#kt-引っ張り屋">引っ張り屋</a></td></tr>
-<tr><td>福本豊</td><td>大阪</td><td>1963年度</td><td>外</td><td class="r">294</td><td><a href="#kt-電光石火">電光石火</a></td></tr>
-<tr><td>新井宏昌</td><td>大阪</td><td>1968年度</td><td>外</td><td class="r">279</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
-<tr><td>田中将大<span class="dlc">歴代レジェンド</span></td><td>兵庫</td><td>2004年度</td><td>投</td><td class="r">417</td><td><a href="#kt-勝利の星">勝利の星</a>、<a href="#kt-ギアチェンジ">ギアチェンジ</a></td></tr>
-<tr><td>古田敦也</td><td>兵庫</td><td>1981年度</td><td>捕</td><td class="r">392</td><td><a href="#kt-球界の頭脳">球界の頭脳</a></td></tr>
-<tr><td>別所昭</td><td>兵庫</td><td>1938年度</td><td>投</td><td class="r">384</td><td><a href="#kt-鉄人">鉄人</a></td></tr>
-<tr><td>江夏豊</td><td>兵庫</td><td>1964年度</td><td>投</td><td class="r">382</td><td><a href="#kt-怪童">怪童</a></td></tr>
-<tr><td>小山正明</td><td>兵庫</td><td>1950年度</td><td>投</td><td class="r">340</td><td><a href="#kt-精密機械">精密機械</a></td></tr>
-<tr><td>鈴木啓示</td><td>兵庫</td><td>1963年度</td><td>投</td><td class="r">335</td><td><a href="#kt-不屈の魂">不屈の魂</a></td></tr>
-<tr><td>宮西尚生<span class="dlc">歴代レジェンド</span></td><td>兵庫</td><td>2001年度</td><td>投</td><td class="r">282</td><td><a href="#kt-鉄腕">鉄腕</a></td></tr>
-<tr><td>今岡誠</td><td>兵庫</td><td>1990年度</td><td>二</td><td class="r">253</td><td><a href="#kt-恐怖の満塁男">恐怖の満塁男</a></td></tr>
-<tr><td>宮西尚生</td><td>兵庫</td><td>2001年度</td><td>投</td><td class="r">250</td><td><a href="#kt-鉄腕">鉄腕</a></td></tr>
-<tr><td>米田哲也</td><td>鳥取</td><td>1953年度</td><td>投</td><td class="r">281</td><td><a href="#kt-ガソリンタンク">ガソリンタンク</a></td></tr>
-<tr><td>平松政次</td><td>岡山</td><td>1963年度</td><td>投</td><td class="r">326</td><td><a href="#kt-怪物球威">怪物球威</a></td></tr>
-<tr><td>金本知憲</td><td>岡山</td><td>1984年度</td><td>外</td><td class="r">352</td><td><a href="#kt-鉄人">鉄人</a></td></tr>
-<tr><td>張本勲</td><td>岡山</td><td>1956年度</td><td>外</td><td class="r">333</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
-<tr><td>西村健太朗</td><td>岡山</td><td>2001年度</td><td>投</td><td class="r">283</td><td><a href="#kt-本塁打厳禁">本塁打厳禁</a></td></tr>
-<tr><td>武田久</td><td>香川</td><td>1994年度</td><td>投</td><td class="r">278</td><td><a href="#kt-本塁打厳禁">本塁打厳禁</a></td></tr>
-<tr><td>高井保弘</td><td>愛媛</td><td>1960年度</td><td>一</td><td class="r">264</td><td><a href="#kt-代打の神様">代打の神様</a></td></tr>
-<tr><td>藤川球児<span class="dlc">歴代レジェンド</span></td><td>高知</td><td>1996年度</td><td>投</td><td class="r">310</td><td><a href="#kt-怪童">怪童</a></td></tr>
-<tr><td>藤川球児</td><td>高知</td><td>1996年度</td><td>投</td><td class="r">307</td><td><a href="#kt-怪童">怪童</a></td></tr>
-<tr><td>城島健司</td><td>長崎</td><td>1992年度</td><td>捕</td><td class="r">324</td><td><a href="#kt-バズーカ送球">バズーカ送球</a></td></tr>
-<tr><td>川上哲治</td><td>熊本</td><td>1935年度</td><td>一</td><td class="r">300</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
-<tr><td>稲尾和久</td><td>大分</td><td>1953年度</td><td>投</td><td class="r">366</td><td><a href="#kt-鉄腕">鉄腕</a>、<a href="#kt-ガソリンタンク">ガソリンタンク</a></td></tr>
-<tr><td>北別府学</td><td>鹿児島</td><td>1973年度</td><td>投</td><td class="r">308</td><td><a href="#kt-精密機械">精密機械</a></td></tr>
-</tbody></table></div>
-<h3 id="tensei-collab">転生コラボ（15人）</h3>
-<div class="table-scroll"><table class="tensei">
-<thead><tr><th>選手</th><th>作品</th><th>年度</th><th>守備</th><th class="r">☆</th><th>持っている金特</th></tr></thead>
-<tbody>
-<tr><td>リゼ・ヘルエスタ</td><td>にじさんじ</td><td>いつでも</td><td>二</td><td class="r">249</td><td><a href="#kt-精神的支柱">精神的支柱</a>、<a href="#kt-電光石火">電光石火</a></td></tr>
-<tr><td>椎名唯華</td><td>にじさんじ</td><td>いつでも</td><td>一</td><td class="r">271</td><td><a href="#kt-勝負師">勝負師</a>、<a href="#kt-大番狂わせ">大番狂わせ</a></td></tr>
-<tr><td>五十嵐梨花</td><td>にじさんじ</td><td>いつでも</td><td>投</td><td class="r">215</td><td><a href="#kt-勝利の星">勝利の星</a>、<a href="#kt-変幻自在">変幻自在</a></td></tr>
-<tr><td>舞元啓介</td><td>にじさんじ</td><td>いつでも</td><td>捕</td><td class="r">209</td><td><a href="#kt-ささやき戦術">ささやき戦術</a></td></tr>
-<tr><td>沢村栄純</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">286</td><td><a href="#kt-闘魂">闘魂</a></td></tr>
-<tr><td>降谷 暁</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">271</td><td><a href="#kt-怪童">怪童</a>、<a href="#kt-怪物球威">怪物球威</a></td></tr>
-<tr><td>小湊春市</td><td>ダイヤのA</td><td>いつでも</td><td>二</td><td class="r">225</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
-<tr><td>御幸一也</td><td>ダイヤのA</td><td>いつでも</td><td>捕</td><td class="r">330</td><td><a href="#kt-大番狂わせ">大番狂わせ</a>、<a href="#kt-球界の頭脳">球界の頭脳</a>、<a href="#kt-ストライク送球">ストライク送球</a></td></tr>
-<tr><td>倉持洋一</td><td>ダイヤのA</td><td>いつでも</td><td>遊</td><td class="r">293</td><td><a href="#kt-トリックスター">トリックスター</a>、<a href="#kt-電光石火">電光石火</a></td></tr>
-<tr><td>結城将司</td><td>ダイヤのA</td><td>いつでも</td><td>外</td><td class="r">175</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
-<tr><td>成宮鳴</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">343</td><td><a href="#kt-驚異の切れ味">驚異の切れ味</a>、<a href="#kt-ドクターK">ドクターK</a></td></tr>
-<tr><td>轟雷市</td><td>ダイヤのA</td><td>いつでも</td><td>三</td><td class="r">284</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
-<tr><td>本郷正宗</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">300</td><td><a href="#kt-怪童">怪童</a>、<a href="#kt-怪物球威">怪物球威</a>、<a href="#kt-ドクターK">ドクターK</a></td></tr>
-<tr><td>梅宮聖一</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">228</td><td><a href="#kt-変幻自在">変幻自在</a>、<a href="#kt-大番狂わせ">大番狂わせ</a></td></tr>
-<tr><td>向井太陽</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">279</td><td><a href="#kt-精密機械">精密機械</a>、<a href="#kt-クロスキャノン">クロスキャノン</a></td></tr>
-</tbody></table></div>
+<div class="card pf" id="players">
+    <h2>金特を持つ選手から探す</h2>
+    <p class="lead">選手名・都道府県・作品名・金特・守備で探せます（例：イチロー、兵庫、にじさんじ、怪童、捕）。<b class="nk-legend">太字の金特</b>は国際大会では取れない金特です。</p>
+    <div class="kt-filter">
+        <input type="search" id="pq" placeholder="選手名・都道府県・作品・金特で検索" aria-label="選手名・都道府県・作品・金特で検索" autocomplete="off">
+        <select id="psort" aria-label="並べ替え"><option value="order">都道府県順</option><option value="star">☆が高い順</option><option value="kin">金特が多い順</option><option value="year">年度が古い順</option></select>
+        <div class="kt-chips" id="pChips">
+            <label><input type="checkbox" value="multi"> 金特を2つ以上</label>
+            <label><input type="checkbox" value="nokok"> 国際大会で取れない金特を持つ</label>
+            <label><input type="checkbox" value="ob"> 転生OB・プロ</label>
+            <label><input type="checkbox" value="collab"> 転生コラボ</label>
+            <label><input type="checkbox" value="free"> DLCなしで仲間にできる</label>
+        </div>
+        <span class="filter-count"><strong id="pCount">65</strong> 人を表示中</span>
+    </div>
+    <div class="scroll"><table class="tensei" id="pTable">
+    <thead><tr><th>選手</th><th>都道府県・作品</th><th>年度</th><th>守備</th><th class="r">☆</th><th>持っている金特</th></tr></thead>
+    <tbody>
+<tr data-q="落合博満秋田三勝負師" data-tags="ob free" data-star="373" data-kin="1" data-year="1969" data-order="0"><td class="pn">落合博満</td><td>秋田</td><td>1969年度</td><td>三</td><td class="r">373</td><td><a href="#kt-勝負師">勝負師</a></td></tr>
+<tr data-q="小坂誠宮城遊魔術師" data-tags="ob free" data-star="282" data-kin="1" data-year="1989" data-order="1"><td class="pn">小坂誠</td><td>宮城</td><td>1989年度</td><td>遊</td><td class="r">282</td><td><a href="#kt-魔術師">魔術師</a></td></tr>
+<tr data-q="江川卓福島投怪童" data-tags="ob nokok free" data-star="343" data-kin="1" data-year="1971" data-order="2"><td class="pn">江川卓</td><td>福島</td><td>1971年度</td><td>投</td><td class="r">343</td><td><a href="#kt-怪童" class="nk">怪童</a></td></tr>
+<tr data-q="石毛宏典千葉三切リ込ミ隊長" data-tags="ob nokok free" data-star="299" data-kin="1" data-year="1972" data-order="3"><td class="pn">石毛宏典</td><td>千葉</td><td>1972年度</td><td>三</td><td class="r">299</td><td><a href="#kt-切り込み隊長" class="nk">切り込み隊長</a></td></tr>
+<tr data-q="山口鉄也神奈川投鉄人歴代レジェンドdlc" data-tags="ob nokok" data-star="308" data-kin="1" data-year="1999" data-order="4"><td class="pn">山口鉄也<span class="dlc">歴代レジェンド</span></td><td>神奈川</td><td>1999年度</td><td>投</td><td class="r">308</td><td><a href="#kt-鉄人" class="nk">鉄人</a></td></tr>
+<tr data-q="王貞治東京一アーチスト歴代レジェンドdlc" data-tags="ob" data-star="400" data-kin="1" data-year="1956" data-order="5"><td class="pn">王貞治<span class="dlc">歴代レジェンド</span></td><td>東京</td><td>1956年度</td><td>一</td><td class="r">400</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr data-q="王貞治東京一アーチスト" data-tags="ob free" data-star="391" data-kin="1" data-year="1956" data-order="6"><td class="pn">王貞治</td><td>東京</td><td>1956年度</td><td>一</td><td class="r">391</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr data-q="田淵幸一東京捕アーチスト" data-tags="ob free" data-star="365" data-kin="1" data-year="1962" data-order="7"><td class="pn">田淵幸一</td><td>東京</td><td>1962年度</td><td>捕</td><td class="r">365</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr data-q="菊池涼介東京二魔術師歴代レジェンドdlc" data-tags="ob" data-star="363" data-kin="1" data-year="2005" data-order="8"><td class="pn">菊池涼介<span class="dlc">歴代レジェンド</span></td><td>東京</td><td>2005年度</td><td>二</td><td class="r">363</td><td><a href="#kt-魔術師">魔術師</a></td></tr>
+<tr data-q="江藤智東京三アーチスト" data-tags="ob free" data-star="300" data-kin="1" data-year="1986" data-order="9"><td class="pn">江藤智</td><td>東京</td><td>1986年度</td><td>三</td><td class="r">300</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr data-q="榎本喜八東京一安打製造機" data-tags="ob free" data-star="290" data-kin="1" data-year="1952" data-order="10"><td class="pn">榎本喜八</td><td>東京</td><td>1952年度</td><td>一</td><td class="r">290</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr data-q="毒島章一群馬外精神的支柱" data-tags="ob nokok free" data-star="260" data-kin="1" data-year="1951" data-order="11"><td class="pn">毒島章一</td><td>群馬</td><td>1951年度</td><td>外</td><td class="r">260</td><td><a href="#kt-精神的支柱" class="nk">精神的支柱</a></td></tr>
+<tr data-q="イチロー愛知外安打製造機" data-tags="ob free" data-star="415" data-kin="1" data-year="1989" data-order="12"><td class="pn">イチロー</td><td>愛知</td><td>1989年度</td><td>外</td><td class="r">415</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr data-q="金田正一愛知投闘魂怪童" data-tags="ob multi nokok free" data-star="349" data-kin="2" data-year="1949" data-order="13"><td class="pn">金田正一</td><td>愛知</td><td>1949年度</td><td>投</td><td class="r">349</td><td><a href="#kt-闘魂" class="nk">闘魂</a>、<a href="#kt-怪童" class="nk">怪童</a></td></tr>
+<tr data-q="岩瀬仁紀愛知投驚異ノ切レ味鉄人鉄腕" data-tags="ob multi nokok free" data-star="314" data-kin="3" data-year="1990" data-order="14"><td class="pn">岩瀬仁紀</td><td>愛知</td><td>1990年度</td><td>投</td><td class="r">314</td><td><a href="#kt-驚異の切れ味" class="nk">驚異の切れ味</a>、<a href="#kt-鉄人" class="nk">鉄人</a>、<a href="#kt-鉄腕" class="nk">鉄腕</a></td></tr>
+<tr data-q="赤星憲広愛知外電光石火" data-tags="ob free" data-star="298" data-kin="1" data-year="1992" data-order="15"><td class="pn">赤星憲広</td><td>愛知</td><td>1992年度</td><td>外</td><td class="r">298</td><td><a href="#kt-電光石火">電光石火</a></td></tr>
+<tr data-q="野村克也京都捕球界ノ頭脳ササヤキ戦術" data-tags="ob multi nokok free" data-star="344" data-kin="2" data-year="1951" data-order="16"><td class="pn">野村克也</td><td>京都</td><td>1951年度</td><td>捕</td><td class="r">344</td><td><a href="#kt-球界の頭脳" class="nk">球界の頭脳</a>、<a href="#kt-ささやき戦術" class="nk">ささやき戦術</a></td></tr>
+<tr data-q="衣笠祥雄京都三鉄人" data-tags="ob nokok free" data-star="304" data-kin="1" data-year="1962" data-order="17"><td class="pn">衣笠祥雄</td><td>京都</td><td>1962年度</td><td>三</td><td class="r">304</td><td><a href="#kt-鉄人" class="nk">鉄人</a></td></tr>
+<tr data-q="吉田義男京都遊魔術師" data-tags="ob free" data-star="287" data-kin="1" data-year="1949" data-order="18"><td class="pn">吉田義男</td><td>京都</td><td>1949年度</td><td>遊</td><td class="r">287</td><td><a href="#kt-魔術師">魔術師</a></td></tr>
+<tr data-q="伊藤智仁京都投驚異ノ切レ味" data-tags="ob nokok free" data-star="275" data-kin="1" data-year="1986" data-order="19"><td class="pn">伊藤智仁</td><td>京都</td><td>1986年度</td><td>投</td><td class="r">275</td><td><a href="#kt-驚異の切れ味" class="nk">驚異の切れ味</a></td></tr>
+<tr data-q="駒田徳広奈良一恐怖ノ満塁男" data-tags="ob nokok free" data-star="260" data-kin="1" data-year="1978" data-order="20"><td class="pn">駒田徳広</td><td>奈良</td><td>1978年度</td><td>一</td><td class="r">260</td><td><a href="#kt-恐怖の満塁男" class="nk">恐怖の満塁男</a></td></tr>
+<tr data-q="東尾修和歌山投内角無双歴代レジェンドdlc" data-tags="ob nokok" data-star="268" data-kin="1" data-year="1966" data-order="21"><td class="pn">東尾修<span class="dlc">歴代レジェンド</span></td><td>和歌山</td><td>1966年度</td><td>投</td><td class="r">268</td><td><a href="#kt-内角無双" class="nk">内角無双</a></td></tr>
+<tr data-q="松井稼頭央大阪遊切リ込ミ隊長歴代レジェンドdlc" data-tags="ob nokok" data-star="376" data-kin="1" data-year="1991" data-order="22"><td class="pn">松井稼頭央<span class="dlc">歴代レジェンド</span></td><td>大阪</td><td>1991年度</td><td>遊</td><td class="r">376</td><td><a href="#kt-切り込み隊長" class="nk">切り込み隊長</a></td></tr>
+<tr data-q="中村剛也大阪三オカワリ" data-tags="ob nokok free" data-star="307" data-kin="1" data-year="1999" data-order="23"><td class="pn">中村剛也</td><td>大阪</td><td>1999年度</td><td>三</td><td class="r">307</td><td><a href="#kt-おかわり" class="nk">おかわり</a></td></tr>
+<tr data-q="尾崎行雄大阪投怪童" data-tags="ob nokok free" data-star="306" data-kin="1" data-year="1960" data-order="24"><td class="pn">尾崎行雄</td><td>大阪</td><td>1960年度</td><td>投</td><td class="r">306</td><td><a href="#kt-怪童" class="nk">怪童</a></td></tr>
+<tr data-q="土井正博大阪外引ッ張リ屋" data-tags="ob nokok free" data-star="303" data-kin="1" data-year="1959" data-order="25"><td class="pn">土井正博</td><td>大阪</td><td>1959年度</td><td>外</td><td class="r">303</td><td><a href="#kt-引っ張り屋" class="nk">引っ張り屋</a></td></tr>
+<tr data-q="福本豊大阪外電光石火" data-tags="ob free" data-star="294" data-kin="1" data-year="1963" data-order="26"><td class="pn">福本豊</td><td>大阪</td><td>1963年度</td><td>外</td><td class="r">294</td><td><a href="#kt-電光石火">電光石火</a></td></tr>
+<tr data-q="新井宏昌大阪外安打製造機" data-tags="ob free" data-star="279" data-kin="1" data-year="1968" data-order="27"><td class="pn">新井宏昌</td><td>大阪</td><td>1968年度</td><td>外</td><td class="r">279</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr data-q="田中将大兵庫投勝利ノ星ギアチェンジ歴代レジェンドdlc" data-tags="ob multi nokok" data-star="417" data-kin="2" data-year="2004" data-order="28"><td class="pn">田中将大<span class="dlc">歴代レジェンド</span></td><td>兵庫</td><td>2004年度</td><td>投</td><td class="r">417</td><td><a href="#kt-勝利の星" class="nk">勝利の星</a>、<a href="#kt-ギアチェンジ" class="nk">ギアチェンジ</a></td></tr>
+<tr data-q="古田敦也兵庫捕球界ノ頭脳" data-tags="ob nokok free" data-star="392" data-kin="1" data-year="1981" data-order="29"><td class="pn">古田敦也</td><td>兵庫</td><td>1981年度</td><td>捕</td><td class="r">392</td><td><a href="#kt-球界の頭脳" class="nk">球界の頭脳</a></td></tr>
+<tr data-q="別所昭兵庫投鉄人" data-tags="ob nokok free" data-star="384" data-kin="1" data-year="1938" data-order="30"><td class="pn">別所昭</td><td>兵庫</td><td>1938年度</td><td>投</td><td class="r">384</td><td><a href="#kt-鉄人" class="nk">鉄人</a></td></tr>
+<tr data-q="江夏豊兵庫投怪童" data-tags="ob nokok free" data-star="382" data-kin="1" data-year="1964" data-order="31"><td class="pn">江夏豊</td><td>兵庫</td><td>1964年度</td><td>投</td><td class="r">382</td><td><a href="#kt-怪童" class="nk">怪童</a></td></tr>
+<tr data-q="小山正明兵庫投精密機械" data-tags="ob free" data-star="340" data-kin="1" data-year="1950" data-order="32"><td class="pn">小山正明</td><td>兵庫</td><td>1950年度</td><td>投</td><td class="r">340</td><td><a href="#kt-精密機械">精密機械</a></td></tr>
+<tr data-q="鈴木啓示兵庫投不屈ノ魂" data-tags="ob nokok free" data-star="335" data-kin="1" data-year="1963" data-order="33"><td class="pn">鈴木啓示</td><td>兵庫</td><td>1963年度</td><td>投</td><td class="r">335</td><td><a href="#kt-不屈の魂" class="nk">不屈の魂</a></td></tr>
+<tr data-q="宮西尚生兵庫投鉄腕歴代レジェンドdlc" data-tags="ob nokok" data-star="282" data-kin="1" data-year="2001" data-order="34"><td class="pn">宮西尚生<span class="dlc">歴代レジェンド</span></td><td>兵庫</td><td>2001年度</td><td>投</td><td class="r">282</td><td><a href="#kt-鉄腕" class="nk">鉄腕</a></td></tr>
+<tr data-q="今岡誠兵庫二恐怖ノ満塁男" data-tags="ob nokok free" data-star="253" data-kin="1" data-year="1990" data-order="35"><td class="pn">今岡誠</td><td>兵庫</td><td>1990年度</td><td>二</td><td class="r">253</td><td><a href="#kt-恐怖の満塁男" class="nk">恐怖の満塁男</a></td></tr>
+<tr data-q="宮西尚生兵庫投鉄腕" data-tags="ob nokok free" data-star="250" data-kin="1" data-year="2001" data-order="36"><td class="pn">宮西尚生</td><td>兵庫</td><td>2001年度</td><td>投</td><td class="r">250</td><td><a href="#kt-鉄腕" class="nk">鉄腕</a></td></tr>
+<tr data-q="米田哲也鳥取投ガソリンタンク" data-tags="ob nokok free" data-star="281" data-kin="1" data-year="1953" data-order="37"><td class="pn">米田哲也</td><td>鳥取</td><td>1953年度</td><td>投</td><td class="r">281</td><td><a href="#kt-ガソリンタンク" class="nk">ガソリンタンク</a></td></tr>
+<tr data-q="平松政次岡山投怪物球威" data-tags="ob free" data-star="326" data-kin="1" data-year="1963" data-order="38"><td class="pn">平松政次</td><td>岡山</td><td>1963年度</td><td>投</td><td class="r">326</td><td><a href="#kt-怪物球威">怪物球威</a></td></tr>
+<tr data-q="金本知憲岡山外鉄人" data-tags="ob nokok free" data-star="352" data-kin="1" data-year="1984" data-order="39"><td class="pn">金本知憲</td><td>岡山</td><td>1984年度</td><td>外</td><td class="r">352</td><td><a href="#kt-鉄人" class="nk">鉄人</a></td></tr>
+<tr data-q="張本勲岡山外安打製造機" data-tags="ob free" data-star="333" data-kin="1" data-year="1956" data-order="40"><td class="pn">張本勲</td><td>岡山</td><td>1956年度</td><td>外</td><td class="r">333</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr data-q="西村健太朗岡山投本塁打厳禁" data-tags="ob nokok free" data-star="283" data-kin="1" data-year="2001" data-order="41"><td class="pn">西村健太朗</td><td>岡山</td><td>2001年度</td><td>投</td><td class="r">283</td><td><a href="#kt-本塁打厳禁" class="nk">本塁打厳禁</a></td></tr>
+<tr data-q="武田久香川投本塁打厳禁" data-tags="ob nokok free" data-star="278" data-kin="1" data-year="1994" data-order="42"><td class="pn">武田久</td><td>香川</td><td>1994年度</td><td>投</td><td class="r">278</td><td><a href="#kt-本塁打厳禁" class="nk">本塁打厳禁</a></td></tr>
+<tr data-q="高井保弘愛媛一代打ノ神様" data-tags="ob nokok free" data-star="264" data-kin="1" data-year="1960" data-order="43"><td class="pn">高井保弘</td><td>愛媛</td><td>1960年度</td><td>一</td><td class="r">264</td><td><a href="#kt-代打の神様" class="nk">代打の神様</a></td></tr>
+<tr data-q="藤川球児高知投怪童歴代レジェンドdlc" data-tags="ob nokok" data-star="310" data-kin="1" data-year="1996" data-order="44"><td class="pn">藤川球児<span class="dlc">歴代レジェンド</span></td><td>高知</td><td>1996年度</td><td>投</td><td class="r">310</td><td><a href="#kt-怪童" class="nk">怪童</a></td></tr>
+<tr data-q="藤川球児高知投怪童" data-tags="ob nokok free" data-star="307" data-kin="1" data-year="1996" data-order="45"><td class="pn">藤川球児</td><td>高知</td><td>1996年度</td><td>投</td><td class="r">307</td><td><a href="#kt-怪童" class="nk">怪童</a></td></tr>
+<tr data-q="城島健司長崎捕バズーカ送球" data-tags="ob nokok free" data-star="324" data-kin="1" data-year="1992" data-order="46"><td class="pn">城島健司</td><td>長崎</td><td>1992年度</td><td>捕</td><td class="r">324</td><td><a href="#kt-バズーカ送球" class="nk">バズーカ送球</a></td></tr>
+<tr data-q="川上哲治熊本一安打製造機" data-tags="ob free" data-star="300" data-kin="1" data-year="1935" data-order="47"><td class="pn">川上哲治</td><td>熊本</td><td>1935年度</td><td>一</td><td class="r">300</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr data-q="稲尾和久大分投鉄腕ガソリンタンク" data-tags="ob multi nokok free" data-star="366" data-kin="2" data-year="1953" data-order="48"><td class="pn">稲尾和久</td><td>大分</td><td>1953年度</td><td>投</td><td class="r">366</td><td><a href="#kt-鉄腕" class="nk">鉄腕</a>、<a href="#kt-ガソリンタンク" class="nk">ガソリンタンク</a></td></tr>
+<tr data-q="北別府学鹿児島投精密機械" data-tags="ob free" data-star="308" data-kin="1" data-year="1973" data-order="49"><td class="pn">北別府学</td><td>鹿児島</td><td>1973年度</td><td>投</td><td class="r">308</td><td><a href="#kt-精密機械">精密機械</a></td></tr>
+<tr data-q="リゼ・ヘルエスタニジサンジ二精神的支柱電光石火" data-tags="collab multi nokok free" data-star="249" data-kin="2" data-year="9999" data-order="50"><td class="pn">リゼ・ヘルエスタ</td><td>にじさんじ</td><td>いつでも</td><td>二</td><td class="r">249</td><td><a href="#kt-精神的支柱" class="nk">精神的支柱</a>、<a href="#kt-電光石火">電光石火</a></td></tr>
+<tr data-q="椎名唯華ニジサンジ一勝負師大番狂ワセ" data-tags="collab multi nokok free" data-star="271" data-kin="2" data-year="9999" data-order="51"><td class="pn">椎名唯華</td><td>にじさんじ</td><td>いつでも</td><td>一</td><td class="r">271</td><td><a href="#kt-勝負師">勝負師</a>、<a href="#kt-大番狂わせ" class="nk">大番狂わせ</a></td></tr>
+<tr data-q="五十嵐梨花ニジサンジ投勝利ノ星変幻自在" data-tags="collab multi nokok free" data-star="215" data-kin="2" data-year="9999" data-order="52"><td class="pn">五十嵐梨花</td><td>にじさんじ</td><td>いつでも</td><td>投</td><td class="r">215</td><td><a href="#kt-勝利の星" class="nk">勝利の星</a>、<a href="#kt-変幻自在">変幻自在</a></td></tr>
+<tr data-q="舞元啓介ニジサンジ捕ササヤキ戦術" data-tags="collab nokok free" data-star="209" data-kin="1" data-year="9999" data-order="53"><td class="pn">舞元啓介</td><td>にじさんじ</td><td>いつでも</td><td>捕</td><td class="r">209</td><td><a href="#kt-ささやき戦術" class="nk">ささやき戦術</a></td></tr>
+<tr data-q="沢村栄純ダイヤノa投闘魂" data-tags="collab nokok" data-star="286" data-kin="1" data-year="9999" data-order="54"><td class="pn">沢村栄純<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">286</td><td><a href="#kt-闘魂" class="nk">闘魂</a></td></tr>
+<tr data-q="降谷暁ダイヤノa投怪童怪物球威" data-tags="collab multi nokok" data-star="271" data-kin="2" data-year="9999" data-order="55"><td class="pn">降谷 暁<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">271</td><td><a href="#kt-怪童" class="nk">怪童</a>、<a href="#kt-怪物球威">怪物球威</a></td></tr>
+<tr data-q="小湊春市ダイヤノa二安打製造機" data-tags="collab" data-star="225" data-kin="1" data-year="9999" data-order="56"><td class="pn">小湊春市<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>二</td><td class="r">225</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr data-q="御幸一也ダイヤノa捕大番狂ワセ球界ノ頭脳ストライク送球" data-tags="collab multi nokok" data-star="330" data-kin="3" data-year="9999" data-order="57"><td class="pn">御幸一也<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>捕</td><td class="r">330</td><td><a href="#kt-大番狂わせ" class="nk">大番狂わせ</a>、<a href="#kt-球界の頭脳" class="nk">球界の頭脳</a>、<a href="#kt-ストライク送球" class="nk">ストライク送球</a></td></tr>
+<tr data-q="倉持洋一ダイヤノa遊トリックスター電光石火" data-tags="collab multi nokok" data-star="293" data-kin="2" data-year="9999" data-order="58"><td class="pn">倉持洋一<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>遊</td><td class="r">293</td><td><a href="#kt-トリックスター" class="nk">トリックスター</a>、<a href="#kt-電光石火">電光石火</a></td></tr>
+<tr data-q="結城将司ダイヤノa外アーチスト" data-tags="collab" data-star="175" data-kin="1" data-year="9999" data-order="59"><td class="pn">結城将司<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>外</td><td class="r">175</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr data-q="成宮鳴ダイヤノa投驚異ノ切レ味ドクターk" data-tags="collab multi nokok" data-star="343" data-kin="2" data-year="9999" data-order="60"><td class="pn">成宮鳴<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">343</td><td><a href="#kt-驚異の切れ味" class="nk">驚異の切れ味</a>、<a href="#kt-ドクターK">ドクターK</a></td></tr>
+<tr data-q="轟雷市ダイヤノa三アーチスト" data-tags="collab" data-star="284" data-kin="1" data-year="9999" data-order="61"><td class="pn">轟雷市<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>三</td><td class="r">284</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr data-q="本郷正宗ダイヤノa投怪童怪物球威ドクターk" data-tags="collab multi nokok" data-star="300" data-kin="3" data-year="9999" data-order="62"><td class="pn">本郷正宗<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">300</td><td><a href="#kt-怪童" class="nk">怪童</a>、<a href="#kt-怪物球威">怪物球威</a>、<a href="#kt-ドクターK">ドクターK</a></td></tr>
+<tr data-q="梅宮聖一ダイヤノa投変幻自在大番狂ワセ" data-tags="collab multi nokok" data-star="228" data-kin="2" data-year="9999" data-order="63"><td class="pn">梅宮聖一<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">228</td><td><a href="#kt-変幻自在">変幻自在</a>、<a href="#kt-大番狂わせ" class="nk">大番狂わせ</a></td></tr>
+<tr data-q="向井太陽ダイヤノa投精密機械クロスキャノン" data-tags="collab multi nokok" data-star="279" data-kin="2" data-year="9999" data-order="64"><td class="pn">向井太陽<span class="dlc">DLC</span></td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">279</td><td><a href="#kt-精密機械">精密機械</a>、<a href="#kt-クロスキャノン" class="nk">クロスキャノン</a></td></tr>
+    </tbody></table></div>
+    <p class="empty" id="pEmpty" hidden>あてはまる選手がいません</p>
+</div>
 <!-- /TENSEI-TABLE -->
 
 <h2 id="iatsu">例外｜威圧感は特訓や合宿でも取れる</h2>
@@ -1628,6 +1721,46 @@ segS.addEventListener("click", e => {
   for (const o of segS.querySelectorAll("button")) o.setAttribute("aria-pressed", String(o === b));
   render();
 });
+render();
+})();
+
+/* =========================
+   金特を持つ選手から探す（表は scripts/build_eikan_kintoku.py が書く）
+========================= */
+(() => {
+const tbody = document.querySelector("#pTable tbody");
+if (!tbody) return;
+const rows = [...tbody.rows];
+const q = document.getElementById("pq");
+const sort = document.getElementById("psort");
+const chips = document.getElementById("pChips");
+const count = document.getElementById("pCount");
+const empty = document.getElementById("pEmpty");
+const norm = s => s.replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60)).toLowerCase().replace(/\s+/g, "");
+function render() {
+  const t = norm(q.value);
+  const need = [...chips.querySelectorAll("input:checked")].map(i => i.value);
+  // 「転生OB・プロ」と「転生コラボ」は、両方選んだらどちらでもよい
+  const kinds = need.filter(x => x === "ob" || x === "collab");
+  const rest = need.filter(x => x !== "ob" && x !== "collab");
+  let n = 0;
+  for (const tr of rows) {
+    const tags = tr.dataset.tags.split(" ");
+    const show = (!t || tr.dataset.q.includes(t)) && rest.every(x => tags.includes(x)) && (!kinds.length || kinds.some(x => tags.includes(x)));
+    tr.hidden = !show;
+    if (show) n++;
+  }
+  count.textContent = n;
+  empty.hidden = n > 0;
+}
+function reorder() {
+  const k = sort.value;
+  const key = tr => k === "star" ? -tr.dataset.star : k === "kin" ? -(tr.dataset.kin * 1000 + +tr.dataset.star) : k === "year" ? +tr.dataset.year : +tr.dataset.order;
+  rows.slice().sort((a, b) => key(a) - key(b) || a.dataset.order - b.dataset.order).forEach(tr => tbody.appendChild(tr));
+}
+q.addEventListener("input", render);
+chips.addEventListener("change", render);
+sort.addEventListener("change", reorder);
 render();
 })();
 </script>

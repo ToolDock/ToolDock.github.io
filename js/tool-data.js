@@ -30,6 +30,7 @@ window.CATEGORY_NAMES = {
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-13", id: "eikan-kintoku", kind: "update", text: "栄冠ナインの金特ページに、金特を持つ選手から探す表、金特を2つ以上持つ選手、国際大会では取れない金特を持つ選手、金特本でしか取れない金特21種を追加" },
   { date: "2026-11-13", id: "eikan-kintoku", kind: "update", text: "栄冠ナインの金特ページを整理し直し、欲しい金特から入手方法を探せる検索と、金特を持つ転生OB・転生プロ・転生コラボ（にじさんじ・ダイヤのA）65人の一覧を追加" },
   { date: "2026-11-13", id: "kyudan-clicker", kind: "update", text: "球団経営クリッカーに、施設・殿堂ボーナス・ドラフト・月のイベントの一覧と攻略のコツを追加。記録をXにポストできるように" },
   { date: "2026-11-13", id: "typing-game", kind: "update", text: "タイピング練習を「タイピング診断・速度測定」に。診断結果の例・KPMの換算表・苦手キーの直し方を追加し、結果をXにポストできるように" },
