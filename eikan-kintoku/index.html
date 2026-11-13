@@ -4,17 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- 検索結果で切られる先頭32幅ちょうどに収めてある。
-     栄冠ナイン・金特・入手方法・金特本・国際大会まで全部出る -->
-<title>パワプロ2026 栄冠ナイン 金特一覧と入手方法｜金特本・国際大会・特訓</title>
-<meta name="description" content="パワプロ2026-2027の栄冠ナインで金特（金色の特殊能力）を取る方法のまとめです。金特本の入手先2つ、国際大会の評価ごとに覚える特殊能力の一覧、特訓や合宿で取れる威圧感まで。金特本からしか出ないストレートキラー・おかわりも掲載。欲しい金特から狙う評価を逆引きできます。">
+<!-- 検索結果で切られるのは先頭32幅ほど。栄冠ナイン・金特・入手方法を前に置く -->
+<title>パワプロ2026 栄冠ナイン 金特一覧と入手方法｜金特本・国際大会・転生OB</title>
+<meta name="description" content="パワプロ2026-2027の栄冠ナインで金特を取る方法のまとめ。欲しい金特から、金特本・国際大会の評価・金特を持つ転生OB/転生プロ（王貞治、田淵幸一、イチローなど）・転生コラボ（にじさんじ、ダイヤのA）を検索できます。おかわり・ストレートキラー、威圧感の例外、歴代レジェンドDLCも解説。">
 <link rel="canonical" href="https://tooldock.github.io/eikan-kintoku/">
 
 <!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ToolDock">
-<meta property="og:title" content="パワプロ2026 栄冠ナイン 金特一覧と入手方法｜金特本・国際大会・特訓 | ToolDock">
-<meta property="og:description" content="パワプロ2026-2027の栄冠ナインで金特を取る方法のまとめです。金特本の入手先2つ、国際大会の評価ごとに覚える特殊能力の一覧、特訓や合宿で取れる威圧感まで。金特本からしか出ないストレートキラー・おかわりも掲載。欲しい金特から狙う評価を逆引きできます。">
+<meta property="og:title" content="パワプロ2026 栄冠ナイン 金特一覧と入手方法｜金特本・国際大会・転生OB | ToolDock">
+<meta property="og:description" content="パワプロ2026-2027の栄冠ナインで金特を取る方法のまとめ。欲しい金特から、金特本・国際大会の評価・金特を持つ転生OB/転生プロ（王貞治、田淵幸一、イチローなど）・転生コラボ（にじさんじ、ダイヤのA）を検索できます。おかわり・ストレートキラー、威圧感の例外、歴代レジェンドDLCも解説。">
 <meta property="og:url" content="https://tooldock.github.io/eikan-kintoku/">
 <meta property="og:image" content="https://tooldock.github.io/ogp/eikan-kintoku.png">
 <meta property="og:image:width" content="1200">
@@ -420,6 +419,42 @@ figure.shot figcaption{
     .card p.lead{ padding:12px 16px; }
     .card table{ font-size:14px; }
 }
+
+.ways-note{ margin:-6px 0 18px; font-size:.9rem; }
+/* ===== 金特から入手方法を探す ===== */
+.kt-filter{ display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; padding:14px 22px; border-bottom:1px solid var(--line); background:var(--surface); }
+#ktq{ font:inherit; font-size:1rem; padding:8px 10px; border:1px solid var(--line-input); border-radius:var(--r-ctl); flex:1 1 16em; min-width:0; background:#fff; }
+.kt-chips{ display:flex; flex-wrap:wrap; gap:4px 14px; font-size:.88rem; }
+.kt-chips label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
+.kt-list{ display:grid; grid-template-columns:1fr 1fr; }
+.kt{ padding:14px 22px 12px; border-bottom:1px solid var(--line-soft); min-width:0; }
+.kt:nth-child(odd){ border-right:1px solid var(--line-soft); }
+.kt-name{ margin:0; font-size:1.08rem; color:var(--c-kin); display:flex; align-items:center; gap:8px; }
+.kt-base{ display:block; font-size:.8rem; color:#5c6470; margin-top:2px; }
+.kt-ways{ list-style:none; margin:8px 0 0; padding:0; }
+.kt-ways li{ display:flex; gap:8px; font-size:.88rem; line-height:1.6; margin:5px 0; }
+.kt-ways .wd{ min-width:0; }
+.w{ flex:none; font-size:.72rem; font-weight:700; padding:1px 0; width:5.6em; text-align:center; border-radius:3px; color:#fff; height:fit-content; margin-top:2px; }
+.w-book{ background:var(--c-kin); }
+.w-kok{ background:#1d4ed8; }
+.w-ten{ background:#6d28d9; }
+.w-col{ background:#be185d; }
+.w-train{ background:#15803d; }
+.w-none{ background:#c4c8cf; }
+.w-none + .wd{ color:#8a8f98; }
+.wk{ color:#5c6470; font-size:.8rem; }
+.dlc{ display:inline-block; font-size:.66rem; font-weight:700; border:1px solid #b45309; color:#b45309; border-radius:3px; padding:0 4px; margin-left:4px; vertical-align:1px; line-height:1.4; }
+.kt:target{ background:#fff8e6; }
+table.tensei td.r, table.tensei th.r{ text-align:right; }
+table.tensei td{ white-space:nowrap; }
+table.tensei td:last-child{ white-space:normal; }
+@media (max-width:820px){
+    .kt-list{ grid-template-columns:1fr; }
+    .kt:nth-child(odd){ border-right:0; }
+}
+@media (max-width:600px){
+    .kt-filter, .kt{ padding-left:16px; padding-right:16px; }
+}
 </style>
 
 </head>
@@ -434,7 +469,7 @@ figure.shot figcaption{
 
 <div class="td-banner">
     <h1>パワプロ2026-2027 栄冠ナイン 金特の入手方法まとめ</h1>
-    <p>金特本・国際大会・特訓の3つ。国際大会は評価ごとに覚える特殊能力が決まっています</p>
+    <p>欲しい金特から、取り方（金特本・国際大会・転生選手）を探せます。王貞治や田淵幸一などの転生OB・転生プロ、にじさんじ・ダイヤのAの転生コラボで金特を持つ選手も一覧にしました</p>
 </div>
 
 <main>
@@ -445,7 +480,7 @@ figure.shot figcaption{
         <span class="num">1</span>
         <h3>金特本を使う</h3>
         <p>
-        甲子園の抽選会の翌日にOBからもらうか、アイテム業者から戦績ポイントで買います。
+        すべての金特が出ます（おかわり・ストレートキラーも）。甲子園のOBの祝いの品か、アイテム業者で。
         <a href="#book">くわしく</a>
         </p>
     </div>
@@ -454,21 +489,572 @@ figure.shot figcaption{
         <span class="num">2</span>
         <h3>国際大会で活躍する</h3>
         <p>
-        8/27に代表へ選ばれ、9/6に評価に応じた特殊能力を覚えます。
+        野手5つ・投手5つの金特が対象。タイトルを取れば、狙った金特が確定で手に入ります。
         <a href="#kokusai">くわしく</a>
         </p>
     </div>
 
     <div class="way">
         <span class="num">3</span>
-        <h3>特訓・合宿で取る</h3>
+        <h3>転生選手を仲間にする</h3>
         <p>
-        今作から金特になった「威圧感」だけは、この方法でも取れます。
-        <a href="#iatsu">くわしく</a>
+        金特を最初から持っている転生OB・転生プロ・転生コラボの選手を入部させます。
+        <a href="#tensei">くわしく</a>
         </p>
     </div>
 
 </div>
+
+<p class="ways-note">このほか、<strong>威圧感だけは特訓や合宿でも取れます</strong>（<a href="#iatsu">例外</a>）。</p>
+
+<div class="card" id="search">
+    <h2>金特から入手方法を探す</h2>
+    <p class="lead">
+    金特の名前・元になる青特・選手名で探せます（例：アーチスト、パワーヒッター、王貞治）。
+    「転生」は年度と都道府県が合えば新入生として出てくる選手、「コラボ」はパワプロショップの調査書で仲間にできる選手です。
+    </p>
+    <div class="kt-filter">
+        <input type="search" id="ktq" placeholder="金特・青特・選手名で検索" aria-label="金特・青特・選手名で検索" autocomplete="off">
+        <div class="seg" id="ktSide">
+            <button type="button" data-side="all" aria-pressed="true">すべて</button>
+            <button type="button" data-side="b" aria-pressed="false">野手</button>
+            <button type="button" data-side="p" aria-pressed="false">投手</button>
+        </div>
+        <div class="kt-chips" id="ktWays">
+            <label><input type="checkbox" value="kok"> 国際大会で取れる</label>
+            <label><input type="checkbox" value="ten"> 転生OB・プロが持つ</label>
+            <label><input type="checkbox" value="col"> 転生コラボが持つ</label>
+        </div>
+        <span class="filter-count"><strong id="ktCount">0</strong> 種を表示中</span>
+    </div>
+    <div class="kt-list" id="ktList">
+<!-- KT-LIST -->
+  <div class="kt" id="kt-安打製造機" data-side="b" data-ways="book col kok ten" data-q="安打製造機アベレージヒッター榎本喜八イチロー新井宏昌張本勲川上哲治小湊春市ダイヤノa">
+    <h3 class="kt-name">安打製造機 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：アベレージヒッター</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会首位打者</strong>で確定、大会MVP（野手）でランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">榎本喜八<span class="wk">（東京・1952年度・一・☆290）</span>、イチロー<span class="wk">（愛知・1989年度・外・☆415）</span>、新井宏昌<span class="wk">（大阪・1968年度・外・☆279）</span>、張本勲<span class="wk">（岡山・1956年度・外・☆333）</span>、川上哲治<span class="wk">（熊本・1935年度・一・☆300）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">小湊春市<span class="wk">（ダイヤのA・二・☆225）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-アーチスト" data-side="b" data-ways="book col kok ten" data-q="アーチストパワーヒッター王貞治王貞治田淵幸一江藤智結城将司轟雷市ダイヤノa">
+    <h3 class="kt-name">アーチスト <span class="badge b">野手</span></h3><span class="kt-base">元の青特：パワーヒッター</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最多本塁打</strong>で確定、大会MVP（野手）でランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">王貞治<span class="dlc">歴代レジェンド</span><span class="wk">（東京・1956年度・一・☆400）</span>、王貞治<span class="wk">（東京・1956年度・一・☆391）</span>、田淵幸一<span class="wk">（東京・1962年度・捕・☆365）</span>、江藤智<span class="wk">（東京・1986年度・三・☆300）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">結城将司<span class="wk">（ダイヤのA・外・☆175）</span>、轟雷市<span class="wk">（ダイヤのA・三・☆284）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-広角砲" data-side="b" data-ways="book" data-q="広角砲広角打法">
+    <h3 class="kt-name">広角砲 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：広角打法</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-引っ張り屋" data-side="b" data-ways="book ten" data-q="引ッ張リ屋プルヒッター土井正博">
+    <h3 class="kt-name">引っ張り屋 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：プルヒッター</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">土井正博<span class="wk">（大阪・1959年度・外・☆303）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-芸術的流し打ち" data-side="b" data-ways="book" data-q="芸術的流シ打チ流シ打チ">
+    <h3 class="kt-name">芸術的流し打ち <span class="badge b">野手</span></h3><span class="kt-base">元の青特：流し打ち</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-勝負師" data-side="b" data-ways="book col kok ten" data-q="勝負師チャンスa落合博満椎名唯華ニジサンジ">
+    <h3 class="kt-name">勝負師 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：チャンスA</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最多打点</strong>で確定、大会MVP（野手）でランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">落合博満<span class="wk">（秋田・1969年度・三・☆373）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">椎名唯華<span class="wk">（にじさんじ・一・☆271）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-恐怖の満塁男" data-side="b" data-ways="book ten" data-q="恐怖ノ満塁男満塁男駒田徳広今岡誠">
+    <h3 class="kt-name">恐怖の満塁男 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：満塁男</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">駒田徳広<span class="wk">（奈良・1978年度・一・☆260）</span>、今岡誠<span class="wk">（兵庫・1990年度・二・☆253）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-伝説のサヨナラ男" data-side="b" data-ways="book" data-q="伝説ノサヨナラ男サヨナラ男">
+    <h3 class="kt-name">伝説のサヨナラ男 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：サヨナラ男</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-代打の神様" data-side="b" data-ways="book ten" data-q="代打ノ神様代打〇高井保弘">
+    <h3 class="kt-name">代打の神様 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：代打〇</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">高井保弘<span class="wk">（愛媛・1960年度・一・☆264）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-切り込み隊長" data-side="b" data-ways="book ten" data-q="切リ込ミ隊長チャンスメーカー石毛宏典松井稼頭央">
+    <h3 class="kt-name">切り込み隊長 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：チャンスメーカー</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">石毛宏典<span class="wk">（千葉・1972年度・三・☆299）</span>、松井稼頭央<span class="dlc">歴代レジェンド</span><span class="wk">（大阪・1991年度・遊・☆376）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-大番狂わせ" data-side="b" data-ways="book col" data-q="大番狂ワセ意外性椎名唯華御幸一也梅宮聖一ニジサンジダイヤノa">
+    <h3 class="kt-name">大番狂わせ <span class="badge b">野手</span></h3><span class="kt-base">元の青特：意外性</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">椎名唯華<span class="wk">（にじさんじ・一・☆271）</span>、御幸一也<span class="wk">（ダイヤのA・捕・☆330）</span>、梅宮聖一<span class="wk">（ダイヤのA・投・☆228）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-火事場の馬鹿力" data-side="b" data-ways="book" data-q="火事場ノ馬鹿力逆境〇">
+    <h3 class="kt-name">火事場の馬鹿力 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：逆境〇</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-メッタ打ち" data-side="b" data-ways="book" data-q="メッタ打チ固メ打チ">
+    <h3 class="kt-name">メッタ打ち <span class="badge b">野手</span></h3><span class="kt-base">元の青特：固め打ち</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-一球入魂" data-side="b" data-ways="book" data-q="一球入魂初球〇">
+    <h3 class="kt-name">一球入魂 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：初球〇</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-左腕キラー" data-side="b" data-ways="book" data-q="左腕キラー対左投手a">
+    <h3 class="kt-name">左腕キラー <span class="badge b">野手</span></h3><span class="kt-base">元の青特：対左投手A</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-ストレートキラー" data-side="b" data-ways="book" data-q="ストレートキラー対ストレート〇">
+    <h3 class="kt-name">ストレートキラー <span class="badge b">野手</span></h3><span class="kt-base">元の青特：対ストレート〇</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-おかわり" data-side="b" data-ways="book ten" data-q="オカワリマルチ弾中村剛也">
+    <h3 class="kt-name">おかわり <span class="badge b">野手</span></h3><span class="kt-base">元の青特：マルチ弾</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">中村剛也<span class="wk">（大阪・1999年度・三・☆307）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-高球必打" data-side="b" data-ways="book" data-q="高球必打ハイボールヒッター">
+    <h3 class="kt-name">高球必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ハイボールヒッター</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-低球必打" data-side="b" data-ways="book" data-q="低球必打ローボールヒッター">
+    <h3 class="kt-name">低球必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ローボールヒッター</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-内角必打" data-side="b" data-ways="book" data-q="内角必打インコースヒッター">
+    <h3 class="kt-name">内角必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：インコースヒッター</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-外角必打" data-side="b" data-ways="book" data-q="外角必打アウトコースヒッター">
+    <h3 class="kt-name">外角必打 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：アウトコースヒッター</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-精神的支柱" data-side="b" data-ways="col ten" data-q="精神的支柱毒島章一リゼ・ヘルエスタニジサンジ">
+    <h3 class="kt-name">精神的支柱 <span class="badge b">野手</span></h3>
+    <ul class="kt-ways">
+      <li><span class="w w-none">金特本</span><span class="wd">マイライフに無い金特のため未確認</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">毒島章一<span class="wk">（群馬・1951年度・外・☆260）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">リゼ・ヘルエスタ<span class="wk">（にじさんじ・二・☆249）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-トリックスター" data-side="b" data-ways="col" data-q="トリックスター倉持洋一ダイヤノa">
+    <h3 class="kt-name">トリックスター <span class="badge b">野手</span></h3>
+    <ul class="kt-ways">
+      <li><span class="w w-none">金特本</span><span class="wd">マイライフに無い金特のため未確認</span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">倉持洋一<span class="wk">（ダイヤのA・遊・☆293）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-電光石火" data-side="b" data-ways="book col kok ten" data-q="電光石火盗塁a赤星憲広福本豊リゼ・ヘルエスタ倉持洋一ニジサンジダイヤノa">
+    <h3 class="kt-name">電光石火 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：盗塁A</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最多盗塁</strong>で確定、大会MVP（野手）でランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">赤星憲広<span class="wk">（愛知・1992年度・外・☆298）</span>、福本豊<span class="wk">（大阪・1963年度・外・☆294）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">リゼ・ヘルエスタ<span class="wk">（にじさんじ・二・☆249）</span>、倉持洋一<span class="wk">（ダイヤのA・遊・☆293）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-高速ベースラン" data-side="b" data-ways="book" data-q="高速ベースラン走塁a">
+    <h3 class="kt-name">高速ベースラン <span class="badge b">野手</span></h3><span class="kt-base">元の青特：走塁A</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-ロケットスタート" data-side="b" data-ways="book" data-q="ロケットスタート内野安打〇">
+    <h3 class="kt-name">ロケットスタート <span class="badge b">野手</span></h3><span class="kt-base">元の青特：内野安打〇</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-重戦車" data-side="b" data-ways="book" data-q="重戦車ホーム突入">
+    <h3 class="kt-name">重戦車 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ホーム突入</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-気迫ヘッド" data-side="b" data-ways="book" data-q="気迫ヘッドヘッドスライディング">
+    <h3 class="kt-name">気迫ヘッド <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ヘッドスライディング</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-魔術師" data-side="b" data-ways="book kok ten" data-q="魔術師守備職人小坂誠菊池涼介吉田義男">
+    <h3 class="kt-name">魔術師 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：守備職人</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会最優秀守備選手</strong>で確定、大会MVP（野手）でランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">小坂誠<span class="wk">（宮城・1989年度・遊・☆282）</span>、菊池涼介<span class="dlc">歴代レジェンド</span><span class="wk">（東京・2005年度・二・☆363）</span>、吉田義男<span class="wk">（京都・1949年度・遊・☆287）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-高速レーザー" data-side="b" data-ways="book" data-q="高速レーザーレーザービーム">
+    <h3 class="kt-name">高速レーザー <span class="badge b">野手</span></h3><span class="kt-base">元の青特：レーザービーム</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-ストライク送球" data-side="b" data-ways="book col" data-q="ストライク送球送球a御幸一也ダイヤノa">
+    <h3 class="kt-name">ストライク送球 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：送球A</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">御幸一也<span class="wk">（ダイヤのA・捕・☆330）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-バズーカ送球" data-side="b" data-ways="ten" data-q="バズーカ送球城島健司">
+    <h3 class="kt-name">バズーカ送球 <span class="badge b">野手</span></h3>
+    <ul class="kt-ways">
+      <li><span class="w w-none">金特本</span><span class="wd">マイライフに無い金特のため未確認</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">城島健司<span class="wk">（長崎・1992年度・捕・☆324）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-球界の頭脳" data-side="b" data-ways="book col ten" data-q="球界ノ頭脳キャッチャーa野村克也古田敦也御幸一也ダイヤノa">
+    <h3 class="kt-name">球界の頭脳 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：キャッチャーA</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">野村克也<span class="wk">（京都・1951年度・捕・☆344）</span>、古田敦也<span class="wk">（兵庫・1981年度・捕・☆392）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">御幸一也<span class="wk">（ダイヤのA・捕・☆330）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-鉄の壁" data-side="b" data-ways="book" data-q="鉄ノ壁ホーム死守">
+    <h3 class="kt-name">鉄の壁 <span class="badge b">野手</span></h3><span class="kt-base">元の青特：ホーム死守</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-ささやき戦術" data-side="b" data-ways="col ten" data-q="ササヤキ戦術野村克也舞元啓介ニジサンジ">
+    <h3 class="kt-name">ささやき戦術 <span class="badge b">野手</span></h3>
+    <ul class="kt-ways">
+      <li><span class="w w-none">金特本</span><span class="wd">マイライフに無い金特のため未確認</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">野村克也<span class="wk">（京都・1951年度・捕・☆344）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">舞元啓介<span class="wk">（にじさんじ・捕・☆209）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-鉄人" data-side="a" data-ways="book ten" data-q="鉄人ケガシニクサa山口鉄也岩瀬仁紀衣笠祥雄別所昭金本知憲">
+    <h3 class="kt-name">鉄人 <span class="badge n">投手・野手</span></h3><span class="kt-base">元の青特：ケガしにくさA</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">山口鉄也<span class="dlc">歴代レジェンド</span><span class="wk">（神奈川・1999年度・投・☆308）</span>、岩瀬仁紀<span class="wk">（愛知・1990年度・投・☆314）</span>、衣笠祥雄<span class="wk">（京都・1962年度・三・☆304）</span>、別所昭<span class="wk">（兵庫・1938年度・投・☆384）</span>、金本知憲<span class="wk">（岡山・1984年度・外・☆352）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-怪物球威" data-side="p" data-ways="book col kok ten" data-q="怪物球威重イ球平松政次降谷暁本郷正宗ダイヤノa">
+    <h3 class="kt-name">怪物球威 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：重い球</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVP（投手）でランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">平松政次<span class="wk">（岡山・1963年度・投・☆326）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">降谷 暁<span class="wk">（ダイヤのA・投・☆271）</span>、本郷正宗<span class="wk">（ダイヤのA・投・☆300）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-ドクターK" data-side="p" data-ways="book col kok" data-q="ドクターk奪三振成宮鳴本郷正宗ダイヤノa">
+    <h3 class="kt-name">ドクターK <span class="badge p">投手</span></h3><span class="kt-base">元の青特：奪三振</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVP（投手）でランダム</span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">成宮鳴<span class="wk">（ダイヤのA・投・☆343）</span>、本郷正宗<span class="wk">（ダイヤのA・投・☆300）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-変幻自在" data-side="p" data-ways="book col kok" data-q="変幻自在緩急〇五十嵐梨花梅宮聖一ニジサンジダイヤノa">
+    <h3 class="kt-name">変幻自在 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：緩急〇</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVP（投手）でランダム</span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">五十嵐梨花<span class="wk">（にじさんじ・投・☆215）</span>、梅宮聖一<span class="wk">（ダイヤのA・投・☆228）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-精密機械" data-side="p" data-ways="book col kok ten" data-q="精密機械低メ〇小山正明北別府学向井太陽ダイヤノa">
+    <h3 class="kt-name">精密機械 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：低め〇</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd">大会MVP（投手）でランダム</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">小山正明<span class="wk">（兵庫・1950年度・投・☆340）</span>、北別府学<span class="wk">（鹿児島・1973年度・投・☆308）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">向井太陽<span class="wk">（ダイヤのA・投・☆279）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-驚異の切れ味" data-side="p" data-ways="book col ten" data-q="驚異ノ切レ味キレ〇岩瀬仁紀伊藤智仁成宮鳴ダイヤノa">
+    <h3 class="kt-name">驚異の切れ味 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：キレ〇</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">岩瀬仁紀<span class="wk">（愛知・1990年度・投・☆314）</span>、伊藤智仁<span class="wk">（京都・1986年度・投・☆275）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">成宮鳴<span class="wk">（ダイヤのA・投・☆343）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-怪童" data-side="p" data-ways="book col ten" data-q="怪童ノビa江川卓金田正一尾崎行雄江夏豊藤川球児藤川球児降谷暁本郷正宗ダイヤノa">
+    <h3 class="kt-name">怪童 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：ノビA</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">江川卓<span class="wk">（福島・1971年度・投・☆343）</span>、金田正一<span class="wk">（愛知・1949年度・投・☆349）</span>、尾崎行雄<span class="wk">（大阪・1960年度・投・☆306）</span>、江夏豊<span class="wk">（兵庫・1964年度・投・☆382）</span>、藤川球児<span class="dlc">歴代レジェンド</span><span class="wk">（高知・1996年度・投・☆310）</span>、藤川球児<span class="wk">（高知・1996年度・投・☆307）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">降谷 暁<span class="wk">（ダイヤのA・投・☆271）</span>、本郷正宗<span class="wk">（ダイヤのA・投・☆300）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-強心臓" data-side="p" data-ways="book kok" data-q="強心臓対ピンチa">
+    <h3 class="kt-name">強心臓 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：対ピンチA</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-kok">国際大会</span><span class="wd"><strong>大会の最優秀防御率</strong>で確定、大会MVP（投手）でランダム</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-不屈の魂" data-side="p" data-ways="book ten" data-q="不屈ノ魂打タレ強サa鈴木啓示">
+    <h3 class="kt-name">不屈の魂 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：打たれ強さA</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">鈴木啓示<span class="wk">（兵庫・1963年度・投・☆335）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-鉄腕" data-side="p" data-ways="book ten" data-q="鉄腕投手調子安定岩瀬仁紀宮西尚生宮西尚生稲尾和久">
+    <h3 class="kt-name">鉄腕 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：投手調子安定</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">岩瀬仁紀<span class="wk">（愛知・1990年度・投・☆314）</span>、宮西尚生<span class="dlc">歴代レジェンド</span><span class="wk">（兵庫・2001年度・投・☆282）</span>、宮西尚生<span class="wk">（兵庫・2001年度・投・☆250）</span>、稲尾和久<span class="wk">（大分・1953年度・投・☆366）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-ガソリンタンク" data-side="p" data-ways="book ten" data-q="ガソリンタンク回復a米田哲也稲尾和久">
+    <h3 class="kt-name">ガソリンタンク <span class="badge p">投手</span></h3><span class="kt-base">元の青特：回復A</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">米田哲也<span class="wk">（鳥取・1953年度・投・☆281）</span>、稲尾和久<span class="wk">（大分・1953年度・投・☆366）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-本塁打厳禁" data-side="p" data-ways="book ten" data-q="本塁打厳禁逃ゲ球西村健太朗武田久">
+    <h3 class="kt-name">本塁打厳禁 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：逃げ球</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">西村健太朗<span class="wk">（岡山・2001年度・投・☆283）</span>、武田久<span class="wk">（香川・1994年度・投・☆278）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-走者釘付" data-side="p" data-ways="book" data-q="走者釘付クイックa">
+    <h3 class="kt-name">走者釘付 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：クイックA</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-左キラー" data-side="p" data-ways="book" data-q="左キラー対左打者a">
+    <h3 class="kt-name">左キラー <span class="badge p">投手</span></h3><span class="kt-base">元の青特：対左打者A</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-内角無双" data-side="p" data-ways="book ten" data-q="内角無双内角攻メ東尾修">
+    <h3 class="kt-name">内角無双 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：内角攻め</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">東尾修<span class="dlc">歴代レジェンド</span><span class="wk">（和歌山・1966年度・投・☆268）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-ハイスピンジャイロ" data-side="p" data-ways="book" data-q="ハイスピンジャイロジャイロボール">
+    <h3 class="kt-name">ハイスピンジャイロ <span class="badge p">投手</span></h3><span class="kt-base">元の青特：ジャイロボール</span>
+    <ul class="kt-ways">
+      <li><span class="w w-book">金特本</span><span class="wd">甲子園のOBの祝いの品・アイテム業者</span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-闘魂" data-side="p" data-ways="col ten" data-q="闘魂金田正一沢村栄純ダイヤノa">
+    <h3 class="kt-name">闘魂 <span class="badge p">投手</span></h3>
+    <ul class="kt-ways">
+      <li><span class="w w-none">金特本</span><span class="wd">マイライフに無い金特のため未確認</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">金田正一<span class="wk">（愛知・1949年度・投・☆349）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">沢村栄純<span class="wk">（ダイヤのA・投・☆286）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-勝利の星" data-side="p" data-ways="col ten" data-q="勝利ノ星田中将大五十嵐梨花ニジサンジ">
+    <h3 class="kt-name">勝利の星 <span class="badge p">投手</span></h3>
+    <ul class="kt-ways">
+      <li><span class="w w-none">金特本</span><span class="wd">マイライフに無い金特のため未確認</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">田中将大<span class="dlc">歴代レジェンド</span><span class="wk">（兵庫・2004年度・投・☆417）</span></span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">五十嵐梨花<span class="wk">（にじさんじ・投・☆215）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-ギアチェンジ" data-side="p" data-ways="ten" data-q="ギアチェンジ田中将大">
+    <h3 class="kt-name">ギアチェンジ <span class="badge p">投手</span></h3>
+    <ul class="kt-ways">
+      <li><span class="w w-none">金特本</span><span class="wd">マイライフに無い金特のため未確認</span></li>
+      <li><span class="w w-ten">転生</span><span class="wd">田中将大<span class="dlc">歴代レジェンド</span><span class="wk">（兵庫・2004年度・投・☆417）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-クロスキャノン" data-side="p" data-ways="col" data-q="クロスキャノン向井太陽ダイヤノa">
+    <h3 class="kt-name">クロスキャノン <span class="badge p">投手</span></h3>
+    <ul class="kt-ways">
+      <li><span class="w w-none">金特本</span><span class="wd">マイライフに無い金特のため未確認</span></li>
+      <li><span class="w w-col">コラボ</span><span class="wd">向井太陽<span class="wk">（ダイヤのA・投・☆279）</span></span></li>
+    </ul>
+  </div>
+  <div class="kt" id="kt-威圧感" data-side="p" data-ways="kok train" data-q="威圧感存在感">
+    <h3 class="kt-name">威圧感 <span class="badge p">投手</span></h3><span class="kt-base">元の青特：存在感</span>
+    <ul class="kt-ways">
+      <li><span class="w w-kok">国際大会</span><span class="wd">大会最優秀救援投手（存在感との2択）</span></li>
+      <li><span class="w w-train">特訓・合宿</span><span class="wd">ほかの青特と同じように取れる（金特の例外）</span></li>
+    </ul>
+  </div>
+<!-- /KT-LIST -->
+    </div>
+    <p class="empty" id="ktEmpty" hidden>あてはまる金特がありません</p>
+</div>
+
+</main>
+
+</div>
+
+
+<article class="tool-article">
+
+<h2 id="book">手段1｜金特本を使う</h2>
+
+<p>
+金特本は、使うとその金特を覚えられるアイテムです。
+<strong>マイライフの<a href="/kintoku/">能力研究所の金特ミッション一覧</a>にある金特は、すべて金特本として出ます</strong>。
+どの本が出るかは選べないので、出たものを使う形になります。入手先は2つあります。
+</p>
+
+<h3>甲子園の抽選会の翌日に、OBからもらう</h3>
+
+<p>
+甲子園に出場すると、抽選会の翌日にOBから祝いの品をもらえるイベントが起きます。
+日付は<strong>夏の甲子園なら8月3日、春の甲子園なら3月14日</strong>です。
+</p>
+
+<p>
+このイベントでは<strong>ランダムにアイテムを2つ</strong>受け取れて、
+そのなかに稀に金特本が混ざっています。
+</p>
+
+<p>
+抽選会が終わった時点で自動セーブが入ります。
+オンラインストレージが使えるなら、
+<strong>抽選会の日にセーブしてバックアップを取っておけば、
+金特本が出るまでやり直せます</strong>。
+前作はもらえるアイテムが1つだったので、
+2つになった今作のほうがやり直しの手間は軽い印象です。
+</p>
+
+<h3>アイテム業者から買う</h3>
+
+<p>
+今作から、アイテム業者で特殊能力本を買えるようになりました。
+業者は<strong>試合に5勝するたびに訪ねてきます</strong>。練習試合も勝数に数えます。
+</p>
+
+<p>
+買い物に使えるのは<strong>戦績ポイントだけ</strong>です。試合に勝つと貯まります。
+金特本の相場は<strong>6,000〜12,000P</strong>ほどなので、
+狙うなら普段からポイントを使い切らずに残しておくことになります。
+</p>
+
+<p>
+並ぶ商品のなかに金特本が入っていることがあります。
+見分ける手がかりがあり、
+マネージャーが<strong>「今日はとても珍しいアイテムを入荷しているみたいです！」</strong>と言ったときは、
+金特本が確実に入荷しています。
+</p>
+
+<figure class="shot">
+<img src="/img/eikan-item-vendor.jpg"
+     alt="アイテム業者が来たときのマネージャーの会話。「今日はとても珍しいアイテムを入荷しているみたいです！」と話し、続けて現在の戦績ポイントが表示されている画面"
+     width="1280" height="720" loading="lazy" decoding="async">
+<figcaption>
+「今日はとても珍しいアイテムを入荷しているみたいです！」が金特本の合図。
+続けて手持ちの戦績ポイントが出るので、そのまま買えるかどうか分かります。
+校名と選手名にはぼかしを入れています。
+</figcaption>
+</figure>
+
+<div class="callout">
+ただし、<strong>マネージャーが何も言わなくても金特本が並んでいることがあります</strong>。
+セリフが無いから今日は無い、と決めつけず、業者が来たら必ず品揃えを見てください。
+</div>
+
+<p>
+<strong>アップデートにより、商品一覧で金特本の名前が金色で表示されるようになりました。</strong>
+</p>
+
+<figure class="shot">
+<img src="/img/eikan-item-vendor-gold.jpg"
+     alt="アイテム業者の商品一覧。金特本である「切り込み隊長の本」だけ金色の文字で表示され、ほかの商品は白色になっている"
+     width="1280" height="720" loading="lazy" decoding="async">
+<figcaption>
+商品一覧で金色になっているのが金特本。この例では「切り込み隊長の本」が金特本です。
+</figcaption>
+</figure>
+
+<h3 id="genteikintoku">おかわり・ストレートキラーも金特本で出る</h3>
+
+<p>
+<strong>おかわり</strong>（マルチ弾の上位。ホームランを打っているとパワーがとても上がる）と
+<strong>ストレートキラー</strong>（対ストレート○の上位。ストレートを打つのがとても上手くなる）は、
+パワプロ2026から加わった金特です。国際大会や転生選手では手に入らず、栄冠ナインでは金特本で出るのを待つことになります。
+なお、マイライフでも<a href="/kintoku/#okawari-sk">世界大会の遠征中に能力研究所で</a>取れます。
+</p>
+
+<h2 id="kokusai">手段2｜国際大会で活躍する</h2>
+
+<h3>代表に選ばれる条件</h3>
+
+<p>
+8月27日に、条件を満たした選手が国際大会の代表メンバーに選ばれます。
+次のどれかに当てはまる選手が候補です。
+</p>
+
+<ul>
+<li>☆450以上の選手</li>
+<li>☆400以上で、能力値にSを持っている選手<br>
+<span class="up">投手は、球速156km/h以上か、総変化量12以上でも可</span></li>
+<li>夏の甲子園で特段の活躍をした選手</li>
+</ul>
+
+<p>
+選ばれるのは<strong>最大3名</strong>で、
+<strong>メインポジションが捕手の選手は1名まで</strong>です。
+候補が4名以上いるときは、☆の高い選手から上位3名が選ばれます。
+</p>
+
+<h3>9月6日に結果が出る</h3>
+
+<p>
+大会での評価に応じて、9月6日のイベントで能力が上がり、特殊能力を覚えます。
+評価ごとの中身は次の表のとおりです。
+</p>
+
+<p>
+MVPとタイトルは<strong>最大1名までしか選ばれません</strong>。
+ベストナインは人数の制限がなく、何名でも選ばれます。
+また、<strong>日本の順位が高いほど、MVP・タイトル・ベストナインに入る見込みが上がります</strong>。
+</p>
 
 <div class="filter-panel">
     <div class="filter-row">
@@ -718,264 +1304,6 @@ figure.shot figcaption{
     <p class="empty" id="empty" hidden>あてはまる評価がありません</p>
 </div>
 
-<div class="card">
-    <h2>国際大会で取れる金特一覧</h2>
-    <p class="lead">
-    MVPは5つのうちからランダムですが、タイトルを取れば狙った金特が確定で手に入ります。
-    </p>
-    <div class="scroll">
-    <table>
-        <thead>
-            <tr>
-                <th>金特</th>
-                <th>対象</th>
-                <th>確定で取れる評価</th>
-                <th>ランダムで取れる評価</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><span class="kin-name" id="kin-anda">安打製造機</span></td>
-                <td><span class="badge b">野手</span></td>
-                <td><span class="fixed">大会首位打者</span></td>
-                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
-            </tr>
-            <tr>
-                <td><span class="kin-name" id="kin-archist">アーチスト</span></td>
-                <td><span class="badge b">野手</span></td>
-                <td><span class="fixed">大会最多本塁打</span></td>
-                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
-            </tr>
-            <tr>
-                <td><span class="kin-name" id="kin-denko">電光石火</span></td>
-                <td><span class="badge b">野手</span></td>
-                <td><span class="fixed">大会最多盗塁</span></td>
-                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
-            </tr>
-            <tr>
-                <td><span class="kin-name" id="kin-shobu">勝負師</span></td>
-                <td><span class="badge b">野手</span></td>
-                <td><span class="fixed">大会最多打点</span></td>
-                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
-            </tr>
-            <tr>
-                <td><span class="kin-name" id="kin-majutsu">魔術師</span></td>
-                <td><span class="badge b">野手</span></td>
-                <td><span class="fixed">大会最優秀守備選手</span></td>
-                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
-            </tr>
-            <tr>
-                <td><span class="kin-name" id="kin-kyoshin">強心臓</span></td>
-                <td><span class="badge p">投手</span></td>
-                <td><span class="fixed">大会の最優秀防御率</span></td>
-                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
-            </tr>
-            <tr>
-                <td><span class="kin-name" id="kin-kaibutsu">怪物球威</span></td>
-                <td><span class="badge p">投手</span></td>
-                <td class="none">－</td>
-                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
-            </tr>
-            <tr>
-                <td><span class="kin-name" id="kin-drk">ドクターK</span></td>
-                <td><span class="badge p">投手</span></td>
-                <td class="none">－</td>
-                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
-            </tr>
-            <tr>
-                <td><span class="kin-name" id="kin-hengen">変幻自在</span></td>
-                <td><span class="badge p">投手</span></td>
-                <td class="none">－</td>
-                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
-            </tr>
-            <tr>
-                <td><span class="kin-name" id="kin-seimitsu">精密機械</span></td>
-                <td><span class="badge p">投手</span></td>
-                <td class="none">－</td>
-                <td><span class="random">大会MVP</span><div class="up">5つのうち1つ</div></td>
-            </tr>
-            <tr>
-                <td><span class="kin-name" id="kin-iatsu">威圧感</span></td>
-                <td><span class="badge p">投手</span></td>
-                <td class="none">－</td>
-                <td><span class="random">大会最優秀救援投手</span><div class="up">存在感との2択。特訓・合宿でも取れる</div></td>
-            </tr>
-        </tbody>
-    </table>
-    </div>
-</div>
-
-</main>
-
-</div>
-
-
-<article class="tool-article">
-
-<h2 id="genteikintoku"><s>栄冠ナインでしか手に入らない</s>金特本からしか出ない金特が2つある</h2>
-
-<p>
-<strong>ストレートキラー</strong>と<strong>おかわり</strong>の2つは、
-栄冠ナインの金特本でしか手に入らないと見られます。
-</p>
-
-<table>
-<thead>
-<tr><th>金特</th><th>もとになる特殊能力</th><th>効果</th></tr>
-</thead>
-<tbody>
-<tr>
-<td id="kin-sk"><strong>ストレートキラー</strong></td>
-<td>対ストレート○の上位</td>
-<td>ストレートを打つのがとても上手くなる</td>
-</tr>
-<tr>
-<td id="kin-okawari"><strong>おかわり</strong></td>
-<td>マルチ弾の上位</td>
-<td>ホームランを打っているとパワーがとても上がる</td>
-</tr>
-</tbody>
-</table>
-
-<p>
-この2つは<s>他のモードでは入手できず、サクセスで継承することもできません</s>。
-パワプロ2026から静かに追加された特殊能力と見られ、
-存在そのものを書いている攻略サイトがほとんどありません。
-</p>
-
-<div class="correction">
-<p class="correction__title">9/7 追記</p>
-<p>
-「栄冠ナインでしか手に入らない」「他のモードでは入手できない」は誤りでした。
-2026年9月7日に、<strong>マイライフでも、世界大会の遠征中に2つとも受領できる</strong>ことを確認しています。
-おかわりは「マルチ弾」を取得済みで受けられ、ミッションは「10試合中に、1試合で3本塁打以上を記録する。」です。
-ストレートキラーは「対ストレート〇」を取得済みで受けられます。
-くわしくは<a href="/kintoku/#okawari-sk">マイライフ 能力研究所の金特ミッション一覧</a>にまとめました。
-</p>
-<p>
-<strong>栄冠ナインで金特本から出ることは変わりません。</strong>
-サクセスでの取得手段は、今のところ見つかっていません。
-</p>
-</div>
-
-<div class="callout">
-栄冠ナインでは狙って取れるものではなく、金特本の抽選で出るのを待つ形になります。
-この2つを栄冠ナインで付けたいなら、
-甲子園のOBイベントとアイテム業者を丁寧に見ておいてください。
-</div>
-
-<h2 id="book">手段1｜金特本を使う</h2>
-
-<p>
-金特本は、使うとその金特を覚えられるアイテムです。
-入手先は2つあります。
-</p>
-
-<h3>甲子園の抽選会の翌日に、OBからもらう</h3>
-
-<p>
-甲子園に出場すると、抽選会の翌日にOBから祝いの品をもらえるイベントが起きます。
-日付は<strong>夏の甲子園なら8月3日、春の甲子園なら3月14日</strong>です。
-</p>
-
-<p>
-このイベントでは<strong>ランダムにアイテムを2つ</strong>受け取れて、
-そのなかに稀に金特本が混ざっています。
-</p>
-
-<p>
-抽選会が終わった時点で自動セーブが入ります。
-オンラインストレージが使えるなら、
-<strong>抽選会の日にセーブしてバックアップを取っておけば、
-金特本が出るまでやり直せます</strong>。
-前作はもらえるアイテムが1つだったので、
-2つになった今作のほうがやり直しの手間は軽い印象です。
-</p>
-
-<h3>アイテム業者から買う</h3>
-
-<p>
-今作から、アイテム業者で特殊能力本を買えるようになりました。
-業者は<strong>試合に5勝するたびに訪ねてきます</strong>。練習試合も勝数に数えます。
-</p>
-
-<p>
-買い物に使えるのは<strong>戦績ポイントだけ</strong>です。試合に勝つと貯まります。
-金特本の相場は<strong>6,000〜12,000P</strong>ほどなので、
-狙うなら普段からポイントを使い切らずに残しておくことになります。
-</p>
-
-<p>
-並ぶ商品のなかに金特本が入っていることがあります。
-見分ける手がかりがあり、
-マネージャーが<strong>「今日はとても珍しいアイテムを入荷しているみたいです！」</strong>と言ったときは、
-金特本が確実に入荷しています。
-</p>
-
-<figure class="shot">
-<img src="/img/eikan-item-vendor.jpg"
-     alt="アイテム業者が来たときのマネージャーの会話。「今日はとても珍しいアイテムを入荷しているみたいです！」と話し、続けて現在の戦績ポイントが表示されている画面"
-     width="1280" height="720" loading="lazy" decoding="async">
-<figcaption>
-「今日はとても珍しいアイテムを入荷しているみたいです！」が金特本の合図。
-続けて手持ちの戦績ポイントが出るので、そのまま買えるかどうか分かります。
-校名と選手名にはぼかしを入れています。
-</figcaption>
-</figure>
-
-<div class="callout">
-ただし、<strong>マネージャーが何も言わなくても金特本が並んでいることがあります</strong>。
-セリフが無いから今日は無い、と決めつけず、業者が来たら必ず品揃えを見てください。
-</div>
-
-<p>
-<strong>アップデートにより、商品一覧で金特本の名前が金色で表示されるようになりました。</strong>
-</p>
-
-<figure class="shot">
-<img src="/img/eikan-item-vendor-gold.jpg"
-     alt="アイテム業者の商品一覧。金特本である「切り込み隊長の本」だけ金色の文字で表示され、ほかの商品は白色になっている"
-     width="1280" height="720" loading="lazy" decoding="async">
-<figcaption>
-商品一覧で金色になっているのが金特本。この例では「切り込み隊長の本」が金特本です。
-</figcaption>
-</figure>
-
-<h2 id="kokusai">手段2｜国際大会で活躍する</h2>
-
-<h3>代表に選ばれる条件</h3>
-
-<p>
-8月27日に、条件を満たした選手が国際大会の代表メンバーに選ばれます。
-次のどれかに当てはまる選手が候補です。
-</p>
-
-<ul>
-<li>☆450以上の選手</li>
-<li>☆400以上で、能力値にSを持っている選手<br>
-<span class="up">投手は、球速156km/h以上か、総変化量12以上でも可</span></li>
-<li>夏の甲子園で特段の活躍をした選手</li>
-</ul>
-
-<p>
-選ばれるのは<strong>最大3名</strong>で、
-<strong>メインポジションが捕手の選手は1名まで</strong>です。
-候補が4名以上いるときは、☆の高い選手から上位3名が選ばれます。
-</p>
-
-<h3>9月6日に結果が出る</h3>
-
-<p>
-大会での評価に応じて、9月6日のイベントで能力が上がり、特殊能力を覚えます。
-評価ごとの中身は<a href="#tbl">上の表</a>にまとめてあります。
-</p>
-
-<p>
-MVPとタイトルは<strong>最大1名までしか選ばれません</strong>。
-ベストナインは人数の制限がなく、何名でも選ばれます。
-また、<strong>日本の順位が高いほど、MVP・タイトル・ベストナインに入る見込みが上がります</strong>。
-</p>
-
 <h3>狙った金特が欲しいなら、MVPよりタイトル</h3>
 
 <p>
@@ -1000,7 +1328,139 @@ MVPは金特を5つのうちから1つ、ランダムで覚えます。
 望んだ評価が出るまでやり直せます。
 </p>
 
-<h2 id="iatsu">手段3｜威圧感は特訓や合宿でも取れる</h2>
+<h2 id="tensei">手段3｜金特を持つ転生選手を仲間にする</h2>
+
+<p>
+栄冠ナインには、実在のOBやプロ野球選手が高校生になって新入生として現れる<strong>転生選手</strong>がいます。
+なかには<strong>最初から金特を持っている選手</strong>がいて、入部させればその金特を持った選手が手に入ります。
+実在のOB・プロ野球選手の「転生OB」「転生プロ」（まとめて「転生」と呼ばれます）と、
+ほかの作品とのコラボの「転生コラボ」があります。
+</p>
+
+<h3>転生OB・転生プロが出てくる条件</h3>
+
+<ul>
+<li><strong>プレイ1年目</strong>：はじめに選んだ都道府県の選手が出てきます。開始年度を指定した場合は、その年度の選手が出てきます</li>
+<li><strong>2年目以降</strong>：学校の評判に合わせた範囲の地域から出てきます。範囲は、新入生の履歴書で調査できる範囲と同じです。<strong>名門・超名門なら、すべての都道府県</strong>の選手が出てきます</li>
+</ul>
+
+<p>
+下の一覧の「年度」は、その選手が新入生として出てくる年度です。
+狙う選手がいるなら、<strong>その選手の都道府県を選び、その年度から始める</strong>のがいちばんの近道です。
+たとえばアーチストを持つ王貞治なら、東京都で1956年度から始めます。
+</p>
+
+<h3 id="legend">歴代レジェンドDLCの選手</h3>
+
+<p>
+一覧で<span class="dlc">歴代レジェンド</span>と付いている選手（王貞治・山口鉄也・菊池涼介・田中将大・宮西尚生・松井稼頭央・東尾修・藤川球児）は、
+有料の<strong>「歴代レジェンド DLC」</strong>で追加される選手です。
+王貞治・宮西尚生・藤川球児は、DLCでない版も別にいて、☆が少し違います。
+</p>
+
+<p>
+歴代レジェンドのコンプリートセットは<strong>3,850円</strong>です。
+パワプロ2026-2027を<strong>「パワフルエディション」</strong>で買った人は、はじめからコンプリートセットが付いています。
+内容は<a href="https://www.konami.com/pawa/2026-2027/dlc/legend" target="_blank" rel="noopener">パワプロ公式サイトの歴代レジェンドDLCのページ</a>で確かめられます。
+</p>
+
+<h3 id="collab">転生コラボ（にじさんじ・ダイヤのA）</h3>
+
+<p>
+転生コラボの選手は、<strong>パワプロショップで調査書を10,000PPで買う</strong>と、
+<strong>年度に関係なく確定で</strong>仲間にできる別枠の選手です。年度や都道府県の条件はありません。
+</p>
+
+<div class="callout">
+<strong>ダイヤのAの選手</strong>を使うには、調査書とは別に、<strong>追加コンテンツ（550円）</strong>を買う必要があります。
+ダイヤのAには、御幸一也（大番狂わせ・球界の頭脳・ストライク送球）や本郷正宗（怪童・怪物球威・ドクターK）のように、金特を3つ持つ選手もいます。
+</div>
+
+<h3>金特を持つ転生選手の一覧</h3>
+
+<p>
+金特を持つ選手だけを載せています（威圧感だけを持つ選手は除いています）。金特の名前を押すと、その金特の入手方法に移ります。
+</p>
+
+<!-- TENSEI-TABLE -->
+<h3 id="tensei-ob">転生OB・転生プロ（50人）</h3>
+<div class="table-scroll"><table class="tensei">
+<thead><tr><th>選手</th><th>都道府県</th><th>年度</th><th>守備</th><th class="r">☆</th><th>持っている金特</th></tr></thead>
+<tbody>
+<tr><td>落合博満</td><td>秋田</td><td>1969年度</td><td>三</td><td class="r">373</td><td><a href="#kt-勝負師">勝負師</a></td></tr>
+<tr><td>小坂誠</td><td>宮城</td><td>1989年度</td><td>遊</td><td class="r">282</td><td><a href="#kt-魔術師">魔術師</a></td></tr>
+<tr><td>江川卓</td><td>福島</td><td>1971年度</td><td>投</td><td class="r">343</td><td><a href="#kt-怪童">怪童</a></td></tr>
+<tr><td>石毛宏典</td><td>千葉</td><td>1972年度</td><td>三</td><td class="r">299</td><td><a href="#kt-切り込み隊長">切り込み隊長</a></td></tr>
+<tr><td>山口鉄也<span class="dlc">歴代レジェンド</span></td><td>神奈川</td><td>1999年度</td><td>投</td><td class="r">308</td><td><a href="#kt-鉄人">鉄人</a></td></tr>
+<tr><td>王貞治<span class="dlc">歴代レジェンド</span></td><td>東京</td><td>1956年度</td><td>一</td><td class="r">400</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr><td>王貞治</td><td>東京</td><td>1956年度</td><td>一</td><td class="r">391</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr><td>田淵幸一</td><td>東京</td><td>1962年度</td><td>捕</td><td class="r">365</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr><td>菊池涼介<span class="dlc">歴代レジェンド</span></td><td>東京</td><td>2005年度</td><td>二</td><td class="r">363</td><td><a href="#kt-魔術師">魔術師</a></td></tr>
+<tr><td>江藤智</td><td>東京</td><td>1986年度</td><td>三</td><td class="r">300</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr><td>榎本喜八</td><td>東京</td><td>1952年度</td><td>一</td><td class="r">290</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr><td>毒島章一</td><td>群馬</td><td>1951年度</td><td>外</td><td class="r">260</td><td><a href="#kt-精神的支柱">精神的支柱</a></td></tr>
+<tr><td>イチロー</td><td>愛知</td><td>1989年度</td><td>外</td><td class="r">415</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr><td>金田正一</td><td>愛知</td><td>1949年度</td><td>投</td><td class="r">349</td><td><a href="#kt-闘魂">闘魂</a>、<a href="#kt-怪童">怪童</a></td></tr>
+<tr><td>岩瀬仁紀</td><td>愛知</td><td>1990年度</td><td>投</td><td class="r">314</td><td><a href="#kt-驚異の切れ味">驚異の切れ味</a>、<a href="#kt-鉄人">鉄人</a>、<a href="#kt-鉄腕">鉄腕</a></td></tr>
+<tr><td>赤星憲広</td><td>愛知</td><td>1992年度</td><td>外</td><td class="r">298</td><td><a href="#kt-電光石火">電光石火</a></td></tr>
+<tr><td>野村克也</td><td>京都</td><td>1951年度</td><td>捕</td><td class="r">344</td><td><a href="#kt-球界の頭脳">球界の頭脳</a>、<a href="#kt-ささやき戦術">ささやき戦術</a></td></tr>
+<tr><td>衣笠祥雄</td><td>京都</td><td>1962年度</td><td>三</td><td class="r">304</td><td><a href="#kt-鉄人">鉄人</a></td></tr>
+<tr><td>吉田義男</td><td>京都</td><td>1949年度</td><td>遊</td><td class="r">287</td><td><a href="#kt-魔術師">魔術師</a></td></tr>
+<tr><td>伊藤智仁</td><td>京都</td><td>1986年度</td><td>投</td><td class="r">275</td><td><a href="#kt-驚異の切れ味">驚異の切れ味</a></td></tr>
+<tr><td>駒田徳広</td><td>奈良</td><td>1978年度</td><td>一</td><td class="r">260</td><td><a href="#kt-恐怖の満塁男">恐怖の満塁男</a></td></tr>
+<tr><td>東尾修<span class="dlc">歴代レジェンド</span></td><td>和歌山</td><td>1966年度</td><td>投</td><td class="r">268</td><td><a href="#kt-内角無双">内角無双</a></td></tr>
+<tr><td>松井稼頭央<span class="dlc">歴代レジェンド</span></td><td>大阪</td><td>1991年度</td><td>遊</td><td class="r">376</td><td><a href="#kt-切り込み隊長">切り込み隊長</a></td></tr>
+<tr><td>中村剛也</td><td>大阪</td><td>1999年度</td><td>三</td><td class="r">307</td><td><a href="#kt-おかわり">おかわり</a></td></tr>
+<tr><td>尾崎行雄</td><td>大阪</td><td>1960年度</td><td>投</td><td class="r">306</td><td><a href="#kt-怪童">怪童</a></td></tr>
+<tr><td>土井正博</td><td>大阪</td><td>1959年度</td><td>外</td><td class="r">303</td><td><a href="#kt-引っ張り屋">引っ張り屋</a></td></tr>
+<tr><td>福本豊</td><td>大阪</td><td>1963年度</td><td>外</td><td class="r">294</td><td><a href="#kt-電光石火">電光石火</a></td></tr>
+<tr><td>新井宏昌</td><td>大阪</td><td>1968年度</td><td>外</td><td class="r">279</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr><td>田中将大<span class="dlc">歴代レジェンド</span></td><td>兵庫</td><td>2004年度</td><td>投</td><td class="r">417</td><td><a href="#kt-勝利の星">勝利の星</a>、<a href="#kt-ギアチェンジ">ギアチェンジ</a></td></tr>
+<tr><td>古田敦也</td><td>兵庫</td><td>1981年度</td><td>捕</td><td class="r">392</td><td><a href="#kt-球界の頭脳">球界の頭脳</a></td></tr>
+<tr><td>別所昭</td><td>兵庫</td><td>1938年度</td><td>投</td><td class="r">384</td><td><a href="#kt-鉄人">鉄人</a></td></tr>
+<tr><td>江夏豊</td><td>兵庫</td><td>1964年度</td><td>投</td><td class="r">382</td><td><a href="#kt-怪童">怪童</a></td></tr>
+<tr><td>小山正明</td><td>兵庫</td><td>1950年度</td><td>投</td><td class="r">340</td><td><a href="#kt-精密機械">精密機械</a></td></tr>
+<tr><td>鈴木啓示</td><td>兵庫</td><td>1963年度</td><td>投</td><td class="r">335</td><td><a href="#kt-不屈の魂">不屈の魂</a></td></tr>
+<tr><td>宮西尚生<span class="dlc">歴代レジェンド</span></td><td>兵庫</td><td>2001年度</td><td>投</td><td class="r">282</td><td><a href="#kt-鉄腕">鉄腕</a></td></tr>
+<tr><td>今岡誠</td><td>兵庫</td><td>1990年度</td><td>二</td><td class="r">253</td><td><a href="#kt-恐怖の満塁男">恐怖の満塁男</a></td></tr>
+<tr><td>宮西尚生</td><td>兵庫</td><td>2001年度</td><td>投</td><td class="r">250</td><td><a href="#kt-鉄腕">鉄腕</a></td></tr>
+<tr><td>米田哲也</td><td>鳥取</td><td>1953年度</td><td>投</td><td class="r">281</td><td><a href="#kt-ガソリンタンク">ガソリンタンク</a></td></tr>
+<tr><td>平松政次</td><td>岡山</td><td>1963年度</td><td>投</td><td class="r">326</td><td><a href="#kt-怪物球威">怪物球威</a></td></tr>
+<tr><td>金本知憲</td><td>岡山</td><td>1984年度</td><td>外</td><td class="r">352</td><td><a href="#kt-鉄人">鉄人</a></td></tr>
+<tr><td>張本勲</td><td>岡山</td><td>1956年度</td><td>外</td><td class="r">333</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr><td>西村健太朗</td><td>岡山</td><td>2001年度</td><td>投</td><td class="r">283</td><td><a href="#kt-本塁打厳禁">本塁打厳禁</a></td></tr>
+<tr><td>武田久</td><td>香川</td><td>1994年度</td><td>投</td><td class="r">278</td><td><a href="#kt-本塁打厳禁">本塁打厳禁</a></td></tr>
+<tr><td>高井保弘</td><td>愛媛</td><td>1960年度</td><td>一</td><td class="r">264</td><td><a href="#kt-代打の神様">代打の神様</a></td></tr>
+<tr><td>藤川球児<span class="dlc">歴代レジェンド</span></td><td>高知</td><td>1996年度</td><td>投</td><td class="r">310</td><td><a href="#kt-怪童">怪童</a></td></tr>
+<tr><td>藤川球児</td><td>高知</td><td>1996年度</td><td>投</td><td class="r">307</td><td><a href="#kt-怪童">怪童</a></td></tr>
+<tr><td>城島健司</td><td>長崎</td><td>1992年度</td><td>捕</td><td class="r">324</td><td><a href="#kt-バズーカ送球">バズーカ送球</a></td></tr>
+<tr><td>川上哲治</td><td>熊本</td><td>1935年度</td><td>一</td><td class="r">300</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr><td>稲尾和久</td><td>大分</td><td>1953年度</td><td>投</td><td class="r">366</td><td><a href="#kt-鉄腕">鉄腕</a>、<a href="#kt-ガソリンタンク">ガソリンタンク</a></td></tr>
+<tr><td>北別府学</td><td>鹿児島</td><td>1973年度</td><td>投</td><td class="r">308</td><td><a href="#kt-精密機械">精密機械</a></td></tr>
+</tbody></table></div>
+<h3 id="tensei-collab">転生コラボ（15人）</h3>
+<div class="table-scroll"><table class="tensei">
+<thead><tr><th>選手</th><th>作品</th><th>年度</th><th>守備</th><th class="r">☆</th><th>持っている金特</th></tr></thead>
+<tbody>
+<tr><td>リゼ・ヘルエスタ</td><td>にじさんじ</td><td>いつでも</td><td>二</td><td class="r">249</td><td><a href="#kt-精神的支柱">精神的支柱</a>、<a href="#kt-電光石火">電光石火</a></td></tr>
+<tr><td>椎名唯華</td><td>にじさんじ</td><td>いつでも</td><td>一</td><td class="r">271</td><td><a href="#kt-勝負師">勝負師</a>、<a href="#kt-大番狂わせ">大番狂わせ</a></td></tr>
+<tr><td>五十嵐梨花</td><td>にじさんじ</td><td>いつでも</td><td>投</td><td class="r">215</td><td><a href="#kt-勝利の星">勝利の星</a>、<a href="#kt-変幻自在">変幻自在</a></td></tr>
+<tr><td>舞元啓介</td><td>にじさんじ</td><td>いつでも</td><td>捕</td><td class="r">209</td><td><a href="#kt-ささやき戦術">ささやき戦術</a></td></tr>
+<tr><td>沢村栄純</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">286</td><td><a href="#kt-闘魂">闘魂</a></td></tr>
+<tr><td>降谷 暁</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">271</td><td><a href="#kt-怪童">怪童</a>、<a href="#kt-怪物球威">怪物球威</a></td></tr>
+<tr><td>小湊春市</td><td>ダイヤのA</td><td>いつでも</td><td>二</td><td class="r">225</td><td><a href="#kt-安打製造機">安打製造機</a></td></tr>
+<tr><td>御幸一也</td><td>ダイヤのA</td><td>いつでも</td><td>捕</td><td class="r">330</td><td><a href="#kt-大番狂わせ">大番狂わせ</a>、<a href="#kt-球界の頭脳">球界の頭脳</a>、<a href="#kt-ストライク送球">ストライク送球</a></td></tr>
+<tr><td>倉持洋一</td><td>ダイヤのA</td><td>いつでも</td><td>遊</td><td class="r">293</td><td><a href="#kt-トリックスター">トリックスター</a>、<a href="#kt-電光石火">電光石火</a></td></tr>
+<tr><td>結城将司</td><td>ダイヤのA</td><td>いつでも</td><td>外</td><td class="r">175</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr><td>成宮鳴</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">343</td><td><a href="#kt-驚異の切れ味">驚異の切れ味</a>、<a href="#kt-ドクターK">ドクターK</a></td></tr>
+<tr><td>轟雷市</td><td>ダイヤのA</td><td>いつでも</td><td>三</td><td class="r">284</td><td><a href="#kt-アーチスト">アーチスト</a></td></tr>
+<tr><td>本郷正宗</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">300</td><td><a href="#kt-怪童">怪童</a>、<a href="#kt-怪物球威">怪物球威</a>、<a href="#kt-ドクターK">ドクターK</a></td></tr>
+<tr><td>梅宮聖一</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">228</td><td><a href="#kt-変幻自在">変幻自在</a>、<a href="#kt-大番狂わせ">大番狂わせ</a></td></tr>
+<tr><td>向井太陽</td><td>ダイヤのA</td><td>いつでも</td><td>投</td><td class="r">279</td><td><a href="#kt-精密機械">精密機械</a>、<a href="#kt-クロスキャノン">クロスキャノン</a></td></tr>
+</tbody></table></div>
+<!-- /TENSEI-TABLE -->
+
+<h2 id="iatsu">例外｜威圧感は特訓や合宿でも取れる</h2>
 
 <p>
 <strong>威圧感は、青特殊能力である「存在感」の上位</strong>にあたります。
@@ -1018,21 +1478,24 @@ MVPは金特を5つのうちから1つ、ランダムで覚えます。
 <h2>よくある質問</h2>
 
 <h3>栄冠ナインで金特を取る方法は何がありますか？</h3>
-
 <p>
-3つあります。金特本を使う方法、国際大会で活躍する方法、
-そして「威圧感」に限っては特訓や合宿で取る方法です。
+3つあります。金特本を使う方法、国際大会で活躍する方法、金特を持つ転生選手を仲間にする方法です。
+このほか「威圧感」に限っては、特訓や合宿でも取れます。
+</p>
+
+<h3>金特本からはどの金特が出ますか？</h3>
+<p>
+マイライフの能力研究所にある金特が、すべて金特本として出ます。おかわり・ストレートキラーも出ます。
+どの本が出るかは選べません。
 </p>
 
 <h3>金特本はどこで手に入りますか？</h3>
-
 <p>
 2か所です。甲子園の抽選会の翌日（夏は8月3日、春は3月14日）にOBからもらう祝いの品と、
 アイテム業者からの購入です。業者は試合に5勝するたびに訪ねてきます。
 </p>
 
 <h3>アイテム業者に金特本が並んでいるか、事前に分かりますか？</h3>
-
 <p>
 マネージャーが「今日はとても珍しいアイテムを入荷しているみたいです！」と言ったときは、
 金特本が確実に入荷しています。ただしセリフが無いときにも並んでいることがあるため、
@@ -1040,14 +1503,12 @@ MVPは金特を5つのうちから1つ、ランダムで覚えます。
 </p>
 
 <h3>金特本はいくらで買えますか？</h3>
-
 <p>
 アイテム業者での買い物に使えるのは戦績ポイントだけで、試合に勝つと貯まります。
 金特本の相場は6,000〜12,000Pほどです。
 </p>
 
 <h3>国際大会の代表に選ばれる条件を教えてください。</h3>
-
 <p>
 ☆450以上の選手、☆400以上で能力値にSを持っている選手（投手は球速156km/h以上か総変化量12以上でも可）、
 夏の甲子園で特段の活躍をした選手が候補です。8月27日に最大3名が選ばれ、
@@ -1055,44 +1516,33 @@ MVPは金特を5つのうちから1つ、ランダムで覚えます。
 </p>
 
 <h3>狙った金特を確実に取るにはどうすればいいですか？</h3>
-
 <p>
-国際大会のタイトルを狙ってください。MVPは5つのうちからランダムですが、
-タイトルは中身が決まっています。首位打者なら安打製造機、最多本塁打ならアーチスト、
-最多盗塁なら電光石火、最多打点なら勝負師、最優秀守備選手なら魔術師、
-投手は最優秀防御率で強心臓です。
+国際大会なら、タイトルを狙ってください。首位打者なら安打製造機、最多本塁打ならアーチスト、
+最多盗塁なら電光石火、最多打点なら勝負師、最優秀守備選手なら魔術師、投手は最優秀防御率で強心臓です。
+金特を持つ転生選手を、その年度と都道府県に合わせて入部させる方法もあります。
 </p>
 
 <h3>国際大会の結果はやり直せますか？</h3>
-
 <p>
 結果が出るのは9月6日なので、9月1日から5日のあいだにセーブしてバックアップを取っておけば、
 望んだ評価が出るまでやり直せます。金特本のOBイベントも、
 抽選会の日にバックアップを取れば同じようにやり直せます。
 </p>
 
-<h3>ストレートキラーとおかわりは栄冠ナイン限定ですか？</h3>
-
+<h3>王貞治を仲間にするにはどうすればいいですか？</h3>
 <p>
-ストレートキラーとおかわりの2つです。ストレートキラーは対ストレート○の上位で、
-ストレートを打つのがとても上手くなります。おかわりはマルチ弾の上位で、
-ホームランを打っているとパワーがとても上がります。
-<s>どちらも他のモードでは入手できず、サクセスで継承することもできません。</s>
+王貞治は東京都の1956年度の転生OBで、金特のアーチストを持っています。
+1年目なら東京都・1956年度で始めると出てきます。2年目以降は、学校の評判で決まる範囲に東京都が入っている必要があります（名門・超名門ならどこでも）。
+歴代レジェンドDLCを入れていると、☆の高いDLC版も出てきます。
 </p>
 
-<div class="correction">
-<p class="correction__title">9/7 追記</p>
+<h3>転生コラボの選手はどうやって仲間にしますか？</h3>
 <p>
-栄冠ナイン限定ではありませんでした。2026年9月7日に、
-マイライフでも世界大会で海外に遠征しているあいだの能力研究所で
-同じ2つを受領できることを確認しています。
-栄冠ナインで金特本の抽選から出ることは変わらず、狙って取れない点も同じです。
-サクセスでの取得手段は、今のところ見つかっていません。
+パワプロショップで調査書を10,000PPで買うと、年度に関係なく確定で仲間にできます。
+ダイヤのAの選手は、別に追加コンテンツ（550円）を買う必要があります。
 </p>
-</div>
 
 <h3>マイライフの金特のまとめもありますか？</h3>
-
 <p>
 <a href="/kintoku/">パワプロ2026-2027 マイライフ 能力研究所の金特ミッション一覧</a>に
 まとめています。マイライフの金特は能力研究所のミッションで取るもので、
@@ -1103,7 +1553,6 @@ MVPは金特を5つのうちから1つ、ランダムで覚えます。
 </p>
 
 <h3>威圧感は金特になったのですか？</h3>
-
 <p>
 今作から青特殊能力より格上げされ、金特になりました。
 威圧感は青特殊能力「存在感」の上位にあたり、存在感のほうは青特殊能力のままです。
@@ -1115,57 +1564,72 @@ MVPは金特を5つのうちから1つ、ランダムで覚えます。
 
 <script>
 /* =========================
-   絞り込み
-
-   行は静的なHTMLに書いてある。
-   金特名で検索して来る人がいるので、JSで組み立てると拾われにくい
+   国際大会の表の絞り込み（行は静的なHTMLに書いてある）
 ========================= */
-
+(() => {
 const rows  = [...document.querySelectorAll("#tbl tbody tr")];
 const seg   = document.getElementById("seg");
 const count = document.getElementById("count");
 const empty = document.getElementById("empty");
-
 let side = "all";
-
 function render() {
-
   let shown = 0;
-
   for (const tr of rows) {
-
-    /* 「共通」の行は、投手でも野手でも残す */
-    const okSide = side === "all"
-                || tr.dataset.side === side
-                || tr.dataset.side === "n";
-
-    const show = okSide;
-
+    const show = side === "all" || tr.dataset.side === side || tr.dataset.side === "n";
     tr.hidden = !show;
-
     if (show) shown++;
   }
-
   count.textContent = shown;
   empty.hidden = shown > 0;
 }
-
 seg.addEventListener("click", e => {
-
-  const b = e.target.closest("button");
-
-  if (!b) return;
-
+  const b = e.target.closest("button"); if (!b) return;
   side = b.dataset.side;
-
-  for (const other of seg.querySelectorAll("button")) {
-    other.setAttribute("aria-pressed", String(other === b));
-  }
-
+  for (const o of seg.querySelectorAll("button")) o.setAttribute("aria-pressed", String(o === b));
   render();
 });
-
 render();
+})();
+
+/* =========================
+   金特から入手方法を探す
+   一覧は scripts/build_eikan_kintoku.py が静的なHTMLに書く（金特名・選手名で検索して来る人がいるため）
+========================= */
+(() => {
+const items = [...document.querySelectorAll("#ktList .kt")];
+const q = document.getElementById("ktq");
+const segS = document.getElementById("ktSide");
+const ways = document.getElementById("ktWays");
+const count = document.getElementById("ktCount");
+const empty = document.getElementById("ktEmpty");
+let side = "all";
+const norm = s => s.replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60)).toLowerCase().replace(/\s+/g, "");
+function render() {
+  const t = norm(q.value);
+  const need = [...ways.querySelectorAll("input:checked")].map(i => i.value);
+  let n = 0;
+  for (const el of items) {
+    const okS = side === "all" || el.dataset.side === side || el.dataset.side === "a";
+    const w = el.dataset.ways.split(" ");
+    const okW = need.every(x => w.includes(x));
+    const okQ = !t || el.dataset.q.includes(t);
+    const show = okS && okW && okQ;
+    el.hidden = !show;
+    if (show) n++;
+  }
+  count.textContent = n;
+  empty.hidden = n > 0;
+}
+q.addEventListener("input", render);
+ways.addEventListener("change", render);
+segS.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  side = b.dataset.side;
+  for (const o of segS.querySelectorAll("button")) o.setAttribute("aria-pressed", String(o === b));
+  render();
+});
+render();
+})();
 </script>
 
 <script type="application/ld+json">
@@ -1178,7 +1642,15 @@ render();
       "name": "栄冠ナインで金特を取る方法は何がありますか？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "3つあります。金特本を使う方法、国際大会で活躍する方法、そして「威圧感」に限っては特訓や合宿で取る方法です。"
+        "text": "3つあります。金特本を使う方法、国際大会で活躍する方法、金特を持つ転生選手を仲間にする方法です。このほか「威圧感」に限っては、特訓や合宿でも取れます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "栄冠ナインの金特本からはどの金特が出ますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "マイライフの能力研究所にある金特が、すべて金特本として出ます。おかわり・ストレートキラーも出ます。どの本が出るかは選べません。"
       }
     },
     {
@@ -1218,7 +1690,7 @@ render();
       "name": "栄冠ナインで狙った金特を確実に取るにはどうすればいいですか？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "国際大会のタイトルを狙ってください。大会MVPは5つのうちからランダムですが、タイトルは中身が決まっています。大会首位打者なら安打製造機、大会最多本塁打ならアーチスト、大会最多盗塁なら電光石火、大会最多打点なら勝負師、大会最優秀守備選手なら魔術師、投手は大会の最優秀防御率で強心臓です。"
+        "text": "国際大会なら、タイトルを狙ってください。大会首位打者なら安打製造機、大会最多本塁打ならアーチスト、大会最多盗塁なら電光石火、大会最多打点なら勝負師、大会最優秀守備選手なら魔術師、投手は大会の最優秀防御率で強心臓です。金特を持つ転生選手を、その年度と都道府県に合わせて入部させる方法もあります。"
       }
     },
     {
@@ -1231,10 +1703,18 @@ render();
     },
     {
       "@type": "Question",
-      "name": "ストレートキラーとおかわりは栄冠ナイン限定ですか？",
+      "name": "栄冠ナインで王貞治を仲間にするにはどうすればいいですか？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "栄冠ナイン限定ではありませんでした。2026年9月7日に、マイライフでも世界大会で海外に遠征しているあいだの能力研究所で同じ2つを受領できることを確認しています。ストレートキラーは対ストレート○の上位で、ストレートを打つのがとても上手くなります。おかわりはマルチ弾の上位で、ホームランを打っているとパワーがとても上がります。栄冠ナインで金特本の抽選から出ることは変わらず、狙って取ることはできません。サクセスでの取得手段は、今のところ見つかっていません。"
+        "text": "王貞治は東京都の1956年度の転生OBで、金特のアーチストを持っています。1年目なら東京都・1956年度で始めると出てきます。2年目以降は、学校の評判で決まる範囲に東京都が入っている必要があります（名門・超名門ならどこでも）。歴代レジェンドDLCを入れていると、☆の高いDLC版も出てきます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "栄冠ナインの転生コラボの選手はどうやって仲間にしますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "パワプロショップで調査書を10,000PPで買うと、年度に関係なく確定で仲間にできます。ダイヤのAの選手は、別に追加コンテンツ（550円）を買う必要があります。"
       }
     },
     {
