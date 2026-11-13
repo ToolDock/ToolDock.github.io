@@ -601,7 +601,7 @@ window.TOOLS = [
     seoDesc: "パワプロ風のスターティングオーダー（スタメン・打順）の画像を作れる無料ツールです。名前・守備位置・調子を入れるだけで、動く調子くん付きのGIFアニメや動画、PNG画像として保存できます。",
     themeColor: "#2563eb",
     category: "game",
-    url: "/order/"
+    url: "/stamen/"
   },
 
   {
