@@ -212,7 +212,7 @@ def build_table(rows):
         '            <label><input type="checkbox" value="nokok"> 国際大会で取れない金特を持つ</label>\n'
         '            <label><input type="checkbox" value="ob"> 転生OB・プロ</label>\n'
         '            <label><input type="checkbox" value="collab"> 転生コラボ</label>\n'
-        '            <label><input type="checkbox" value="free"> DLCなしで仲間にできる</label>\n'
+        '            <label><input type="checkbox" value="free"> DLCなしで獲得できる</label>\n'
         '        </div>\n'
         f'        <span class="filter-count"><strong id="pCount">{len(rows)}</strong> 人を表示中</span>\n'
         '    </div>\n'
@@ -256,7 +256,7 @@ def build_pickup(rows, book):
         f'<div class="pk-grid">\n{cards}\n</div>\n'
         f'<h3 id="nokok">国際大会では取れない金特を持つ選手（{len(nokok)}種）</h3>\n'
         '<p>国際大会で取れる金特は、野手5つ（安打製造機・アーチスト・電光石火・勝負師・魔術師）と投手5つ（強心臓・怪物球威・ドクターK・変幻自在・精密機械）、それに威圧感だけです。'
-        'それ以外の金特を狙うなら、金特本を待つか、その金特を持つ転生選手を仲間にすることになります。</p>\n'
+        'それ以外の金特を狙うなら、金特本を待つか、その金特を持つ転生選手を獲得することになります。</p>\n'
         '<div class="table-scroll"><table class="tensei">\n<thead><tr><th>金特</th><th>持っている選手</th><th>ほかの取り方</th></tr></thead>\n<tbody>\n'
         + "\n".join(trs) + '\n</tbody></table></div>'
     )
