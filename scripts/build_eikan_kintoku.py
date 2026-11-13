@@ -104,14 +104,12 @@ def dname(r):
 
 
 def who(r):
-    """金特から探す欄の選手：名前と、出てくる都道府県・年度（守備と☆は選手から探す表に）"""
-    sub = e(r["pref"]) if r["collab"] else f'{e(r["pref"])}・{r["year"]}'
-    title = f'{r["pos"]}・☆{r["star"]}'
-    return f'<span class="pl" title="{e(title)}">{e(dname(r))}<span class="wk">（{sub}）</span></span>'
+    if r["collab"]:
+        return f'{e(r["name"])}<span class="wk">（{e(r["pref"])}・{e(r["pos"])}・☆{r["star"]}）</span>'
+    return f'{e(dname(r))}<span class="wk">（{e(r["pref"])}・{r["year"]}年度・{e(r["pos"])}・☆{r["star"]}）</span>'
 
 
 def build_list(rows, book):
-    """金特から探す：金特本はほぼ全部で出るので書かず、ほかの取り方だけ並べる"""
     known = {k for k, _, _ in KINTOKU}
     missing = sorted({k for r in rows for k in r["kins"]} - known)
     if missing:
@@ -120,38 +118,37 @@ def build_list(rows, book):
     for name, side, base in KINTOKU:
         lab, cls = SIDE[side]
         ways, q = [], [name, "" if base == "-" else base]
+        if name in book:
+            ways.append(("book", "金特本", "甲子園のOBの祝いの品・アイテム業者"))
         if name in KOKUSAI:
             fixed, mvp = KOKUSAI[name]
-            t = (f"<strong>{e(fixed)}</strong>で確定" if fixed else "") + ("・" if fixed and mvp else "") + \
-                (f"大会MVPでランダム" if mvp else "")
+            t = (f"<strong>{e(fixed)}</strong>で確定" if fixed else "") + ("、" if fixed and mvp else "") + \
+                (f"大会MVP（{'野手' if side == 'b' else '投手'}）でランダム" if mvp else "")
             ways.append(("kok", "国際大会", t))
         if name == "威圧感":
             ways.append(("kok", "国際大会", "大会最優秀救援投手（存在感との2択）"))
-            ways.append(("train", "特訓・合宿", "ほかの青特と同じように取れる"))
+            ways.append(("train", "特訓・合宿", "ほかの青特と同じように取れる（金特の例外）"))
         ob = [r for r in rows if name in r["kins"] and not r["collab"]]
         co = [r for r in rows if name in r["kins"] and r["collab"]]
         if ob:
-            ways.append(("ten", "転生", "".join(who(r) for r in ob)))
+            ways.append(("ten", "転生", "、".join(who(r) for r in ob)))
             q += [r["name"] for r in ob]
         if co:
-            ways.append(("col", "コラボ", "".join(who(r) for r in co)))
+            ways.append(("col", "コラボ", "、".join(who(r) for r in co)))
             q += [r["name"] for r in co] + sorted({r["pref"] for r in co})
-        keys = " ".join(sorted({w[0] for w in ways} | ({"book"} if name in book else set())))
-        only = name in book and not is_kok(name) and not ob and not co
-        if only:
+        if name not in book and name != "威圧感":
+            ways.insert(0, ("none", "金特本", "マイライフに無い金特のため未確認"))
+        keys = " ".join(sorted({w[0] for w in ways if w[0] != "none"}))
+        if name in book and not is_kok(name) and not ob and not co:
             keys += " only"   # 金特本でしか取れない
-        if ways:
-            body = "\n".join(f'      <li><span class="w w-{k}">{e(lab2)}</span><span class="wd">{d}</span></li>' for k, lab2, d in ways)
-            body = f'    <ul class="kt-ways">\n{body}\n    </ul>'
-        else:
-            body = '    <p class="kt-only">金特本でしか取れません</p>'
-        base_html = ('<span class="kt-base">青特なし（金特だけ）</span>' if base == "-"
-                     else f'<span class="kt-base">← {e(base)}</span>' if base else "")
+        lis = "\n".join(f'      <li><span class="w w-{k}">{e(lab2)}</span><span class="wd">{d}</span></li>' for k, lab2, d in ways)
+        base_html = ('<span class="kt-base">元の青特：なし（金特だけの特殊能力）</span>' if base == "-"
+                     else f'<span class="kt-base">元の青特：{e(base)}</span>' if base else "")
         qtxt = kana(" ".join(x for x in q if x)).lower().replace(" ", "")
         out.append(
-            f'  <div class="kt{" kt-o" if only else ""}" id="kt-{e(name)}" data-side="{side}" data-ways="{keys}" data-q="{e(qtxt)}">\n'
-            f'    <h3 class="kt-name"><span class="kt-n">{e(name)}</span><span class="sd {cls}">{lab}</span>{base_html}</h3>\n'
-            f'{body}\n  </div>'
+            f'  <div class="kt" id="kt-{e(name)}" data-side="{side}" data-ways="{keys}" data-q="{e(qtxt)}">\n'
+            f'    <h3 class="kt-name">{e(name)} <span class="badge {cls}">{lab}</span></h3>{base_html}\n'
+            f'    <ul class="kt-ways">\n{lis}\n    </ul>\n  </div>'
         )
     return "\n".join(out)
 
