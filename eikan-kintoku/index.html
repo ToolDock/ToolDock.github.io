@@ -422,6 +422,26 @@ figure.shot figcaption{
 
 .ways-note{ margin:-6px 0 18px; font-size:.9rem; }
 
+
+/* ===== ページ先頭のジャンプ ===== */
+.jump{ margin:0 0 18px; }
+.jump-main{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.jump-btn{ display:flex; align-items:center; gap:12px; padding:14px 18px; background:var(--ink); color:#fff; text-decoration:none; border-radius:6px; }
+.jump-btn:hover{ opacity:.9; }
+.jump-btn b{ display:block; font-size:1.08rem; }
+.jump-btn small{ display:block; font-size:.8rem; opacity:.8; }
+.jump-ic{ font-size:1.4rem; line-height:1; }
+.jump-sub{ display:flex; flex-wrap:wrap; gap:6px 8px; margin-top:10px; }
+.jump-sub a{ font-size:.85rem; padding:4px 12px; border:1px solid var(--line-input); border-radius:999px; background:var(--surface); color:var(--ink); text-decoration:none; }
+.jump-sub a:hover{ border-color:var(--ink); }
+@media (max-width:600px){
+    .jump-btn{ padding:11px 12px; gap:8px; }
+    .jump-btn b{ font-size:1rem; }
+    .jump-btn small{ display:none; }
+    .jump-ic{ font-size:1.05rem; }
+    .jump-sub{ gap:5px 6px; }
+    .jump-sub a{ font-size:.78rem; padding:3px 10px; }
+}
 /* ===== 選手から探す・ピックアップ ===== */
 /* 記事の中に置いたカード（国際大会の評価・選手から探す）の見出しは、記事の h2 の飾りを打ち消す */
 .tool-article .card{ margin:16px 0 22px; }
@@ -498,6 +518,20 @@ table.tensei td:last-child{ white-space:normal; }
 </div>
 
 <main>
+
+<nav class="jump" aria-label="検索ツールと一覧">
+    <div class="jump-main">
+        <a href="#search" class="jump-btn"><span class="jump-ic">🔍</span><span><b>金特から探す</b><small>欲しい金特の入手方法（56種）</small></span></a>
+        <a href="#players" class="jump-btn"><span class="jump-ic">🔍</span><span><b>選手から探す</b><small>金特を持つ転生選手（65人）</small></span></a>
+    </div>
+    <div class="jump-sub">
+        <a href="#book-only">金特本でしか取れない金特</a>
+        <a href="#multi">金特を2つ以上持つ選手</a>
+        <a href="#nokok">国際大会で取れない金特を持つ選手</a>
+        <a href="#tbl">国際大会の評価と特殊能力</a>
+        <a href="#tensei">転生選手が出てくる条件</a>
+    </div>
+</nav>
 
 <div class="ways">
 
