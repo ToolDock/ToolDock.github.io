@@ -98,11 +98,15 @@ def kana(s):
     return "".join(chr(ord(c) + 0x60) if "ぁ" <= c <= "ゖ" else c for c in s)
 
 
+def dname(r):
+    """歴代レジェンドDLCの選手は、名前に（DLC）を付けて通常版と分ける"""
+    return r["name"] + "（DLC）" if r["dlc"] else r["name"]
+
+
 def who(r):
     if r["collab"]:
         return f'{e(r["name"])}<span class="wk">（{e(r["pref"])}・{e(r["pos"])}・☆{r["star"]}）</span>'
-    tag = '<span class="dlc">歴代レジェンド</span>' if r["dlc"] else ""
-    return f'{e(r["name"])}{tag}<span class="wk">（{e(r["pref"])}・{r["year"]}年度・{e(r["pos"])}・☆{r["star"]}）</span>'
+    return f'{e(dname(r))}<span class="wk">（{e(r["pref"])}・{r["year"]}年度・{e(r["pos"])}・☆{r["star"]}）</span>'
 
 
 def build_list(rows, book):
@@ -173,7 +177,7 @@ def kin_links(kins):
 
 def tag_html(r):
     if r["dlc"]:
-        return '<span class="dlc">歴代レジェンド</span>'
+        return ""
     if r["pref"] == "ダイヤのA":
         return '<span class="dlc">DLC</span>'
     return ""
@@ -196,7 +200,7 @@ def build_table(rows):
         q = kana(" ".join([r["name"], r["pref"], r["pos"]] + r["kins"] + (["歴代レジェンド", "dlc"] if r["dlc"] else []))).lower().replace(" ", "")
         out.append(
             f'<tr{co_cls} data-q="{e(q)}" data-tags="{" ".join(tags)}" data-co="{group(r)}" data-star="{r["star"]}" data-kin="{len(r["kins"])}" data-year="{yv}" data-order="{n}">'
-            f'<td class="pn">{e(r["name"])}{tag_html(r)}</td><td>{e(r["pref"])}</td><td>{year}</td>'
+            f'<td class="pn">{e(dname(r))}{tag_html(r)}</td><td>{e(r["pref"])}</td><td>{year}</td>'
             f'<td>{e(r["pos"])}</td><td class="r">{r["star"]}</td><td>{kin_links(r["kins"])}</td></tr>')
     return (
         '<div class="card pf" id="players">\n'
@@ -226,7 +230,7 @@ def build_table(rows):
 
 def who_short(r):
     sub = r["pref"] if r["collab"] else f'{r["pref"]}・{r["year"]}年度'
-    body = f'{e(r["name"])}{tag_html(r)}<span class="wk">（{e(sub)}・☆{r["star"]}）</span>'
+    body = f'{e(dname(r))}{tag_html(r)}<span class="wk">（{e(sub)}・☆{r["star"]}）</span>'
     return f'<span class="co-name">{body}</span>' if r["collab"] else body
 
 
@@ -239,7 +243,7 @@ def build_pickup(rows, book):
 
     def card(r):
         sub = e(r["pref"]) + ("" if r["collab"] else "・" + r["year"] + "年度")
-        return (f'<div class="pk{" co" if r["collab"] else ""}"><div class="pk-n">{e(r["name"])}{tag_html(r)}</div>'
+        return (f'<div class="pk{" co" if r["collab"] else ""}"><div class="pk-n">{e(dname(r))}{tag_html(r)}</div>'
                 f'<div class="pk-s">{sub}・{e(r["pos"])}・☆{r["star"]}</div>'
                 f'<div class="pk-k">{"".join(chip(k) for k in r["kins"])}</div></div>')
     cards = "\n".join(card(r) for r in multi)
