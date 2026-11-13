@@ -153,6 +153,14 @@ def is_kok(k):
     return k in KOKUSAI or k == "威圧感"
 
 
+GROUP = {"にじさんじ": 1, "ダイヤのA": 2}
+
+
+def group(r):
+    """並び順：転生OB・プロ → にじさんじ → ダイヤのA"""
+    return GROUP.get(r["pref"], 0)
+
+
 def paid(r):
     return r["dlc"] or r["pref"] == "ダイヤのA"
 
@@ -187,7 +195,7 @@ def build_table(rows):
         co_cls = ' class="co"' if r["collab"] else ""
         q = kana(" ".join([r["name"], r["pref"], r["pos"]] + r["kins"] + (["歴代レジェンド", "dlc"] if r["dlc"] else []))).lower().replace(" ", "")
         out.append(
-            f'<tr{co_cls} data-q="{e(q)}" data-tags="{" ".join(tags)}" data-co="{1 if r["collab"] else 0}" data-star="{r["star"]}" data-kin="{len(r["kins"])}" data-year="{yv}" data-order="{n}">'
+            f'<tr{co_cls} data-q="{e(q)}" data-tags="{" ".join(tags)}" data-co="{group(r)}" data-star="{r["star"]}" data-kin="{len(r["kins"])}" data-year="{yv}" data-order="{n}">'
             f'<td class="pn">{e(r["name"])}{tag_html(r)}</td><td>{e(r["pref"])}</td><td>{year}</td>'
             f'<td>{e(r["pos"])}</td><td class="r">{r["star"]}</td><td>{kin_links(r["kins"])}</td></tr>')
     return (
@@ -224,7 +232,7 @@ def who_short(r):
 
 def build_pickup(rows, book):
     # 転生コラボは例外の枠なので、いつも後ろにまとめる
-    multi = sorted([r for r in rows if len(r["kins"]) >= 2], key=lambda r: (r["collab"], -len(r["kins"]), -r["star"]))
+    multi = sorted([r for r in rows if len(r["kins"]) >= 2], key=lambda r: (group(r), -len(r["kins"]), -r["star"]))
     def chip(k):
         cls = "chip" if is_kok(k) else "chip nk"
         return f'<a href="#kt-{e(k)}" class="{cls}">{e(k)}</a>'
@@ -239,7 +247,7 @@ def build_pickup(rows, book):
     nokok = [k for k in order if not is_kok(k) and any(k in r["kins"] for r in rows)]
     trs = []
     for k in nokok:
-        holders = sorted([r for r in rows if k in r["kins"]], key=lambda r: r["collab"])
+        holders = sorted([r for r in rows if k in r["kins"]], key=group)
         other = "金特本" if k in book else '<span class="muted">金特本は未確認</span>'
         trs.append(f'<tr><td><a href="#kt-{e(k)}" class="nk">{e(k)}</a></td><td>{"、".join(who_short(r) for r in holders)}</td><td>{other}</td></tr>')
     return (
