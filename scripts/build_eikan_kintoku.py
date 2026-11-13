@@ -184,9 +184,10 @@ def build_table(rows):
             tags.append("free")
         year = "いつでも" if r["collab"] else f'{r["year"]}年度'
         yv = 9999 if r["collab"] else int(r["year"])
+        co_cls = ' class="co"' if r["collab"] else ""
         q = kana(" ".join([r["name"], r["pref"], r["pos"]] + r["kins"] + (["歴代レジェンド", "dlc"] if r["dlc"] else []))).lower().replace(" ", "")
         out.append(
-            f'<tr data-q="{e(q)}" data-tags="{" ".join(tags)}" data-star="{r["star"]}" data-kin="{len(r["kins"])}" data-year="{yv}" data-order="{n}">'
+            f'<tr{co_cls} data-q="{e(q)}" data-tags="{" ".join(tags)}" data-co="{1 if r["collab"] else 0}" data-star="{r["star"]}" data-kin="{len(r["kins"])}" data-year="{yv}" data-order="{n}">'
             f'<td class="pn">{e(r["name"])}{tag_html(r)}</td><td>{e(r["pref"])}</td><td>{year}</td>'
             f'<td>{e(r["pos"])}</td><td class="r">{r["star"]}</td><td>{kin_links(r["kins"])}</td></tr>')
     return (
@@ -217,18 +218,20 @@ def build_table(rows):
 
 def who_short(r):
     sub = r["pref"] if r["collab"] else f'{r["pref"]}・{r["year"]}年度'
-    return f'{e(r["name"])}{tag_html(r)}<span class="wk">（{e(sub)}・☆{r["star"]}）</span>'
+    body = f'{e(r["name"])}{tag_html(r)}<span class="wk">（{e(sub)}・☆{r["star"]}）</span>'
+    return f'<span class="co-name">{body}</span>' if r["collab"] else body
 
 
 def build_pickup(rows, book):
-    multi = sorted([r for r in rows if len(r["kins"]) >= 2], key=lambda r: (-len(r["kins"]), -r["star"]))
+    # 転生コラボは例外の枠なので、いつも後ろにまとめる
+    multi = sorted([r for r in rows if len(r["kins"]) >= 2], key=lambda r: (r["collab"], -len(r["kins"]), -r["star"]))
     def chip(k):
         cls = "chip" if is_kok(k) else "chip nk"
         return f'<a href="#kt-{e(k)}" class="{cls}">{e(k)}</a>'
 
     def card(r):
         sub = e(r["pref"]) + ("" if r["collab"] else "・" + r["year"] + "年度")
-        return (f'<div class="pk"><div class="pk-n">{e(r["name"])}{tag_html(r)}</div>'
+        return (f'<div class="pk{" co" if r["collab"] else ""}"><div class="pk-n">{e(r["name"])}{tag_html(r)}</div>'
                 f'<div class="pk-s">{sub}・{e(r["pos"])}・☆{r["star"]}</div>'
                 f'<div class="pk-k">{"".join(chip(k) for k in r["kins"])}</div></div>')
     cards = "\n".join(card(r) for r in multi)
@@ -236,7 +239,7 @@ def build_pickup(rows, book):
     nokok = [k for k in order if not is_kok(k) and any(k in r["kins"] for r in rows)]
     trs = []
     for k in nokok:
-        holders = [r for r in rows if k in r["kins"]]
+        holders = sorted([r for r in rows if k in r["kins"]], key=lambda r: r["collab"])
         other = "金特本" if k in book else '<span class="muted">金特本は未確認</span>'
         trs.append(f'<tr><td><a href="#kt-{e(k)}" class="nk">{e(k)}</a></td><td>{"、".join(who_short(r) for r in holders)}</td><td>{other}</td></tr>')
     return (
