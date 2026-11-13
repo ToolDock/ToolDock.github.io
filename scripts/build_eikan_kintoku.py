@@ -133,6 +133,8 @@ def build_list(rows, book):
         if name not in book and name != "威圧感":
             ways.insert(0, ("none", "金特本", "マイライフに無い金特のため未確認"))
         keys = " ".join(sorted({w[0] for w in ways if w[0] != "none"}))
+        if name in book and not is_kok(name) and not ob and not co:
+            keys += " only"   # 金特本でしか取れない
         lis = "\n".join(f'      <li><span class="w w-{k}">{e(lab2)}</span><span class="wd">{d}</span></li>' for k, lab2, d in ways)
         base_html = f'<span class="kt-base">元の青特：{e(base)}</span>' if base else ""
         qtxt = kana(" ".join(x for x in q if x)).lower().replace(" ", "")
@@ -144,25 +146,118 @@ def build_list(rows, book):
     return "\n".join(out)
 
 
+def is_kok(k):
+    return k in KOKUSAI or k == "威圧感"
+
+
+def paid(r):
+    return r["dlc"] or r["pref"] == "ダイヤのA"
+
+
+def kin_links(kins):
+    """国際大会で取れない金特は太字にする"""
+    return "、".join(
+        f'<a href="#kt-{e(k)}"' + ("" if is_kok(k) else ' class="nk"') + f'>{e(k)}</a>' for k in kins)
+
+
+def tag_html(r):
+    if r["dlc"]:
+        return '<span class="dlc">歴代レジェンド</span>'
+    if r["pref"] == "ダイヤのA":
+        return '<span class="dlc">DLC</span>'
+    return ""
+
+
 def build_table(rows):
-    def tr(r):
-        kins = "、".join(f'<a href="#kt-{e(k)}">{e(k)}</a>' for k in r["kins"])
-        if r["collab"]:
-            return (f'<tr><td>{e(r["name"])}</td><td>{e(r["pref"])}</td><td>いつでも</td>'
-                    f'<td>{e(r["pos"])}</td><td class="r">{r["star"]}</td><td>{kins}</td></tr>')
-        nm = e(r["name"]) + ('<span class="dlc">歴代レジェンド</span>' if r["dlc"] else "")
-        return (f'<tr><td>{nm}</td><td>{e(r["pref"])}</td><td>{r["year"]}年度</td>'
-                f'<td>{e(r["pos"])}</td><td class="r">{r["star"]}</td><td>{kins}</td></tr>')
-    head = '<thead><tr><th>選手</th><th>{}</th><th>年度</th><th>守備</th><th class="r">☆</th><th>持っている金特</th></tr></thead>'
-    ob = [r for r in rows if not r["collab"]]
-    co = [r for r in rows if r["collab"]]
+    """選手から探す：検索・絞り込み・並べ替えつきの表"""
+    out = []
+    for n, r in enumerate(rows):
+        tags = ["collab" if r["collab"] else "ob"]
+        if len(r["kins"]) >= 2:
+            tags.append("multi")
+        if any(not is_kok(k) for k in r["kins"]):
+            tags.append("nokok")
+        if not paid(r):
+            tags.append("free")
+        year = "いつでも" if r["collab"] else f'{r["year"]}年度'
+        yv = 9999 if r["collab"] else int(r["year"])
+        q = kana(" ".join([r["name"], r["pref"], r["pos"]] + r["kins"] + (["歴代レジェンド", "dlc"] if r["dlc"] else []))).lower().replace(" ", "")
+        out.append(
+            f'<tr data-q="{e(q)}" data-tags="{" ".join(tags)}" data-star="{r["star"]}" data-kin="{len(r["kins"])}" data-year="{yv}" data-order="{n}">'
+            f'<td class="pn">{e(r["name"])}{tag_html(r)}</td><td>{e(r["pref"])}</td><td>{year}</td>'
+            f'<td>{e(r["pos"])}</td><td class="r">{r["star"]}</td><td>{kin_links(r["kins"])}</td></tr>')
     return (
-        '<h3 id="tensei-ob">転生OB・転生プロ（' + str(len(ob)) + '人）</h3>\n'
-        '<div class="table-scroll"><table class="tensei">\n' + head.format("都道府県") + '\n<tbody>\n'
-        + "\n".join(tr(r) for r in ob) + '\n</tbody></table></div>\n'
-        '<h3 id="tensei-collab">転生コラボ（' + str(len(co)) + '人）</h3>\n'
-        '<div class="table-scroll"><table class="tensei">\n' + head.format("作品") + '\n<tbody>\n'
-        + "\n".join(tr(r) for r in co) + '\n</tbody></table></div>'
+        '<div class="card pf" id="players">\n'
+        '    <h2>金特を持つ選手から探す</h2>\n'
+        '    <p class="lead">選手名・都道府県・作品名・金特・守備で探せます（例：イチロー、兵庫、にじさんじ、怪童、捕）。'
+        '<b class="nk-legend">太字の金特</b>は国際大会では取れない金特です。</p>\n'
+        '    <div class="kt-filter">\n'
+        '        <input type="search" id="pq" placeholder="選手名・都道府県・作品・金特で検索" aria-label="選手名・都道府県・作品・金特で検索" autocomplete="off">\n'
+        '        <select id="psort" aria-label="並べ替え"><option value="order">都道府県順</option><option value="star">☆が高い順</option>'
+        '<option value="kin">金特が多い順</option><option value="year">年度が古い順</option></select>\n'
+        '        <div class="kt-chips" id="pChips">\n'
+        '            <label><input type="checkbox" value="multi"> 金特を2つ以上</label>\n'
+        '            <label><input type="checkbox" value="nokok"> 国際大会で取れない金特を持つ</label>\n'
+        '            <label><input type="checkbox" value="ob"> 転生OB・プロ</label>\n'
+        '            <label><input type="checkbox" value="collab"> 転生コラボ</label>\n'
+        '            <label><input type="checkbox" value="free"> DLCなしで仲間にできる</label>\n'
+        '        </div>\n'
+        f'        <span class="filter-count"><strong id="pCount">{len(rows)}</strong> 人を表示中</span>\n'
+        '    </div>\n'
+        '    <div class="scroll"><table class="tensei" id="pTable">\n'
+        '    <thead><tr><th>選手</th><th>都道府県・作品</th><th>年度</th><th>守備</th><th class="r">☆</th><th>持っている金特</th></tr></thead>\n'
+        '    <tbody>\n' + "\n".join(out) + '\n    </tbody></table></div>\n'
+        '    <p class="empty" id="pEmpty" hidden>あてはまる選手がいません</p>\n'
+        '</div>'
+    )
+
+
+def who_short(r):
+    sub = r["pref"] if r["collab"] else f'{r["pref"]}・{r["year"]}年度'
+    return f'{e(r["name"])}{tag_html(r)}<span class="wk">（{e(sub)}・☆{r["star"]}）</span>'
+
+
+def build_pickup(rows, book):
+    multi = sorted([r for r in rows if len(r["kins"]) >= 2], key=lambda r: (-len(r["kins"]), -r["star"]))
+    def chip(k):
+        cls = "chip" if is_kok(k) else "chip nk"
+        return f'<a href="#kt-{e(k)}" class="{cls}">{e(k)}</a>'
+
+    def card(r):
+        sub = e(r["pref"]) + ("" if r["collab"] else "・" + r["year"] + "年度")
+        return (f'<div class="pk"><div class="pk-n">{e(r["name"])}{tag_html(r)}</div>'
+                f'<div class="pk-s">{sub}・{e(r["pos"])}・☆{r["star"]}</div>'
+                f'<div class="pk-k">{"".join(chip(k) for k in r["kins"])}</div></div>')
+    cards = "\n".join(card(r) for r in multi)
+    order = [k for k, _, _ in KINTOKU]
+    nokok = [k for k in order if not is_kok(k) and any(k in r["kins"] for r in rows)]
+    trs = []
+    for k in nokok:
+        holders = [r for r in rows if k in r["kins"]]
+        other = "金特本" if k in book else '<span class="muted">金特本は未確認</span>'
+        trs.append(f'<tr><td><a href="#kt-{e(k)}" class="nk">{e(k)}</a></td><td>{"、".join(who_short(r) for r in holders)}</td><td>{other}</td></tr>')
+    return (
+        f'<h3 id="multi">金特を2つ以上持つ選手（{len(multi)}人）</h3>\n'
+        '<p>1人で金特を2つ・3つ持っている選手です。入部させるだけで、金特を一度に複数手に入れられます。</p>\n'
+        f'<div class="pk-grid">\n{cards}\n</div>\n'
+        f'<h3 id="nokok">国際大会では取れない金特を持つ選手（{len(nokok)}種）</h3>\n'
+        '<p>国際大会で取れる金特は、野手5つ（安打製造機・アーチスト・電光石火・勝負師・魔術師）と投手5つ（強心臓・怪物球威・ドクターK・変幻自在・精密機械）、それに威圧感だけです。'
+        'それ以外の金特を狙うなら、金特本を待つか、その金特を持つ転生選手を仲間にすることになります。</p>\n'
+        '<div class="table-scroll"><table class="tensei">\n<thead><tr><th>金特</th><th>持っている選手</th><th>ほかの取り方</th></tr></thead>\n<tbody>\n'
+        + "\n".join(trs) + '\n</tbody></table></div>'
+    )
+
+
+def build_book_only(rows, book):
+    held = {k for r in rows for k in r["kins"]}
+    only = [(k, side) for k, side, _ in KINTOKU if k in book and not is_kok(k) and k not in held]
+    chips = "".join(f'<a href="#kt-{e(k)}" class="chip">{e(k)}</a>' for k, _ in only)
+    return (
+        f'<h3 id="book-only">金特本でしか取れない金特（{len(only)}種）</h3>\n'
+        '<p>次の金特は、国際大会では取れず、持っている転生選手もいません（2026年11月時点で分かっている範囲）。'
+        '栄冠ナインで付けるには、<strong>金特本が出るのを待つしかありません</strong>。'
+        'OBの祝いの品とアイテム業者を毎回確かめておきましょう。</p>\n'
+        f'<div class="chips">{chips}</div>'
     )
 
 
@@ -179,6 +274,8 @@ def main():
     page = PAGE.read_text(encoding="utf-8")
     page = replace(page, "KT-LIST", build_list(rows, book))
     page = replace(page, "TENSEI-TABLE", build_table(rows))
+    page = replace(page, "PICKUP", build_pickup(rows, book))
+    page = replace(page, "BOOK-ONLY", build_book_only(rows, book))
     PAGE.write_text(page, encoding="utf-8")
     print(f"金特 {len(KINTOKU)}種・転生選手 {len(rows)}人を書き込みました")
 
