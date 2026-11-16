@@ -300,10 +300,16 @@
     }
 
     /* 最近の更新。トップの「最近の更新」と同じ中身を、新しい順に数件 */
-    const updates = (window.UPDATES || [])
-      .map(u => ({ u, t: tools.find(t => t.id === u.id) }))
-      .filter(x => x.t)
-      .slice(0, UPDATES_COUNT);
+    /* 同じツールの更新は1つにまとめる（いちばん新しい日付で出し、どれかが公開なら NEW） */
+    const seen = new Map();
+    for (const u of (window.UPDATES || [])) {
+      const t = tools.find(t => t.id === u.id);
+      if (!t) continue;
+      const g = seen.get(u.id);
+      if (!g) seen.set(u.id, { u: { ...u }, t });
+      else if (u.kind === "new" && (new Date(g.u.date) - new Date(u.date)) / 864e5 <= 14) g.u.kind = "new";
+    }
+    const updates = [...seen.values()].slice(0, UPDATES_COUNT);
 
     if (updates.length) {
       html += `
