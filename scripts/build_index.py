@@ -55,6 +55,8 @@ def parse_recommended():
 # トップの「最近の更新」に出す数（tool-data.js の UPDATES の新しい順）
 UPDATES_SHOWN = 5
 UPDATE_KIND = {"new": "NEW", "update": "更新", "fix": "修正"}
+# 同じツールの更新をまとめるのは、いちばん新しい更新からこの日数まで
+GROUP_DAYS = 14
 
 
 def parse_updates():
@@ -67,19 +69,36 @@ def parse_updates():
             for m in pat.finditer(body.group(1))]
 
 
+def group_updates(updates):
+    """同じツールの更新は1つにまとめる。いちばん新しい更新を代表にし、ほかの件数を数える。
+    どれかが「NEW」（公開）なら、まとめた行も NEW にする"""
+    from datetime import date
+    days = lambda a, b: (date.fromisoformat(a) - date.fromisoformat(b)).days
+    groups, order = {}, []
+    for u in updates:
+        g = groups.get(u["id"])
+        if g is None:
+            groups[u["id"]] = {**u, "more": 0}
+            order.append(u["id"])
+        elif days(g["date"], u["date"]) <= GROUP_DAYS:   # 古すぎる更新は数えない
+            g["more"] += 1
+            if u["kind"] == "new":
+                g["kind"] = "new"
+    return [groups[i] for i in order]
+
+
 def render_updates(tools):
-    """「最近の更新」。日付・種類・ツール名（リンク）・ひとこと"""
+    """「最近の更新」。日付・種類・ツール名（リンク）・ひとこと。同じツールの更新は1行にまとめる"""
     by_id = {t["id"]: t for t in tools}
     rows = []
-    for u in parse_updates():
-        t = by_id.get(u["id"])
-        if not t:
-            continue
+    for u in group_updates([u for u in parse_updates() if u["id"] in by_id]):
+        t = by_id[u["id"]]
         y, m, d = u["date"].split("-")
+        more = f'<span class="up-more">ほか{u["more"]}件の更新</span>' if u["more"] else ""
         rows.append(f'    <li><time datetime="{u["date"]}">{int(m)}/{int(d)}</time>'
                     f'<span class="up-kind up-{html.escape(u["kind"])}">{UPDATE_KIND.get(u["kind"], "更新")}</span>'
                     f'<a href="{html.escape(t["url"])}">{html.escape(t["title"])}</a>'
-                    f'<span class="up-text">{html.escape(u["text"])}</span></li>')
+                    f'<span class="up-text">{html.escape(u["text"])}{more}</span></li>')
         if len(rows) == UPDATES_SHOWN:
             break
     if not rows:
