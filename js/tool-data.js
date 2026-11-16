@@ -30,6 +30,7 @@ window.CATEGORY_NAMES = {
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-17", id: "kintoku", kind: "update", text: "マイライフ金特ミッション一覧に、怪童・安打製造機・鉄の壁のミッションを追加。ストライク送球の条件を「野手として出場」に直しました" },
   { date: "2026-11-16", id: "kintoku", kind: "update", text: "マイライフ金特ミッション一覧に、ロケットスタート・走者釘付・引っ張り屋・広角砲のミッションと、ガソリンタンクのリリーフ用のミッションを追加" },
   { date: "2026-11-13", id: "eikan-kintoku", kind: "update", text: "栄冠ナインの金特ページに、金特を持つ選手から探す表、金特を2つ以上持つ選手、国際大会では取れない金特を持つ選手、金特本でしか取れない金特21種を追加" },
   { date: "2026-11-13", id: "eikan-kintoku", kind: "update", text: "栄冠ナインの金特ページを整理し直し、欲しい金特から入手方法を探せる検索と、金特を持つ転生OB・転生プロ・転生コラボ（にじさんじ・ダイヤのA）65人の一覧を追加" },
