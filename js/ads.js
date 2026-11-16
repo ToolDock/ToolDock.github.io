@@ -3,7 +3,7 @@
 
    方針
    - 本文を覆う大きな広告は置かない
-   - 下から小さく出るバー（閉じられる）と、ページ末尾の1枠だけ
+   - 下から小さく出るバー（閉じられる）、ページの上の帯、記事の途中（長い記事だけ）、共有の上、ページ末尾
 
    AdSense 本体のスクリプトは、各HTMLの <head> に静的に記述してある。
    所有権の確認クローラは JavaScript を実行する前のソースを見るため、
@@ -34,6 +34,11 @@
   const SLOT_TOP = "7810262044";      /* 「上の帯」ユニット。パンくずのすぐ下、本文の上の横長の枠 */
   const SLOT_RELATED = "8162823719";  /* 「同じカテゴリのツール」の上の細い枠。いまは「共有の上」と同じユニットを使う */
   const SLOT_SHARE = "8162823719";    /* 「共有の上」ユニット（レスポンシブ）。「このページを共有」の直前の細い枠 */
+  /* 「記事の途中」の枠。長い記事のまん中あたりの見出しの前に1つだけ置く（2026-11-16）。
+     専用のユニットを作ったら、その番号に替える。それまではページ末尾と同じユニットを使う */
+  const SLOT_MID = "8286258434";
+  /* 記事（.tool-article）がこの高さ（画面の何枚分か）より短いページには置かない */
+  const MID_MIN_SCREENS = 4;
 
   /* 右レールが出る幅（js/sidebar.js の WIDE と揃える） */
   const RAIL_WIDE = "(min-width: 1200px)";
@@ -132,7 +137,8 @@
       .td-ad-rail:has(ins[data-ad-status="unfilled"]),
       .td-ad-share:has(ins[data-ad-status="unfilled"]),
       .td-ad-related:has(ins[data-ad-status="unfilled"]),
-      .td-ad-top:has(ins[data-ad-status="unfilled"]) {
+      .td-ad-top:has(ins[data-ad-status="unfilled"]),
+      .td-ad-mid:has(ins[data-ad-status="unfilled"]) {
         display: none;
       }
 
@@ -177,6 +183,18 @@
         clear: both;
         margin: 32px 0 0;
         text-align: left;
+      }
+
+      /* 記事の途中の枠。前後の見出しとくっつかないよう、上下に余白を取る */
+      .td-ad-mid {
+        clear: both;
+        margin: 28px 0 30px;
+        text-align: center;
+        line-height: 0;
+      }
+
+      .td-ad-mid .td-ad-label {
+        line-height: 1.4;
       }
 
       .td-ad-label {
@@ -385,6 +403,42 @@
     pushAd();
   }
 
+  /* ---- 記事の途中の枠 ----
+     長い記事（画面4枚分以上）だけ。記事のまん中にいちばん近い h2 見出しの前に1つ置く。
+     最初と最後の見出しの前には置かない（上の帯・共有の上の枠と近くなりすぎるため）。
+     スマホでは 300×250、広い画面（740px以上）では 728×90。近づいてから読み込む */
+  function mountMidSlot() {
+    const art = document.querySelector(".tool-article");
+    if (!art || document.querySelector(".td-ad-mid")) return;
+
+    const rect = art.getBoundingClientRect();
+    if (rect.height < window.innerHeight * MID_MIN_SCREENS) return;
+
+    const heads = [...art.querySelectorAll(":scope > h2")];
+    if (heads.length < 3) return;
+
+    const top = rect.top + window.scrollY;
+    const mid = top + rect.height / 2;
+    let best = null, bestD = Infinity;
+    heads.slice(1, -1).forEach(h => {
+      const d = Math.abs(h.getBoundingClientRect().top + window.scrollY - mid);
+      if (d < bestD) { bestD = d; best = h; }
+    });
+    if (!best) return;
+
+    const box = document.createElement("div");
+    box.className = "td-ad-mid";
+    best.parentNode.insertBefore(box, best);
+
+    const [w, h] = box.clientWidth >= 740 ? [728, 90] : [300, 250];
+    box.innerHTML = `
+      <div class="td-ad-label">スポンサーリンク</div>
+      ${placeholder(w, h)}
+    `;
+
+    whenNear(box, () => fillPlaceholders(box, SLOT_MID));
+  }
+
   function mountEndSlot() {
     const box = document.createElement("div");
 
@@ -504,6 +558,8 @@
     if (SLOT_RAIL) mountRailSlot();
     if (SLOT_SHARE) setTimeout(mountShareSlot, 0);
     if (SLOT_RELATED) setTimeout(mountRelatedSlot, 0);
+    /* 記事の高さは、ほかの欄（共有・同じカテゴリ）が入ってから測る */
+    if (SLOT_MID) setTimeout(mountMidSlot, 0);
   }
 
   if (document.readyState === "loading") {
