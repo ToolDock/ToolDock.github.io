@@ -205,7 +205,7 @@ def build_table(rows):
             f'<td>{e(r["pos"])}</td><td class="r">{r["star"]}</td><td>{kin_links(r["kins"])}</td></tr>')
     return (
         '<div class="card pf" id="players">\n'
-        '    <h2>金特を持つ選手から探す</h2>\n'
+        '    <h2>金特持ちの転生選手から探す</h2>\n'
         '    <p class="lead">選手名・都道府県・作品名・金特・守備で探せます（例：イチロー、兵庫、にじさんじ、怪童、捕）。'
         '<b class="nk-legend">太字の金特</b>は国際大会では取れない金特です。列の見出しを押すと並べ替えられます（もう一度押すと逆順）。</p>\n'
         '    <div class="kt-filter">\n'
