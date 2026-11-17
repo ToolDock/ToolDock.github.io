@@ -34,14 +34,14 @@
   const SLOT_TOP = "7810262044";      /* 「上の帯」ユニット。パンくずのすぐ下、本文の上の横長の枠 */
   const SLOT_RELATED = "8162823719";  /* 「同じカテゴリのツール」の上の細い枠。いまは「共有の上」と同じユニットを使う */
   const SLOT_SHARE = "8162823719";    /* 「共有の上」ユニット（レスポンシブ）。「このページを共有」の直前の細い枠 */
-  /* 「記事の途中」の枠。長い記事・一覧の途中に、画面4枚分ごとに置く（1ページ3つまで。2026-11-17）。
+  /* 「記事の途中」の枠（機能・表の中、機能と説明のあいだ、説明の中。くわしくは mountMidSlot）。
      専用のユニットを作ったら、その番号に替える。それまではページ末尾と同じユニットを使う */
   const SLOT_MID = "8286258434";
-  /* 記事（.tool-article）がこの高さ（画面の何枚分か）より短いページには置かない */
+  /* 説明（.tool-article）がこの高さ（画面の何枚分か）より短いときは、説明の中には置かない */
   const MID_MIN_SCREENS = 2;
-  /* 記事の途中の枠どうしの間を、画面の何枚分あけるか。1ページに置く数の上限 */
+  /* 機能・表の中の枠どうしの間を、画面の何枚分あけるか。機能・表の中に置く数の上限 */
   const MID_GAP_SCREENS = 4;
-  const MID_MAX = 3;
+  const TOOL_MAX = 2;
 
   /* 右レールが出る幅（js/sidebar.js の WIDE と揃える） */
   const RAIL_WIDE = "(min-width: 1200px)";
@@ -406,54 +406,61 @@
     pushAd();
   }
 
-  /* ---- 記事の途中の枠 ----
-     長い記事や長い一覧の途中に、画面 MID_GAP_SCREENS 枚分ごとに置く（1ページ MID_MAX まで）。
-     置く場所の候補は次の3つで、上から順に、ひとつ前の枠から十分離れたものを選ぶ。
-       - 記事（.tool-article。画面 MID_MIN_SCREENS 枚分以上のとき）の h2・h3 見出しの前（最初の見出しを除く）
-       - 地域ごとに分かれた一覧（金特ミッション一覧の section.region）の、2つ目以降の地域の前
-       - data-ad-spot を付けた要素の前（ページ側で置き場所を指定したいとき）
-     それぞれの終わりに近い所（画面0.8枚分以内）には置かない。
-     読む人は広告をすぐ読み飛ばすので、読みにくくはならない。少しでも画面に映れば収益になる（2026-11-17）。
-     スマホでは 300×250、広い画面（740px以上）では 728×90。どれも近づいてから読み込む */
+  /* ---- 機能・表の中、機能と説明のあいだ、説明の中の枠 ----
+     どれも「記事の途中」のユニットを使い、近づいてから読み込む。スマホでは 300×250、広い画面（740px以上）では 728×90。
+       1. 機能・表の中：地域ごとに分かれた一覧（金特ミッション一覧の section.region）の2つ目以降の地域の前と、
+          data-ad-spot を付けた要素の前。画面 MID_GAP_SCREENS 枚分ずつあけて、TOOL_MAX まで
+       2. 機能・表と説明のあいだ：説明（.tool-article）のすぐ上に1つ。
+          ページの先頭から画面1枚分より下にあるときだけ（上の帯と近くならないように）
+       3. 説明の中：説明が画面 MID_MIN_SCREENS 枚分以上あるとき、まん中にいちばん近い見出し（h2・h3）の前に1つだけ。
+          説明の最初の見出し、説明の先頭から画面1枚半以内、終わりから画面0.8枚分以内には置かない
+     （2026-11-17：説明の中は1つ、機能・表の中は2つまで、そのかわり機能と説明のあいだに1つ） */
   function mountMidSlot() {
     if (document.querySelector(".td-ad-mid")) return;
 
     const vh = window.innerHeight;
     const Y = el => el.getBoundingClientRect().top + window.scrollY;
-    const cands = [];   /* { el, y, end } */
+    const picks = [];   /* 置く場所は、枠を入れる前の位置で全部決めてから入れる（入れるとあとの位置がずれるため） */
 
-    const art = document.querySelector(".tool-article");
-    if (art && art.getBoundingClientRect().height >= vh * MID_MIN_SCREENS) {
-      const end = Y(art) + art.getBoundingClientRect().height;
-      [...art.querySelectorAll(":scope > h2, :scope > h3")].slice(1).forEach(h => {
-        /* 節の最初の小見出し（すぐ上が h2）は選ばない。h2 の前に置けば足りる */
-        if (h.tagName === "H3" && h.previousElementSibling && h.previousElementSibling.tagName === "H2") return;
-        cands.push({ el: h, y: Y(h), end });
-      });
-    }
-
+    /* 1. 機能・表の中 */
+    const tool = [];
     const regions = [...document.querySelectorAll("section.region")];
     if (regions.length > 1) {
       const lastR = regions[regions.length - 1];
       const end = Y(lastR) + lastR.getBoundingClientRect().height;
-      regions.slice(1).forEach(r => cands.push({ el: r, y: Y(r), end }));
+      regions.slice(1).forEach(r => tool.push({ el: r, y: Y(r), end }));
     }
-
-    document.querySelectorAll("[data-ad-spot]").forEach(el => cands.push({ el, y: Y(el), end: Infinity }));
-
-    if (!cands.length) return;
-    cands.sort((a, b) => a.y - b.y);
-
-    /* 置く場所は、枠を入れる前の位置で全部決めてから入れる（入れるとあとの位置がずれるため）。
-       最初の枠は、ページの先頭から画面1枚半より下にする（上の帯と近くならないように） */
-    const picks = [];
-    let last = 0;
-    for (const c of cands) {
-      if (c.y - last < vh * MID_GAP_SCREENS) continue;
-      if (c.end - c.y < vh * 0.8) continue;
+    document.querySelectorAll("[data-ad-spot]").forEach(el => tool.push({ el, y: Y(el), end: Infinity }));
+    tool.sort((a, b) => a.y - b.y);
+    let last = 0, toolPicks = 0;
+    for (const c of tool) {
+      if (c.y - last < vh * MID_GAP_SCREENS || c.end - c.y < vh * 0.8) continue;
       picks.push(c.el);
       last = c.y;
-      if (picks.length >= MID_MAX) break;
+      if (++toolPicks >= TOOL_MAX) break;
+    }
+
+    const art = document.querySelector(".tool-article");
+    if (art) {
+      const top = Y(art);
+      const height = art.getBoundingClientRect().height;
+
+      /* 2. 機能・表と説明のあいだ */
+      if (top > vh && top - last > vh) picks.push(art);
+
+      /* 3. 説明の中 */
+      if (height >= vh * MID_MIN_SCREENS) {
+        const mid = top + height / 2;
+        let best = null, bestD = Infinity;
+        [...art.querySelectorAll(":scope > h2, :scope > h3")].slice(1).forEach(h => {
+          if (h.tagName === "H3" && h.previousElementSibling && h.previousElementSibling.tagName === "H2") return;
+          const y = Y(h);
+          if (y - top < vh * 1.5 || top + height - y < vh * 0.8) return;
+          const d = Math.abs(y - mid);
+          if (d < bestD) { bestD = d; best = h; }
+        });
+        if (best) picks.push(best);
+      }
     }
 
     for (const h of picks) {
