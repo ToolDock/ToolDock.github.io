@@ -181,6 +181,23 @@
         text-align: left;
       }
 
+      /* 白い枠の外に出したときは、記事途中の枠と同じく中央にそろえる */
+      .td-ad-share.td-ad-share-out {
+        margin: 24px 0;
+        text-align: center;
+      }
+
+      .td-ad-share.td-ad-share-out .td-ad-label {
+        text-align: center;
+      }
+
+      /* 切った後ろ半分の先頭が共有の欄のときは、共有の欄の上の区切り線と余白をなくす */
+      .td-split-rest > .td-share:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+      }
+
       /* 「同じカテゴリのツール」の上の細い枠。共有の上と同じ形 */
       .td-ad-related {
         clear: both;
@@ -346,7 +363,18 @@
 
     const box = document.createElement("div");
     box.className = "td-ad-share";
-    share.parentNode.insertBefore(box, share);
+
+    /* 共有の欄が白い枠（ツールの入れ物）の中にあるページでは、枠を共有の欄の手前で切り、
+       そのあいだに置く（白い枠の中に広告を置かない） */
+    const cont = share.parentElement;
+    const bg = cont && cont !== document.body ? getComputedStyle(cont).backgroundColor : "";
+    if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent") {
+      const rest = splitBefore(cont, share);
+      rest.parentNode.insertBefore(box, rest);
+      box.classList.add("td-ad-share-out");
+    } else {
+      share.parentNode.insertBefore(box, share);
+    }
 
     fillBanner(box, SLOT_SHARE);
   }
