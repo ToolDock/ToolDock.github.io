@@ -89,6 +89,12 @@ if (tool) {
     <link rel="icon"
           href="/favicon.ico">
 
+    <!-- 広告の配信元へ先につないでおく（広告が出るまでの時間を縮める） -->
+    <link rel="preconnect" href="https://googleads.g.doubleclick.net" crossorigin>
+    <link rel="preconnect" href="https://tpc.googlesyndication.com" crossorigin>
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
+    <link rel="dns-prefetch" href="https://securepubads.g.doubleclick.net">
+
     <!-- サイト共通のフォント（Noto Sans JP）。フォント名は style.css と各ページのCSSで指定 -->
     <link rel="preconnect"
           href="https://fonts.googleapis.com">
@@ -334,7 +340,7 @@ function addJsonLd(data){
 ========================= */
 
 {
-  const PARTS_VERSION = 36;
+  const PARTS_VERSION = 37;
 
   const parts = [
     "/js/sidebar.js",
