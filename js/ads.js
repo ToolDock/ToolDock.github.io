@@ -407,34 +407,52 @@
   }
 
   /* ---- 記事の途中の枠 ----
-     記事（.tool-article）が画面 MID_MIN_SCREENS 枚分以上あるページで、見出し（h2・h3）の前に置く。
-     ひとつ前の枠（または記事の先頭）から画面 MID_GAP_SCREENS 枚分以上離れた見出しを、上から順に選ぶ。
-     記事の最初の見出しの前と、記事の終わりに近い見出しの前（共有の上の枠と近くなる）には置かない。
+     長い記事や長い一覧の途中に、画面 MID_GAP_SCREENS 枚分ごとに置く（1ページ MID_MAX まで）。
+     置く場所の候補は次の3つで、上から順に、ひとつ前の枠から十分離れたものを選ぶ。
+       - 記事（.tool-article。画面 MID_MIN_SCREENS 枚分以上のとき）の h2・h3 見出しの前（最初の見出しを除く）
+       - 地域ごとに分かれた一覧（金特ミッション一覧の section.region）の、2つ目以降の地域の前
+       - data-ad-spot を付けた要素の前（ページ側で置き場所を指定したいとき）
+     それぞれの終わりに近い所（画面0.8枚分以内）には置かない。
      読む人は広告をすぐ読み飛ばすので、読みにくくはならない。少しでも画面に映れば収益になる（2026-11-17）。
      スマホでは 300×250、広い画面（740px以上）では 728×90。どれも近づいてから読み込む */
   function mountMidSlot() {
-    const art = document.querySelector(".tool-article");
-    if (!art || document.querySelector(".td-ad-mid")) return;
+    if (document.querySelector(".td-ad-mid")) return;
 
     const vh = window.innerHeight;
-    const rect = art.getBoundingClientRect();
-    if (rect.height < vh * MID_MIN_SCREENS) return;
+    const Y = el => el.getBoundingClientRect().top + window.scrollY;
+    const cands = [];   /* { el, y, end } */
 
-    const top = rect.top + window.scrollY;
-    const bottom = top + rect.height;
-    const heads = [...art.querySelectorAll(":scope > h2, :scope > h3")].slice(1);
+    const art = document.querySelector(".tool-article");
+    if (art && art.getBoundingClientRect().height >= vh * MID_MIN_SCREENS) {
+      const end = Y(art) + art.getBoundingClientRect().height;
+      [...art.querySelectorAll(":scope > h2, :scope > h3")].slice(1).forEach(h => {
+        /* 節の最初の小見出し（すぐ上が h2）は選ばない。h2 の前に置けば足りる */
+        if (h.tagName === "H3" && h.previousElementSibling && h.previousElementSibling.tagName === "H2") return;
+        cands.push({ el: h, y: Y(h), end });
+      });
+    }
 
-    /* 置く場所は、枠を入れる前の位置で全部決めてから入れる（入れるとあとの位置がずれるため） */
+    const regions = [...document.querySelectorAll("section.region")];
+    if (regions.length > 1) {
+      const lastR = regions[regions.length - 1];
+      const end = Y(lastR) + lastR.getBoundingClientRect().height;
+      regions.slice(1).forEach(r => cands.push({ el: r, y: Y(r), end }));
+    }
+
+    document.querySelectorAll("[data-ad-spot]").forEach(el => cands.push({ el, y: Y(el), end: Infinity }));
+
+    if (!cands.length) return;
+    cands.sort((a, b) => a.y - b.y);
+
+    /* 置く場所は、枠を入れる前の位置で全部決めてから入れる（入れるとあとの位置がずれるため）。
+       最初の枠は、ページの先頭から画面1枚半より下にする（上の帯と近くならないように） */
     const picks = [];
-    let last = top;
-    for (const h of heads) {
-      const y = h.getBoundingClientRect().top + window.scrollY;
-      if (y - last < vh * MID_GAP_SCREENS) continue;
-      if (bottom - y < vh * 0.8) break;
-      /* h3 は、すぐ上が h2 のとき（節の最初の小見出し）は選ばない。h2 の前に置けば足りる */
-      if (h.tagName === "H3" && h.previousElementSibling && h.previousElementSibling.tagName === "H2") continue;
-      picks.push(h);
-      last = y;
+    let last = 0;
+    for (const c of cands) {
+      if (c.y - last < vh * MID_GAP_SCREENS) continue;
+      if (c.end - c.y < vh * 0.8) continue;
+      picks.push(c.el);
+      last = c.y;
       if (picks.length >= MID_MAX) break;
     }
 
