@@ -34,11 +34,14 @@
   const SLOT_TOP = "7810262044";      /* 「上の帯」ユニット。パンくずのすぐ下、本文の上の横長の枠 */
   const SLOT_RELATED = "8162823719";  /* 「同じカテゴリのツール」の上の細い枠。いまは「共有の上」と同じユニットを使う */
   const SLOT_SHARE = "8162823719";    /* 「共有の上」ユニット（レスポンシブ）。「このページを共有」の直前の細い枠 */
-  /* 「記事の途中」の枠。長い記事のまん中あたりの見出しの前に1つだけ置く（2026-11-16）。
+  /* 「記事の途中」の枠。長い記事の見出しの前に、画面1枚半ごとに置く（2026-11-17）。
      専用のユニットを作ったら、その番号に替える。それまではページ末尾と同じユニットを使う */
   const SLOT_MID = "8286258434";
   /* 記事（.tool-article）がこの高さ（画面の何枚分か）より短いページには置かない */
-  const MID_MIN_SCREENS = 4;
+  const MID_MIN_SCREENS = 2;
+  /* 記事の途中の枠どうしの間を、画面の何枚分あけるか。1ページに置く数の上限 */
+  const MID_GAP_SCREENS = 1.5;
+  const MID_MAX = 8;
 
   /* 右レールが出る幅（js/sidebar.js の WIDE と揃える） */
   const RAIL_WIDE = "(min-width: 1200px)";
@@ -404,39 +407,50 @@
   }
 
   /* ---- 記事の途中の枠 ----
-     長い記事（画面4枚分以上）だけ。記事のまん中にいちばん近い h2 見出しの前に1つ置く。
-     最初と最後の見出しの前には置かない（上の帯・共有の上の枠と近くなりすぎるため）。
-     スマホでは 300×250、広い画面（740px以上）では 728×90。近づいてから読み込む */
+     記事（.tool-article）が画面 MID_MIN_SCREENS 枚分以上あるページで、見出し（h2・h3）の前に置く。
+     ひとつ前の枠（または記事の先頭）から画面 MID_GAP_SCREENS 枚分以上離れた見出しを、上から順に選ぶ。
+     記事の最初の見出しの前と、記事の終わりに近い見出しの前（共有の上の枠と近くなる）には置かない。
+     読む人は広告をすぐ読み飛ばすので、読みにくくはならない。少しでも画面に映れば収益になる（2026-11-17）。
+     スマホでは 300×250、広い画面（740px以上）では 728×90。どれも近づいてから読み込む */
   function mountMidSlot() {
     const art = document.querySelector(".tool-article");
     if (!art || document.querySelector(".td-ad-mid")) return;
 
+    const vh = window.innerHeight;
     const rect = art.getBoundingClientRect();
-    if (rect.height < window.innerHeight * MID_MIN_SCREENS) return;
-
-    const heads = [...art.querySelectorAll(":scope > h2")];
-    if (heads.length < 3) return;
+    if (rect.height < vh * MID_MIN_SCREENS) return;
 
     const top = rect.top + window.scrollY;
-    const mid = top + rect.height / 2;
-    let best = null, bestD = Infinity;
-    heads.slice(1, -1).forEach(h => {
-      const d = Math.abs(h.getBoundingClientRect().top + window.scrollY - mid);
-      if (d < bestD) { bestD = d; best = h; }
-    });
-    if (!best) return;
+    const bottom = top + rect.height;
+    const heads = [...art.querySelectorAll(":scope > h2, :scope > h3")].slice(1);
 
-    const box = document.createElement("div");
-    box.className = "td-ad-mid";
-    best.parentNode.insertBefore(box, best);
+    /* 置く場所は、枠を入れる前の位置で全部決めてから入れる（入れるとあとの位置がずれるため） */
+    const picks = [];
+    let last = top;
+    for (const h of heads) {
+      const y = h.getBoundingClientRect().top + window.scrollY;
+      if (y - last < vh * MID_GAP_SCREENS) continue;
+      if (bottom - y < vh * 0.8) break;
+      /* h3 は、すぐ上が h2 のとき（節の最初の小見出し）は選ばない。h2 の前に置けば足りる */
+      if (h.tagName === "H3" && h.previousElementSibling && h.previousElementSibling.tagName === "H2") continue;
+      picks.push(h);
+      last = y;
+      if (picks.length >= MID_MAX) break;
+    }
 
-    const [w, h] = box.clientWidth >= 740 ? [728, 90] : [300, 250];
-    box.innerHTML = `
-      <div class="td-ad-label">スポンサーリンク</div>
-      ${placeholder(w, h)}
-    `;
+    for (const h of picks) {
+      const box = document.createElement("div");
+      box.className = "td-ad-mid";
+      h.parentNode.insertBefore(box, h);
 
-    whenNear(box, () => fillPlaceholders(box, SLOT_MID));
+      const [w, hh] = box.clientWidth >= 740 ? [728, 90] : [300, 250];
+      box.innerHTML = `
+        <div class="td-ad-label">スポンサーリンク</div>
+        ${placeholder(w, hh)}
+      `;
+
+      whenNear(box, () => fillPlaceholders(box, SLOT_MID));
+    }
   }
 
   function mountEndSlot() {
