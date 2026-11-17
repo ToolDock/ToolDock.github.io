@@ -191,7 +191,7 @@
       /* 記事の途中の枠。前後の見出しとくっつかないよう、上下に余白を取る */
       .td-ad-mid {
         clear: both;
-        margin: 28px 0 30px;
+        margin: 24px 0;
         text-align: center;
         line-height: 0;
       }
@@ -412,8 +412,9 @@
           data-ad-spot を付けた要素の前。画面 MID_GAP_SCREENS 枚分ずつあけて、TOOL_MAX まで
        2. 機能・表と説明のあいだ：説明（.tool-article）のすぐ上に1つ。
           ページの先頭から画面1枚分より下にあるときだけ（上の帯と近くならないように）
-       3. 説明の中：説明が画面 MID_MIN_SCREENS 枚分以上あるとき、まん中にいちばん近い見出し（h2・h3）の前に1つだけ。
-          説明の最初の見出し、説明の先頭から画面1枚半以内、終わりから画面0.8枚分以内には置かない
+       3. 説明の中：説明が画面 MID_MIN_SCREENS 枚分以上あるとき、説明の高さの30〜70%にある見出しのうち、
+          まん中にいちばん近いもの（h2 を優先、無ければ h3）の前に1つだけ
+     1と3は白い枠の中には置かず、枠をその手前で2つに切って、あいだ（灰色の地の上）に置く
      （2026-11-17：説明の中は1つ、機能・表の中は2つまで、そのかわり機能と説明のあいだに1つ） */
   function mountMidSlot() {
     if (document.querySelector(".td-ad-mid")) return;
@@ -448,25 +449,39 @@
       /* 2. 機能・表と説明のあいだ */
       if (top > vh && top - last > vh) picks.push(art);
 
-      /* 3. 説明の中 */
+      /* 3. 説明の中：白い枠を2つに切ってそのあいだに置くので、切れた前後がどちらも短くなりすぎないよう、
+         説明の高さの30%〜70%にある見出しのうち、まん中にいちばん近いものを選ぶ（h2 を優先し、無ければ h3） */
       if (height >= vh * MID_MIN_SCREENS) {
         const mid = top + height / 2;
-        let best = null, bestD = Infinity;
-        [...art.querySelectorAll(":scope > h2, :scope > h3")].slice(1).forEach(h => {
-          if (h.tagName === "H3" && h.previousElementSibling && h.previousElementSibling.tagName === "H2") return;
-          const y = Y(h);
-          if (y - top < vh * 1.5 || top + height - y < vh * 0.8) return;
-          const d = Math.abs(y - mid);
-          if (d < bestD) { bestD = d; best = h; }
-        });
+        const pickIn = (sel) => {
+          let best = null, bestD = Infinity;
+          art.querySelectorAll(sel).forEach(h => {
+            if (h === art.firstElementChild) return;
+            if (h.tagName === "H3" && h.previousElementSibling && h.previousElementSibling.tagName === "H2") return;
+            const y = Y(h);
+            if (y < top + height * 0.3 || y > top + height * 0.7) return;
+            const d = Math.abs(y - mid);
+            if (d < bestD) { bestD = d; best = h; }
+          });
+          return best;
+        };
+        const best = pickIn(":scope > h2") || pickIn(":scope > h3");
         if (best) picks.push(best);
       }
     }
 
-    for (const h of picks) {
+    /* 白い枠（説明・一覧の入れ物）の中には置かない。途中に置くときは、その見出し・地域の手前で枠を2つに切り、
+       そのあいだ（灰色の地の上）に置く。下から順に切ると、上の置き場所の入れ物が変わらない */
+    for (const h of picks.slice().reverse()) {
       const box = document.createElement("div");
       box.className = "td-ad-mid";
-      h.parentNode.insertBefore(box, h);
+
+      if (h.classList && h.classList.contains("tool-article")) {
+        h.parentNode.insertBefore(box, h);                  /* 2. 説明のすぐ上 */
+      } else {
+        const rest = splitBefore(h.parentElement, h);       /* 1・3. 枠を切る */
+        rest.parentNode.insertBefore(box, rest);
+      }
 
       const [w, hh] = box.clientWidth >= 740 ? [728, 90] : [300, 250];
       box.innerHTML = `
@@ -476,6 +491,20 @@
 
       whenNear(box, () => fillPlaceholders(box, SLOT_MID));
     }
+  }
+
+  /* 入れ物 box を、子要素 anchor の手前で2つに切る。後ろ半分（同じタグ・クラスの新しい入れ物）を返す */
+  function splitBefore(box, anchor) {
+    const rest = box.cloneNode(false);
+    rest.removeAttribute("id");
+    rest.classList.add("td-split-rest");
+    for (let n = anchor; n; ) {
+      const next = n.nextSibling;
+      rest.appendChild(n);
+      n = next;
+    }
+    box.parentNode.insertBefore(rest, box.nextSibling);
+    return rest;
   }
 
   function mountEndSlot() {
