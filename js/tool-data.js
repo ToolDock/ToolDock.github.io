@@ -30,6 +30,7 @@ window.CATEGORY_NAMES = {
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-18", id: "kintoku", kind: "update", text: "マイライフ金特ミッション一覧に、ストレートキラー・メッタ打ち・大番狂わせ・変幻自在・扇風機と、魔術師（二塁手・遊撃手・外野手）のミッションを追加" },
   { date: "2026-11-17", id: "kintoku", kind: "update", text: "マイライフ金特ミッション一覧に、一球入魂（千葉・楽天）と魔術師（投手・捕手・一塁手・三塁手）のミッションを追加" },
   { date: "2026-11-17", id: "kintoku", kind: "update", text: "マイライフ金特ミッション一覧に、怪童・安打製造機・鉄の壁のミッションを追加" },
   { date: "2026-11-16", id: "kintoku", kind: "update", text: "マイライフ金特ミッション一覧に、ロケットスタート・走者釘付・引っ張り屋・広角砲のミッションと、ガソリンタンクのリリーフ用のミッションを追加" },
