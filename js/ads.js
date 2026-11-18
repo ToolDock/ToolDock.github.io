@@ -34,9 +34,9 @@
   const SLOT_TOP = "7810262044";      /* 「上の帯」ユニット。パンくずのすぐ下、本文の上の横長の枠 */
   const SLOT_RELATED = "8162823719";  /* 「同じカテゴリのツール」の上の細い枠。いまは「共有の上」と同じユニットを使う */
   const SLOT_SHARE = "8162823719";    /* 「共有の上」ユニット（レスポンシブ）。「このページを共有」の直前の細い枠 */
-  /* 「記事の途中」の枠（機能・表の中、機能と説明のあいだ、説明の中。くわしくは mountMidSlot）。
-     専用のユニットを作ったら、その番号に替える。それまではページ末尾と同じユニットを使う */
-  const SLOT_MID = "8286258434";
+  /* 「記事の途中」ユニット（レスポンシブ。2026-11-18 作成）。機能・表の中、機能と説明のあいだ、説明の中の枠。
+     くわしくは mountMidSlot */
+  const SLOT_MID = "3358380718";
   /* 説明（.tool-article）がこの高さ（画面の何枚分か）より短いときは、説明の中には置かない */
   const MID_MIN_SCREENS = 2;
   /* 機能・表の中の枠どうしの間を、画面の何枚分あけるか。機能・表の中に置く数の上限 */
@@ -70,6 +70,9 @@
      ただし広告は、取りに行ってから出るまで2〜3秒かかる。400px 手前では、スクロールしてきた人の前に
      空の枠が数秒見えていた（2026-11-17）。画面1枚半ぶん手前から取りに行き、着いたときには出ているようにする */
   const LAZY_PX = Math.max(800, Math.round(window.innerHeight * 1.5));
+  /* ページのいちばん下の細い枠（共有の上・同じカテゴリのツールの上）は、そこまで読む人が少なく、
+     画面1枚半手前から取りに行くと視認可能率が2割ほどだった（2026-11-17）。この2つだけ画面半分手前にする */
+  const LAZY_PX_BOTTOM = Math.round(window.innerHeight * 0.5);
 
   /* 注意：adsbygoogle.push({}) は「どの枠を埋めるか」を指定できず、ページの中でまだ埋まっていない
      最初の ins から順に埋める。遅らせる枠の ins を先に置いておくと、ほかの枠（下のバーなど）の push が
@@ -92,13 +95,17 @@
     phs.forEach(() => pushAd());
   }
 
-  function whenNear(el, fn) {
-    /* IntersectionObserver は「交わる／交わらない」が切り替わったときしか知らせないので、
+  function whenNear(el, fn, lead = LAZY_PX) {
+    /* 下から近づいたときだけでなく、上から戻ってきたときも同じ距離で読み込む。
+       ページの途中（検索の「#見出し」付きのリンクや、戻る操作）から開いたとき、
+       通り過ぎた上の方の枠まで読み込むと、見られないまま表示に数えられるため。
+       IntersectionObserver は「交わる／交わらない」が切り替わったときしか知らせないので、
        一気に下まで飛ぶと（画面の下→画面の上へ）、一度も知らせが来ない。スクロールのたびに位置を見る */
     let done = false;
     const check = () => {
       if (done || !el.isConnected) return;
-      if (el.getBoundingClientRect().top < window.innerHeight + LAZY_PX) {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight + lead && r.bottom > -lead) {
         done = true;
         window.removeEventListener("scroll", onScroll);
         window.removeEventListener("resize", onScroll);
@@ -378,12 +385,12 @@
       share.parentNode.insertBefore(box, share);
     }
 
-    fillBanner(box, SLOT_SHARE);
+    fillBanner(box, SLOT_SHARE, LAZY_PX_BOTTOM);
   }
 
   /* 細い横長の枠の中身。幅に応じて 728×90（PC・iPad）／468×60／320×50（スマホ）。
      近づいてから読み込む */
-  function fillBanner(box, slot) {
+  function fillBanner(box, slot, lead) {
     const cw = box.clientWidth;
     const [w, h] = cw >= 740 ? [728, 90] : cw >= 480 ? [468, 60] : [320, 50];
 
@@ -392,7 +399,7 @@
       ${placeholder(w, h)}
     `;
 
-    whenNear(box, () => fillPlaceholders(box, slot));
+    whenNear(box, () => fillPlaceholders(box, slot), lead);
   }
 
   /* ---- 「同じカテゴリのツール」の上の細い枠 ----
@@ -405,11 +412,13 @@
     box.className = "td-ad-related";
     related.parentNode.insertBefore(box, related);
 
-    fillBanner(box, SLOT_RELATED);
+    fillBanner(box, SLOT_RELATED, LAZY_PX_BOTTOM);
   }
 
   /* ---- ページ上の帯 ----
      パンくずのすぐ下（ツールの見出しの上）。開いた瞬間に見える場所なので、すぐ読み込む。
+     ただしページの途中から開いて、この枠が画面に入っていないときは、上に戻ってきて画面に入るまで読み込まない
+     （視認可能率が3割ほどだった。2026-11-17）。
      広い画面では 728×90、狭い画面では 320×50。枠の高さは先に取っておくので、
      広告が入ったときにツールの位置がずれることはない（来なかったときは枠ごと隠す）。
      パンくずの無いページ（トップ・カテゴリ一覧・お問い合わせなど）には置かない */
@@ -427,13 +436,22 @@
 
     box.innerHTML = `
       <div class="td-ad-label">スポンサーリンク</div>
-      <ins class="adsbygoogle"
-           style="display:inline-block;width:${w}px;height:${h}px"
-           data-ad-client="${CLIENT}"
-           data-ad-slot="${SLOT_TOP}"></ins>
+      ${placeholder(w, h)}
     `;
 
-    pushAd();
+    /* 「#見出し」付きで開いたときや、戻る・再読み込みでは、ブラウザがこの後でページの途中までスクロールする。
+       そのスクロールが済んでから（読み込み完了か1.5秒後）、画面に入っているかを見る */
+    const nav = performance.getEntriesByType ? performance.getEntriesByType("navigation")[0] : null;
+    const jumps = location.hash.length > 1 || (nav && (nav.type === "back_forward" || nav.type === "reload"));
+    const go = () => whenNear(box, () => fillPlaceholders(box, SLOT_TOP), 0);
+    if (!jumps || document.readyState === "complete") {
+      go();
+    } else {
+      let started = false;
+      const once = () => { if (!started) { started = true; setTimeout(go, 0); } };
+      window.addEventListener("load", once, { once: true });
+      setTimeout(once, 1500);
+    }
   }
 
   /* ---- 機能・表の中、機能と説明のあいだ、説明の中の枠 ----
