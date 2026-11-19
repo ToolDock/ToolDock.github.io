@@ -40,15 +40,14 @@ def parse_tools():
                ("id", "title", "desc", "url", "category")}
         if all(got.values()):
             tool = {k: v.group(1) for k, v in got.items()}
-            pop = re.search(r"popularity:\s*(\d+)", block)
-            tool["popularity"] = int(pop.group(1)) if pop else 0
             tools.append(tool)
     return categories, tools
 
 
-def parse_recommended():
+def parse_id_list(name):
+    """tool-data.js の window.<name> = ["id", …]; を読む"""
     js = DATA.read_text(encoding="utf-8")
-    m = re.search(r"window\.RECOMMENDED\s*=\s*\[(.*?)\];", js, re.S)
+    m = re.search(r"window\." + name + r"\s*=\s*\[(.*?)\];", js, re.S)
     return re.findall(r'"([^"]+)"', m.group(1)) if m else []
 
 
@@ -107,7 +106,7 @@ def render_updates(tools):
             '  <ul class="update-list">', *rows, "  </ul>", "  </section>"]
 
 
-# トップの「よく使われているツール」に出す数（tool-data.js の popularity の大きい順。4列で2行）
+# トップの人気ランキング（通算・今月）に出す数（tool-data.js の POPULAR_ALL・POPULAR_MONTH の順。4列で2行）
 POPULAR = 8
 
 
@@ -135,27 +134,23 @@ def render(categories, tools):
 
     out.extend(render_updates(tools))
 
-    popular = sorted((t for t in tools if t["popularity"] > 0),
-                     key=lambda t: -t["popularity"])[:POPULAR]
-    if popular:
-        out.append('  <section class="cat" id="popular">')
-        out.append("  <h2>よく使われているツール</h2>")
+    by_id = {t["id"]: t for t in tools}
+
+    def grid(sec_id, title, items, ranked):
+        if not items:
+            return
+        out.append(f'  <section class="cat" id="{sec_id}">')
+        out.append(f"  <h2>{title}</h2>")
         out.append('  <ul class="tool-grid">')
-        for rank, t in enumerate(popular, 1):
-            out.append(card(t, rank))
+        for rank, t in enumerate(items, 1):
+            out.append(card(t, rank if ranked else None))
         out.append("  </ul>")
         out.append("  </section>")
 
-    by_id = {t["id"]: t for t in tools}
-    recommended = [by_id[i] for i in parse_recommended() if i in by_id]
-    if recommended:
-        out.append('  <section class="cat" id="recommended">')
-        out.append("  <h2>管理人のおすすめ</h2>")
-        out.append('  <ul class="tool-grid">')
-        for t in recommended:
-            out.append(card(t))
-        out.append("  </ul>")
-        out.append("  </section>")
+    pick = lambda name, n=None: [by_id[i] for i in parse_id_list(name) if i in by_id][:n]
+    grid("popular", "人気ランキング（通算）", pick("POPULAR_ALL", POPULAR), True)
+    grid("popular-month", "今月の人気ランキング", pick("POPULAR_MONTH", POPULAR), True)
+    grid("recommended", "管理人のおすすめ", pick("RECOMMENDED"), False)
 
     for key, label in categories:
         items = [t for t in tools if t["category"] == key]
