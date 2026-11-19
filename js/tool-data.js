@@ -21,7 +21,7 @@ window.CATEGORY_NAMES = {
    id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
    1件は1行で書く（build_index.py が1行ずつ読む） */
 /* 人気ランキング。Search Console の「検索結果のパフォーマンス」→「ページ」の、クリック数の多い順に id を並べる。
-   POPULAR_ALL は「12か月」、POPULAR_MONTH は「28日間」の順。トップには両方とも8件、右レールには5件ずつ出す
+   POPULAR_ALL は「12か月」、POPULAR_MONTH は「28日間」の順。トップには両方とも8件。右レールは通算5件と、今月のうち通算5件に入らないもの（最近の注目）
    （scripts/build_index.py・js/sidebar.js）。入れ替えたら python3 scripts/build_index.py。最終更新 2026-11-19 */
 window.POPULAR_ALL = ["kintoku", "shippo", "nouryoku", "crystal", "satei", "genkoyosi", "mylife-start", "eikan-kintoku"];
 window.POPULAR_MONTH = ["kintoku", "nouryoku", "shippo", "satei", "mylife-start", "draft", "nouryoku-pitcher", "takarakuji"];

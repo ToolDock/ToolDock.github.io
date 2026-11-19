@@ -267,18 +267,19 @@
     /* 人気ランキング（通算と今月）。「最近の更新」と「管理人のおすすめ」は、右レールが長くなるので
        トップにだけ出す（2026-11-19） */
     /* プロ野球データとパワプロ系を互いにリンクしない方針は、記事の中だけ。右レールでは分けない（2026-11-19） */
-    const pick = list => (list || [])
-      .map(id => tools.find(t => t.id === id))
-      .filter(Boolean)
-      .slice(0, POPULAR_COUNT);
+    const toTools = list => (list || []).map(id => tools.find(t => t.id === id)).filter(Boolean);
 
-    for (const [title, list] of [["人気ランキング（通算）", window.POPULAR_ALL], ["今月の人気ランキング", window.POPULAR_MONTH]]) {
-      const items = pick(list);
+    /* 通算は上位5件。「最近の注目」は今月の上位のうち、通算の5件に入っていないもの
+       （そのままだと通算とほとんど同じ顔ぶれが2回並ぶため。2026-11-19） */
+    const all = toTools(window.POPULAR_ALL).slice(0, POPULAR_COUNT);
+    const fresh = toTools(window.POPULAR_MONTH).filter(t => !all.includes(t)).slice(0, POPULAR_COUNT);
+
+    for (const [title, items, ranked] of [["人気ランキング（通算）", all, true], ["最近の注目", fresh, false]]) {
       if (items.length) {
         html += `
           <div class="td-box">
             <h2>${title}</h2>
-            ${linkList(items, true)}
+            ${linkList(items, ranked)}
           </div>
         `;
       }
