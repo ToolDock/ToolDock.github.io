@@ -3,11 +3,6 @@
    title / desc  … パンくず・カード・一覧用の短い表記
    seoTitle / seoDesc … <title>・meta description 用（省略時は title / desc）
    themeColor    … 省略時は #ffffff
-   popularity    … 右レールの「人気のページ」とトップの「よく使われているツール」の並び順に使う。
-                   Search Console の検索パフォーマンスで上位のツールに、上から順に
-                   800, 700, … 100 を入れる（数の大きさに意味はなく、並び順だけを使う）。
-                   入れ替えたら python3 scripts/build_index.py でトップを作り直す。
-                   省略は0扱い（載せない）。最終更新 2026-11-19（過去28日間のクリック数）
 ========================= */
 
 window.CATEGORY_NAMES = {
@@ -25,6 +20,12 @@ window.CATEGORY_NAMES = {
    トップの「最近の更新」と、各ページの右レールの「最近の更新」に出す（scripts/build_index.py・js/sidebar.js）。
    id は下の TOOLS の id。kind は "new"（新しく公開）・"update"（アップデート）・"fix"（不具合の修正）。
    1件は1行で書く（build_index.py が1行ずつ読む） */
+/* 人気ランキング。Search Console の「検索結果のパフォーマンス」→「ページ」の、クリック数の多い順に id を並べる。
+   POPULAR_ALL は「12か月」、POPULAR_MONTH は「28日間」の順。トップには両方とも8件、右レールには5件ずつ出す
+   （scripts/build_index.py・js/sidebar.js）。入れ替えたら python3 scripts/build_index.py。最終更新 2026-11-19 */
+window.POPULAR_ALL = ["kintoku", "shippo", "nouryoku", "crystal", "satei", "genkoyosi", "mylife-start", "eikan-kintoku"];
+window.POPULAR_MONTH = ["kintoku", "nouryoku", "shippo", "satei", "mylife-start", "draft", "nouryoku-pitcher", "takarakuji"];
+
 /* 管理人のおすすめ。人気とは関係なく、持ち主がふだん使っているツールを並べた順に出す
    （トップの「管理人のおすすめ」。右レールには出さない）。入れ替えたら python3 scripts/build_index.py */
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
@@ -497,7 +498,6 @@ window.TOOLS = [
 
   {
     id: "mylife-start",
-    popularity: 400,
     title: "パワプロ2026-2027 マイライフ アピールポイントのすゝめ",
     desc: "経歴・ドラフト順位・アピールポイント・ウィークポイントによる初期能力とボーナスの解説です。",
     seoTitle: "パワプロ2026-2027 マイライフ アピールポイントのすゝめ",
@@ -518,7 +518,6 @@ window.TOOLS = [
 
   {
     id: "shippo",
-    popularity: 600,
     title: "パワプロ2026-2027 マイライフ 尻尾 入手方法一覧",
     desc: "尻尾12種の入手方法とオススメ度。9個でMAXになるので、あと何個かも分かります。",
     seoTitle: "パワプロ2026-2027 マイライフ 尻尾の入手方法｜全12種・晩成化MAX",
@@ -549,7 +548,6 @@ window.TOOLS = [
 
   {
     id: "kintoku",
-    popularity: 800,
     title: "パワプロ2026-2027 マイライフ 能力研究所の金特ミッション一覧",
     desc: "マイライフの能力研究所で受けられる金特ミッションの内容と取得条件の一覧。2024-2025 とも共通です。",
     seoTitle: "【パワプロ2026・2025】マイライフ 金特ミッション一覧｜能力研究所（金特研究所）の全53種と達成条件",
@@ -560,7 +558,6 @@ window.TOOLS = [
 
   {
     id: "takarakuji",
-    popularity: 100,
     title: "宝くじシミュレーター",
     desc: "ジャンボ・ロト・ナンバーズ・ビンゴ5を、実際の当せん確率のとおりに何枚でも買って抽せん。当せん枚数と収支、1万回くり返したときの黒字の割合が分かります。",
     seoTitle: "宝くじシミュレーター｜ジャンボ・ロト・ナンバーズを何枚買ったら当たる？収支と当せん枚数を計算",
@@ -591,7 +588,6 @@ window.TOOLS = [
 
   {
     id: "satei",
-    popularity: 500,
     title: "パワプロ2026-2027 ⭐︎(星)計算ツール",
     desc: "能力値と所持する特殊能力を入力すると、査定である☆(星)を計算します。",
     seoTitle: "パワプロ2026-2027 ⭐︎(星)計算ツール",
@@ -602,7 +598,6 @@ window.TOOLS = [
   },
   {
     id: "nouryoku",
-    popularity: 700,
     title: "パワプロ風 能力画像ジェネレーター（野手）",
     desc: "パワプロ風の能力画像を作れる能力メーカー。野手の能力値と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。",
     seoTitle: "パワプロ風 能力画像ジェネレーター（野手）｜能力メーカー・能力作成ツール",
@@ -613,7 +608,6 @@ window.TOOLS = [
   },
   {
     id: "nouryoku-pitcher",
-    popularity: 200,
     title: "パワプロ風 能力画像ジェネレーター（投手）",
     desc: "パワプロ風の能力画像を作れる能力メーカー。投手の能力値・変化球と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。",
     seoTitle: "パワプロ風 能力画像ジェネレーター（投手）｜能力メーカー・能力作成ツール",
@@ -668,7 +662,6 @@ window.TOOLS = [
   },
   {
     id: "draft",
-    popularity: 300,
     title: "ドラフト答え合わせ",
     desc: "2005年以降のドラフト指名選手のその後を、一軍の通算成績と簡易WARで年ごとに振り返ります。",
     seoTitle: "ドラフト答え合わせ｜全指名選手のその後・通算成績とWAR【2005年〜】",

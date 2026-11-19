@@ -18,14 +18,9 @@
      変えるときは js/ads.js の RAIL_WIDE（レールの先頭の広告）と、ads.js・このファイルの @media の数字も揃える */
   const WIDE = "(min-width: 1200px)";
 
-  /* 「人気のページ」に出す件数。
-     並び順は tool-data.js の popularity（Search Console の上位の順）で決める。
-     ここに直書きすると、実際のアクセスとすぐズレる */
-  const POPULAR_COUNT = 6;
-
-  /* 「最近の更新」に出す件数。中身は tool-data.js の UPDATES（新しい順） */
-  const UPDATES_COUNT = 4;
-  const UPDATE_KIND = { new: "NEW", update: "更新", fix: "修正" };
+  /* 人気ランキング（通算・今月）に出す件数。並び順は tool-data.js の POPULAR_ALL・POPULAR_MONTH
+     （Search Console のクリック数の順）。ここに直書きすると、実際のアクセスとすぐズレる */
+  const POPULAR_COUNT = 5;
 
   const CATEGORY_ORDER = ["math", "study", "work", "life", "finance", "tax", "game", "baseball"];
 
@@ -269,55 +264,28 @@
 
     let html = "";
 
-    /* 人気のページ。popularity の大きい順。
-       数値を持たないもの（＝まだアクセスが無いもの）は出さない */
-    const popular = tools
-      .filter(t => (t.popularity || 0) > 0)
-      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+    /* 人気ランキング（通算と今月）。「最近の更新」と「管理人のおすすめ」は、右レールが長くなるので
+       トップにだけ出す（2026-11-19） */
+    /* プロ野球データ（baseball）とパワプロ系（game）は互いにリンクしない（持ち主の方針）。
+       選手ページなど TOOLS の url と一致しないページもあるので、CURRENT_TOOL の id からカテゴリを見る */
+    const curId = typeof CURRENT_TOOL !== "undefined" ? CURRENT_TOOL : null;
+    const curCat = ((curId && tools.find(t => t.id === curId)) || current || {}).category;
+    const apart = { game: "baseball", baseball: "game" }[curCat];
+    const pick = list => (list || [])
+      .map(id => tools.find(t => t.id === id))
+      .filter(t => t && t.category !== apart)
       .slice(0, POPULAR_COUNT);
 
-    if (popular.length) {
-      html += `
-        <div class="td-box">
-          <h2>人気のページ</h2>
-          ${linkList(popular, true)}
-        </div>
-      `;
-    }
-
-    /* 「管理人のおすすめ」は右レールが長くなるので出さない（2026-11-19。トップには出す） */
-
-    /* 最近の更新。トップの「最近の更新」と同じ中身を、新しい順に数件 */
-    /* 同じツールの更新は1つにまとめる（いちばん新しい日付で出し、どれかが公開なら NEW） */
-    const seen = new Map();
-    for (const u of (window.UPDATES || [])) {
-      const t = tools.find(t => t.id === u.id);
-      if (!t) continue;
-      const g = seen.get(u.id);
-      if (!g) seen.set(u.id, { u: { ...u }, t });
-      else if (u.kind === "new" && (new Date(g.u.date) - new Date(u.date)) / 864e5 <= 14) g.u.kind = "new";
-    }
-    const updates = [...seen.values()].slice(0, UPDATES_COUNT);
-
-    if (updates.length) {
-      html += `
-        <div class="td-box">
-          <h2>最近の更新</h2>
-          <ul>
-            ${updates.map(({ u, t }) => {
-              const [, m, d] = u.date.split("-").map(Number);
-              return `
-                <li>
-                  <a href="${t.url}"${t.url === location.pathname ? ' class="current"' : ""}>
-                    <span class="td-up-meta">${m}/${d}<span class="td-up-kind ${escape(u.kind)}">${UPDATE_KIND[u.kind] || "更新"}</span></span>
-                    ${escape(t.title)}
-                  </a>
-                </li>
-              `;
-            }).join("")}
-          </ul>
-        </div>
-      `;
+    for (const [title, list] of [["人気ランキング（通算）", window.POPULAR_ALL], ["今月の人気ランキング", window.POPULAR_MONTH]]) {
+      const items = pick(list);
+      if (items.length) {
+        html += `
+          <div class="td-box">
+            <h2>${title}</h2>
+            ${linkList(items, true)}
+          </div>
+        `;
+      }
     }
 
     /* 同じカテゴリ */
