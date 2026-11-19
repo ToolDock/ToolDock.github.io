@@ -266,14 +266,10 @@
 
     /* 人気ランキング（通算と今月）。「最近の更新」と「管理人のおすすめ」は、右レールが長くなるので
        トップにだけ出す（2026-11-19） */
-    /* プロ野球データ（baseball）とパワプロ系（game）は互いにリンクしない（持ち主の方針）。
-       選手ページなど TOOLS の url と一致しないページもあるので、CURRENT_TOOL の id からカテゴリを見る */
-    const curId = typeof CURRENT_TOOL !== "undefined" ? CURRENT_TOOL : null;
-    const curCat = ((curId && tools.find(t => t.id === curId)) || current || {}).category;
-    const apart = { game: "baseball", baseball: "game" }[curCat];
+    /* プロ野球データとパワプロ系を互いにリンクしない方針は、記事の中だけ。右レールでは分けない（2026-11-19） */
     const pick = list => (list || [])
       .map(id => tools.find(t => t.id === id))
-      .filter(t => t && t.category !== apart)
+      .filter(Boolean)
       .slice(0, POPULAR_COUNT);
 
     for (const [title, list] of [["人気ランキング（通算）", window.POPULAR_ALL], ["今月の人気ランキング", window.POPULAR_MONTH]]) {
