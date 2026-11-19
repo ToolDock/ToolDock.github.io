@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>千葉県 内申点・総得点計算【2027年公立高校入試】志望校のK値で調査書の得点と必要な当日点が分かる</title>
+<meta name="description" content="千葉県公立高校の一般入学者選抜（令和9年度・2027年）の内申点（調査書の得点）と総得点を計算する無料ツール。県教育委員会の実施要項から全日制178学科のK値（0.5〜2）・学校設定検査の内容・理数科と国際系の傾斜の倍率を収録。目標の総得点に必要な学力検査の点数も逆算できます。">
+<link rel="canonical" href="https://tooldock.github.io/naishin/chiba/">
+
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="千葉県 内申点・総得点計算【2027年公立高校入試】志望校のK値で調査書の得点と必要な当日点が分かる | ToolDock">
+<meta property="og:description" content="千葉県公立高校の一般入学者選抜（令和9年度・2027年）の内申点（調査書の得点）と総得点を計算する無料ツール。県教育委員会の実施要項から全日制178学科のK値（0.5〜2）・学校設定検査の内容・理数科と国際系の傾斜の倍率を収録。目標の総得点に必要な学力検査の点数も逆算できます。">
+<meta property="og:url" content="https://tooldock.github.io/naishin/chiba/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/naishin-chiba.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "naishin-chiba"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<meta name="keywords" content="千葉県,内申点,計算,K値,調査書,総得点,公立高校,一般入学者選抜,入試,2027,令和9年度,学校設定検査,135点,高校受験,千葉,船橋,東葛飾">
+
+<style>
+body{
+    margin:0;
+    padding:20px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+}
+.container{
+    max-width:900px;
+    margin:0 auto;
+    background:var(--surface);
+    --pad:28px;
+    padding:var(--pad);
+    border:1px solid var(--line);
+}
+h2.sec{ margin:24px 0 10px; font-size:1.1rem; padding-bottom:4px; border-bottom:2px solid var(--c); }
+.school{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.school input, .school select{ font:inherit; font-size:1rem; padding:7px 9px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; }
+.school input{ width:10em; }
+.school select{ min-width:16em; max-width:100%; }
+.info{ margin-top:10px; padding:10px 12px; background:var(--surface-2); font-size:.9rem; }
+.info b{ font-size:1rem; }
+
+table.grade{ border-collapse:collapse; width:100%; font-size:.95rem; }
+table.grade th, table.grade td{ border-bottom:1px solid var(--line-soft); padding:5px 3px; text-align:center; }
+table.grade th{ font-size:.82rem; color:#3a3d42; font-weight:700; }
+table.grade td:first-child{ font-weight:700; text-align:left; white-space:nowrap; }
+table.grade select, table.grade input{ font:inherit; font-size:1rem; padding:4px 2px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; text-align:center; width:3.4em; }
+table.grade tr.total td{ font-weight:800; border-top:1px solid var(--ink); font-variant-numeric:tabular-nums; }
+.quick{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 0; font-size:.85rem; align-items:center; }
+.quick button{ font:inherit; font-size:.82rem; padding:4px 10px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; cursor:pointer; }
+.two{ display:grid; grid-template-columns:1.25fr 1fr; gap:18px; }
+@media (max-width:760px){ .two{ grid-template-columns:1fr; } }
+.two > div{ min-width:0; }
+.extra{ margin-top:12px; font-size:.92rem; }
+.extra label{ display:block; margin:6px 0; }
+.extra input{ font:inherit; width:4.5em; padding:4px 6px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
+.extra small{ display:block; color:#5c6470; font-size:.8rem; }
+
+.result{ margin:22px 0 0; padding:18px; border:2px solid var(--c); background:color-mix(in srgb, var(--c) 5%, #fff); }
+.kpis{ display:flex; flex-wrap:wrap; gap:8px 28px; }
+.kpi .k{ font-size:.85rem; }
+.kpi .v{ font-size:1.8rem; font-weight:800; color:var(--c); font-variant-numeric:tabular-nums; line-height:1.3; }
+.kpi .v small{ font-size:.9rem; color:#3a3d42; font-weight:700; }
+.calc{ margin:10px 0 0; font-size:.86rem; color:#3a3d42; }
+.goal{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-size:.95rem; }
+.goal input{ font:inherit; width:6em; padding:4px 6px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
+.goal .ans{ font-weight:800; color:var(--c); }
+.goal .ans.ng{ color:#b42318; }
+.note{ font-size:.82rem; color:#5c6470; margin:12px 0 0; }
+@media (max-width:600px){
+    body{ padding:12px; }
+    .container{ --pad:18px; }
+    table.grade select, table.grade input{ width:2.7em; padding:4px 0; }
+    table.grade th, table.grade td{ padding:5px 2px; }
+}
+.tool-article table{ width:100%; border-collapse:collapse; font-size:.92rem; }
+.tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+.tool-article th{ background:var(--surface-2); white-space:nowrap; }
+.tool-article table:not(:has(thead)) th{ width:30%; white-space:normal; }
+</style>
+</head>
+
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=study">学習</a> <span class="bc-sep">›</span> <span>千葉県 内申点・総得点計算（2027年入試）</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "学習", "item": "https://tooldock.github.io/category/?cat=study"}, {"@type": "ListItem", "position": 3, "name": "千葉県 内申点・総得点計算（2027年入試）", "item": "https://tooldock.github.io/naishin/chiba/"}]}</script>
+<!-- /BREADCRUMB -->
+<div class="container">
+
+<div class="td-banner">
+    <h1>千葉県 内申点・総得点計算（2027年公立高校入試）</h1>
+    <p>中1〜中3の通知表と当日点の見込みを入れると、志望校のK値で計算した調査書の得点と、学力検査・学校設定検査を合わせた総得点が出ます。目標の総得点に必要な当日点も逆算できます。千葉県教育委員会の「令和9年度 千葉県公立高等学校入学者選抜実施要項」によります。</p>
+</div>
+
+<h2 class="sec">1. 志望校（一般入学者選抜・全日制）</h2>
+<div class="school">
+    <input type="search" id="q" placeholder="学校名で絞り込み" aria-label="学校名で絞り込み">
+    <select id="school" aria-label="志望校"></select>
+</div>
+<div class="info" id="info"></div>
+
+<div class="two">
+<div>
+<h2 class="sec">2. 通知表（評定）</h2>
+<table class="grade" id="grade">
+<thead><tr><th>教科</th><th>中1</th><th>中2</th><th>中3</th></tr></thead>
+<tbody></tbody>
+</table>
+<div class="quick">まとめて入れる：
+    <button type="button" data-fill="3">全部3</button>
+    <button type="button" data-fill="4">全部4</button>
+    <button type="button" data-fill="5">全部5</button>
+    <button type="button" data-copy="1">中1・中2を中3と同じに</button>
+</div>
+</div>
+
+<div>
+<h2 class="sec">3. 学力検査（当日点の見込み）</h2>
+<table class="grade" id="exam">
+<thead><tr><th>教科</th><th>点数（100点満点）</th></tr></thead>
+<tbody></tbody>
+</table>
+<div class="extra">
+    <label>学校設定検査の配点 <input type="number" id="sh" min="0" max="200" step="1" value="" placeholder="例 50"> 点
+        <small>10〜100点（2つ以上なら150点まで）で学校ごとに決まります。各高校のホームページにある「選抜・評価方法」で確かめてください</small></label>
+    <label>学校設定検査の見込み <input type="number" id="shp" min="0" max="100" step="1" value="60"> ％</label>
+    <label>調査書の記載事項による加点 <input type="number" id="ka" min="0" max="50" step="1" value="0"> 点
+        <small>部活動・資格などで、学校ごとに50点まで加点されます（使わない学校もあります）</small></label>
+</div>
+</div>
+</div>
+
+<section class="result" aria-live="polite">
+    <div class="kpis">
+        <div class="kpi"><div class="k">調査書の得点（評定合計×K）</div><div class="v" id="cho"></div></div>
+        <div class="kpi"><div class="k">学力検査</div><div class="v" id="gak"></div></div>
+        <div class="kpi"><div class="k">総得点</div><div class="v" id="total"></div></div>
+    </div>
+    <p class="calc" id="calc"></p>
+    <div class="goal">
+        志望校の目標の総得点 <input type="number" id="target" min="0" max="1500" step="1" value="" placeholder="例 600">
+        <div id="verdict"></div>
+        <p style="margin:6px 0 0">目標に必要な学力検査：<span class="ans" id="need"></span></p>
+        <p class="calc" id="weight"></p>
+    </div>
+</section>
+<p class="note">総得点は合格を約束する点数ではありません。県教育委員会は学校ごとの合格者の得点を公表していないので、目標は塾や模試の資料などをもとにご自身で入れてください。全日制の一般入学者選抜の計算です（2段階目の選抜の係数、定時制・特別入学者選抜は含みません）。入力はこのブラウザの中だけに保存されます。</p>
+
+</div>
+
+<article class="tool-article">
+
+<h2>千葉県の一般入学者選抜の総得点の出し方</h2>
+<div class="table-scroll">
+<table>
+<tbody>
+<tr><th>学力検査</th><td>国・数・英・理・社の5教科、各100点（500点満点）。英語はリスニングを含みます。</td></tr>
+<tr><th>調査書の得点</th><td>9教科の評定の全学年の合計（135点満点）に、学校ごとのK値（原則1、0.5〜2）をかけた点数</td></tr>
+<tr><th>調査書の記載事項による加点</th><td>学校の特色に応じて、50点まで加点できます</td></tr>
+<tr><th>学校設定検査</th><td>面接・集団討論・自己表現・作文・小論文・適性検査・学校独自問題などから、学校が1つ以上行います。配点は10〜100点（2つ以上なら合計150点まで）</td></tr>
+<tr><th>総得点</th><td>上の得点の合計。総得点に基づいて総合的に判定します</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>K値とは</h2>
+<p>K値は、調査書の評定合計にかける数です。原則は1で、学校の特色に応じて0.5以上2以下で決めます。K値が0.5の学校では評定合計135点満点が67.5点満点になり、当日点の比重が大きくなります。K値が2の学校では270点満点になり、内申の比重が大きくなります。</p>
+<p>評定を1つ上げると、調査書の得点はK値の分（K＝1なら1点、K＝2なら2点）上がります。千葉県は中1から中3まで同じ重みです。</p>
+
+<h2>K値が1でない学校（全日制）</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>K値</th><th>学校（学科）</th></tr></thead>
+<tbody>
+<tr><td>0.5</td><td>千葉、千葉東、船橋（普通科・理数科）、小金、東葛飾、佐倉（普通科・理数科）</td></tr>
+<tr><td>2</td><td>犢橋、八千代東、船橋啓明、船橋二和、船橋法典、船橋北、浦安南、鎌ヶ谷西、沼南、沼南高柳、野田中央、関宿、我孫子東、佐倉東（全学科）、四街道北、多古（全学科）、銚子、銚子商業（全学科）、市原緑</td></tr>
+</tbody>
+</table>
+</div>
+<p>このほかの全日制の学科はK値が1です。</p>
+
+<h2>理数科・国際系の学科の傾斜</h2>
+<p>理数に関する学科では数学と理科、国際関係に関する学科では英語の得点に、学校が決めた倍率をかけることができます。令和9年度は次の学科が1.5倍です。</p>
+<ul>
+<li>数学・理科を1.5倍：船橋 理数科、柏 理数科、佐倉 理数科</li>
+<li>英語を1.5倍：松戸国際 国際教養科、流山おおたかの森 国際コミュニケーション科、成田国際 国際科、東金 国際教養科、松戸市立松戸 国際人文科</li>
+</ul>
+<p>成東・長生・佐原の理数科は普通科とのくくり募集のため、倍率はかけません。</p>
+
+<h2>2段階の選抜</h2>
+<p>学校によっては、募集人員の20％以下を「2段階目」で選びます。2段階目では、調査書・学校設定検査・学力検査の得点に学校が決めた係数（学力検査は1〜1.5倍）をかけて、学校の特色を重視して選抜します。このツールの総得点は1段階目の計算です。</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 中1・中2の成績も入りますか？</strong><br>
+A. 入ります。千葉県は9教科の評定を中1から中3まで同じ重みで合計します（135点満点）。実技教科も5教科と同じです。</p>
+<p><strong>Q. 学校設定検査の配点はどこで分かりますか？</strong><br>
+A. 各高校が定めた「選抜・評価方法」に書かれていて、各高校のホームページで見られます。県の実施要項には検査の種類（面接・作文など）だけが載っています。</p>
+<p><strong>Q. 入力した内容は保存されますか？</strong><br>
+A. このブラウザの中だけに保存されます。サーバーには送信されません。</p>
+
+<h2>出典</h2>
+<p class="note">千葉県教育委員会「令和9年度千葉県公立高等学校入学者選抜実施要項」（一般入学者選抜 第9 選抜方法、付表2「一般入学者選抜」における検査の内容等、付表4 理数及び国際関係に関する学科で特定教科の得点にかける倍率）。全日制の課程の178学科（県立・市立）を収録しています。市立高校の選抜方法は各市の教育委員会が定めます。</p>
+
+</article>
+
+<script src="/naishin/verdict.js"></script>
+<script>
+"use strict";
+(function () {
+    /* [学校番号, 学校, 学科, K値, 学校設定検査, 1.5倍にする教科, 志願理由書あり]。scripts/build_naishin.py が書く */
+    var ROWS = /*DATA*/[[1,"千葉","普通科",0.5,"作文","",false],[2,"千葉女子","普通科",1.0,"面接","",false],[2,"千葉女子","家政科",1.0,"適性検査","",false],[3,"千葉東","普通科",0.5,"小論文","",false],[4,"千葉商業","商業科・情報処理科（くくり募集）",1.0,"自己表現","",false],[5,"京葉工業","機械科",1.0,"面接","",false],[5,"京葉工業","電子工業科",1.0,"面接","",false],[5,"京葉工業","設備システム科",1.0,"面接","",false],[5,"京葉工業","建設科",1.0,"面接","",false],[6,"千葉工業","電子機械科",1.0,"面接","",false],[6,"千葉工業","電気科",1.0,"面接","",false],[6,"千葉工業","情報技術科",1.0,"面接","",false],[6,"千葉工業","工業化学科",1.0,"面接","",false],[6,"千葉工業","理数工学科",1.0,"面接","",false],[7,"千葉南","普通科",1.0,"面接","",false],[8,"検見川","普通科",1.0,"面接","",false],[9,"千葉北","普通科",1.0,"面接","",false],[10,"若松","普通科",1.0,"自己表現","",false],[11,"千城台","普通科",1.0,"面接","",false],[12,"生浜","普通科",1.0,"自己表現","",false],[13,"磯辺","普通科",1.0,"面接","",false],[15,"幕張総合","総合学科",1.0,"自己表現","",false],[15,"幕張総合","看護科",1.0,"面接","",false],[16,"柏井","普通科",1.0,"自己表現","",false],[18,"土気","普通科",1.0,"自己表現","",false],[19,"千葉西","普通科",1.0,"面接","",false],[20,"犢橋","普通科",2.0,"面接、自己表現","",false],[21,"八千代","普通科",1.0,"集団討論","",false],[21,"八千代","家政科",1.0,"面接、適性検査","",false],[21,"八千代","体育科",1.0,"面接、適性検査","",false],[22,"八千代東","普通科",2.0,"自己表現","",false],[23,"八千代西","普通科",1.0,"面接","",false],[24,"津田沼","普通科",1.0,"自己表現","",false],[25,"実籾","普通科",1.0,"面接","",false],[26,"船橋","普通科",0.5,"作文","",false],[26,"船橋","理数科",0.5,"作文","数理",false],[27,"薬園台","普通科",1.0,"面接","",false],[27,"薬園台","園芸科",1.0,"面接","",true],[28,"船橋東","普通科",1.0,"面接","",false],[29,"船橋啓明","普通科",2.0,"面接","",false],[30,"船橋芝山","普通科",1.0,"面接","",false],[31,"船橋二和","普通科",2.0,"面接、自己表現","",false],[33,"船橋法典","普通科",2.0,"自己表現","",false],[34,"船橋豊富","普通科",1.0,"面接","",false],[35,"船橋北","普通科",2.0,"自己表現","",false],[36,"市川工業","機械科",1.0,"面接","",false],[36,"市川工業","電気科",1.0,"面接","",false],[36,"市川工業","建築科",1.0,"面接","",false],[36,"市川工業","インテリア科",1.0,"面接","",false],[37,"国府台","普通科",1.0,"面接","",false],[38,"国分","普通科",1.0,"面接","",false],[40,"市川東","普通科",1.0,"面接","",false],[41,"市川昴","普通科",1.0,"面接","",false],[42,"市川南","普通科",1.0,"自己表現","",false],[43,"浦安","普通科",1.0,"自己表現","",false],[44,"浦安南","普通科",2.0,"面接","",false],[45,"鎌ヶ谷","普通科",1.0,"自己表現","",false],[46,"鎌ヶ谷西","普通科",2.0,"面接","",false],[47,"松戸","普通科",1.0,"面接","",false],[47,"松戸","芸術科",1.0,"面接、適性検査","",false],[48,"小金","総合学科",0.5,"作文","",false],[49,"松戸国際","普通科",1.0,"面接","",false],[49,"松戸国際","国際教養科",1.0,"面接","英",false],[51,"松戸六実","普通科",1.0,"自己表現","",false],[52,"松戸向陽","普通科",1.0,"面接","",false],[52,"松戸向陽","福祉教養科",1.0,"面接","",false],[53,"松戸馬橋","普通科",1.0,"面接、自己表現","",false],[54,"東葛飾","普通科",0.5,"学校独自問題（国語・数学）","",false],[55,"柏","普通科",1.0,"作文","",false],[55,"柏","理数科",1.0,"作文","数理",false],[56,"柏南","普通科",1.0,"作文","",false],[57,"柏陵","普通科",1.0,"自己表現","",false],[58,"柏の葉","普通科",1.0,"面接","",false],[58,"柏の葉","情報理数科",1.0,"面接","",false],[59,"柏中央","普通科",1.0,"面接","",false],[60,"沼南","普通科",2.0,"面接","",false],[61,"沼南高柳","普通科",2.0,"面接","",false],[62,"流山","園芸科",1.0,"面接","",false],[62,"流山","商業科・情報処理科（くくり募集）",1.0,"面接","",false],[63,"流山おおたかの森","普通科",1.0,"面接","",false],[63,"流山おおたかの森","国際コミュニケーション科",1.0,"面接、適性検査","英",false],[64,"流山南","普通科",1.0,"自己表現","",false],[66,"野田中央","普通科",2.0,"面接、自己表現","",false],[67,"清水","食品科学科",1.0,"面接、適性検査","",false],[67,"清水","機械科・電気科・環境化学科（くくり募集）",1.0,"面接、適性検査","",false],[68,"関宿","普通科",2.0,"面接","",false],[69,"我孫子","普通科",1.0,"自己表現","",false],[70,"我孫子東","普通科",2.0,"面接","",false],[71,"白井","普通科",1.0,"面接","",false],[72,"印旛明誠","普通科",1.0,"面接","",false],[73,"成田西陵","園芸科",1.0,"面接","",false],[73,"成田西陵","土木造園科",1.0,"面接","",false],[73,"成田西陵","食品科学科",1.0,"面接","",false],[73,"成田西陵","情報処理科",1.0,"面接","",false],[74,"成田国際","普通科",1.0,"自己表現","",false],[74,"成田国際","国際科",1.0,"自己表現","英",false],[75,"成田北","普通科",1.0,"自己表現","",false],[76,"下総","園芸科",1.0,"面接","",false],[76,"下総","自動車科",1.0,"適性検査","",false],[76,"下総","情報処理科",1.0,"面接","",false],[77,"富里","普通科",1.0,"自己表現","",false],[78,"佐倉","普通科",0.5,"面接","",false],[78,"佐倉","理数科",0.5,"面接","数理",false],[79,"佐倉東","普通科",2.0,"面接","",false],[79,"佐倉東","調理国際科",2.0,"面接","",false],[79,"佐倉東","服飾デザイン科",2.0,"面接","",false],[80,"佐倉西","普通科",1.0,"自己表現","",false],[82,"八街","総合学科",1.0,"面接","",false],[83,"四街道","普通科",1.0,"面接、自己表現","",false],[84,"四街道北","普通科",2.0,"面接","",false],[85,"佐原","普通科・理数科（くくり募集）",1.0,"作文","",false],[86,"佐原白楊","普通科",1.0,"作文","",false],[87,"小見川","普通科",1.0,"面接","",false],[88,"多古","普通科",2.0,"面接","",false],[88,"多古","園芸科",2.0,"面接","",false],[89,"銚子","普通科",2.0,"面接","",false],[90,"銚子商業","商業科・情報処理科（くくり募集）",2.0,"自己表現","",false],[90,"銚子商業","海洋科",2.0,"自己表現","",false],[91,"旭農業","畜産科",1.0,"面接","",false],[91,"旭農業","園芸科",1.0,"面接","",false],[91,"旭農業","食品科学科",1.0,"面接","",false],[92,"東総工業","機械科",1.0,"自己表現","",false],[92,"東総工業","電気情報科",1.0,"自己表現","",false],[92,"東総工業","建設科",1.0,"自己表現","",false],[93,"匝瑳","総合学科",1.0,"面接","",false],[94,"松尾","普通科",1.0,"面接","",false],[95,"成東","普通科・理数科（くくり募集）",1.0,"面接","",false],[96,"東金","普通科",1.0,"面接","",false],[96,"東金","国際教養科",1.0,"面接","英",false],[97,"東金商業","商業科・情報処理科（くくり募集）",1.0,"自己表現","",false],[98,"大網","普通科",1.0,"面接","",false],[98,"大網","農業科",1.0,"面接","",false],[98,"大網","食品科学科",1.0,"面接","",false],[98,"大網","生物工学科",1.0,"面接","",false],[99,"九十九里","普通科",1.0,"面接","",false],[100,"長生","普通科・理数科（くくり募集）",1.0,"作文","",false],[101,"茂原","普通科",1.0,"面接","",false],[102,"茂原樟陽","農業科",1.0,"面接","",false],[102,"茂原樟陽","食品科学科",1.0,"面接","",false],[102,"茂原樟陽","土木造園科",1.0,"面接","",false],[102,"茂原樟陽","機械テクノロジー科",1.0,"面接","",false],[102,"茂原樟陽","電気テクノロジー科",1.0,"面接","",false],[103,"一宮商業","商業科・情報処理科（くくり募集）",1.0,"自己表現","",false],[104,"大多喜","普通科",1.0,"面接","",false],[105,"大原","総合学科",1.0,"面接","",false],[106,"長狭","普通科",1.0,"面接","",false],[107,"安房拓心","総合学科",1.0,"面接","",true],[108,"安房","普通科",1.0,"面接","",false],[109,"館山総合","工業科",1.0,"面接","",false],[109,"館山総合","商業科",1.0,"面接","",false],[109,"館山総合","海洋科",1.0,"面接","",false],[109,"館山総合","家政科",1.0,"面接","",false],[111,"君津商業","商業科・情報処理科（くくり募集）",1.0,"自己表現","",false],[112,"木更津","普通科",1.0,"作文","",false],[112,"木更津","理数科",1.0,"作文","",false],[113,"木更津東","普通科",1.0,"自己表現","",false],[113,"木更津東","家政科",1.0,"自己表現","",false],[114,"君津","普通科",1.0,"自己表現","",false],[114,"君津","園芸科",1.0,"面接","",true],[115,"君津青葉","総合学科",1.0,"面接","",false],[116,"袖ヶ浦","普通科",1.0,"自己表現","",false],[116,"袖ヶ浦","情報コミュニケーション科",1.0,"自己表現","",false],[118,"京葉","普通科",1.0,"自己表現","",false],[119,"市原緑","普通科",2.0,"面接","",false],[120,"姉崎","普通科",1.0,"面接、自己表現","",false],[121,"市原八幡","普通科",1.0,"自己表現","",false],[301,"千葉市立千葉","普通科",1.0,"作文","",false],[301,"千葉市立千葉","理数科",1.0,"作文","",false],[303,"習志野市立習志野","普通科",1.0,"自己表現","",false],[303,"習志野市立習志野","商業科",1.0,"自己表現","",false],[304,"船橋市立船橋","普通科",1.0,"自己表現","",false],[304,"船橋市立船橋","商業科",1.0,"面接、自己表現","",false],[304,"船橋市立船橋","体育科",1.0,"適性検査","",false],[305,"松戸市立松戸","普通科",1.0,"自己表現","",false],[305,"松戸市立松戸","国際人文科",1.0,"面接","英",false],[306,"柏市立柏","普通科",1.0,"自己表現","",false],[306,"柏市立柏","スポーツ科学科",1.0,"適性検査","",false],[307,"銚子市立銚子","普通科・理数科",1.0,"自己表現","",false]]/*/DATA*/;
+    var SUBJ = ["国", "社", "数", "理", "英", "音", "美", "保体", "技家"];
+    var EXAM = ["国", "数", "英", "理", "社"];
+    var LABEL = { 国: "国語", 社: "社会", 数: "数学", 理: "理科", 英: "英語", 音: "音楽", 美: "美術", 保体: "保健体育", 技家: "技術・家庭" };
+    var STORE = "tooldock:naishin-chiba:v1";
+    var $ = function (id) { return document.getElementById(id); };
+    var r1 = function (x) { return Math.round(x * 10) / 10; };
+
+    var gtb = $("grade").querySelector("tbody");
+    SUBJ.forEach(function (s) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + LABEL[s] + "</td>" + [1, 2, 3].map(function (y) { return '<td><select data-k="g' + y + '" data-s="' + s + '"></select></td>'; }).join("");
+        tr.querySelectorAll("select").forEach(function (sel) {
+            for (var v = 5; v >= 1; v--) { var o = document.createElement("option"); o.value = o.textContent = v; if (v === 3) o.selected = true; sel.appendChild(o); }
+        });
+        gtb.appendChild(tr);
+    });
+    var tot = document.createElement("tr"); tot.className = "total";
+    tot.innerHTML = '<td>合計</td><td id="y1"></td><td id="y2"></td><td id="y3"></td>';
+    gtb.appendChild(tot);
+
+    var etb = $("exam").querySelector("tbody");
+    EXAM.forEach(function (s) {
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + LABEL[s] + '<span data-mul="' + s + '"></span></td><td><input type="number" min="0" max="100" step="1" value="60" data-k="ex" data-s="' + s + '"></td>';
+        etb.appendChild(tr);
+    });
+
+    function label(e) { return e[1] + "　" + e[2]; }
+    function fillSchools(q) {
+        var sel = $("school"), cur = sel.value; sel.textContent = "";
+        ROWS.forEach(function (e, idx) {
+            if (q && label(e).indexOf(q) < 0) return;
+            var o = document.createElement("option"); o.value = idx; o.textContent = label(e); sel.appendChild(o);
+        });
+        if (cur && sel.querySelector('option[value="' + cur + '"]')) sel.value = cur;
+    }
+    function el(k, s) { return document.querySelector('[data-k="' + k + '"][data-s="' + s + '"]'); }
+
+    function render() {
+        var e = ROWS[Number($("school").value)] || ROWS[0];
+        var K = e[3], mul = {};
+        String(e[5]).split("").forEach(function (k) { mul[k] = 1.5; });
+        var gmax = 500 + Object.keys(mul).length * 50;
+        $("info").innerHTML = "<b>" + e[1] + "</b>　" + e[2] +
+            "<br>K値：<b>" + K + "</b>（調査書の得点は " + r1(135 * K) + "点満点）" +
+            "<br>学校設定検査：" + e[4] + (e[6] ? "　志願理由書：あり" : "") +
+            (Object.keys(mul).length ? "<br>傾斜：" + Object.keys(mul).map(function (k) { return LABEL[k]; }).join("・") + "の得点を1.5倍（学力検査は" + gmax + "点満点）" : "");
+        document.querySelectorAll("[data-mul]").forEach(function (sp) { sp.textContent = mul[sp.dataset.mul] ? "（×1.5）" : ""; });
+
+        var Y = [0, 0, 0], left = 0;
+        SUBJ.forEach(function (s) { [1, 2, 3].forEach(function (y) { var v = Number(el("g" + y, s).value); Y[y - 1] += v; left += 5 - v; }); });
+        $("y1").textContent = Y[0]; $("y2").textContent = Y[1]; $("y3").textContent = Y[2];
+        var N = Y[0] + Y[1] + Y[2], cho = N * K;
+
+        var G = 0, raw = 0;
+        EXAM.forEach(function (s) { var x = Math.max(0, Math.min(100, Number(el("ex", s).value) || 0)); raw += x; G += x * (mul[s] || 1); });
+        var sh = Math.max(0, Math.min(200, Number($("sh").value) || 0));
+        var shs = sh * Math.max(0, Math.min(100, Number($("shp").value) || 0)) / 100;
+        var ka = Math.max(0, Math.min(50, Number($("ka").value) || 0));
+        var total = G + cho + shs + ka, full = gmax + 135 * K + sh + ka;
+
+        $("cho").innerHTML = r1(cho) + "<small> / " + r1(135 * K) + "</small>";
+        $("gak").innerHTML = r1(G) + "<small> / " + gmax + "</small>";
+        $("total").innerHTML = r1(total) + "<small> / " + r1(full) + "</small>";
+        $("calc").textContent = "評定合計 " + N + " × K " + K + " ＝ " + r1(cho) + "　＋　学力検査 " + r1(G) +
+            "　＋　学校設定検査 " + (sh ? r1(shs) + "（" + sh + "点満点）" : "0（配点を入れると加わります）") + (ka ? "　＋　加点 " + ka : "");
+
+        var per = gmax / 500;
+        var target = $("target"), goal = Number(target.value);
+        var need = (goal - cho - shs - ka) / per;
+        var ans = $("need"); ans.classList.remove("ng");
+        if (target.value === "") ans.textContent = "目標を入れると表示します";
+        else if (need <= 0) ans.textContent = "0点でも届きます";
+        else if (need > 500 + 1e-9) { ans.textContent = "満点でも届きません"; ans.classList.add("ng"); }
+        else ans.textContent = "5教科の素点で合計 約" + Math.ceil(need - 1e-9) + "点（1教科平均 約" + Math.ceil(need / 5 - 1e-9) + "点）" + (Object.keys(mul).length ? "※1.5倍の教科で取るほど少なくて済みます" : "");
+        $("weight").textContent = "この学校では、評定1つ（どの学年でも）で総得点が" + K + "点（当日点で約" + r1(K / per) + "点分）動きます。";
+        tdVerdict($("verdict"), { score: total, goal: target.value, dec: 1, exam: { per: per, left: 500 - raw, n: 5 },
+            naishin: [{ label: "評定（中1〜中3のどれでも）", per: K, left: left }] });
+
+        try {
+            var st = { school: $("school").value, sh: $("sh").value, shp: $("shp").value, ka: $("ka").value, target: target.value, v: {} };
+            document.querySelectorAll("[data-k]").forEach(function (x) { st.v[x.dataset.k + ":" + x.dataset.s] = x.value; });
+            localStorage.setItem(STORE, JSON.stringify(st));
+        } catch (er) { /* 保存できなくても使える */ }
+    }
+
+    fillSchools("");
+    try {
+        var st = JSON.parse(localStorage.getItem(STORE) || "null");
+        if (st) {
+            if (st.school && ROWS[st.school]) $("school").value = st.school;
+            ["sh", "shp", "ka", "target"].forEach(function (k) { if (st[k] != null) $(k).value = st[k]; });
+            Object.keys(st.v || {}).forEach(function (k) { var p = k.split(":"); var x = el(p[0], p[1]); if (x) x.value = st.v[k]; });
+        }
+    } catch (er) { /* 壊れていれば初期値 */ }
+
+    $("q").addEventListener("input", function () { fillSchools($("q").value.trim()); render(); });
+    document.querySelectorAll(".quick button").forEach(function (bt) {
+        bt.addEventListener("click", function () {
+            if (bt.dataset.copy) SUBJ.forEach(function (s) { el("g1", s).value = el("g2", s).value = el("g3", s).value; });
+            else document.querySelectorAll("#grade select").forEach(function (s) { s.value = bt.dataset.fill; });
+            render();
+        });
+    });
+    document.querySelector(".container").addEventListener("input", function (ev) { if (ev.target.id !== "q") render(); });
+    document.querySelector(".container").addEventListener("change", render);
+    render();
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "千葉県の公立高校入試の内申点（調査書の得点）はどう計算しますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "9教科の評定を中1から中3まで合計し（135点満点）、学校ごとのK値（原則1、0.5〜2）をかけます。K値が2の学校なら270点満点、0.5の学校なら67.5点満点です。" }
+    },
+    {
+      "@type": "Question",
+      "name": "千葉県の一般入学者選抜の総得点は何で決まりますか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "学力検査（5教科500点満点）、調査書の得点（評定合計×K値）、学校設定検査の得点（10〜100点）、調査書の記載事項による加点（50点まで）の合計です。" }
+    },
+    {
+      "@type": "Question",
+      "name": "K値が0.5の千葉県の高校はどこですか？",
+      "acceptedAnswer": { "@type": "Answer", "text": "令和9年度は、千葉、千葉東、船橋（普通科・理数科）、小金、東葛飾、佐倉（普通科・理数科）です。当日の学力検査の比重が大きい学校です。" }
+    }
+  ]
+}
+</script>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/gpa/" class="related-tool-card"><h3>GPA計算ツール（目標から逆算）</h3><p>科目の単位と成績から学期・通算のGPAを計算。目標のGPAに必要な平均と、Sがあと何単位必要かを逆算できます。</p></a>
+<a href="/naishin/aichi/" class="related-tool-card"><h3>愛知県 内申点・校内順位の計算（2027年入試）</h3><p>中3の評定から評定得点（90点）を出し、志望校の方式（Ⅰ〜Ⅴ）で学力検査（110点）と合わせた数値を計算。目標に必要な当日点も逆算。</p></a>
+<a href="/naishin/kanagawa/" class="related-tool-card"><h3>神奈川県 内申点・S値計算（2027年入試）</h3><p>志望校の比率で内申点・S1値・S2値を計算し、目標のS値に必要な当日点も逆算できるツール。普通科109校の選考基準を収録。</p></a>
+<a href="/naishin/osaka/" class="related-tool-card"><h3>大阪府 内申点・総合点計算（2027年入試）</h3><p>中1〜中3の評定から内申点（450点）を出し、志望校の倍率タイプで総合点（900点）を計算。目標に必要な当日点も逆算。全日制124校を収録。</p></a>
+<a href="/naishin/tokyo/" class="related-tool-card"><h3>東京都 内申点・換算内申計算（2027年都立入試）</h3><p>中3の評定から換算内申・調査書点を出し、当日点とスピーキングテストを足した総合得点（1020点）と、目標に必要な当日点を計算。</p></a>
+<a href="/naishin/saitama/" class="related-tool-card"><h3>埼玉県 調査書点・総合点計算（2027年入試）</h3><p>中1〜中3の評定から調査書点を出し、志望校の配点で第1次・第2次（特色・共通選抜）の総合点を計算。2027年の新制度に対応し、目標に必要な当日点も逆算。</p></a>
+<a href="/typing-game/" class="related-tool-card"><h3>タイピング診断・速度測定（苦手キー分析つき）</h3><p>打つだけでタイピングの速さ（KPM）と正確率を測り、苦手キー・指ごとの速さ・遅い並び・ローマ字のクセまで診断する無料タイピングゲーム。ランキングつき。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>
