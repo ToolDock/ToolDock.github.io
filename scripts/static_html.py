@@ -94,7 +94,32 @@ def write_breadcrumbs():
     print(f"パンくず: {changed}ページを書き換え、{same}ページは変化なし")
 
 
+TITLE_RE = re.compile(r"<title>(.*?)</title>", re.S)
+SUFFIX = " - " + SITE_NAME
+
+
+def write_title_suffix(argv):
+    """検索結果で「どこのサイトか」が分かるよう、<title> の末尾に「 - ToolDock」を付ける（2026-11-21）。
+    サイト名がすでに入っているページ（トップなど）と、転送ページには付けない。
+    プロ野球データのページは毎日作り直されるので、そのたびにここで付け直す"""
+    roots = [ROOT / a for a in argv] or [ROOT]
+    changed = 0
+    for root in roots:
+        for path in sorted(root.rglob("*.html")):
+            if any(part in SKIP_DIRS for part in path.relative_to(ROOT).parts):
+                continue
+            page = path.read_text(encoding="utf-8")
+            m = TITLE_RE.search(page)
+            if not m or SITE_NAME in m.group(1) or 'http-equiv="refresh"' in page:
+                continue
+            new = page[:m.start(1)] + m.group(1).rstrip() + SUFFIX + page[m.end(1):]
+            path.write_text(new, encoding="utf-8")
+            changed += 1
+    print(f"タイトルの末尾: {changed}ページに「{SUFFIX.strip()}」を付けた")
+
+
 def main(argv):
+    write_title_suffix(argv)
     static_ogp.main(argv)
     write_breadcrumbs()
     static_related.main([])
