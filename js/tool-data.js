@@ -31,6 +31,7 @@ window.POPULAR_MONTH = ["kintoku", "nouryoku", "shippo", "satei", "mylife-start"
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-21", id: "fukuri", kind: "update", text: "「返済か投資か」タブを、住宅ローンだけでなく奨学金・自動車ローン・教育ローン・カードローンにも使えるように" },
   { date: "2026-11-20", id: "fukuri", kind: "update", text: "積立シミュレーションを「積立・取り崩し・比べる・一括か積立か・返済か投資か・過去の暴落」のタブに整理。取り崩しシミュレーターもまとめ、4％ルールや3方式の比較、取り崩し直後の暴落も計算できるように" },
   { date: "2026-11-20", id: "fukuri", kind: "update", text: "積立シミュレーションに「◯歳で◯％」の暴落、過去の暴落データ、条件の比較、72の法則を追加。一括投資か積立か・繰り上げ返済か投資かの比較もこのページにまとめました" },
   { date: "2026-11-20", id: "fukuri", kind: "update", text: "積立シミュレーション・複利計算を作り直し。目標金額からの逆算、新NISAの枠と非課税の効果、年齢ごとの積立額と取り崩し、信託報酬・インフレ、1,000通りのリスク計算を1ページに" },
