@@ -169,6 +169,7 @@ table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weigh
 .asset button{ font:inherit; font-size:.8rem; padding:5px 9px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; cursor:pointer; }
 @media (max-width:640px){ .asset{ grid-template-columns:1fr 1fr 1fr; } .asset .an-box{ grid-column:1 / -1; } .asset .ref-box{ grid-column:1 / 3; } }
 .kpi .v.sub.bad{ color:#b42318; }
+h3.sub{ margin:30px 0 8px; font-size:1.05rem; padding:6px 10px; border-left:5px solid var(--c); background:var(--surface-2); scroll-margin-top:90px; }
 .r72{ display:flex; align-items:center; gap:8px; margin:8px 0; }
 .r72 input{ font:inherit; width:6em; padding:5px 8px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
 </style>
@@ -414,6 +415,25 @@ table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weigh
     <button type="button" data-v="10,18">S&amp;P500</button>
 </div>
 <section class="result" aria-live="polite"><div id="kuOut"></div></section>
+
+<h3 class="sub" id="tsuino">国民年金の追納か、投資か（学生納付特例・納付猶予・免除）</h3>
+<p class="lead">猶予・免除を受けた国民年金保険料を、あとから納める（追納する）か、そのお金を投資に回すかを比べます。追納すると老齢基礎年金が一生増え、納めた額は社会保険料控除で税金も減ります。数字は日本年金機構の令和8年度の額です。考え方は<a href="#tsuino-kaisetsu">解説</a>へ。</p>
+<div class="seg" role="radiogroup" aria-label="猶予・免除の種類" id="tnKind">
+    <label><input type="radio" name="tk" value="1" checked><b>学生納付特例・納付猶予</b><span>追納で年金が満額分ふえる</span></label>
+    <label><input type="radio" name="tk" value="0.5"><b>全額免除</b><span>半分はもう年金に入っている</span></label>
+    <label><input type="radio" name="tk" value="p"><b>一部免除</b><span>4分の3・半額・4分の1</span></label>
+</div>
+<div class="form">
+    <div class="f" id="tnPartBox"><label for="tnPart">一部免除の種類</label><select id="tnPart"><option value="0.75">4分の3免除</option><option value="0.5">半額免除</option><option value="0.25">4分の1免除</option></select></div>
+    <div class="f"><label for="tnYear">猶予・免除を受けた年度</label><select id="tnYear"></select></div>
+    <div class="f"><label for="tnMonths">追納する月数</label><div class="in"><input type="number" id="tnMonths" min="1" max="120" step="1" value="24"><span class="u">か月</span></div><small>学生のあいだの2年なら24か月</small></div>
+    <div class="f"><label for="tnAge">今の年齢</label><div class="in"><input type="number" id="tnAge" min="18" max="64" step="1" value="25"><span class="u">歳</span></div></div>
+    <div class="f"><label for="tnTax">所得税の税率</label><select id="tnTax"><option value="0">0％（収入がない・少ない）</option><option value="5" selected>5％</option><option value="10">10％</option><option value="20">20％</option><option value="23">23％</option><option value="33">33％</option></select><small>源泉徴収票や確定申告書で分かります</small></div>
+    <div class="f"><label for="tnStart">年金を受け取り始める年齢</label><div class="in"><input type="number" id="tnStart" min="60" max="75" step="1" value="65"><span class="u">歳</span></div></div>
+    <div class="f"><label for="tnLife">何歳まで生きる前提か</label><div class="in"><input type="number" id="tnLife" min="60" max="110" step="1" value="87"><span class="u">歳</span></div></div>
+</div>
+<section class="result" aria-live="polite"><div id="tnOut"></div></section>
+<p class="note">投資のほうは、上の「運用の目安」の利回り・リスクで計算します。追納額は令和8年度中に納める場合の額（3年度目以降の加算額を含む）です。年金額は令和8年度の満額（年847,300円）で計算し、物価に合わせた将来の改定は入れていません。</p>
 </section>
 
 <!-- ===================== 過去の暴落 ===================== -->
@@ -474,7 +494,7 @@ table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weigh
 <tr><th><a href="#torikuzushi">取り崩し</a></th><td>貯めたお金を取り崩すと何歳まで持つか、途中で尽きる確率。定額・定率・4％ルールの比較、年金、取り崩し直後の暴落も</td></tr>
 <tr><th><a href="#hikaku">比べる</a></th><td>2つの条件（積立額・利回り・年数・信託報酬）を並べて、どれだけ差がつくか</td></tr>
 <tr><th><a href="#ikkatsu">一括か積立か</a></th><td>まとまったお金を一度に入れるか、分けて入れるか、どちらが勝つ確率が高いか</td></tr>
-<tr><th><a href="#kuriage">返済か投資か</a></th><td>住宅ローン・奨学金・自動車ローン・カードローンなどの繰り上げ返済と投資、どちらが多く残る確率が高いか</td></tr>
+<tr><th><a href="#kuriage">返済か投資か</a></th><td>住宅ローン・奨学金・自動車ローン・カードローンなどの繰り上げ返済と投資、どちらが多く残る確率が高いか。<a href="#tsuino">国民年金の追納</a>と投資の比較も</td></tr>
 <tr><th><a href="#history">過去の暴落</a></th><td>リーマンショックなど過去の暴落のデータと、その暴落に積立をしながら立ち会っていたら、安値でどれだけ買えたか・底で売ったらどうなったか</td></tr>
 </tbody>
 </table>
@@ -541,6 +561,16 @@ table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weigh
 <h2 id="kuriage-kaisetsu">繰り上げ返済と投資、どちらが得？（住宅ローン・奨学金・車のローン）</h2>
 <p>繰り上げ返済は、「ローン金利と同じ利回りの、確実な運用」と同じです。金利0.8％のローンを返すのは、0.8％の利回りが約束された運用をするのと同じ効果があります。投資の期待利回りがローン金利より大きければ、平均的には投資のほうが多く残りますが、相場が悪いと負けることもあります。「<a href="#kuriage">返済か投資か</a>」タブで、勝つ確率と、ローン金利が変わったときの答えの変わり方が分かります。住宅ローン控除の額や、手元にお金を残しておく安心も合わせて考えてください。</p>
 <p>同じ考え方は、奨学金・自動車ローン・教育ローンにも使えます。奨学金のように金利が低い借金なら投資が勝ちやすく、カードローン（年15％前後）のように金利が高い借金なら、繰り上げ返済が「年15％の確実な運用」と同じになるので、まず返すほうが有利です。</p>
+
+<h2 id="tsuino-kaisetsu">国民年金の追納と投資、どちらが得？</h2>
+<p>学生納付特例や納付猶予、免除を受けた期間の国民年金保険料は、10年以内ならあとから納める（追納する）ことができます。追納しないと、その期間の分だけ老齢基礎年金が減ります。学生納付特例・納付猶予の期間を1年分追納すると、老齢基礎年金は年に約2万円増えます（全額免除の期間なら約1万円。免除の期間は、国が負担している半分がすでに年金に入っているためです）。</p>
+<p>追納には、次のような特徴があります。</p>
+<ul>
+<li>猶予・免除を受けた年度の翌年度から数えて3年度目以降に追納すると、当時の保険料に加算額が上乗せされます。早く納めるほど少なくて済みます。</li>
+<li>追納した保険料は全額が社会保険料控除になり、その年の所得税・住民税が減ります。</li>
+<li>増えた年金は一生受け取れ、相場に左右されません。長生きするほど得になる「保険」の性格があります。</li>
+</ul>
+<p>投資と比べるときは、「追納の実質の負担（税金が減る分を引いた額）を投資に回したら、増えるはずだった年金と同じ額を、何歳まで取り崩せるか」を見ます。「<a href="#tsuino">返済か投資か</a>」タブで、追納する月数や税率、何歳まで生きる前提かを変えて確かめてください。追納の額や制度の最新の内容は、<a href="https://www.nenkin.go.jp/service/kokunen/menjo/20150331.html" target="_blank" rel="noopener">日本年金機構の「国民年金保険料の追納制度」</a>で確かめられます。</p>
 
 <h2>新NISAの枠と非課税の効果</h2>
 <div class="table-scroll">
@@ -1105,6 +1135,52 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
         });
     }
 
+
+    /* ================= 国民年金の追納か、投資か ================= */
+    /* 令和8年度中に追納する場合の1か月分の額（日本年金機構「国民年金保険料の追納制度」、3年度目以降の加算額を含む）。
+       [年度, 全額免除・納付猶予・学生納付特例, 4分の3免除, 半額免除, 4分の1免除] */
+    var TSUINO = [["平成28年度", 16850, 12630, 8420, 4210], ["平成29年度", 17070, 12800, 8530, 4260], ["平成30年度", 16900, 12670, 8450, 4220],
+        ["令和元年度", 16950, 12720, 8470, 4240], ["令和2年度", 17070, 12800, 8530, 4260], ["令和3年度", 17110, 12830, 8550, 4270], ["令和4年度", 16990, 12740, 8490, 4250],
+        ["令和5年度", 16770, 12580, 8380, 4190], ["令和6年度", 16980, 12730, 8490, 4240], ["令和7年度", 17510, 13130, 8750, 4380]];
+    var KISO = 847300;   /* 令和8年度の老齢基礎年金（満額・年額）。480か月で満額 */
+    (function () { var sel = $("tnYear"); TSUINO.forEach(function (r, i) { var o = document.createElement("option"); o.value = i; o.textContent = r[0] + (i >= 8 ? "（加算なし）" : ""); sel.appendChild(o); }); sel.value = 8; })();
+    function computeTn() {
+        var kindEl = document.querySelector('input[name="tk"]:checked'), kind = kindEl ? kindEl.value : "1";
+        $("tnPartBox").style.display = kind === "p" ? "" : "none";
+        var part = Number($("tnPart").value);   /* 免除された割合 */
+        var row = TSUINO[Number($("tnYear").value)] || TSUINO[8], months = Math.max(1, Math.min(120, Math.round(num("tnMonths", 24))));
+        /* 追納で年金に足される割合：猶予・学特は1か月分まるごと、免除は国が半分を負担済みなので免除分の半分 */
+        var col = kind === "p" ? { 0.75: 2, 0.5: 3, 0.25: 4 }[part] : 1;
+        var gain = kind === "1" ? 1 : kind === "0.5" ? 0.5 : part / 2;
+        var pay = row[col] * months, taxRate = Number($("tnTax").value) / 100, saving = Math.round(pay * (taxRate * 1.021 + (taxRate > 0 ? 0.10 : 0)));
+        var net = pay - saving, perYear = KISO / 480 * months * gain;
+        var age = num("tnAge", 25), start = num("tnStart", 65), life = Math.max(start + 1, num("tnLife", 87));
+        var back = start + net / perYear, recv = perYear * (life - start);
+        var L = [];
+        L.push("追納する額：<b>" + man(pay) + "</b>（" + row[0] + "の" + months + "か月分、1か月" + yen(row[col]) + "）");
+        L.push("社会保険料控除で減る税金：<b>" + man(saving) + "</b>（所得税" + pct(taxRate * 100) + "・住民税" + (taxRate > 0 ? "10％" : "0％") + "の場合）→ 実質の負担 <b>" + man(net) + "</b>");
+        L.push("増える老齢基礎年金：<span class=\"ans\">年 " + yen(perYear) + "</span>（月 " + yen(perYear / 12) + "）を一生");
+        L.push("<b>" + Math.ceil(back * 10) / 10 + "歳</b>まで受け取れば元が取れます（受け取り始めて約" + (Math.round((back - start) * 10) / 10) + "年）");
+        L.push(life + "歳まで生きると、受け取る合計は " + man(recv) + "（実質の負担の約" + (Math.round(recv / net * 10) / 10) + "倍）");
+        /* 投資と比べる：実質の負担と同じ額を今から投資し、受け取り開始から同じ額を取り崩して、生きる前提の年齢まで持つか */
+        later("tn", function () {
+            var ret = num("kuRet", 6), risk = num("kuRisk", 16), M1 = Math.max(0, Math.round((start - age) * 12)), M2 = Math.round((life - start) * 12), N = M1 + M2;
+            var sc = scen(N, ret, risk), ok = 0, ends = [];
+            for (var r = 0; r < RUNS; r++) {
+                var a = net, alive = true, b = r * N;
+                for (var m = 0; m < N; m++) { a *= sc[b + m]; if (m >= M1) { a -= perYear / 12; if (a < 0) { alive = false; a = 0; } } }
+                if (alive) ok++; ends.push(a);
+            }
+            asc(ends);
+            var det = net * Math.pow(1 + ret / 100 / 12, M1), d2 = det; for (var k = 0; k < M2; k++) d2 = d2 * (1 + ret / 100 / 12) - perYear / 12;
+            var L2 = L.slice();
+            L2.push("<b>同じお金（" + man(net) + "）を投資した場合</b>：" + start + "歳で約" + man(det) + "（利回り" + pct(ret, 1) + "どおりなら）。そこから同じ年" + yen(perYear) + "を取り崩して" + life + "歳まで持つ確率は <span class=\"ans\">" + pct(ok / RUNS * 100) + "</span>" + (d2 > 0 ? "（利回りどおりなら " + man(d2) + " 残る）" : "（利回りどおりでも途中で尽きる）"));
+            L2.push(ok / RUNS >= 0.5 ? "投資のほうが有利になりやすい条件ですが、追納の年金は相場に左右されず、長生きするほど得になります。" : "<b class=\"ok\">追納のほうが有利になりやすい条件です。</b>年金は相場に左右されず、一生受け取れます。");
+            $("tnOut").innerHTML = ul(L2);
+        });
+        $("tnOut").innerHTML = ul(L);
+    }
+
     /* ================= 過去の暴落に立ち会ったら ================= */
     var EVENTS = { covid: { name: "コロナショック", d: 0.34, down: 1, up: 5 }, lehman: { name: "リーマンショック", d: 0.57, down: 17, up: 48 }, y2022: { name: "2022年の利上げ相場", d: 0.25, down: 9, up: 15 },
         it: { name: "ITバブル崩壊", d: 0.78, down: 31, up: 150 }, japan: { name: "日本のバブル崩壊", d: 0.82, down: 231, up: 179 }, bm: { name: "ブラックマンデー", d: 0.36, down: 2, up: 22 }, gd: { name: "世界恐慌", d: 0.89, down: 34, up: 268 } };
@@ -1152,7 +1228,7 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
     /* ================= 計算の振り分け・保存 ================= */
     var timers = {};
     function later(k, fn) { clearTimeout(timers[k]); timers[k] = setTimeout(fn, 120); }
-    var FN = { tsumitate: computeT, torikuzushi: computeW, hikaku: computeAB, ikkatsu: computeIk, kuriage: computeKu, history: computeEv };
+    var FN = { tsumitate: computeT, torikuzushi: computeW, hikaku: computeAB, ikkatsu: computeIk, kuriage: function () { computeKu(); computeTn(); }, history: computeEv };
     function compute(name) { if (FN[name]) FN[name](); }
     function changed(panel) { if (panel && !panel.hidden) compute(panel.id); save(); }
 
@@ -1162,6 +1238,7 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
         var o = {};
         fields().forEach(function (e) { o[e.id] = e.type === "checkbox" ? (e.checked ? "1" : "0") : e.value; });
         var wm = document.querySelector('input[name="wm"]:checked'); o.wm = wm ? wm.value : "fixed";
+        var tk = document.querySelector('input[name="tk"]:checked'); o.tk = tk ? tk.value : "1";
         o.sched = [].map.call(document.querySelectorAll("#sched .row"), function (r) { return r.querySelector(".sa").value + ":" + r.querySelector(".sm").value; }).join(",");
         o.crash = [].map.call(document.querySelectorAll("#crashRows .row"), function (r) { return r.querySelector(".ca").value + ":" + r.querySelector(".cp").value; }).join(",");
         o.assets = [].map.call(document.querySelectorAll("#assets .asset"), function (r) { return [r.querySelector(".an").value, r.querySelector(".aw").value, r.querySelector(".ar").value, r.querySelector(".ak").value].map(function (x) { return String(x).replace(/[|~]/g, ""); }).join("~"); }).join("|");
@@ -1170,6 +1247,7 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
     function apply(o) {
         fields().forEach(function (e) { if (o[e.id] == null) return; if (e.type === "checkbox") e.checked = o[e.id] === "1" || o[e.id] === true; else e.value = o[e.id]; });
         if (o.wm) { var r = document.querySelector('input[name="wm"][value="' + o.wm + '"]'); if (r) r.checked = true; }
+        if (o.tk) { var r2 = document.querySelector('input[name="tk"][value="' + o.tk + '"]'); if (r2) r2.checked = true; }
         if (o.sched != null) { $("sched").textContent = ""; String(o.sched).split(",").filter(Boolean).forEach(function (x) { var t = x.split(":"); addSched(Number(t[0]), Number(t[1])); }); }
         if (o.assets) { $("assets").textContent = ""; String(o.assets).split("|").filter(Boolean).forEach(function (x) { var t = x.split("~"); addAsset(t[0], Number(t[1]), Number(t[2]), Number(t[3])); }); }
         if (o.crash != null) { $("crashRows").textContent = ""; String(o.crash).split(",").filter(Boolean).forEach(function (x) { var t = x.split(":"); addCrash(Number(t[0]), Number(t[1])); }); }

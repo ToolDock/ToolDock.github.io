@@ -31,6 +31,7 @@ window.POPULAR_MONTH = ["kintoku", "nouryoku", "shippo", "satei", "mylife-start"
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-21", id: "fukuri", kind: "update", text: "「返済か投資か」タブに、国民年金の追納（学生納付特例・納付猶予・免除）と投資の比較を追加。令和8年度の追納額と年金額で、元が取れる年齢や節税額も分かります" },
   { date: "2026-11-21", id: "fukuri", kind: "update", text: "「返済か投資か」タブを、住宅ローンだけでなく奨学金・自動車ローン・教育ローン・カードローンにも使えるように" },
   { date: "2026-11-20", id: "fukuri", kind: "update", text: "積立シミュレーションを「積立・取り崩し・比べる・一括か積立か・返済か投資か・過去の暴落」のタブに整理。取り崩しシミュレーターもまとめ、4％ルールや3方式の比較、取り崩し直後の暴落も計算できるように" },
   { date: "2026-11-20", id: "fukuri", kind: "update", text: "積立シミュレーションに「◯歳で◯％」の暴落、過去の暴落データ、条件の比較、72の法則を追加。一括投資か積立か・繰り上げ返済か投資かの比較もこのページにまとめました" },
