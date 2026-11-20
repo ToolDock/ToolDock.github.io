@@ -17,12 +17,10 @@ https://tooldock.github.io/h_roulette/
 https://tooldock.github.io/hakidasi/
 https://tooldock.github.io/hakohige/
 https://tooldock.github.io/i_roulette/
-https://tooldock.github.io/ikkatsu/
 https://tooldock.github.io/insubunkai/
 https://tooldock.github.io/kings/
 https://tooldock.github.io/kintoku/
 https://tooldock.github.io/koyuchi/
-https://tooldock.github.io/kuriage/
 https://tooldock.github.io/kyudan-clicker/
 https://tooldock.github.io/magic/
 https://tooldock.github.io/makejson/

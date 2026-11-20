@@ -500,21 +500,30 @@
       /* 3. 説明の中：白い枠を2つに切ってそのあいだに置くので、切れた前後がどちらも短くなりすぎないよう、
          説明の高さの30%〜70%にある見出しのうち、まん中にいちばん近いものを選ぶ（h2 を優先し、無ければ h3） */
       if (height >= vh * MID_MIN_SCREENS) {
-        const mid = top + height / 2;
-        const pickIn = (sel) => {
-          let best = null, bestD = Infinity;
-          art.querySelectorAll(sel).forEach(h => {
-            if (h === art.firstElementChild) return;
-            if (h.tagName === "H3" && h.previousElementSibling && h.previousElementSibling.tagName === "H2") return;
-            const y = Y(h);
-            if (y < top + height * 0.3 || y > top + height * 0.7) return;
-            const d = Math.abs(y - mid);
-            if (d < bestD) { bestD = d; best = h; }
-          });
-          return best;
-        };
-        const best = pickIn(":scope > h2") || pickIn(":scope > h3");
-        if (best) picks.push(best);
+        /* ふつうは1つ。とても長い説明だけ、<article class="tool-article" data-ad-mid="3"> のように数を増やせる
+           （2026-11-20：積立シミュレーションを1ページにまとめたとき、持ち主の了承で2〜3つ）。
+           n 個のときは、説明を n+1 等分した位置にいちばん近い見出しを選ぶ。前後の枠とは画面2枚以上あける */
+        const n = Math.max(1, Math.min(3, parseInt(art.dataset.adMid || "1", 10) || 1));
+        const span = n === 1 ? 0.2 : 0.5 / (n + 1);
+        const used = [];
+        for (let k = 1; k <= n; k++) {
+          const at = top + height * k / (n + 1);
+          const pickIn = (sel) => {
+            let best = null, bestD = Infinity;
+            art.querySelectorAll(sel).forEach(h => {
+              if (h === art.firstElementChild || used.includes(h)) return;
+              if (h.tagName === "H3" && h.previousElementSibling && h.previousElementSibling.tagName === "H2") return;
+              const y = Y(h);
+              if (Math.abs(y - at) > height * span) return;
+              if (used.some(u => Math.abs(Y(u) - y) < vh * 2)) return;
+              const d = Math.abs(y - at);
+              if (d < bestD) { bestD = d; best = h; }
+            });
+            return best;
+          };
+          const best = pickIn(":scope > h2") || pickIn(":scope > h3");
+          if (best) { used.push(best); picks.push(best); }
+        }
       }
     }
 
