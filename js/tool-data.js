@@ -31,6 +31,7 @@ window.POPULAR_MONTH = ["kintoku", "nouryoku", "shippo", "satei", "mylife-start"
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-20", id: "fukuri", kind: "update", text: "積立シミュレーションを「積立・取り崩し・比べる・一括か積立か・返済か投資か・過去の暴落」のタブに整理。取り崩しシミュレーターもまとめ、4％ルールや3方式の比較、取り崩し直後の暴落も計算できるように" },
   { date: "2026-11-20", id: "fukuri", kind: "update", text: "積立シミュレーションに「◯歳で◯％」の暴落、過去の暴落データ、条件の比較、72の法則を追加。一括投資か積立か・繰り上げ返済か投資かの比較もこのページにまとめました" },
   { date: "2026-11-20", id: "fukuri", kind: "update", text: "積立シミュレーション・複利計算を作り直し。目標金額からの逆算、新NISAの枠と非課税の効果、年齢ごとの積立額と取り崩し、信託報酬・インフレ、1,000通りのリスク計算を1ページに" },
   { date: "2026-11-19", id: "naishin-chiba", kind: "new", text: "千葉県の公立高校入試（2027年）の調査書の得点を志望校のK値で出し、総得点と必要な当日点を計算できるツールを公開。全日制178学科を収録" },
@@ -142,7 +143,8 @@ window.TOOLS = [
     seoTitle: "取り崩しシミュレーション｜定額・定率・4%ルールで老後資金が尽きる確率を出す",
     seoDesc: "貯めた資産を取り崩していくと、何歳まで持つのかをモンテカルロ法で計算する無料ツール。定額・定率・4%ルールの3方式を同じ条件で比べ、資産が尽きる確率（破綻確率）を出します。年金などの収入やインフレ率も設定でき、老後資金やFIRE後の生活設計に使えます。",
     category: "finance",
-    url: "/torikuzushi/"
+    url: "/fukuri/#torikuzushi",
+    hidden: true
   },
 
   {

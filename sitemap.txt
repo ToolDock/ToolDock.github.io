@@ -52,7 +52,6 @@ https://tooldock.github.io/takarakuji/
 https://tooldock.github.io/tedori/
 https://tooldock.github.io/timer/
 https://tooldock.github.io/todolist/
-https://tooldock.github.io/torikuzushi/
 https://tooldock.github.io/typing-game/
 https://tooldock.github.io/us-market/
 https://tooldock.github.io/war/
