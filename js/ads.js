@@ -688,10 +688,14 @@
 
   /* ---- 広告が来なかった枠に、ToolDock のほかのページを出す ----
      AdSense は配信できなかった枠の ins に data-ad-status="unfilled" を書く。そのときは枠を隠すかわりに、
-     同じ大きさで自分のサイトのページを紹介する（2026-11-21。申請のいらない自社の宣伝）。
+     同じ大きさで自分のサイトのいろいろな分野のページを紹介する（2026-11-21。申請のいらない自社の宣伝）。
      ラベルは「スポンサーリンク」から「ToolDockのほかのツール」に変え、広告と見間違えないようにする。
      下のバー（sticky）は今までどおり、来なければ片付ける */
   const houseUsed = new Set();
+  const houseCats = {};
+  let houseCount = 0;
+  /* いろいろな分野のページを知ってもらうため、1つめだけ今のページと近い分野、2つめからは
+     まだ紹介していない分野を順に回す（2026-11-21：パワプロだけのサイトではないと伝えたい）。分野の中ではランダム */
   function housePick() {
     const tools = (window.TOOLS || []).filter(t => !t.hidden && t.url);
     const curId = typeof CURRENT_TOOL !== "undefined" ? CURRENT_TOOL : null;
@@ -699,20 +703,27 @@
     /* 記事の中では、プロ野球データとパワプロ系を互いにリンクしない（持ち主の方針） */
     const apart = cur ? { game: "baseball", baseball: "game" }[cur.category] : null;
     const ok = t => t !== cur && t.category !== apart && !houseUsed.has(t.id) && t.url !== location.pathname;
-    const ids = [].concat(window.POPULAR_MONTH || [], window.POPULAR_ALL || [], window.RECOMMENDED || []);
-    /* 同じ分野のページを先に（関心が近いほど押されやすい）。足りなければ人気のページ・おすすめから */
-    const popular = ids.map(id => tools.find(t => t.id === id)).filter(t => t && ok(t));
-    /* 同じ分野が少ないときは、近い分野（お金まわり・勉強まわり・暮らしまわり）も同じ扱いにする */
+    const all = tools.filter(ok);
+    if (!all.length) return null;
     const NEAR = { finance: ["tax"], tax: ["finance"], math: ["study"], study: ["math"], life: ["work"], work: ["life"] };
-    const near = cur ? [cur.category].concat(NEAR[cur.category] || []) : [];
-    const same = cur ? tools.filter(t => near.includes(t.category) && ok(t)) : [];
-    const sameRank = same.slice().sort((x, y) => (popular.includes(y) ? 1 : 0) - (popular.includes(x) ? 1 : 0));
-    let pool = sameRank.slice(0, 6).concat(popular);
-    if (!pool.length) pool = tools.filter(ok);
-    if (!pool.length) return null;
-    const head = [...new Set(pool)].slice(0, Math.max(4, Math.min(6, sameRank.length)));
-    const t = head[Math.floor(Math.random() * head.length)];
+    let pool;
+    if (houseCount === 0 && cur) {
+      const near = [cur.category].concat(NEAR[cur.category] || []);
+      pool = all.filter(t => near.includes(t.category));
+    }
+    if (!pool || !pool.length) {
+      /* 今のページと違う分野のうち、このページでまだ紹介していない（少ない）分野から */
+      const cats = [...new Set(all.map(t => t.category))].filter(c => !cur || c !== cur.category);
+      const useCats = cats.length ? cats : [...new Set(all.map(t => t.category))];
+      const min = Math.min(...useCats.map(c => houseCats[c] || 0));
+      const fresh = useCats.filter(c => (houseCats[c] || 0) === min);
+      const cat = fresh[Math.floor(Math.random() * fresh.length)];
+      pool = all.filter(t => t.category === cat);
+    }
+    const t = pool[Math.floor(Math.random() * pool.length)];
     houseUsed.add(t.id);
+    houseCats[t.category] = (houseCats[t.category] || 0) + 1;
+    houseCount++;
     return t;
   }
   function houseFill(ins) {
