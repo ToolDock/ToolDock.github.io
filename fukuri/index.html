@@ -158,6 +158,17 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 @media (max-width:600px){ .ab{ gap:8px; } .abcol{ padding:10px; } }
 .kpi .v.bad{ color:#b42318; }
 table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weight:700; }
+.toggles{ display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; margin:10px 0 0; font-size:.88rem; }
+.toggles label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
+.chart.tall{ height:400px; }
+@media (max-width:600px){ .chart.tall{ height:300px; } }
+.asset{ display:grid; grid-template-columns:1.4fr .8fr .8fr .8fr 1.3fr auto; gap:6px; align-items:end; margin:6px 0; padding:8px 10px; border:1px solid var(--line); background:#fff; }
+.asset label{ display:block; font-size:.74rem; color:#5c6470; }
+.asset input, .asset select{ font:inherit; font-size:.95rem; width:100%; box-sizing:border-box; padding:5px 6px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; }
+.asset input[type=number]{ text-align:right; }
+.asset button{ font:inherit; font-size:.8rem; padding:5px 9px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; cursor:pointer; }
+@media (max-width:640px){ .asset{ grid-template-columns:1fr 1fr 1fr; } .asset .an-box{ grid-column:1 / -1; } .asset .ref-box{ grid-column:1 / 3; } }
+.kpi .v.sub.bad{ color:#b42318; }
 .r72{ display:flex; align-items:center; gap:8px; margin:8px 0; }
 .r72 input{ font:inherit; width:6em; padding:5px 8px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
 </style>
@@ -188,19 +199,26 @@ table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weigh
 
 <!-- ===================== 積立 ===================== -->
 <section class="panel" id="tsumitate">
-<h2 class="sec">積立と複利の計算</h2>
+<h2 class="sec">積立シミュレーション：1,000通りの将来でブレ幅まで</h2>
+<p class="lead">利回りとリスク（値動きの大きさ）から、モンテカルロ法で1,000通りの将来を作ります。「利回りどおりに増えた場合」の1本の線だけでなく、結果がどこまで散らばるかを帯で出すので、うまくいった場合も悪かった場合も分かります。</p>
 <div class="form">
     <div class="f"><label for="init">元本（初期投資額）</label><div class="in"><input type="number" id="init" min="0" step="1" value="0"><span class="u">万円</span></div><small>最初にまとめて入れる額。無ければ0</small></div>
     <div class="f"><label for="monthly">毎月の積立額</label><div class="in"><input type="number" id="monthly" min="0" step="1000" value="30000"><span class="u">円</span></div></div>
-    <div class="f"><label for="rate">想定利回り（年）</label><div class="in"><input type="number" id="rate" min="-20" max="50" step="0.1" value="5"><span class="u">％</span></div></div>
     <div class="f"><label for="years">積立期間</label><div class="in"><input type="number" id="years" min="1" max="70" step="1" value="20"><span class="u">年</span></div></div>
 </div>
-<div class="chips" data-preset="rate,risk">利回りの目安：
-    <button type="button" data-v="1,3">1％（控えめ）</button>
-    <button type="button" data-v="3,8">3％</button>
-    <button type="button" data-v="5,12">5％</button>
-    <button type="button" data-v="8,16">オルカン（8％）</button>
-    <button type="button" data-v="10,18">S&amp;P500（10％）</button>
+<p class="lead" style="margin-top:14px"><b>運用する商品（最大3つ）</b>　利回り（期待リターン）とリスクを入れます。「参考値」から主な指数の目安を選べます。</p>
+<div id="assets"></div>
+<div class="chips">
+    <button type="button" class="btn" id="addAsset">＋ 銘柄を足す</button>
+    <span id="corrBox">銘柄どうしの値動きの連動（相関） <input type="number" id="corr" min="0" max="1" step="0.1" value="0.8" style="width:4.5em;padding:3px 6px;border:1px solid var(--line-input);border-radius:var(--r-ctl);text-align:right"> <small class="note" style="display:inline;margin:0">（1＝まったく同じ動き。株どうしは0.7〜0.9くらい）</small></span>
+    <span id="wNote" class="warn"></span>
+</div>
+<div class="chips" id="quick">1つにまとめて：
+    <button type="button" data-q="想定の利回り,5,12">5％（標準）</button>
+    <button type="button" data-q="控えめな想定,3,8">3％（控えめ）</button>
+    <button type="button" data-q="オールカントリー,8,16">オルカン</button>
+    <button type="button" data-q="S&amp;P500,10,18">S&amp;P500</button>
+    <button type="button" data-q="NASDAQ100,13,28">NASDAQ100</button>
 </div>
 <details class="adv" id="adv">
     <summary>詳しい設定（年齢・積立額の変更・信託報酬・インフレ・新NISA・複利のかけ方）</summary>
@@ -216,14 +234,23 @@ table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weigh
     <button type="button" class="btn" id="addSched">＋ 積立額の変更を足す</button>
 </details>
 
-<section class="result" aria-live="polite">
+<section class="result" id="risk" aria-live="polite">
     <div class="kpis">
-        <div class="kpi"><div class="k" id="kFinal">最終金額</div><div class="v" id="vFinal"></div><div class="y" id="yFinal"></div></div>
+        <div class="kpi"><div class="k" id="kFinal">利回りどおりなら</div><div class="v" id="vFinal"></div><div class="y" id="yFinal"></div></div>
+        <div class="kpi"><div class="k">1,000通りの真ん中</div><div class="v sub" id="vMid"></div><div class="y" id="yMid"></div></div>
+        <div class="kpi"><div class="k">悪かった場合（下位5％）</div><div class="v sub bad" id="vLow"></div><div class="y" id="yLow"></div></div>
         <div class="kpi"><div class="k">元本（積み立てた合計）</div><div class="v sub" id="vPrin"></div><div class="y" id="yPrin"></div></div>
-        <div class="kpi"><div class="k">運用益</div><div class="v sub" id="vGain"></div><div class="y" id="yGain"></div></div>
     </div>
     <p class="say" id="say"></p>
-    <div class="chart"><canvas id="chart"></canvas></div>
+    <p class="say" id="mcSay"></p>
+    <div class="toggles">
+        <label><input type="checkbox" id="showPrin" checked> 元本を表示</label>
+        <label><input type="checkbox" id="showDet" checked> 利回りどおりの線を表示</label>
+        <label><input type="checkbox" id="showExt"> 最大値と最小値を表示</label>
+        <button type="button" class="btn" id="rerun">もう一度1,000通り作る</button>
+    </div>
+    <div class="chart tall"><canvas id="chart"></canvas></div>
+    <p class="note">濃い帯は1,000通りの真ん中40％（下位30％〜上位30％）、薄い帯は真ん中90％（下位5％〜上位5％）が入る範囲です。<a href="#yomikata">読み方</a></p>
     <details class="tbl"><summary>年ごとの表を見る</summary><div class="tblwrap"><table class="yt" id="ytable"></table></div></details>
 </section>
 
@@ -242,17 +269,9 @@ table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weigh
     </ul>
 </div>
 
-<div class="card wide" id="risk">
-    <h3>リスク込みのブレ幅（1,000通りの将来）</h3>
-    <p class="lead">毎年の値動きを入れて1,000通りの将来を作り、結果の幅を出します。リスクは1年の値動きの大きさ（標準偏差）です。<a href="#yomikata">読み方</a></p>
-    <div class="form"><div class="f"><label for="riskPct">リスク（年）</label><div class="in"><input type="number" id="riskPct" min="0" max="80" step="1" value="12"><span class="u">％</span></div><small>目安：オルカン16％・S&amp;P500 18％</small></div></div>
-    <div id="riskOut"></div>
-    <div class="chart"><canvas id="rchart"></canvas></div>
-</div>
-
 <div class="card wide" id="crash">
     <h3>暴落を起こしてみる</h3>
-    <p class="lead">「◯歳のときに◯％下がる」を入れて、資産がどうなるか、元に戻るまで何年かかるかを見ます。上のブレ幅の計算にも入ります。過去の暴落は<a href="#history">「過去の暴落」タブ</a>へ。</p>
+    <p class="lead">「◯歳のときに◯％下がる」を入れて、資産がどうなるか、元に戻るまで何年かかるかを見ます。上の1,000通りの計算とグラフにも入ります。過去の暴落は<a href="#history">「過去の暴落」タブ</a>へ。</p>
     <div class="rows" id="crashRows"></div>
     <div class="chips">
         <button type="button" class="btn" id="addCrash">＋ 暴落を足す</button>
@@ -444,7 +463,7 @@ table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weigh
 <table>
 <thead><tr><th>タブ</th><th>分かること</th></tr></thead>
 <tbody>
-<tr><th><a href="#tsumitate">積立</a></th><td>毎月の積立と元本が何年後にいくらになるか。<a href="#nisa">新NISAの非課税の効果</a>、<a href="#cost">信託報酬とインフレ</a>、<a href="#gyaku">目標金額からの逆算</a>、<a href="#risk">リスク込みのブレ幅</a>、<a href="#crash">暴落が来た場合</a>まで、結果の下に並びます。年齢・積立額の途中変更などは「詳しい設定」にあります</td></tr>
+<tr><th><a href="#tsumitate">積立</a></th><td>毎月の積立と元本が何年後にいくらになるか。モンテカルロ法で1,000通りの将来を作り、利回りどおりの線と、上位・下位5％／30％の帯、最大値・最小値まで出します。銘柄は最大3つまで、比率と値動きの連動（相関）を入れて組み合わせられます。<a href="#nisa">新NISAの非課税の効果</a>、<a href="#cost">信託報酬とインフレ</a>、<a href="#gyaku">目標金額からの逆算</a>、<a href="#risk">リスク込みのブレ幅</a>、<a href="#crash">暴落が来た場合</a>まで、結果の下に並びます。年齢・積立額の途中変更などは「詳しい設定」にあります</td></tr>
 <tr><th><a href="#torikuzushi">取り崩し</a></th><td>貯めたお金を取り崩すと何歳まで持つか、途中で尽きる確率。定額・定率・4％ルールの比較、年金、取り崩し直後の暴落も</td></tr>
 <tr><th><a href="#hikaku">比べる</a></th><td>2つの条件（積立額・利回り・年数・信託報酬）を並べて、どれだけ差がつくか</td></tr>
 <tr><th><a href="#ikkatsu">一括か積立か</a></th><td>まとまったお金を一度に入れるか、分けて入れるか、どちらが勝つ確率が高いか</td></tr>
@@ -482,7 +501,7 @@ table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weigh
 </div>
 
 <h2>S&amp;P500・オルカンで積み立てるときの目安</h2>
-<p>このツールの「利回りの目安」は、過去の値動きをもとにした概算です。オルカン（全世界株）は利回り8％・リスク16％、S&amp;P500（米国株）は利回り10％・リスク18％としています。どちらも年によって大きく上下するので、1本の線だけでなく「積立」タブの「<a href="#risk">リスク込みのブレ幅</a>」で、悪かった場合の金額も確かめてください。将来の利回りは誰にも分からないため、3〜5％などの控えめな数字でも試しておくのがおすすめです。</p>
+<p>このツールの「参考値」と「1つにまとめて」のボタンの数字は、過去の値動きをもとにした概算です。オルカン（全世界株）は利回り8％・リスク16％、S&amp;P500（米国株）は利回り10％・リスク18％としています。どちらも年によって大きく上下するので、1本の線だけでなく、「積立」タブの帯（<a href="#risk">1,000通りの結果</a>）で、悪かった場合の金額も確かめてください。将来の利回りは誰にも分からないため、3〜5％などの控えめな数字でも試しておくのがおすすめです。</p>
 
 <h2 id="shiki">複利の計算式（積立の計算式）</h2>
 <p>このツールの「毎月」の計算は、次の式と同じです（月利 i ＝ 年利 ÷ 12、n ＝ 月数）。</p>
@@ -690,9 +709,19 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
 
     /* ================= 積立 ================= */
     function readT() {
-        var p = { init: Math.max(0, num("init", 0)) * 1e4, monthly: Math.max(0, num("monthly", 0)), rate: num("rate", 0), years: Math.max(1, Math.min(70, Math.round(num("years", 20)))),
+        var assets = [];
+        document.querySelectorAll("#assets .asset").forEach(function (r) {
+            assets.push({ name: r.querySelector(".an").value || "銘柄", w: Math.max(0, Number(r.querySelector(".aw").value) || 0), ret: Number(r.querySelector(".ar").value) || 0, risk: Math.max(0, Number(r.querySelector(".ak").value) || 0) });
+        });
+        if (!assets.length) assets.push({ name: "想定の利回り", w: 100, ret: 5, risk: 12 });
+        var wsum = assets.reduce(function (s0, a) { return s0 + a.w; }, 0) || 1;
+        var corr = Math.max(0, Math.min(1, num("corr", 0.8)));
+        assets.forEach(function (a) { a.wn = a.w / wsum; });
+        var rate = assets.reduce(function (s0, a) { return s0 + a.wn * a.ret; }, 0), vr = 0;
+        assets.forEach(function (a, i) { assets.forEach(function (b, j) { vr += a.wn * b.wn * a.risk * b.risk * (i === j ? 1 : corr); }); });
+        var p = { assets: assets, wsum: wsum, corr: corr, init: Math.max(0, num("init", 0)) * 1e4, monthly: Math.max(0, num("monthly", 0)), rate: rate, years: Math.max(1, Math.min(70, Math.round(num("years", 20)))),
             age: Math.max(0, Math.min(90, Math.round(num("age", 30)))), fee: num("fee", 0), infl: num("infl", 0), mode: $("mode").value, nisa: $("nisaOn").checked,
-            risk: Math.max(0, num("riskPct", 12)), target: Math.max(0, num("target", 0)) * 1e4, sched: [], crash: [] };
+            risk: Math.sqrt(vr), target: Math.max(0, num("target", 0)) * 1e4, sched: [], crash: [] };
         document.querySelectorAll("#sched .row").forEach(function (r) { var a = Number(r.querySelector(".sa").value), m = Number(r.querySelector(".sm").value); if (Number.isFinite(a) && Number.isFinite(m)) p.sched.push({ age: a, amt: Math.max(0, m) }); });
         p.sched.sort(function (a, b) { return a.age - b.age; });
         document.querySelectorAll("#crashRows .row").forEach(function (r) { var a = Number(r.querySelector(".ca").value), c = Number(r.querySelector(".cp").value); if (Number.isFinite(a) && c > 0) p.crash.push({ age: a, pct: Math.min(99, c) / 100 }); });
@@ -740,22 +769,16 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
 
     function computeT() {
         var p = readT(), S = sim(p), E = S.end;
-        $("kFinal").textContent = p.years + "年後（" + (p.age + p.years) + "歳）の金額";
-        $("vFinal").textContent = man(E.v); $("yFinal").textContent = yen(E.v);
+        $("kFinal").textContent = p.years + "年後（" + (p.age + p.years) + "歳）・利回りどおりなら";
+        $("vFinal").textContent = man(E.v); $("yFinal").textContent = yen(E.v) + "（運用益 " + man(E.v - E.prin) + "）";
         $("vPrin").textContent = man(E.prin); $("yPrin").textContent = yen(E.prin);
-        $("vGain").textContent = man(E.v - E.prin); $("yGain").textContent = yen(E.v - E.prin);
+        $("corrBox").style.display = p.assets.length > 1 ? "" : "none";
+        $("wNote").textContent = Math.abs(p.wsum - 100) > 0.5 ? "比率の合計が" + Math.round(p.wsum) + "％です（合計100％として計算）" : "";
         var eff = p.rate - p.fee;
         $("say").innerHTML = "元本の <b>" + (E.prin > 0 ? Math.round(E.v / E.prin * 100) / 100 : "―") + "倍</b> になります。" +
             (eff > 0 ? "年" + pct(eff, 1) + "なら、お金が2倍になるのは約" + (Math.round(72 / eff * 10) / 10) + "年後です（<a href=\"#rule72\">72の法則</a>）。" : "") +
-            (p.fee > 0 ? "（信託報酬など" + pct(p.fee, 2) + "を差し引いた利回りで計算）" : "");
-        var c0 = color();
-        draw("chart", S.rows.map(function (r) { return r.age + "歳"; }), [
-            line("資産額", S.rows.map(function (r) { return r.v; }), c0, { backgroundColor: c0 + "33", fill: true }),
-            line("元本（積み立てた合計）", S.rows.map(function (r) { return r.prin; }), "#6b7280", { borderDash: [6, 4] })
-        ]);
-        var h = "<thead><tr><th>年</th><th>年齢</th><th>その年の積立</th><th>元本</th><th>資産額</th><th>運用益</th>" + (p.nisa ? "<th>うちNISA</th>" : "") + "</tr></thead><tbody>";
-        S.rows.forEach(function (r) { h += "<tr><td>" + r.y + "年目</td><td>" + r.age + "歳</td><td>" + yen(r.c) + "</td><td>" + yen(r.prin) + "</td><td>" + yen(r.v) + "</td><td>" + yen(r.v - r.prin) + "</td>" + (p.nisa ? "<td>" + yen(r.nv) + "</td>" : "") + "</tr>"; });
-        $("ytable").innerHTML = h + "</tbody>";
+            (p.fee > 0 ? "（信託報酬など" + pct(p.fee, 2) + "を差し引いた利回りで計算）" : "") +
+            (p.assets.length > 1 ? "　組み合わせ全体の利回り " + pct(p.rate, 1) + "・リスク " + pct(p.risk, 1) + "（相関" + p.corr + "）" : "");
 
         /* 新NISA */
         if (!p.nisa) $("nisaOut").innerHTML = "<p>詳しい設定で「新NISAの枠で運用する」にチェックを入れると、枠に入るかと税金の差を出します。</p>";
@@ -793,39 +816,98 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
         }
         computeCrash(p, S);
         later("risk", function () { computeRisk(p, S); });
+        lastT = { p: p, S: S };
     }
 
+    var lastT = null, lastMC = null;
+    /* 1,000通り。銘柄ごとに値動きを作り（相関あり）、毎月その比率で持ち直す（リバランス）。
+       銘柄 i の毎月の値動き：exp(mu_i + s_i × z_i)、z_i ＝ √相関 × 共通の乱数 ＋ √(1−相関) × 銘柄ごとの乱数 */
     function computeRisk(p, S) {
-        var cM = p.years * 12, sc = scen(cM, p.rate - p.fee, p.risk), Y = p.years;
+        var cM = p.years * 12, Y = p.years, A = p.assets, n = A.length, fm = p.fee / 100 / 12;
+        var mu = A.map(function (a) { var s0 = a.risk / 100 / Math.sqrt(12); return Math.log(Math.max(1e-9, 1 + a.ret / 100 / 12)) - s0 * s0 / 2; });
+        var sg = A.map(function (a) { return a.risk / 100 / Math.sqrt(12); });
+        var rc = Math.sqrt(p.corr), ri = Math.sqrt(1 - p.corr);
         var vals = new Float64Array(RUNS * Y), ends = [];
         for (var r = 0; r < RUNS; r++) {
-            var a = p.init, hit = {}, b = r * cM;
+            var v = p.init, hit = {};
             for (var m = 0; m < cM; m++) {
-                var age = p.age + m / 12;
-                a *= sc[b + m];
-                for (var ci = 0; ci < p.crash.length; ci++) if (!hit[ci] && age >= p.crash[ci].age - 1e-9) { hit[ci] = true; a *= 1 - p.crash[ci].pct; }
-                a += monthlyAt(p, age);
-                if (m % 12 === 11) vals[r * Y + Math.floor(m / 12)] = a;
+                var age = p.age + m / 12, zc = randn(), g = 0;
+                for (var k = 0; k < n; k++) { var z = n > 1 ? rc * zc + ri * randn() : zc; g += A[k].wn * Math.exp(mu[k] + sg[k] * z); }
+                v *= Math.max(0, g - fm);
+                for (var ci = 0; ci < p.crash.length; ci++) if (!hit[ci] && age >= p.crash[ci].age - 1e-9) { hit[ci] = true; v *= 1 - p.crash[ci].pct; }
+                v += monthlyAt(p, age);
+                if (m % 12 === 11) vals[r * Y + Math.floor(m / 12)] = v;
             }
-            ends.push(a);
+            ends.push(v);
         }
-        var p10 = [], p50 = [], p90 = [];
-        for (var y = 0; y < Y; y++) { var col = []; for (var k = 0; k < RUNS; k++) col.push(vals[k * Y + y]); asc(col); p10.push(q(col, 0.1)); p50.push(q(col, 0.5)); p90.push(q(col, 0.9)); }
+        var B = { min: [], p5: [], p30: [], p50: [], p70: [], p95: [], max: [] };
+        for (var y = 0; y < Y; y++) {
+            var col = []; for (var k2 = 0; k2 < RUNS; k2++) col.push(vals[k2 * Y + y]); asc(col);
+            B.min.push(col[0]); B.p5.push(q(col, 0.05)); B.p30.push(q(col, 0.3)); B.p50.push(q(col, 0.5)); B.p70.push(q(col, 0.7)); B.p95.push(q(col, 0.95)); B.max.push(col[col.length - 1]);
+        }
         asc(ends);
-        var prin = S.end.prin, below = ends.filter(function (v) { return v < prin; }).length / RUNS;
-        var L = ["<b>" + p.years + "年後の金額</b>：真ん中で <b>" + man(q(ends, 0.5)) + "</b>。悪かった場合（下位10％）は " + man(q(ends, 0.1)) + "、良かった場合（上位10％）は " + man(q(ends, 0.9))];
-        L.push("元本（" + man(prin) + "）を下回る確率：<b>" + pct(below * 100) + "</b>");
-        if (p.target) L.push("目標の" + man(p.target) + "に届く確率：<b>" + pct(ends.filter(function (v) { return v >= p.target; }).length / RUNS * 100) + "</b>");
-        L.push("利回り" + pct(p.rate - p.fee, 1) + "・リスク" + pct(p.risk) + (p.crash.length ? "・下の暴落あり" : "") + "で1,000通り。開くたびに少しずつ変わります");
-        $("riskOut").innerHTML = ul(L);
-        var c0 = color(), lab = S.rows.map(function (r) { return r.age + "歳"; });
-        draw("rchart", lab, [
-            line("良かった場合（上位10％）", p90, c0 + "66", { backgroundColor: c0 + "22", fill: "+2" }),
-            line("真ん中（中央値）", p50, c0, { borderWidth: 2.5 }),
-            line("悪かった場合（下位10％）", p10, c0 + "66"),
-            line("元本（積み立てた合計）", S.rows.map(function (r) { return r.prin; }), "#6b7280", { borderDash: [6, 4] })
-        ]);
+        var prin = S.end.prin, below = ends.filter(function (x) { return x < prin; }).length / RUNS;
+        $("vMid").textContent = man(q(ends, 0.5)); $("yMid").textContent = "上位5％なら " + man(q(ends, 0.95));
+        $("vLow").textContent = man(q(ends, 0.05)); $("yLow").textContent = "元本を下回る確率 " + pct(below * 100);
+        var L = [];
+        L.push("1,000通りのうち、真ん中は <b>" + man(q(ends, 0.5)) + "</b>（利回りどおりの " + man(S.end.v) + " より" + (q(ends, 0.5) < S.end.v ? "少し下" : "上") + "）。下位30％〜上位30％の幅は " + man(q(ends, 0.3)) + "〜" + man(q(ends, 0.7)) + "。");
+        if (p.target) L.push("目標の" + man(p.target) + "に届く確率は <b>" + pct(ends.filter(function (x) { return x >= p.target; }).length / RUNS * 100) + "</b>。");
+        if (p.crash.length) L.push("下の「暴落を起こしてみる」の暴落も入っています。");
+        $("mcSay").innerHTML = L.join("") + "<span class=\"note\" style=\"display:block;margin-top:4px\">リスク " + pct(p.risk, 1) + "で計算。もう一度作ると少しずつ変わります。</span>";
+        lastMC = { p: p, S: S, B: B };
+        drawMain();
+        var h = "<thead><tr><th>年</th><th>年齢</th><th>その年の積立</th><th>元本</th><th>利回りどおり</th><th>下位5％</th><th>真ん中</th><th>上位5％</th>" + (p.nisa ? "<th>うちNISA</th>" : "") + "</tr></thead><tbody>";
+        S.rows.forEach(function (rw, i) { h += "<tr><td>" + rw.y + "年目</td><td>" + rw.age + "歳</td><td>" + yen(rw.c) + "</td><td>" + yen(rw.prin) + "</td><td>" + yen(rw.v) + "</td><td>" + yen(B.p5[i]) + "</td><td>" + yen(B.p50[i]) + "</td><td>" + yen(B.p95[i]) + "</td>" + (p.nisa ? "<td>" + yen(rw.nv) + "</td>" : "") + "</tr>"; });
+        $("ytable").innerHTML = h + "</tbody>";
     }
+    function drawMain() {
+        if (!lastMC) return;
+        var S = lastMC.S, B = lastMC.B, c0 = color(), lab = S.rows.map(function (r) { return r.age + "歳"; });
+        var sets = [
+            line("上位5％", B.p95, c0 + "55", { borderWidth: 1, backgroundColor: c0 + "1f", fill: "+5" }),
+            line("上位30％", B.p70, c0 + "88", { borderWidth: 1, backgroundColor: c0 + "40", fill: "+3" }),
+            line("真ん中（中央値）", B.p50, c0, { borderWidth: 3 }),
+            line("利回りどおり", S.rows.map(function (r) { return r.v; }), "#111827", { borderDash: [4, 4], borderWidth: 1.5, hidden: !$("showDet").checked }),
+            line("下位30％", B.p30, c0 + "88", { borderWidth: 1 }),
+            line("下位5％", B.p5, c0 + "55", { borderWidth: 1 }),
+            line("元本", S.rows.map(function (r) { return r.prin; }), "#6b7280", { borderDash: [6, 4], hidden: !$("showPrin").checked })
+        ];
+        if ($("showExt").checked) { sets.push(line("最大値", B.max, "#9ca3af", { borderWidth: 1, borderDash: [2, 3] })); sets.push(line("最小値", B.min, "#9ca3af", { borderWidth: 1, borderDash: [2, 3] })); }
+        if (charts.chart) { charts.chart.destroy(); delete charts.chart; }
+        draw("chart", lab, sets);
+    }
+    ["showPrin", "showDet", "showExt"].forEach(function (id) { $(id).addEventListener("change", function (ev) { ev.stopPropagation(); drawMain(); save(); }); });
+    $("rerun").addEventListener("click", function () { if (lastT) computeRisk(lastT.p, lastT.S); });
+
+    /* 銘柄の行 */
+    var REF = [["オールカントリー", 8, 16], ["S&P500", 10, 18], ["NASDAQ100", 13, 28], ["FANG+", 16, 35], ["半導体株", 15, 40], ["新興国株式", 9, 25], ["日経225", 7, 20], ["TOPIX", 6, 15], ["株と債券を半分ずつ（目安）", 5, 10], ["債券が中心（目安）", 2, 5], ["定期預金（目安）", 0.3, 0]];
+    function addAsset(name, w, ret, risk) {
+        if (document.querySelectorAll("#assets .asset").length >= 3) return;
+        var d = document.createElement("div"); d.className = "asset";
+        var opts = '<option value="">参考値から選ぶ</option>' + REF.map(function (r, i) { return '<option value="' + i + '">' + r[0].replace(/&/g, "&amp;") + "（" + r[1] + "％・" + r[2] + "％）</option>"; }).join("");
+        d.innerHTML = '<div class="an-box"><label>銘柄名</label><input type="text" class="an"></div>' +
+            '<div><label>比率（％）</label><input type="number" class="aw" min="0" max="100" step="5"></div>' +
+            '<div><label>利回り（％）</label><input type="number" class="ar" step="0.1"></div>' +
+            '<div><label>リスク（％）</label><input type="number" class="ak" min="0" step="1"></div>' +
+            '<div class="ref-box"><label>参考値</label><select class="aref">' + opts + '</select></div>' +
+            '<div><button type="button">削除</button></div>';
+        d.querySelector(".an").value = name; d.querySelector(".aw").value = w; d.querySelector(".ar").value = ret; d.querySelector(".ak").value = risk;
+        d.querySelector(".aref").addEventListener("change", function (ev) {
+            var r = REF[Number(ev.target.value)]; if (!r) return;
+            d.querySelector(".an").value = r[0]; d.querySelector(".ar").value = r[1]; d.querySelector(".ak").value = r[2]; ev.target.value = "";
+        });
+        d.querySelector("button").addEventListener("click", function () { if (document.querySelectorAll("#assets .asset").length > 1) { d.remove(); changed($("tsumitate")); } });
+        $("assets").appendChild(d);
+    }
+    $("addAsset").addEventListener("click", function () {
+        var rows = document.querySelectorAll("#assets .asset"); if (rows.length >= 3) return;
+        var n = rows.length + 1, each = Math.floor(100 / n);
+        rows.forEach(function (r) { r.querySelector(".aw").value = each; });
+        addAsset("TOPIX", 100 - each * (n - 1), 6, 15); changed($("tsumitate"));
+    });
+    document.querySelectorAll("#quick button[data-q]").forEach(function (b) {
+        b.addEventListener("click", function () { var v = b.dataset.q.split(","); $("assets").textContent = ""; addAsset(v[0], 100, Number(v[1]), Number(v[2])); changed($("tsumitate")); });
+    });
 
     function computeCrash(p) {
         var out = $("crashOut");
@@ -1074,12 +1156,14 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
         var wm = document.querySelector('input[name="wm"]:checked'); o.wm = wm ? wm.value : "fixed";
         o.sched = [].map.call(document.querySelectorAll("#sched .row"), function (r) { return r.querySelector(".sa").value + ":" + r.querySelector(".sm").value; }).join(",");
         o.crash = [].map.call(document.querySelectorAll("#crashRows .row"), function (r) { return r.querySelector(".ca").value + ":" + r.querySelector(".cp").value; }).join(",");
+        o.assets = [].map.call(document.querySelectorAll("#assets .asset"), function (r) { return [r.querySelector(".an").value, r.querySelector(".aw").value, r.querySelector(".ar").value, r.querySelector(".ak").value].map(function (x) { return String(x).replace(/[|~]/g, ""); }).join("~"); }).join("|");
         return o;
     }
     function apply(o) {
         fields().forEach(function (e) { if (o[e.id] == null) return; if (e.type === "checkbox") e.checked = o[e.id] === "1" || o[e.id] === true; else e.value = o[e.id]; });
         if (o.wm) { var r = document.querySelector('input[name="wm"][value="' + o.wm + '"]'); if (r) r.checked = true; }
         if (o.sched != null) { $("sched").textContent = ""; String(o.sched).split(",").filter(Boolean).forEach(function (x) { var t = x.split(":"); addSched(Number(t[0]), Number(t[1])); }); }
+        if (o.assets) { $("assets").textContent = ""; String(o.assets).split("|").filter(Boolean).forEach(function (x) { var t = x.split("~"); addAsset(t[0], Number(t[1]), Number(t[2]), Number(t[3])); }); }
         if (o.crash != null) { $("crashRows").textContent = ""; String(o.crash).split(",").filter(Boolean).forEach(function (x) { var t = x.split(":"); addCrash(Number(t[0]), Number(t[1])); }); }
     }
     function save() { try { localStorage.setItem(STORE, JSON.stringify(snapshot())); } catch (e) { /* 保存できなくても使える */ } }
@@ -1097,11 +1181,12 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
     document.querySelectorAll("[data-preset]").forEach(function (box) {
         var ids = box.dataset.preset.split(",");
         box.querySelectorAll("button[data-v]").forEach(function (b) {
-            b.addEventListener("click", function () { var v = b.dataset.v.split(","); ids.forEach(function (id, k) { $(id === "risk" ? "riskPct" : id).value = v[k]; }); changed(box.closest(".panel")); });
+            b.addEventListener("click", function () { var v = b.dataset.v.split(","); ids.forEach(function (id, k) { $(id).value = v[k]; }); changed(box.closest(".panel")); });
         });
     });
 
     /* 起動：初期値を覚える → 保存した内容 → 共有URL */
+    addAsset("想定の利回り", 100, 5, 12);
     DEF = snapshot();
     try { var st = JSON.parse(localStorage.getItem(STORE) || "null"); if (st) apply(st); } catch (e) { /* 壊れていれば初期値 */ }
     var sp = new URLSearchParams(location.search);
@@ -1109,8 +1194,8 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
         var o = {}; Object.keys(DEF).forEach(function (k) { o[k] = sp.has(k) ? sp.get(k) : DEF[k]; }); apply(o);
     }
     document.querySelectorAll(".panel").forEach(function (pn) {
-        pn.addEventListener("input", function () { changed(pn); });
-        pn.addEventListener("change", function () { changed(pn); });
+        pn.addEventListener("input", function (ev) { if (!ev.target.closest(".toggles")) changed(pn); });
+        pn.addEventListener("change", function (ev) { if (!ev.target.closest(".toggles")) changed(pn); });
     });
     $("tabs").addEventListener("click", function (ev) {
         var a = ev.target.closest("a[data-tab]"); if (!a) return;
