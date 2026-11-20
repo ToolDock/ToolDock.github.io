@@ -752,6 +752,18 @@
       for (const m of list) if (m.target.matches && m.target.matches("ins.adsbygoogle")) check(m.target);
     }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["data-ad-status"] });
     document.querySelectorAll('ins.adsbygoogle[data-ad-status="unfilled"]').forEach(check);
+
+    /* 広告ブロックなどで AdSense の仕組み自体が動かなかった枠は、「来なかった」という知らせも届かない。
+       枠を置いてから6秒たっても AdSense が手を付けていない（data-adsbygoogle-status が無い）枠も、紹介に置きかえる */
+    setInterval(() => {
+      const now = Date.now();
+      document.querySelectorAll("ins.adsbygoogle").forEach(ins => {
+        if (ins.closest(".td-ad-sticky")) return;
+        if (!ins.dataset.tdSeen) { ins.dataset.tdSeen = String(now); return; }
+        if (now - Number(ins.dataset.tdSeen) < 6000) return;
+        if (!ins.hasAttribute("data-adsbygoogle-status") && !ins.hasAttribute("data-ad-status")) houseFill(ins);
+      });
+    }, 2000);
   }
 
   function start() {
