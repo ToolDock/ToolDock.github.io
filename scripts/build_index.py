@@ -148,9 +148,11 @@ def render(categories, tools):
         out.append("  </section>")
 
     pick = lambda name, n=None: [by_id[i] for i in parse_id_list(name) if i in by_id][:n]
-    grid("popular", "人気ランキング（通算）", pick("POPULAR_ALL", POPULAR), True)
+    ranked_all = pick("POPULAR_ALL", POPULAR)
+    grid("popular", "人気ランキング（通算）", ranked_all, True)
     grid("popular-month", "今月の人気ランキング", pick("POPULAR_MONTH", POPULAR), True)
-    grid("recommended", "管理人のおすすめ", pick("RECOMMENDED"), False)
+    # 管理人のおすすめは、通算ランキングに出ているものを除く（同じツールが2回並ばないように）
+    grid("recommended", "管理人のおすすめ", [t for t in pick("RECOMMENDED") if t not in ranked_all], False)
 
     for key, label in categories:
         items = [t for t in tools if t["category"] == key]
