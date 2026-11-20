@@ -434,6 +434,19 @@ h3.sub{ margin:30px 0 8px; font-size:1.05rem; padding:6px 10px; border-left:5px 
 </div>
 <section class="result" aria-live="polite"><div id="tnOut"></div></section>
 <p class="note">投資のほうは、上の「運用の目安」の利回り・リスクで計算します。追納額は令和8年度中に納める場合の額（3年度目以降の加算額を含む）です。年金額は令和8年度の満額（年847,300円）で計算し、物価に合わせた将来の改定は入れていません。</p>
+
+<h3 class="sub" id="gakusei">大学生：学生納付特例を使う？ 今払う？</h3>
+<p class="lead">20歳になると、学生も国民年金保険料（令和8年度は月17,920円）を納めることになります。学生納付特例を使えば在学中は納めなくてよくなりますが、あとで追納しないと年金がその分だけ減ります。「今払う（親が払う）」「特例を使って就職後に追納」「特例を使って追納しない」の3つを比べます。</p>
+<div class="form">
+    <div class="f"><label for="stMonths">在学中で保険料がかかる月数</label><div class="in"><input type="number" id="stMonths" min="1" max="120" step="1" value="24"><span class="u">か月</span></div><small>20歳から卒業まで。4年制大学なら多くは24か月前後</small></div>
+    <div class="f"><label for="stPayer">今払うなら、誰が払う？</label><select id="stPayer"><option value="parent">親</option><option value="self">本人</option></select><small>親が払うと親の社会保険料控除になります。学生本人は税金がかからないことが多く、控除の効果はほぼありません</small></div>
+    <div class="f"><label for="stParentTax">親の所得税の税率</label><select id="stParentTax"><option value="5">5％</option><option value="10">10％</option><option value="20" selected>20％</option><option value="23">23％</option><option value="33">33％</option></select></div>
+    <div class="f"><label for="stSelfTax">就職後のあなたの所得税の税率</label><select id="stSelfTax"><option value="5" selected>5％</option><option value="10">10％</option><option value="20">20％</option></select></div>
+    <div class="f"><label for="stLater">就職して何年後に追納する？</label><div class="in"><input type="number" id="stLater" min="1" max="9" step="1" value="3"><span class="u">年後</span></div><small>猶予の翌年度から数えて3年度目以降は加算額がつく</small></div>
+</div>
+<section class="result" aria-live="polite"><div id="stOut"></div></section>
+<p class="note">年金の受け取り開始・何歳まで生きる前提・投資の利回りは、上の追納の欄と「運用の目安」の数字を使います。加算額は、令和8年度の追納額の表から読み取った割合（3年度目で約1.5％、10年度目で約3.6％）を目安に使っています。実際の加算の割合は金利で毎年変わります。</p>
+
 </section>
 
 <!-- ===================== 過去の暴落 ===================== -->
@@ -570,6 +583,7 @@ h3.sub{ margin:30px 0 8px; font-size:1.05rem; padding:6px 10px; border-left:5px 
 <li>追納した保険料は全額が社会保険料控除になり、その年の所得税・住民税が減ります。</li>
 <li>増えた年金は一生受け取れ、相場に左右されません。長生きするほど得になる「保険」の性格があります。</li>
 </ul>
+<p><strong>大学生の学生納付特例</strong>：20歳以上の学生で、本人の前年所得が一定以下（128万円＋扶養親族等の数×38万円＋社会保険料控除等）なら、在学中の保険料の納付が猶予されます。家族の所得は問いません。特例を受けた期間は、年金を受け取るのに必要な期間（受給資格期間）には数えられ、在学中のけがや病気で障害が残ったときの障害基礎年金も対象になります（申請が遅れると対象外になることがあります）。一方で、追納しないと老齢基礎年金は増えません。親が代わりに払うと、親の社会保険料控除になるので、親の税率が高いほど節税になります。「<a href="#gakusei">大学生：学生納付特例を使う？ 今払う？</a>」で3つのやり方を比べられます。</p>
 <p>投資と比べるときは、「追納の実質の負担（税金が減る分を引いた額）を投資に回したら、増えるはずだった年金と同じ額を、何歳まで取り崩せるか」を見ます。「<a href="#tsuino">返済か投資か</a>」タブで、追納する月数や税率、何歳まで生きる前提かを変えて確かめてください。追納の額や制度の最新の内容は、<a href="https://www.nenkin.go.jp/service/kokunen/menjo/20150331.html" target="_blank" rel="noopener">日本年金機構の「国民年金保険料の追納制度」</a>で確かめられます。</p>
 
 <h2>新NISAの枠と非課税の効果</h2>
@@ -1181,6 +1195,39 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
         $("tnOut").innerHTML = ul(L);
     }
 
+
+    /* ================= 大学生：学生納付特例を使うか、今払うか ================= */
+    var PREMIUM = 17920;   /* 令和8年度の国民年金保険料（月額） */
+    /* 何年度目に追納すると、当時の保険料に何％上乗せされるか。令和8年度の追納額の表と当時の保険料から読み取った目安
+       （2年度目までは加算なし）。[年度目, 割合] */
+    var ADD = { 1: 0, 2: 0, 3: 0.015, 4: 0.024, 5: 0.030, 6: 0.032, 7: 0.033, 8: 0.034, 9: 0.035, 10: 0.036 };
+    function computeSt() {
+        var M = Math.max(1, Math.min(120, Math.round(num("stMonths", 24)))), base = PREMIUM * M;
+        var parent = $("stPayer").value === "parent", pr = Number($("stParentTax").value) / 100, sr = Number($("stSelfTax").value) / 100;
+        var later = Math.max(1, Math.min(9, Math.round(num("stLater", 3))));
+        var yearsAfter = Math.round(M / 12 / 2 + later);   /* 在学の真ん中の年度から数えた、追納するまでの年数の目安 */
+        var add = ADD[Math.min(10, Math.max(1, yearsAfter + 1))] || 0;
+        var taxSave = function (amt, r) { return amt * (r * 1.021 + 0.10); };
+        var start = num("tnStart", 65), life = Math.max(start + 1, num("tnLife", 87)), ret = num("kuRet", 6);
+        var pension = KISO / 480 * M, lifetime = pension * (life - start);
+        var A = base - (parent ? taxSave(base, pr) : 0);   /* 学生本人は所得税がかからないことが多いので、本人が今払う場合の節税は0とする */
+        var Bpay = base * (1 + add), B = Bpay - taxSave(Bpay, sr);
+        var keep = base * (Math.pow(1 + ret / 100, yearsAfter) - 1);   /* 追納するまで手元のお金を運用できた場合の増え方の目安 */
+        var h = '<div class="table-scroll"><table class="yt"><thead><tr><th></th><th>今払う（' + (parent ? "親" : "本人") + '）</th><th>特例 → ' + later + '年後に追納</th><th>特例 → 追納しない</th></tr></thead><tbody>' +
+            "<tr><td>納める額</td><td>" + man(base) + "</td><td>" + man(Bpay) + (add ? "（加算 約" + pct(add * 100, 1) + "）" : "（加算なし）") + "</td><td>0円</td></tr>" +
+            "<tr><td>減る税金</td><td>" + man(base - A) + (parent ? "（親の控除）" : "（学生のうちは税金がかからないことが多い）") + "</td><td>" + man(Bpay - B) + "（本人の控除）</td><td>0円</td></tr>" +
+            "<tr><td><b>実質の負担</b></td><td><b>" + man(A) + "</b></td><td><b>" + man(B) + "</b></td><td><b>0円</b></td></tr>" +
+            "<tr><td>老齢基礎年金</td><td>年 +" + yen(pension) + "</td><td>年 +" + yen(pension) + "</td><td class=\"warn\">増えない（" + life + "歳までに約" + man(lifetime) + "の差）</td></tr>" +
+            "<tr><td>在学中の障害基礎年金</td><td>対象</td><td>対象（特例を申請していれば）</td><td>対象（特例を申請していれば）</td></tr>" +
+            "</tbody></table></div>";
+        var best = A <= B ? "今払う" : "特例を使って就職後に追納";
+        var L = [];
+        L.push("負担がいちばん少ないのは <b>" + best + "</b>（差 " + man(Math.abs(A - B)) + "）。" + (parent && pr > sr ? "親の税率が高いほど、親が払って控除を受けるほうが有利です。" : "追納が遅れるほど加算額で負担が増えます。"));
+        L.push("特例を使ってその間お金を運用できれば、" + later + "年後の追納までに約" + man(keep) + "増える計算です（利回り" + pct(ret, 1) + "）。手元のお金に余裕がない学生には、特例はとても助かる制度です。");
+        L.push("「特例を使って追納しない」と、" + M + "か月分の年金（年" + yen(pension) + "）がずっと減ります。払わずにほうっておく「未納」は、障害基礎年金を受け取れなくなることがあるので、払えないなら必ず特例を申請してください。");
+        $("stOut").innerHTML = h + ul(L);
+    }
+
     /* ================= 過去の暴落に立ち会ったら ================= */
     var EVENTS = { covid: { name: "コロナショック", d: 0.34, down: 1, up: 5 }, lehman: { name: "リーマンショック", d: 0.57, down: 17, up: 48 }, y2022: { name: "2022年の利上げ相場", d: 0.25, down: 9, up: 15 },
         it: { name: "ITバブル崩壊", d: 0.78, down: 31, up: 150 }, japan: { name: "日本のバブル崩壊", d: 0.82, down: 231, up: 179 }, bm: { name: "ブラックマンデー", d: 0.36, down: 2, up: 22 }, gd: { name: "世界恐慌", d: 0.89, down: 34, up: 268 } };
@@ -1228,7 +1275,7 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
     /* ================= 計算の振り分け・保存 ================= */
     var timers = {};
     function later(k, fn) { clearTimeout(timers[k]); timers[k] = setTimeout(fn, 120); }
-    var FN = { tsumitate: computeT, torikuzushi: computeW, hikaku: computeAB, ikkatsu: computeIk, kuriage: function () { computeKu(); computeTn(); }, history: computeEv };
+    var FN = { tsumitate: computeT, torikuzushi: computeW, hikaku: computeAB, ikkatsu: computeIk, kuriage: function () { computeKu(); computeTn(); computeSt(); }, history: computeEv };
     function compute(name) { if (FN[name]) FN[name](); }
     function changed(panel) { if (panel && !panel.hidden) compute(panel.id); save(); }
 
