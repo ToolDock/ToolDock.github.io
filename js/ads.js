@@ -700,9 +700,8 @@
     const tools = (window.TOOLS || []).filter(t => !t.hidden && t.url);
     const curId = typeof CURRENT_TOOL !== "undefined" ? CURRENT_TOOL : null;
     const cur = tools.find(t => t.id === curId || t.url === location.pathname);
-    /* 記事の中では、プロ野球データとパワプロ系を互いにリンクしない（持ち主の方針） */
-    const apart = cur ? { game: "baseball", baseball: "game" }[cur.category] : null;
-    const ok = t => t !== cur && t.category !== apart && !houseUsed.has(t.id) && t.url !== location.pathname;
+    /* プロ野球データとパワプロ系も、この紹介では分けない（2026-11-21：記事の本文で露骨につながなければよい） */
+    const ok = t => t !== cur && !houseUsed.has(t.id) && t.url !== location.pathname;
     const all = tools.filter(ok);
     if (!all.length) return null;
     const NEAR = { finance: ["tax"], tax: ["finance"], math: ["study"], study: ["math"], life: ["work"], work: ["life"] };
