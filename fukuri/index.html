@@ -120,7 +120,48 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 .tool-article th{ background:var(--surface-2); white-space:nowrap; }
 .tool-article td.n{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .tool-article pre{ background:var(--surface-2); padding:10px 12px; overflow:auto; font-size:.88rem; }
+
+/* タブ */
+.tabs{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin:18px 0 0; background:var(--surface); padding:8px 0; }
+@media (min-width:761px){ .tabs{ position:sticky; top:0; z-index:5; } .panel, .card, #tachiai{ scroll-margin-top:90px; } }
+.tabs a{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:8px 4px; border:1.5px solid var(--line); border-radius:10px; text-decoration:none; color:var(--ink); background:#fff; line-height:1.3; }
+.tabs a b{ font-size:.92rem; }
+.tabs a span{ font-size:.72rem; color:#5c6470; margin-top:2px; }
+.tabs a:hover{ border-color:var(--c); }
+.tabs a.on{ background:var(--c); border-color:var(--c); color:#fff; }
+.tabs a.on span{ color:#ffffffcc; }
+@media (max-width:760px){ .tabs{ grid-template-columns:repeat(3,1fr); } .tabs a span{ display:none; } .tabs a{ padding:9px 2px; } }
+.panel h2.sec{ margin-top:16px; }
+.panel{ scroll-margin-top:10px; }
+.adv{ margin:14px 0 0; border:1px solid var(--line); padding:10px 14px; background:var(--surface-2); }
+.adv summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
+.adv[open] summary{ margin-bottom:10px; }
+.cards{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
+@media (max-width:760px){ .cards{ grid-template-columns:1fr; } }
+.card{ border:1px solid var(--line); padding:14px 16px; background:#fff; scroll-margin-top:90px; }
+.card.wide{ margin-top:16px; }
+.card h3{ margin:0 0 8px; font-size:1.02rem; padding-left:9px; border-left:4px solid var(--c); }
+.card .lead{ margin-bottom:8px; }
+.next{ margin:20px 0 0; text-align:right; }
+.go{ font:inherit; font-weight:700; padding:10px 16px; border:0; border-radius:var(--r-ctl); background:var(--c); color:#fff; cursor:pointer; }
+.seg{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0; }
+.seg label{ display:flex; flex-direction:column; border:1.5px solid var(--line); border-radius:10px; padding:9px 10px; cursor:pointer; background:#fff; }
+.seg label:has(input:checked){ border-color:var(--c); background:color-mix(in srgb, var(--c) 7%, #fff); }
+.seg input{ position:absolute; opacity:0; pointer-events:none; }
+.seg b{ font-size:.95rem; }
+.seg span{ font-size:.78rem; color:#5c6470; }
+.ab{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.abcol{ border:1px solid var(--line); padding:12px 14px; display:grid; gap:10px; }
+.abcol h3{ margin:0; font-size:1rem; }
+.abcol.a h3{ color:var(--c); } .abcol.b h3{ color:#b45309; }
+.abcol .f{ max-width:none; }
+@media (max-width:600px){ .ab{ gap:8px; } .abcol{ padding:10px; } }
+.kpi .v.bad{ color:#b42318; }
+table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weight:700; }
+.r72{ display:flex; align-items:center; gap:8px; margin:8px 0; }
+.r72 input{ font:inherit; width:6em; padding:5px 8px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
 </style>
+
 </head>
 
 <body>
@@ -133,40 +174,47 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 
 <div class="td-banner">
     <h1>積立シミュレーション・複利計算（新NISA対応）</h1>
-    <p>毎月の積立額と利回り・年数を入れると、将来の資産額と運用益がすぐに出ます。元本（初期投資額）ありの計算、目標金額からの逆算、新NISAの枠と非課税の効果、年齢ごとの積立額の変更と取り崩し、信託報酬とインフレ、リスク込みのブレ幅まで、このページだけで計算できます。</p>
-    <nav class="jump" aria-label="ページ内の移動">
-        <a href="#gyaku">目標から逆算</a>
-        <a href="#nisa">新NISA</a>
-        <a href="#life">年齢・取り崩し</a>
-        <a href="#cost">信託報酬・インフレ</a>
-        <a href="#risk">リスク（ブレ幅）</a>
-        <a href="#crash">暴落を起こす</a>
-        <a href="#history">過去の暴落</a>
-        <a href="#tachiai">暴落に立ち会ったら</a>
-        <a href="#compare">条件を比べる</a>
-        <a href="#ikkatsu">一括か積立か</a>
-        <a href="#kuriage">繰り上げ返済か投資か</a>
-        <a href="#rule72">72の法則</a>
-        <a href="#shikumi">複利の仕組み</a>
-    </nav>
+    <p>毎月の積立額・利回り・年数を入れると、将来の資産額と運用益がすぐに出ます。新NISAの非課税の効果、目標金額からの逆算、リスク込みのブレ幅、暴落が来た場合まで「積立」タブで計算できます。老後の取り崩し、条件の比べっこ、一括投資と積立、繰り上げ返済と投資、過去の暴落は、それぞれのタブへどうぞ。</p>
 </div>
 
-<h2 class="sec" id="basic">1. 積立と複利の計算</h2>
+<nav class="tabs" id="tabs" aria-label="計算の種類">
+    <a href="#tsumitate" data-tab="tsumitate"><b>積立</b><span>いくらになる？</span></a>
+    <a href="#torikuzushi" data-tab="torikuzushi"><b>取り崩し</b><span>何歳まで持つ？</span></a>
+    <a href="#hikaku" data-tab="hikaku"><b>比べる</b><span>AとBどっち？</span></a>
+    <a href="#ikkatsu" data-tab="ikkatsu"><b>一括か積立か</b><span>まとめて？分けて？</span></a>
+    <a href="#kuriage" data-tab="kuriage"><b>返済か投資か</b><span>繰り上げ返済と比べる</span></a>
+    <a href="#history" data-tab="history"><b>過去の暴落</b><span>立ち会っていたら？</span></a>
+</nav>
+
+<!-- ===================== 積立 ===================== -->
+<section class="panel" id="tsumitate">
+<h2 class="sec">積立と複利の計算</h2>
 <div class="form">
     <div class="f"><label for="init">元本（初期投資額）</label><div class="in"><input type="number" id="init" min="0" step="1" value="0"><span class="u">万円</span></div><small>最初にまとめて入れる額。無ければ0</small></div>
     <div class="f"><label for="monthly">毎月の積立額</label><div class="in"><input type="number" id="monthly" min="0" step="1000" value="30000"><span class="u">円</span></div></div>
     <div class="f"><label for="rate">想定利回り（年）</label><div class="in"><input type="number" id="rate" min="-20" max="50" step="0.1" value="5"><span class="u">％</span></div></div>
     <div class="f"><label for="years">積立期間</label><div class="in"><input type="number" id="years" min="1" max="70" step="1" value="20"><span class="u">年</span></div></div>
-    <div class="f"><label for="mode">複利のかけ方</label><select id="mode"><option value="m">毎月（月利＝年利÷12）</option><option value="y">1年ごと（年末にまとめて）</option></select></div>
 </div>
-<div class="chips" id="presets">利回りの目安：
-    <button type="button" data-r="1" data-k="3">1％（控えめ）</button>
-    <button type="button" data-r="3" data-k="8">3％</button>
-    <button type="button" data-r="5" data-k="12">5％</button>
-    <button type="button" data-r="8" data-k="16">オルカン（8％）</button>
-    <button type="button" data-r="10" data-k="18">S&amp;P500（10％）</button>
+<div class="chips" data-preset="rate,risk">利回りの目安：
+    <button type="button" data-v="1,3">1％（控えめ）</button>
+    <button type="button" data-v="3,8">3％</button>
+    <button type="button" data-v="5,12">5％</button>
+    <button type="button" data-v="8,16">オルカン（8％）</button>
+    <button type="button" data-v="10,18">S&amp;P500（10％）</button>
 </div>
-<p class="note" style="margin-top:6px">オルカン・S&amp;P500 の数字は、過去の値動きをもとにした仮の目安です（将来を約束するものではありません）。目安を選ぶと、下の「リスク」の数字も一緒に入ります。</p>
+<details class="adv" id="adv">
+    <summary>詳しい設定（年齢・積立額の変更・信託報酬・インフレ・新NISA・複利のかけ方）</summary>
+    <div class="form">
+        <div class="f"><label for="age">今の年齢</label><div class="in"><input type="number" id="age" min="0" max="90" step="1" value="30"><span class="u">歳</span></div></div>
+        <div class="f"><label for="fee">信託報酬など（年）</label><div class="in"><input type="number" id="fee" min="0" max="5" step="0.01" value="0"><span class="u">％</span></div><small>利回りから差し引きます</small></div>
+        <div class="f"><label for="infl">インフレ率（年）</label><div class="in"><input type="number" id="infl" min="-5" max="20" step="0.1" value="2"><span class="u">％</span></div><small>今のお金の価値に直すのに使います</small></div>
+        <div class="f"><label for="mode">複利のかけ方</label><select id="mode"><option value="m">毎月（月利＝年利÷12）</option><option value="y">1年ごと（年末にまとめて）</option></select></div>
+    </div>
+    <label class="check"><input type="checkbox" id="nisaOn" checked> 新NISAの枠で運用する（入りきらない分は課税口座）</label>
+    <p class="lead" style="margin-top:8px"><b>積立額を途中で変える</b>（昇給や教育費などに合わせて）</p>
+    <div class="rows" id="sched"></div>
+    <button type="button" class="btn" id="addSched">＋ 積立額の変更を足す</button>
+</details>
 
 <section class="result" aria-live="polite">
     <div class="kpis">
@@ -179,94 +227,189 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
     <details class="tbl"><summary>年ごとの表を見る</summary><div class="tblwrap"><table class="yt" id="ytable"></table></div></details>
 </section>
 
-<h2 class="sec" id="gyaku">2. 目標金額から逆算する</h2>
-<p class="lead">「◯年で◯万円」を目指すとき、毎月いくら・利回り何％・何年必要かを出します（上の元本・積立額・利回り・年数をもとに計算）。</p>
-<div class="form">
-    <div class="f"><label for="target">目標金額</label><div class="in"><input type="number" id="target" min="0" step="10" value="2000"><span class="u">万円</span></div></div>
-</div>
-<div class="box" aria-live="polite">
-    <p>毎月の積立額なら：<span class="ans" id="gPmt"></span></p>
-    <p>利回りなら：<span class="ans" id="gRate"></span></p>
-    <p>年数なら：<span class="ans" id="gYears"></span></p>
+<div class="cards">
+    <div class="card" id="nisa"><h3>新NISAだと</h3><div id="nisaOut"></div></div>
+    <div class="card" id="cost"><h3>信託報酬とインフレ</h3><div id="costOut"></div></div>
 </div>
 
-<h2 class="sec" id="nisa">3. 新NISAで積み立てる</h2>
-<label class="check"><input type="checkbox" id="nisaOn" checked> 新NISAの枠で運用する（入りきらない分は課税口座）</label>
-<p class="lead">年間360万円（つみたて投資枠120万円・成長投資枠240万円）、生涯1,800万円（うち成長投資枠1,200万円）の枠に当てはめて、非課税になる金額と税金の差を出します。毎月の積立はつみたて投資枠から、元本（初期投資額）は成長投資枠から使います。</p>
-<div class="box" id="nisaOut" aria-live="polite"></div>
-
-<h2 class="sec" id="life" data-ad-spot>4. 年齢ごとの積立額と、取り崩し</h2>
-<div class="form">
-    <div class="f"><label for="age">今の年齢</label><div class="in"><input type="number" id="age" min="0" max="90" step="1" value="30"><span class="u">歳</span></div></div>
+<div class="card wide" id="gyaku">
+    <h3>目標金額から逆算する</h3>
+    <div class="form"><div class="f"><label for="target">目標金額</label><div class="in"><input type="number" id="target" min="0" step="10" value="2000"><span class="u">万円</span></div></div></div>
+    <ul class="out">
+        <li>毎月の積立額なら：<span class="ans" id="gPmt"></span></li>
+        <li>利回りなら：<span class="ans" id="gRate"></span></li>
+        <li>年数なら：<span class="ans" id="gYears"></span></li>
+    </ul>
 </div>
-<p class="lead" style="margin-top:12px"><b>積立額を途中で変える</b>（昇給や教育費などに合わせて。積立期間の中だけ有効）</p>
-<div class="rows" id="sched"></div>
-<button type="button" class="btn" id="addSched">＋ 積立額の変更を足す</button>
 
-<label class="check" style="margin-top:16px"><input type="checkbox" id="wdOn"> 積立のあと、取り崩しまで計算する</label>
-<div id="wdBox">
-    <div class="form">
-        <div class="f"><label for="wdStart">取り崩しを始める年齢</label><div class="in"><input type="number" id="wdStart" min="0" max="110" step="1" value="65"><span class="u">歳</span></div></div>
-        <div class="f"><label for="wdMethod">取り崩し方</label><select id="wdMethod"><option value="fixed">毎月きまった額（定額）</option><option value="rate">毎年、残高の◯％（定率）</option></select></div>
-        <div class="f" id="fAmt"><label for="wdAmt">毎月の取り崩し額</label><div class="in"><input type="number" id="wdAmt" min="0" step="10000" value="150000"><span class="u">円</span></div></div>
-        <div class="f" id="fRate"><label for="wdRate">毎年の取り崩し率</label><div class="in"><input type="number" id="wdRate" min="0" max="50" step="0.5" value="4"><span class="u">％</span></div></div>
-        <div class="f"><label for="pension">年金などの収入（月）</label><div class="in"><input type="number" id="pension" min="0" step="10000" value="0"><span class="u">円</span></div><small>この分は資産から取り崩さない</small></div>
-        <div class="f"><label for="penAge">収入が始まる年齢</label><div class="in"><input type="number" id="penAge" min="0" max="110" step="1" value="65"><span class="u">歳</span></div></div>
-        <div class="f"><label for="endAge">何歳まで計算するか</label><div class="in"><input type="number" id="endAge" min="1" max="110" step="1" value="95"><span class="u">歳</span></div></div>
+<div class="card wide" id="risk">
+    <h3>リスク込みのブレ幅（1,000通りの将来）</h3>
+    <p class="lead">毎年の値動きを入れて1,000通りの将来を作り、結果の幅を出します。リスクは1年の値動きの大きさ（標準偏差）です。<a href="#yomikata">読み方</a></p>
+    <div class="form"><div class="f"><label for="riskPct">リスク（年）</label><div class="in"><input type="number" id="riskPct" min="0" max="80" step="1" value="12"><span class="u">％</span></div><small>目安：オルカン16％・S&amp;P500 18％</small></div></div>
+    <div id="riskOut"></div>
+    <div class="chart"><canvas id="rchart"></canvas></div>
+</div>
+
+<div class="card wide" id="crash">
+    <h3>暴落を起こしてみる</h3>
+    <p class="lead">「◯歳のときに◯％下がる」を入れて、資産がどうなるか、元に戻るまで何年かかるかを見ます。上のブレ幅の計算にも入ります。過去の暴落は<a href="#history">「過去の暴落」タブ</a>へ。</p>
+    <div class="rows" id="crashRows"></div>
+    <div class="chips">
+        <button type="button" class="btn" id="addCrash">＋ 暴落を足す</button>
+        <span>過去と同じ規模で：</span>
+        <button type="button" data-cp="34">コロナショック級（−34％）</button>
+        <button type="button" data-cp="57">リーマンショック級（−57％）</button>
+        <button type="button" data-cp="78">ITバブル崩壊級（−78％）</button>
+        <button type="button" data-cp="82">日本のバブル崩壊級（−82％）</button>
     </div>
-    <label class="check" style="margin-top:8px;font-weight:400"><input type="checkbox" id="wdIndex"> 定額の取り崩し額を、物価（下のインフレ率）に合わせて毎年増やす</label>
+    <div id="crashOut"></div>
+    <div class="chart" id="cchartBox"><canvas id="cchart"></canvas></div>
 </div>
-<div class="box" id="lifeOut" aria-live="polite"></div>
 
-<h2 class="sec" id="cost">5. 信託報酬とインフレ</h2>
+<p class="next"><button type="button" class="go" id="toWd">この積立の結果で、取り崩しを計算する →</button></p>
+</section>
+
+<!-- ===================== 取り崩し ===================== -->
+<section class="panel" id="torikuzushi">
+<h2 class="sec">取り崩しシミュレーション：何歳まで持つ？</h2>
+<p class="lead">貯めたお金を取り崩していくと何歳まで持つか、値動きのある1,000通りの将来で、途中で尽きる確率を出します。定額・定率・4％ルールの3つの方式も同じ相場で比べます。</p>
+<div class="chips"><button type="button" class="btn" id="fromTsumi">「積立」タブの結果を取り込む</button><span class="note" id="fromNote" style="margin:0"></span></div>
 <div class="form">
-    <div class="f"><label for="fee">信託報酬など（年）</label><div class="in"><input type="number" id="fee" min="0" max="5" step="0.01" value="0"><span class="u">％</span></div><small>利回りから毎年差し引きます</small></div>
-    <div class="f"><label for="infl">インフレ率（年）</label><div class="in"><input type="number" id="infl" min="-5" max="20" step="0.1" value="2"><span class="u">％</span></div><small>今のお金の価値に直すのに使います</small></div>
+    <div class="f"><label for="wInit">取り崩し開始時の資産</label><div class="in"><input type="number" id="wInit" min="0" step="100" value="3000"><span class="u">万円</span></div></div>
+    <div class="f"><label for="wAge">取り崩しを始める年齢</label><div class="in"><input type="number" id="wAge" min="0" max="100" step="1" value="65"><span class="u">歳</span></div></div>
+    <div class="f"><label for="wEnd">何歳まで持たせたいか</label><div class="in"><input type="number" id="wEnd" min="1" max="120" step="1" value="95"><span class="u">歳</span></div></div>
 </div>
-<div class="box" id="costOut" aria-live="polite"></div>
-
-<h2 class="sec" id="risk">6. リスク込みのブレ幅（1,000通りの将来）</h2>
-<p class="lead">利回りが毎年ちがう現実に近づけて、1,000通りの将来を作り、結果の幅を出します。リスクは1年の値動きの大きさ（標準偏差）です。暴落を入れて試すなら <a href="#crash">7. 暴落を起こしてみる</a>、仕組みは <a href="#yomikata">リスクの読み方</a> へ。</p>
+<div class="seg" role="radiogroup" aria-label="取り崩し方">
+    <label><input type="radio" name="wm" value="fixed" checked><b>定額</b><span>毎月きまった額</span></label>
+    <label><input type="radio" name="wm" value="rate"><b>定率</b><span>毎年、残高の◯％</span></label>
+    <label><input type="radio" name="wm" value="rule"><b>4％ルール</b><span>最初の額を物価に合わせて</span></label>
+</div>
 <div class="form">
-    <div class="f"><label for="risk">リスク（年）</label><div class="in"><input type="number" id="risk" min="0" max="80" step="1" value="12"><span class="u">％</span></div><small>目安：オルカン16％・S&amp;P500 18％</small></div>
+    <div class="f" data-m="fixed"><label for="wAmt">毎月の取り崩し額</label><div class="in"><input type="number" id="wAmt" min="0" step="10000" value="150000"><span class="u">円</span></div></div>
+    <div class="f" data-m="fixed"><label for="wIdx">物価に合わせて増やす</label><select id="wIdx"><option value="0">増やさない</option><option value="1">毎年インフレ率だけ増やす</option></select></div>
+    <div class="f" data-m="rate"><label for="wRate">毎年の取り崩し率</label><div class="in"><input type="number" id="wRate" min="0" max="50" step="0.5" value="4"><span class="u">％</span></div></div>
+    <div class="f" data-m="rule"><label for="wRule">初年度の取り崩し率</label><div class="in"><input type="number" id="wRule" min="0" max="20" step="0.5" value="4"><span class="u">％</span></div></div>
+    <div class="f"><label for="wPen">年金などの収入（月）</label><div class="in"><input type="number" id="wPen" min="0" step="10000" value="0"><span class="u">円</span></div><small>この分は資産から取り崩さない</small></div>
+    <div class="f"><label for="wPenAge">収入が始まる年齢</label><div class="in"><input type="number" id="wPenAge" min="0" max="110" step="1" value="65"><span class="u">歳</span></div></div>
 </div>
-<div class="box" id="riskOut" aria-live="polite"></div>
-<div class="chart"><canvas id="rchart"></canvas></div>
-
-<h2 class="sec" id="crash" data-ad-spot>7. 暴落を起こしてみる</h2>
-<p class="lead">「◯歳のときに◯％下がる」暴落を入れて、資産がどうなるか、元に戻るまで何年かかるかを見ます。暴落は上の「6. リスク」の1,000通りの計算にも入ります。</p>
-<div class="rows" id="crashRows"></div>
-<div class="chips">
-    <button type="button" class="btn" id="addCrash">＋ 暴落を足す</button>
-    <span>過去と同じ規模で：</span>
-    <button type="button" data-cp="34">コロナショック級（−34％）</button>
-    <button type="button" data-cp="57">リーマンショック級（−57％）</button>
-    <button type="button" data-cp="78">ITバブル崩壊級（−78％）</button>
-    <button type="button" data-cp="82">日本のバブル崩壊級（−82％）</button>
+<p class="lead" style="margin-top:12px"><b>運用の前提</b></p>
+<div class="form">
+    <div class="f"><label for="wRet">想定利回り（年）</label><div class="in"><input type="number" id="wRet" min="-20" max="30" step="0.1" value="4"><span class="u">％</span></div></div>
+    <div class="f"><label for="wRisk">リスク（年）</label><div class="in"><input type="number" id="wRisk" min="0" max="60" step="1" value="10"><span class="u">％</span></div></div>
+    <div class="f"><label for="wInf">インフレ率（年）</label><div class="in"><input type="number" id="wInf" min="-5" max="20" step="0.1" value="2"><span class="u">％</span></div></div>
+    <div class="f"><label for="wCrash">取り崩し開始の年の暴落</label><div class="in"><input type="number" id="wCrash" min="0" max="90" step="1" value="0"><span class="u">％</span></div><small>0なら起こさない。始めた直後の暴落がいちばん怖い</small></div>
 </div>
-<div class="box" id="crashOut" aria-live="polite"></div>
-<div class="chart"><canvas id="cchart"></canvas></div>
+<div class="chips" data-preset="wRet,wRisk">運用の目安：
+    <button type="button" data-v="2,5">債券が中心（2％）</button>
+    <button type="button" data-v="4,10">株と債券を半分ずつ（4％）</button>
+    <button type="button" data-v="8,16">オルカン（8％）</button>
+    <button type="button" data-v="10,18">S&amp;P500（10％）</button>
+</div>
+<section class="result" aria-live="polite">
+    <div class="kpis">
+        <div class="kpi"><div class="k" id="wkRuin">尽きる確率</div><div class="v" id="wvRuin"></div><div class="y" id="wyRuin"></div></div>
+        <div class="kpi"><div class="k">利回りどおりなら</div><div class="v sub" id="wvDet"></div><div class="y" id="wyDet"></div></div>
+        <div class="kpi"><div class="k">受け取れた合計（中央値）</div><div class="v sub" id="wvRecv"></div><div class="y" id="wyRecv"></div></div>
+    </div>
+    <p class="say" id="wSay"></p>
+    <div class="chart"><canvas id="wchart"></canvas></div>
+</section>
+<div class="card wide">
+    <h3>3つの方式を同じ相場で比べる</h3>
+    <div id="wCompare"></div>
+    <p class="note">定額は上の「毎月の取り崩し額」、定率は「毎年の取り崩し率」、4％ルールは「初年度の取り崩し率」の数字で比べています。考え方は<a href="#wd-kaisetsu">解説</a>へ。</p>
+</div>
+</section>
 
-<h2 class="sec" id="history">8. 過去の暴落のデータ</h2>
-<p class="lead">代表的な株価の暴落です。数字は株価指数の値（配当は含まない）で、おおよその値です。「起こす」を押すと、7. に同じ下落率の暴落を足します。</p>
+<!-- ===================== 比べる ===================== -->
+<section class="panel" id="hikaku">
+<h2 class="sec">条件を比べる：AとBどっち？</h2>
+<p class="lead">2つの条件を並べて入れると、最終金額・元本・運用益とグラフを並べて比べます。「積立額を増やす」「利回りを上げる」「長く続ける」のどれが効くかが分かります。</p>
+<div class="ab">
+    <div class="abcol a"><h3>条件A</h3>
+        <div class="f"><label for="aInit">元本</label><div class="in"><input type="number" id="aInit" min="0" step="1" value="0"><span class="u">万円</span></div></div>
+        <div class="f"><label for="aPm">毎月の積立額</label><div class="in"><input type="number" id="aPm" min="0" step="1000" value="30000"><span class="u">円</span></div></div>
+        <div class="f"><label for="aRate">想定利回り</label><div class="in"><input type="number" id="aRate" step="0.1" value="5"><span class="u">％</span></div></div>
+        <div class="f"><label for="aYears">積立期間</label><div class="in"><input type="number" id="aYears" min="1" max="70" step="1" value="20"><span class="u">年</span></div></div>
+        <div class="f"><label for="aFee">信託報酬など</label><div class="in"><input type="number" id="aFee" min="0" max="5" step="0.01" value="0.1"><span class="u">％</span></div></div>
+    </div>
+    <div class="abcol b"><h3>条件B</h3>
+        <div class="f"><label for="bInit">元本</label><div class="in"><input type="number" id="bInit" min="0" step="1" value="0"><span class="u">万円</span></div></div>
+        <div class="f"><label for="bPm">毎月の積立額</label><div class="in"><input type="number" id="bPm" min="0" step="1000" value="50000"><span class="u">円</span></div></div>
+        <div class="f"><label for="bRate">想定利回り</label><div class="in"><input type="number" id="bRate" step="0.1" value="5"><span class="u">％</span></div></div>
+        <div class="f"><label for="bYears">積立期間</label><div class="in"><input type="number" id="bYears" min="1" max="70" step="1" value="20"><span class="u">年</span></div></div>
+        <div class="f"><label for="bFee">信託報酬など</label><div class="in"><input type="number" id="bFee" min="0" max="5" step="0.01" value="0.1"><span class="u">％</span></div></div>
+    </div>
+</div>
+<div class="chips"><button type="button" class="btn" id="aFromT">Aに「積立」タブの条件を入れる</button><button type="button" class="btn" id="swapAB">AとBを入れかえる</button><button type="button" class="btn" id="copyAB">BをAと同じにする</button></div>
+<section class="result" aria-live="polite">
+    <div id="abOut"></div>
+    <div class="chart"><canvas id="abchart"></canvas></div>
+</section>
+</section>
+
+<!-- ===================== 一括か積立か ===================== -->
+<section class="panel" id="ikkatsu">
+<h2 class="sec">一括投資か、積立（ドルコスト平均法）か</h2>
+<p class="lead">まとまったお金を一度に入れるか、何か月かに分けて入れるかを、同じ1,000通りの相場で比べます。考え方は<a href="#ikkatsu-kaisetsu">解説</a>へ。</p>
+<div class="form">
+    <div class="f"><label for="ikTotal">投資できるお金</label><div class="in"><input type="number" id="ikTotal" min="0" step="10" value="600"><span class="u">万円</span></div></div>
+    <div class="f"><label for="ikSplit">分ける期間</label><div class="in"><input type="number" id="ikSplit" min="1" max="240" step="1" value="24"><span class="u">か月</span></div></div>
+    <div class="f"><label for="ikYears">運用期間</label><div class="in"><input type="number" id="ikYears" min="1" max="60" step="1" value="20"><span class="u">年</span></div></div>
+    <div class="f"><label for="ikCash">待っている間の預金の利率</label><div class="in"><input type="number" id="ikCash" min="0" max="10" step="0.1" value="0.2"><span class="u">％</span></div></div>
+    <div class="f"><label for="ikRet">想定利回り（年）</label><div class="in"><input type="number" id="ikRet" step="0.1" value="8"><span class="u">％</span></div></div>
+    <div class="f"><label for="ikRisk">リスク（年）</label><div class="in"><input type="number" id="ikRisk" min="0" max="60" step="1" value="16"><span class="u">％</span></div></div>
+</div>
+<div class="chips" data-preset="ikRet,ikRisk">運用の目安：
+    <button type="button" data-v="4,10">株と債券を半分ずつ</button>
+    <button type="button" data-v="8,16">オルカン</button>
+    <button type="button" data-v="10,18">S&amp;P500</button>
+</div>
+<section class="result" aria-live="polite"><div id="ikOut"></div></section>
+</section>
+
+<!-- ===================== 繰り上げ返済か投資か ===================== -->
+<section class="panel" id="kuriage">
+<h2 class="sec">住宅ローンの繰り上げ返済か、投資か</h2>
+<p class="lead">毎月の余ったお金を繰り上げ返済に回すか、投資に回すかを、同じ1,000通りの相場で比べます。ローンの返済が終わるまでの期間で「資産 − ローン残高」を比べます。考え方は<a href="#kuriage-kaisetsu">解説</a>へ。</p>
+<div class="form">
+    <div class="f"><label for="kuBal">ローン残高</label><div class="in"><input type="number" id="kuBal" min="0" step="100" value="3000"><span class="u">万円</span></div></div>
+    <div class="f"><label for="kuRate">ローン金利（年）</label><div class="in"><input type="number" id="kuRate" min="0" max="15" step="0.05" value="0.8"><span class="u">％</span></div></div>
+    <div class="f"><label for="kuYears">残りの返済年数</label><div class="in"><input type="number" id="kuYears" min="1" max="50" step="1" value="30"><span class="u">年</span></div></div>
+    <div class="f"><label for="kuExtra">毎月の余ったお金</label><div class="in"><input type="number" id="kuExtra" min="0" step="5000" value="30000"><span class="u">円</span></div></div>
+    <div class="f"><label for="kuLump">今すぐ使えるまとまったお金</label><div class="in"><input type="number" id="kuLump" min="0" step="10" value="0"><span class="u">万円</span></div></div>
+    <div class="f"><label for="kuTax">投資の利益にかかる税率</label><div class="in"><input type="number" id="kuTax" min="0" max="55" step="0.1" value="0"><span class="u">％</span></div><small>新NISAなら0、課税口座なら20.315</small></div>
+    <div class="f"><label for="kuRet">想定利回り（年）</label><div class="in"><input type="number" id="kuRet" step="0.1" value="6"><span class="u">％</span></div></div>
+    <div class="f"><label for="kuRisk">リスク（年）</label><div class="in"><input type="number" id="kuRisk" min="0" max="60" step="1" value="16"><span class="u">％</span></div></div>
+</div>
+<div class="chips" data-preset="kuRet,kuRisk">運用の目安：
+    <button type="button" data-v="4,10">株と債券を半分ずつ</button>
+    <button type="button" data-v="8,16">オルカン</button>
+    <button type="button" data-v="10,18">S&amp;P500</button>
+</div>
+<section class="result" aria-live="polite"><div id="kuOut"></div></section>
+</section>
+
+<!-- ===================== 過去の暴落 ===================== -->
+<section class="panel" id="history">
+<h2 class="sec">過去の暴落と、その暴落に立ち会っていたら</h2>
+<p class="lead">代表的な株価の暴落です。数字は株価指数の値（配当は含まない）で、おおよその値です。</p>
 <div class="table-scroll">
 <table class="yt hist">
-<thead><tr><th>出来事</th><th>時期</th><th>指数</th><th>下落率</th><th>高値から底まで</th><th>前の高値に戻るまで</th><th></th></tr></thead>
+<thead><tr><th>出来事</th><th>時期</th><th>指数</th><th>下落率</th><th>高値から底まで</th><th>前の高値に戻るまで</th></tr></thead>
 <tbody>
-<tr><td>世界恐慌</td><td>1929〜1932年</td><td>NYダウ</td><td>約−89％</td><td>約2年10か月</td><td>約25年（1954年）</td><td><button type="button" class="btn" data-cp="89">起こす</button></td></tr>
-<tr><td>ブラックマンデー</td><td>1987年8〜10月</td><td>NYダウ</td><td>約−36％（1日で約−23％）</td><td>約2か月</td><td>約2年（1989年）</td><td><button type="button" class="btn" data-cp="36">起こす</button></td></tr>
-<tr><td>日本のバブル崩壊</td><td>1989〜2009年</td><td>日経平均</td><td>約−82％</td><td>約19年</td><td>約34年（2024年）</td><td><button type="button" class="btn" data-cp="82">起こす</button></td></tr>
-<tr><td>ITバブル崩壊</td><td>2000〜2002年</td><td>NASDAQ総合</td><td>約−78％</td><td>約2年7か月</td><td>約15年（2015年）</td><td><button type="button" class="btn" data-cp="78">起こす</button></td></tr>
-<tr><td>リーマンショック</td><td>2007〜2009年</td><td>S&amp;P500</td><td>約−57％</td><td>約1年5か月</td><td>約5年半（2013年）</td><td><button type="button" class="btn" data-cp="57">起こす</button></td></tr>
-<tr><td>コロナショック</td><td>2020年2〜3月</td><td>S&amp;P500</td><td>約−34％</td><td>約1か月</td><td>約5か月（2020年8月）</td><td><button type="button" class="btn" data-cp="34">起こす</button></td></tr>
-<tr><td>2022年の利上げ相場</td><td>2022年</td><td>S&amp;P500</td><td>約−25％</td><td>約9か月</td><td>約2年（2024年1月）</td><td><button type="button" class="btn" data-cp="25">起こす</button></td></tr>
+<tr><td>世界恐慌</td><td>1929〜1932年</td><td>NYダウ</td><td>約−89％</td><td>約2年10か月</td><td>約25年（1954年）</td></tr>
+<tr><td>ブラックマンデー</td><td>1987年8〜10月</td><td>NYダウ</td><td>約−36％（1日で約−23％）</td><td>約2か月</td><td>約2年（1989年）</td></tr>
+<tr><td>日本のバブル崩壊</td><td>1989〜2009年</td><td>日経平均</td><td>約−82％</td><td>約19年</td><td>約34年（2024年）</td></tr>
+<tr><td>ITバブル崩壊</td><td>2000〜2002年</td><td>NASDAQ総合</td><td>約−78％</td><td>約2年7か月</td><td>約15年（2015年）</td></tr>
+<tr><td>リーマンショック</td><td>2007〜2009年</td><td>S&amp;P500</td><td>約−57％</td><td>約1年5か月</td><td>約5年半（2013年）</td></tr>
+<tr><td>コロナショック</td><td>2020年2〜3月</td><td>S&amp;P500</td><td>約−34％</td><td>約1か月</td><td>約5か月（2020年8月）</td></tr>
+<tr><td>2022年の利上げ相場</td><td>2022年</td><td>S&amp;P500</td><td>約−25％</td><td>約9か月</td><td>約2年（2024年1月）</td></tr>
 </tbody>
 </table>
 </div>
-<p class="note">背景と考え方は<a href="#boraku">解説「暴落が来たらどうなる？」</a>へ。「戻るまで」は、配当を入れない株価指数が前の高値を超えるまでの期間です。配当を再投資した場合や、下がっている間も積み立てを続けた場合は、もっと早く元本を取り戻せます（7. で確かめられます）。</p>
-
 <h3 style="margin:22px 0 6px;font-size:1rem" id="tachiai">その暴落に、積立をしながら立ち会っていたら</h3>
-<p class="lead">暴落が始まる前から持っていた資産と、毎月の積立を続けた場合に、安値でどれだけ買えたか、戻ったときにいくら増えていたか、底で慌てて売っていたらどうなったかを出します。</p>
+<p class="lead">暴落の前から持っていた資産と、毎月の積立を続けた場合に、安値でどれだけ買えたか、戻ったときにいくら増えていたか、底で慌てて売っていたらどうなったかを出します。</p>
 <div class="form">
     <div class="f"><label for="evSel">暴落</label><select id="evSel">
         <option value="covid">コロナショック（2020年）</option>
@@ -280,47 +423,14 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
     <div class="f"><label for="evHold">暴落の前から持っていた資産</label><div class="in"><input type="number" id="evHold" min="0" step="10" value="300"><span class="u">万円</span></div></div>
     <div class="f"><label for="evPm">毎月の積立額</label><div class="in"><input type="number" id="evPm" min="0" step="1000" value="30000"><span class="u">円</span></div></div>
 </div>
-<div class="box" id="evOut" aria-live="polite"></div>
-<div class="chart"><canvas id="evChart"></canvas></div>
-<p class="note">値動きは、高値から底まで・底から前の高値までを、それぞれなめらかに（毎月同じ率で）つないだ簡略なものです。実際の相場は途中で上下しながら動くので、結果はおおよその目安です。配当・税金・手数料は入れていません。</p>
-
-<h2 class="sec" id="compare">9. 条件を比べる</h2>
-<p class="lead">今の条件を「A」として残し、数字を変えて比べます。Aの資産額は1. のグラフにも点線で出ます。</p>
-<div class="chips"><button type="button" class="btn" id="saveA">今の条件をAとして残す</button><button type="button" class="btn" id="loadA">Aの条件に戻す</button><button type="button" class="btn" id="clearA">Aを消す</button></div>
-<div class="box" id="compareOut" aria-live="polite"></div>
-
-<h2 class="sec" id="ikkatsu" data-ad-spot>10. 一括投資か、積立（ドルコスト平均法）か</h2>
-<p class="lead">まとまったお金を一度に入れるか、何か月かに分けて入れるかを、同じ1,000通りの相場で比べます。利回りとリスクは 1. と 6. の数字を使います。考え方は<a href="#ikkatsu-kaisetsu">解説</a>へ。</p>
-<div class="form">
-    <div class="f"><label for="ikTotal">投資できるお金</label><div class="in"><input type="number" id="ikTotal" min="0" step="10" value="600"><span class="u">万円</span></div></div>
-    <div class="f"><label for="ikSplit">分ける期間</label><div class="in"><input type="number" id="ikSplit" min="1" max="240" step="1" value="24"><span class="u">か月</span></div></div>
-    <div class="f"><label for="ikYears">運用期間</label><div class="in"><input type="number" id="ikYears" min="1" max="60" step="1" value="20"><span class="u">年</span></div></div>
-    <div class="f"><label for="ikCash">待っている間の預金の利率</label><div class="in"><input type="number" id="ikCash" min="0" max="10" step="0.1" value="0.2"><span class="u">％</span></div></div>
-</div>
-<div class="box" id="ikOut" aria-live="polite"></div>
-
-<h2 class="sec" id="kuriage">11. 住宅ローンの繰り上げ返済か、投資か</h2>
-<p class="lead">毎月の余ったお金を繰り上げ返済に回すか、投資に回すかを、同じ1,000通りの相場で比べます。ローンの返済が終わるまでの期間で、「資産 − ローン残高」を比べます。利回りとリスクは 1. と 6. の数字を使います。考え方は<a href="#kuriage-kaisetsu">解説</a>へ。</p>
-<div class="form">
-    <div class="f"><label for="kuBal">ローン残高</label><div class="in"><input type="number" id="kuBal" min="0" step="100" value="3000"><span class="u">万円</span></div></div>
-    <div class="f"><label for="kuRate">ローン金利（年）</label><div class="in"><input type="number" id="kuRate" min="0" max="15" step="0.05" value="0.8"><span class="u">％</span></div></div>
-    <div class="f"><label for="kuYears">残りの返済年数</label><div class="in"><input type="number" id="kuYears" min="1" max="50" step="1" value="30"><span class="u">年</span></div></div>
-    <div class="f"><label for="kuExtra">毎月の余ったお金</label><div class="in"><input type="number" id="kuExtra" min="0" step="5000" value="30000"><span class="u">円</span></div></div>
-    <div class="f"><label for="kuLump">今すぐ使えるまとまったお金</label><div class="in"><input type="number" id="kuLump" min="0" step="10" value="0"><span class="u">万円</span></div></div>
-    <div class="f"><label for="kuTax">投資の利益にかかる税率</label><div class="in"><input type="number" id="kuTax" min="0" max="55" step="0.1" value="0"><span class="u">％</span></div><small>新NISAなら0、課税口座なら20.315</small></div>
-</div>
-<div class="box" id="kuOut" aria-live="polite"></div>
-
-<h2 class="sec" id="rule72">12. 72の法則（お金が2倍になる年数）</h2>
-<div class="form">
-    <div class="f"><label for="r72">利回り（年）</label><div class="in"><input type="number" id="r72" min="0.1" max="50" step="0.1" value="5"><span class="u">％</span></div></div>
-</div>
-<div class="box" id="r72Out" aria-live="polite"></div>
+<section class="result" aria-live="polite"><div id="evOut"></div><div class="chart"><canvas id="evChart"></canvas></div></section>
+<p class="note">値動きは、高値から底まで・底から前の高値までを、それぞれなめらかに（毎月同じ率で）つないだ簡略なものです。実際の相場は途中で上下しながら動くので、結果はおおよその目安です。配当・税金・手数料は入れていません。背景と考え方は<a href="#boraku">解説「暴落が来たらどうなる？」</a>へ。</p>
+</section>
 
 <div class="share">
     <button type="button" class="btn" id="copyUrl">この条件のURLをコピー</button>
     <span id="copied" class="note" style="margin:0"></span>
-    <button type="button" class="btn" id="reset">初期値に戻す</button>
+    <button type="button" class="btn" id="reset">すべて初期値に戻す</button>
 </div>
 <p class="note">金額は税金を引く前の目安です（新NISAの欄を除く）。入力はこのブラウザの中だけに保存され、サーバーには送信されません。</p>
 
@@ -328,15 +438,21 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 
 <article class="tool-article" data-ad-mid="3">
 
-<h2>積立シミュレーションの使い方</h2>
-<ol>
-<li><strong>積立と複利の計算</strong>：元本（初期投資額）、毎月の積立額、想定利回り、積立期間を入れます。最終金額・元本・運用益がすぐに出て、グラフと年ごとの表も変わります。</li>
-<li><strong>目標から逆算</strong>：目標金額を入れると、毎月あといくら・利回り何％・何年あれば届くかが分かります。</li>
-<li><strong>新NISA</strong>：年間・生涯の枠に入るかと、課税口座で同じ運用をした場合との税金の差が分かります。</li>
-<li><strong>年齢・取り崩し</strong>：昇給などで積立額を変える年齢を登録したり、積み立てたお金を何歳まで取り崩せるかを計算したりできます。</li>
-<li><strong>信託報酬・インフレ</strong>：手数料で減る額と、将来の金額が今のお金でいくらの価値かを出します。</li>
-<li><strong>リスク</strong>：毎年の値動きを入れた1,000通りの計算で、うまくいった場合・悪かった場合の幅と、元本割れの確率を出します。</li>
-</ol>
+<h2>このシミュレーターの使い方</h2>
+<p>上のタブで、知りたいことに合わせて計算を切りかえます。どのタブも入力はブラウザに保存され、「この条件のURLをコピー」で同じ条件を人に送れます。</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>タブ</th><th>分かること</th></tr></thead>
+<tbody>
+<tr><th><a href="#tsumitate">積立</a></th><td>毎月の積立と元本が何年後にいくらになるか。<a href="#nisa">新NISAの非課税の効果</a>、<a href="#cost">信託報酬とインフレ</a>、<a href="#gyaku">目標金額からの逆算</a>、<a href="#risk">リスク込みのブレ幅</a>、<a href="#crash">暴落が来た場合</a>まで、結果の下に並びます。年齢・積立額の途中変更などは「詳しい設定」にあります</td></tr>
+<tr><th><a href="#torikuzushi">取り崩し</a></th><td>貯めたお金を取り崩すと何歳まで持つか、途中で尽きる確率。定額・定率・4％ルールの比較、年金、取り崩し直後の暴落も</td></tr>
+<tr><th><a href="#hikaku">比べる</a></th><td>2つの条件（積立額・利回り・年数・信託報酬）を並べて、どれだけ差がつくか</td></tr>
+<tr><th><a href="#ikkatsu">一括か積立か</a></th><td>まとまったお金を一度に入れるか、分けて入れるか、どちらが勝つ確率が高いか</td></tr>
+<tr><th><a href="#kuriage">返済か投資か</a></th><td>住宅ローンの繰り上げ返済と投資、どちらが多く残る確率が高いか</td></tr>
+<tr><th><a href="#history">過去の暴落</a></th><td>リーマンショックなど過去の暴落のデータと、その暴落に積立をしながら立ち会っていたら、安値でどれだけ買えたか・底で売ったらどうなったか</td></tr>
+</tbody>
+</table>
+</div>
 
 <h2>毎月の積立でいくらになる？（利回り5％の早見表）</h2>
 <p>毎月の複利（月利＝年利÷12）、毎月末に積み立てた場合の金額です。かっこ内は元本（積み立てた合計）です。</p>
@@ -366,7 +482,7 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 </div>
 
 <h2>S&amp;P500・オルカンで積み立てるときの目安</h2>
-<p>このツールの「利回りの目安」は、過去の値動きをもとにした概算です。オルカン（全世界株）は利回り8％・リスク16％、S&amp;P500（米国株）は利回り10％・リスク18％としています。どちらも年によって大きく上下するので、1本の線だけでなく「6. リスク込みのブレ幅」で、悪かった場合の金額も確かめてください。将来の利回りは誰にも分からないため、3〜5％などの控えめな数字でも試しておくのがおすすめです。</p>
+<p>このツールの「利回りの目安」は、過去の値動きをもとにした概算です。オルカン（全世界株）は利回り8％・リスク16％、S&amp;P500（米国株）は利回り10％・リスク18％としています。どちらも年によって大きく上下するので、1本の線だけでなく「積立」タブの「<a href="#risk">リスク込みのブレ幅</a>」で、悪かった場合の金額も確かめてください。将来の利回りは誰にも分からないため、3〜5％などの控えめな数字でも試しておくのがおすすめです。</p>
 
 <h2 id="shiki">複利の計算式（積立の計算式）</h2>
 <p>このツールの「毎月」の計算は、次の式と同じです（月利 i ＝ 年利 ÷ 12、n ＝ 月数）。</p>
@@ -376,23 +492,28 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 <p>たとえば元本100万円を年5％で10年運用すると、100万 ×（1＋0.05÷12）^120 ＝ 約164.7万円です。1年ごとの複利なら 100万 × 1.05^10 ＝ 約162.9万円で、毎月のほうが少し増えます。毎月3万円を年5％で20年なら、3万 ×｛（1＋0.05÷12）^240 − 1｝÷（0.05÷12）＝ 約1,233万円です。</p>
 
 <h2 id="shikumi">複利の仕組み：増えたお金がまた増える</h2>
-<p>複利は、運用で増えたお金をそのまま運用に回すことで、増えた分にもまた利益がつく仕組みです。雪だるまのように、最初はゆっくり、時間がたつほど速く大きくなります。1. のグラフで、資産額の線が後半になるほど急になり、元本の線（点線）から離れていくのはこのためです。</p>
+<p>複利は、運用で増えたお金をそのまま運用に回すことで、増えた分にもまた利益がつく仕組みです。雪だるまのように、最初はゆっくり、時間がたつほど速く大きくなります。「積立」タブのグラフで、資産額の線が後半になるほど急になり、元本の線（点線）から離れていくのはこのためです。</p>
 <p>複利でいちばん効くのは「時間」です。毎月3万円を年5％で積み立てる場合、25歳から65歳までの40年なら約4,578万円（元本1,440万円）、35歳から65歳までの30年なら約2,497万円（元本1,080万円）になります。10年早く始めるだけで、元本の差は360万円なのに、最終金額は2,000万円以上ちがいます。35歳から始めて25歳スタートに追いつくには、毎月約5.5万円が必要です。</p>
 
-<h2>単利と複利のちがい・72の法則</h2>
+<h2>単利と複利のちがい</h2>
 <p>単利は最初の元本にだけ利息がつき、複利は増えた利息にも利息がつきます。100万円を年5％で20年なら、単利は200万円、複利（1年ごと）は約265万円です。期間が長いほど差が開きます。</p>
-<p>お金が2倍になるまでの年数は「72 ÷ 利回り（％）」でおおよそ分かります（72の法則）。年5％なら約14.4年、年8％なら約9年です。計算結果の下に、入力した利回りでの目安を表示しています。</p>
+
+<h2 id="rule72">72の法則：お金が2倍になる年数</h2>
+<p>お金が2倍になるまでの年数は「72 ÷ 利回り（％）」でおおよそ分かります。年5％なら約14.4年、年8％なら約9年です。利回りを入れると、正確な年数と、4倍・10倍になる年数も出ます。</p>
+<div class="r72"><label for="r72">利回り（年）</label><input type="number" id="r72" min="0.1" max="50" step="0.1" value="5"> ％</div>
+<div id="r72Out"></div>
+<p class="note">1年ごとの複利で計算しています。利回りが高いほど、72の法則は少し短めに出ます。</p>
 
 <h2 id="boraku">暴落が来たらどうなる？</h2>
-<p>株式に投資していると、何年かに一度は大きな下落が来ます。「<a href="#history">8. 過去の暴落のデータ</a>」のとおり、リーマンショックでは米国株が約57％、日本のバブル崩壊では日経平均が約82％下がりました。前の高値に戻るまで、コロナショックは約5か月、リーマンショックは約5年半、日本のバブル崩壊は約34年かかっています。</p>
-<p>ただし、積立を続けている人にとって、暴落は「安く買える時期」でもあります。下がっている間も同じ金額を買い続けると、たくさんの口数を買えるので、株価が前の高値に戻る前に、元本を取り戻せることが多くなります。「<a href="#crash">7. 暴落を起こしてみる</a>」で、暴落の年齢や大きさを変えて確かめてください。</p>
-<p>いちばん怖いのは、<strong>取り崩しを始めた直後の暴落</strong>です。下がったところで売って生活費にあてると、売った分は回復の恩恵を受けられません。取り崩しを入れた条件で、65歳前後に暴落を起こしてみると、資産が尽きる年齢がどれだけ早まるかが分かります。</p>
+<p>株式に投資していると、何年かに一度は大きな下落が来ます。「<a href="#history">過去の暴落</a>」タブのとおり、リーマンショックでは米国株が約57％、日本のバブル崩壊では日経平均が約82％下がりました。前の高値に戻るまで、コロナショックは約5か月、リーマンショックは約5年半、日本のバブル崩壊は約34年かかっています。</p>
+<p>ただし、積立を続けている人にとって、暴落は「安く買える時期」でもあります。下がっている間も同じ金額を買い続けると、たくさんの口数を買えるので、株価が前の高値に戻る前に、元本を取り戻せることが多くなります。「積立」タブの「<a href="#crash">暴落を起こしてみる</a>」で、暴落の年齢や大きさを変えて確かめてください。</p>
+<p>いちばん怖いのは、<strong>取り崩しを始めた直後の暴落</strong>です。下がったところで売って生活費にあてると、売った分は回復の恩恵を受けられません。「<a href="#torikuzushi">取り崩し</a>」タブの「取り崩し開始の年の暴落」に数字を入れると、尽きる確率がどれだけ上がるかが分かります。</p>
 
 <h2 id="ikkatsu-kaisetsu">一括投資と積立投資、どちらがいい？</h2>
-<p>値上がりが期待できる資産なら、平均的には「早く全額を入れた」ほうが長く運用できるので、一括投資が勝つことが多くなります（「<a href="#ikkatsu">10. 一括投資か、積立か</a>」で、勝つ確率が分かります）。一方で、入れた直後に暴落すると一括投資は大きく傷つき、分けて入れた場合は「悪かった場合」の落ち込みが少し浅くなります。期待値をとるか、後悔の小ささをとるか、という選び方になります。</p>
+<p>値上がりが期待できる資産なら、平均的には「早く全額を入れた」ほうが長く運用できるので、一括投資が勝つことが多くなります（「<a href="#ikkatsu">一括か積立か</a>」タブで、勝つ確率が分かります）。一方で、入れた直後に暴落すると一括投資は大きく傷つき、分けて入れた場合は「悪かった場合」の落ち込みが少し浅くなります。期待値をとるか、後悔の小ささをとるか、という選び方になります。</p>
 
 <h2 id="kuriage-kaisetsu">繰り上げ返済と投資、どちらが得？</h2>
-<p>繰り上げ返済は、「ローン金利と同じ利回りの、確実な運用」と同じです。金利0.8％のローンを返すのは、0.8％の利回りが約束された運用をするのと同じ効果があります。投資の期待利回りがローン金利より大きければ、平均的には投資のほうが多く残りますが、相場が悪いと負けることもあります。「<a href="#kuriage">11. 繰り上げ返済か、投資か</a>」で、勝つ確率と、ローン金利が変わったときの答えの変わり方が分かります。住宅ローン控除の額や、手元にお金を残しておく安心も合わせて考えてください。</p>
+<p>繰り上げ返済は、「ローン金利と同じ利回りの、確実な運用」と同じです。金利0.8％のローンを返すのは、0.8％の利回りが約束された運用をするのと同じ効果があります。投資の期待利回りがローン金利より大きければ、平均的には投資のほうが多く残りますが、相場が悪いと負けることもあります。「<a href="#kuriage">返済か投資か</a>」タブで、勝つ確率と、ローン金利が変わったときの答えの変わり方が分かります。住宅ローン控除の額や、手元にお金を残しておく安心も合わせて考えてください。</p>
 
 <h2>新NISAの枠と非課税の効果</h2>
 <div class="table-scroll">
@@ -408,8 +529,20 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 <p>課税口座では、運用益に約20％（20.315％）の税金がかかります。新NISAの枠の中で運用すると、この税金がかかりません。毎月の積立なら月10万円（年120万円）まではつみたて投資枠に入り、それを超える分は成長投資枠を使えます。両方を合わせて年360万円まで、生涯1,800万円までです。</p>
 <p>このツールでは、積立期間の終わりに全部売った場合の税金で比べています。NISAの枠は売ると翌年に復活しますが、その分は計算に入れていません。制度の最新の内容は<a href="https://www.fsa.go.jp/policy/nisa2/" target="_blank" rel="noopener">金融庁のNISA特設ページ</a>で確かめてください。</p>
 
-<h2>取り崩しまで考える</h2>
-<p>積み立てたお金は、いつか使うためのものです。「4. 年齢ごとの積立額と、取り崩し」で取り崩しを入れると、積立から取り崩しまでを1本のグラフで見られ、何歳で資産が尽きるかが分かります。「6. リスク」と合わせると、値動きによって何％の確率で途中で尽きるかも出ます。定額・定率・4％ルールの3つの方式を同じ条件で比べたいときは、<a href="/torikuzushi/">取り崩しシミュレーター</a>を使ってください。</p>
+<h2 id="wd-kaisetsu">取り崩し：3つの方式と4％ルール</h2>
+<p>積み立てたお金は、いつか使うためのものです。取り崩すときは、相場が悪い年にも生活費のために売ることになるので、「平均◯％で増えるから大丈夫」とは言えません。とくに取り崩しを始めた直後に暴落すると、売った分は回復の恩恵を受けられず、尽きる危険が大きく上がります。「<a href="#torikuzushi">取り崩し</a>」タブでは、1,000通りの相場で、途中で尽きる確率を出します。</p>
+<div class="table-scroll">
+<table>
+<thead><tr><th>方式</th><th>取り崩す額</th><th>よいところ</th><th>気をつけるところ</th></tr></thead>
+<tbody>
+<tr><th>定額</th><td>毎月きまった額</td><td>生活の計画が立てやすい</td><td>下がった年も同じ額を売るので、尽きる危険がいちばん高い</td></tr>
+<tr><th>定率</th><td>毎年、残高の一定割合</td><td>残高が減れば取り崩す額も減るので、理屈のうえでは尽きない</td><td>受け取れる額が相場で大きく変わり、生活費が読めない</td></tr>
+<tr><th>4％ルール</th><td>初年度に資産の4％、そのあとは物価に合わせて増やす</td><td>受け取る額の実質的な価値が変わらない</td><td>残高が減っても取り崩す額は下がらないので、尽きることがある</td></tr>
+</tbody>
+</table>
+</div>
+<p>4％ルールは、1990年代に米国の株と債券の過去のデータから「引退時の資産の4％を毎年（物価に合わせて）取り崩しても、30年間は尽きなかった」とされた経験則です。米国以外の資産、30年より長い期間、税金や手数料がある場合には、そのまま当てはまりません。自分の条件で確かめる道具として使ってください。</p>
+<p>尽きる確率を下げる手は、効く順に、取り崩す額を下げる、取り崩しを始める年齢を遅らせる、年金などの収入を入れる、下がった年だけ取り崩しを減らす（定率に近づける）、です。リスクを下げると利回りも下がるので、必ず良くなるとは限りません。</p>
 
 <h2>信託報酬は小さく見えて大きい</h2>
 <p>毎月3万円を年5％で30年積み立てた場合、信託報酬などのコストで最終金額は次のように変わります。</p>
@@ -425,7 +558,7 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 </tbody>
 </table>
 </div>
-<p>また、物価が年2％ずつ上がると、30年後の1,000万円は今のお金で約550万円分の価値になります。「5. 信託報酬とインフレ」で、入力した条件での金額が分かります。</p>
+<p>また、物価が年2％ずつ上がると、30年後の1,000万円は今のお金で約550万円分の価値になります。「積立」タブの「<a href="#cost">信託報酬とインフレ</a>」で、入力した条件での金額が分かります。</p>
 
 <h2 id="yomikata">リスク（ブレ幅）の読み方</h2>
 <p>利回り5％の資産でも、毎年ちょうど5％増えることはありません。「＋22％、−9％、＋15％、−31％……」と動いた結果が、ならすと5％前後になります。平均が同じでも、上下の順番と大きさで最終的な金額は大きく変わります。このツールは、毎月の値動きを乱数で作った1,000通りの将来を計算し、その散らばりを出しています。</p>
@@ -453,6 +586,7 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 <li>毎月の積立は月末に入金し、月利（年利÷12）で増える計算です。「1年ごと」を選ぶと、1年分の積立を年末にまとめて入れ、年利で増やします。</li>
 <li>信託報酬などは、利回りから毎年差し引いています。</li>
 <li>新NISAの欄以外は、税金を引く前の金額です。取り崩しの税金も計算に入れていません。</li>
+<li>1,000通りの計算（ブレ幅・取り崩し・一括か積立か・返済か投資か）は、開くたびに乱数を作り直すので、結果は少しずつ変わります。</li>
 <li>リスクの計算は、毎月の値動きが正規分布に近いと仮定しています。現実の暴落はもう少し深く起こりやすいので、下位10％はやや楽観的と考えてください。</li>
 </ul>
 
@@ -462,19 +596,21 @@ A. 「毎月」の計算は、月利＝年利÷12 で毎月末に積み立てる
 <p><strong>Q. 元本ありで計算できますか？</strong><br>
 A. できます。「元本（初期投資額）」に、最初にまとめて入れる額を万円で入れてください。すでに持っている投資の評価額を入れても構いません。</p>
 <p><strong>Q. 毎月いくら積み立てれば2,000万円になりますか？</strong><br>
-A. 「2. 目標金額から逆算する」に2,000（万円）と入れると、今の利回りと年数で必要な毎月の積立額が出ます。年5％・20年なら月およそ4.9万円です。</p>
+A. 「積立」タブの「<a href="#gyaku">目標金額から逆算する</a>」に2,000（万円）と入れると、今の利回りと年数で必要な毎月の積立額が出ます。年5％・20年なら月およそ4.9万円です。</p>
 <p><strong>Q. 途中で積立額を増やす前提で計算できますか？</strong><br>
-A. できます。「4. 年齢ごとの積立額と、取り崩し」で、たとえば「40歳から月5万円」のように登録してください。</p>
+A. できます。「積立」タブの「詳しい設定」で、たとえば「40歳から月5万円」のように登録してください。</p>
 <p><strong>Q. 暴落が起きたら、何年で元に戻りますか？</strong><br>
-A. 暴落の大きさと、そのあと積立を続けるかで変わります。「7. 暴落を起こしてみる」に年齢と下落率を入れると、元の金額に戻るまでの年数が出ます。過去の例は「8. 過去の暴落のデータ」にまとめています。</p>
+A. 暴落の大きさと、そのあと積立を続けるかで変わります。「積立」タブの「<a href="#crash">暴落を起こしてみる</a>」に年齢と下落率を入れると、元の金額に戻るまでの年数が出ます。過去の例は「<a href="#history">過去の暴落</a>」タブにまとめています。</p>
+<p><strong>Q. 老後資金は何歳まで持ちますか？</strong><br>
+A. 「<a href="#torikuzushi">取り崩し</a>」タブに、取り崩しを始めるときの資産・年齢・毎月の取り崩し額・年金を入れると、途中で尽きる確率と、尽きる場合の年齢が出ます。「積立」タブの結果をそのまま取り込むこともできます。</p>
 <p><strong>Q. 一括投資と積立、繰り上げ返済と投資の比較はどこにありますか？</strong><br>
-A. このページの「10. 一括投資か、積立か」と「11. 繰り上げ返済か、投資か」です。どちらも 1. の利回りと 6. のリスクを使い、同じ1,000通りの相場で比べています。</p>
+A. 「<a href="#ikkatsu">一括か積立か</a>」タブと「<a href="#kuriage">返済か投資か</a>」タブです。どちらも同じ1,000通りの相場で両方を計算して、勝つ確率で比べています。</p>
 <p><strong>Q. 条件を保存したり人に送ったりできますか？</strong><br>
 A. 入力はこのブラウザに自動で保存されます。「この条件のURLをコピー」を押すと、同じ条件で開けるURLをコピーできます。</p>
 
 <h2>関連するシミュレーター</h2>
 <ul>
-<li><a href="/torikuzushi/">取り崩しシミュレーター</a>：定額・定率・4％ルールを同じ条件で比べ、老後資金が尽きる確率を出します。</li>
+<li><a href="/nenshu-kabe/">年収の壁チェッカー</a>：パートの収入を増やすときの目安に。</li>
 <li><a href="/tedori/">手取り計算</a>：年収から手取りを出して、毎月いくら積み立てられるかの目安にできます。</li>
 <li><a href="/us-market/">米国市場ダッシュボード</a>：S&amp;P500 などの今の値動きを見られます。</li>
 </ul>
@@ -488,20 +624,11 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
 "use strict";
 (function () {
     var $ = function (id) { return document.getElementById(id); };
-    var STORE = "tooldock-fukuri-v3";
-    var TAX = 0.20315;
+    var STORE = "tooldock-fukuri-v4";
+    var TAX = 0.20315, RUNS = 1000;
     var NISA = { year: 3600000, tsumi: 1200000, growth: 2400000, life: 18000000, lifeGrowth: 12000000 };
-    var RUNS = 1000;
-    var DEF = { init: 0, monthly: 30000, rate: 5, years: 20, mode: "m", target: 2000, nisa: 1, age: 30, sched: [],
-        wd: 0, wdStart: 65, wdMethod: "fixed", wdAmt: 150000, wdRate: 4, pension: 0, penAge: 65, endAge: 95, wdIndex: 0,
-        fee: 0, infl: 2, risk: 12, crash: [] };
-    var EXTRA = ["evSel", "evHold", "evPm", "ikTotal", "ikSplit", "ikYears", "ikCash", "kuBal", "kuRate", "kuYears", "kuExtra", "kuLump", "kuTax", "r72"];
-    var NUM = ["init", "monthly", "rate", "years", "target", "age", "wdStart", "wdAmt", "wdRate", "pension", "penAge", "endAge", "fee", "infl", "risk"];
-    var KEY = { init: "i", monthly: "m", rate: "r", years: "y", mode: "md", target: "t", nisa: "n", age: "a", sched: "s",
-        wd: "w", wdStart: "ws", wdMethod: "wm", wdAmt: "wa", wdRate: "wr", pension: "pm", penAge: "pa", endAge: "we", wdIndex: "wx",
-        fee: "f", infl: "inf", risk: "rk", crash: "c" };
 
-    /* ---------- 表示 ---------- */
+    /* ================= 表示の道具 ================= */
     function yen(x) { return Math.round(x).toLocaleString("ja-JP") + "円"; }
     function man(x) {
         var neg = x < 0; x = Math.abs(x);
@@ -512,609 +639,486 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
         else s = Math.round(x).toLocaleString("ja-JP") + "円";
         return (neg ? "−" : "") + s;
     }
-    function pct(x, d) { return (Math.round(x * Math.pow(10, d || 0)) / Math.pow(10, d || 0)).toLocaleString("ja-JP") + "％"; }
-    function ym(months) { var y = Math.floor(months / 12), m = months % 12; return (y ? y + "年" : "") + (m ? m + "か月" : (y ? "" : "0か月")); }
+    function pct(x, d) { var p = Math.pow(10, d || 0); return (Math.round(x * p) / p).toLocaleString("ja-JP") + "％"; }
+    function ym(months) { months = Math.round(months); var y = Math.floor(months / 12), m = months % 12; return (y ? y + "年" : "") + (m ? m + "か月" : (y ? "" : "0か月")); }
+    function num(id, def) { var v = Number($(id).value); return Number.isFinite(v) && $(id).value !== "" ? v : def; }
+    function ul(lines) { return "<ul class=\"out\"><li>" + lines.join("</li><li>") + "</li></ul>"; }
+    function randn() { var u = 0, v = 0; while (u === 0) u = Math.random(); while (v === 0) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+    function q(sorted, x) { var i = (sorted.length - 1) * x, lo = Math.floor(i), hi = Math.ceil(i); return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo); }
+    function asc(a) { return a.sort(function (x, y) { return x - y; }); }
+    /* 毎月の値動き（1か月で何倍になるか）を RUNS 通り作る。平均は 1＋年利÷12、ばらつきは リスク÷√12 */
+    function scen(months, retPct, riskPct) {
+        var s = Math.max(0, riskPct) / 100 / Math.sqrt(12), mu = Math.log(Math.max(1e-9, 1 + retPct / 100 / 12)) - s * s / 2;
+        var arr = new Float64Array(RUNS * months);
+        for (var k = 0; k < arr.length; k++) arr[k] = Math.exp(mu + s * randn());
+        return arr;
+    }
+    function color() { var c = getComputedStyle(document.body).getPropertyValue("--c").trim(); return /^#[0-9a-f]{6}$/i.test(c) ? c : "#15803d"; }
+    var charts = {};
+    function draw(id, labels, sets, y2) {
+        if (!window.Chart) return;
+        var data = { labels: labels, datasets: sets };
+        if (charts[id]) { charts[id].data = data; charts[id].update(); return; }
+        var scales = { y: { ticks: { callback: function (v) { return man(v); } } }, x: { ticks: { maxTicksLimit: 10 } } };
+        if (y2) scales.y2 = { position: "right", min: 0, max: 100, grid: { drawOnChartArea: false } };
+        charts[id] = new Chart($(id), { type: "line", data: data, options: { responsive: true, maintainAspectRatio: false, animation: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: { tooltip: { callbacks: { label: function (x) { return x.dataset.label + "：" + (x.dataset.yAxisID === "y2" ? x.parsed.y : man(x.parsed.y)); } } } },
+            scales: scales } });
+    }
+    function line(label, data, col, extra) { var d = { label: label, data: data.map(function (v) { return v == null ? null : Math.round(v); }), borderColor: col, pointRadius: 0, borderWidth: 2, tension: 0.1 }; for (var k in extra || {}) d[k] = extra[k]; return d; }
 
-    /* ---------- 入力 ---------- */
-    function read() {
-        var p = {};
-        NUM.forEach(function (k) { var v = Number($(k).value); p[k] = Number.isFinite(v) ? v : DEF[k]; });
-        p.mode = $("mode").value; p.nisa = $("nisaOn").checked; p.wd = $("wdOn").checked; p.wdIndex = $("wdIndex").checked;
-        p.wdMethod = $("wdMethod").value;
-        p.years = Math.max(1, Math.min(70, Math.round(p.years)));
-        p.age = Math.max(0, Math.min(90, Math.round(p.age)));
-        p.sched = [];
-        document.querySelectorAll("#sched .row").forEach(function (r) {
-            var a = Number(r.querySelector(".sa").value), m = Number(r.querySelector(".sm").value);
-            if (Number.isFinite(a) && Number.isFinite(m)) p.sched.push({ age: a, amt: Math.max(0, m) });
-        });
+    /* ================= タブ ================= */
+    var PANELS = ["tsumitate", "torikuzushi", "hikaku", "ikkatsu", "kuriage", "history"];
+    var shown = null;
+    function show(name, el) {
+        if (PANELS.indexOf(name) < 0) name = "tsumitate";
+        PANELS.forEach(function (p) { $(p).hidden = p !== name; });
+        document.querySelectorAll("#tabs a").forEach(function (a) { a.classList.toggle("on", a.dataset.tab === name); a.setAttribute("aria-current", a.dataset.tab === name ? "page" : "false"); });
+        if (shown !== name) { shown = name; compute(name); }
+        if (el && el.id !== name) setTimeout(function () { el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 30);
+    }
+    function route() {
+        var id = decodeURIComponent(location.hash.slice(1));
+        var el = id ? document.getElementById(id) : null;
+        if (!el) { show(shown || "tsumitate"); return; }
+        var panel = el.closest ? el.closest(".panel") : null;
+        if (panel) { show(panel.id, el); if (el === panel) setTimeout(function () { (window.matchMedia("(min-width:761px)").matches ? panel : $("tabs")).scrollIntoView({ behavior: "smooth" }); }, 30); }
+        else { if (!shown) show("tsumitate"); }
+    }
+    window.addEventListener("hashchange", route);
+
+    /* ================= 積立 ================= */
+    function readT() {
+        var p = { init: Math.max(0, num("init", 0)) * 1e4, monthly: Math.max(0, num("monthly", 0)), rate: num("rate", 0), years: Math.max(1, Math.min(70, Math.round(num("years", 20)))),
+            age: Math.max(0, Math.min(90, Math.round(num("age", 30)))), fee: num("fee", 0), infl: num("infl", 0), mode: $("mode").value, nisa: $("nisaOn").checked,
+            risk: Math.max(0, num("riskPct", 12)), target: Math.max(0, num("target", 0)) * 1e4, sched: [], crash: [] };
+        document.querySelectorAll("#sched .row").forEach(function (r) { var a = Number(r.querySelector(".sa").value), m = Number(r.querySelector(".sm").value); if (Number.isFinite(a) && Number.isFinite(m)) p.sched.push({ age: a, amt: Math.max(0, m) }); });
         p.sched.sort(function (a, b) { return a.age - b.age; });
-        p.crash = [];
-        document.querySelectorAll("#crashRows .row").forEach(function (r) {
-            var a = Number(r.querySelector(".ca").value), c = Number(r.querySelector(".cp").value);
-            if (Number.isFinite(a) && Number.isFinite(c) && c > 0) p.crash.push({ age: a, pct: Math.min(99, c) / 100 });
-        });
+        document.querySelectorAll("#crashRows .row").forEach(function (r) { var a = Number(r.querySelector(".ca").value), c = Number(r.querySelector(".cp").value); if (Number.isFinite(a) && c > 0) p.crash.push({ age: a, pct: Math.min(99, c) / 100 }); });
         p.crash.sort(function (a, b) { return a.age - b.age; });
-        p.initY = Math.max(0, p.init) * 1e4; p.targetY = Math.max(0, p.target) * 1e4;
-        p.endAge = Math.max(p.endAge, p.age + p.years);
         return p;
     }
     function monthlyAt(p, age) { var v = p.monthly; p.sched.forEach(function (s) { if (age >= s.age) v = s.amt; }); return v; }
 
-    /* ---------- 1本の線の計算（利回りどおりに増えた場合） ---------- */
+    /* 利回りどおりに増えた場合。o.basic：積立額の変更・NISAなし（逆算用）、o.months：積立の月数、o.crash：暴落を入れる、o.horizon：積立のあとも運用だけ続ける月数まで */
     function sim(p, o) {
         o = o || {};
-        var basic = !!o.basic;
-        var R = ((o.rate != null ? o.rate : p.rate) - (o.fee != null ? o.fee : p.fee)) / 100;
-        var years = o.years != null ? o.years : p.years;
-        var cM = o.months != null ? o.months : years * 12;
-        var pmt = o.monthly != null ? o.monthly : null;
-        var useNisa = p.nisa && !basic, wd = p.wd && !basic;
-        var N = wd ? Math.max(cM, Math.round((p.endAge - p.age) * 12)) : cM;
-        if (o.horizon) N = Math.max(N, o.horizon);
-        var i = R / 12;
-        var nv = 0, np = 0, tv = 0, tp = 0;           /* NISA と課税口座の評価額・元本 */
-        var lifeUsed = 0, growthUsed = 0, yT = 0, yG = 0;
-        var nisaIn = 0, overflow = 0, fullYear = null;
+        var basic = !!o.basic, R = ((o.rate != null ? o.rate : p.rate) - (o.fee != null ? o.fee : p.fee)) / 100;
+        var cM = o.months != null ? o.months : p.years * 12, N = Math.max(cM, o.horizon || 0), i = R / 12;
+        var pmt = o.monthly, useNisa = p.nisa && !basic, crash = o.crash ? p.crash : [], hit = {};
+        var nv = 0, np = 0, tv = 0, tp = 0, lifeUsed = 0, growthUsed = 0, yT = 0, yG = 0, nisaIn = 0, over = 0, fullYear = null;
         function put(a, lump) {
             if (a <= 0) return;
             if (!useNisa) { tv += a; tp += a; return; }
-            var left = NISA.life - lifeUsed, ts = 0, g = 0;
-            if (!lump) { ts = Math.max(0, Math.min(a, NISA.tsumi - yT, left)); }
-            var rest = a - ts;
-            g = Math.max(0, Math.min(rest, NISA.growth - yG, NISA.lifeGrowth - growthUsed, left - ts));
-            yT += ts; yG += g; growthUsed += g; lifeUsed += ts + g;
-            nv += ts + g; np += ts + g; nisaIn += ts + g;
-            var over = a - ts - g; tv += over; tp += over; overflow += over;
+            var left = NISA.life - lifeUsed, ts = lump ? 0 : Math.max(0, Math.min(a, NISA.tsumi - yT, left));
+            var g = Math.max(0, Math.min(a - ts, NISA.growth - yG, NISA.lifeGrowth - growthUsed, left - ts));
+            yT += ts; yG += g; growthUsed += g; lifeUsed += ts + g; nv += ts + g; np += ts + g; nisaIn += ts + g;
+            var x = a - ts - g; tv += x; tp += x; over += x;
         }
-        put(p.initY, true);
-        var useCrash = !!o.crash && p.crash.length, hit = {}, track = o.track ? [] : null;
-        var pend = 0, prin = p.initY, rows = [], depleted = null, wdTotal = 0, wdYear = 0, cYear = 0, yearStartAsset = 0, maxYearIn = 0, yIn = 0;
+        put(p.init, true);
+        var prin = p.init, rows = [], track = [], pend = 0, cYear = 0, yIn = 0, maxYearIn = 0, end = null;
         for (var m = 0; m < N; m++) {
             var age = p.age + m / 12;
-            if (m % 12 === 0) { yT = 0; yG = 0; wdYear = 0; cYear = 0; yearStartAsset = nv + tv; yIn = (m === 0 ? Math.min(p.initY, NISA.growth) : 0); }
-            /* 毎月：月利で増やしてから、月末の積立を入れる。
-               1年ごと：その年の積立は年末にまとめて入れ、入れる前の残高だけを年利で増やす */
+            if (m % 12 === 0) { yT = 0; yG = 0; cYear = 0; yIn = m === 0 ? Math.min(p.init, NISA.growth) : 0; }
             if (p.mode === "m") { nv *= 1 + i; tv *= 1 + i; }
-            if (useCrash) p.crash.forEach(function (c, ci) { if (!hit[ci] && age >= c.age - 1e-9) { hit[ci] = true; nv *= 1 - c.pct; tv *= 1 - c.pct; } });
+            for (var ci = 0; ci < crash.length; ci++) if (!hit[ci] && age >= crash[ci].age - 1e-9) { hit[ci] = true; nv *= 1 - crash[ci].pct; tv *= 1 - crash[ci].pct; }
             if (m < cM) {
                 var c = pmt != null ? pmt : (basic ? p.monthly : monthlyAt(p, age));
                 if (p.mode === "m") put(c, false); else pend += c;
                 prin += c; cYear += c; yIn += c;
             }
             if (p.mode !== "m" && (m % 12 === 11 || m === N - 1)) { nv *= 1 + R; tv *= 1 + R; put(pend, false); pend = 0; }
-            if (wd && age >= p.wdStart - 1e-9) {
-                var since = Math.floor(age - p.wdStart + 1e-9);
-                var need = p.wdMethod === "rate" ? yearStartAsset * p.wdRate / 100 / 12
-                    : p.wdAmt * (p.wdIndex ? Math.pow(1 + p.infl / 100, since) : 1);
-                if (age >= p.penAge - 1e-9) need = Math.max(0, need - p.pension);
-                var have = nv + tv, take = Math.min(need, have);
-                var fromT = Math.min(take, tv);
-                if (tv > 0) { tp -= tp * fromT / tv; } tv -= fromT;
-                var fromN = take - fromT; if (nv > 0) { np -= np * fromN / nv; } nv -= fromN;
-                wdTotal += take; wdYear += take;
-                if (take < need - 0.5 && depleted === null && need > 0) depleted = age;
-            }
-            if (m % 12 === 11 || m === N - 1) {
-                maxYearIn = Math.max(maxYearIn, yIn);
-                rows.push({ y: Math.floor(m / 12) + 1, age: p.age + Math.floor(m / 12) + 1, c: cYear, prin: prin, v: nv + tv, nv: nv, tv: tv, w: wdYear });
-            }
-            if (m === cM - 1) {
-                var atEnd = { v: nv + tv, nv: nv, np: np, tv: tv, tp: tp, prin: prin, nisaIn: nisaIn, overflow: overflow, lifeUsed: lifeUsed };
-            }
+            if (m % 12 === 11 || m === N - 1) { maxYearIn = Math.max(maxYearIn, yIn); rows.push({ y: Math.floor(m / 12) + 1, age: p.age + Math.floor(m / 12) + 1, c: cYear, prin: prin, v: nv + tv, nv: nv }); }
+            if (m === cM - 1) end = { v: nv + tv, tv: tv, tp: tp, prin: prin, nisaIn: nisaIn, over: over };
             if (useNisa && fullYear === null && lifeUsed >= NISA.life - 1) fullYear = Math.floor(m / 12) + 1;
-            if (track) track.push(nv + tv);
+            track.push(nv + tv);
         }
-        return { track: track, rows: rows, end: atEnd, depleted: depleted, wdTotal: wdTotal, last: nv + tv, maxYearIn: maxYearIn, fullYear: fullYear };
+        return { rows: rows, end: end, track: track, maxYearIn: maxYearIn, fullYear: fullYear };
     }
-    /* 逆算用：元本と一定の積立だけ */
-    function fvBasic(p, o) { return sim(p, { basic: true, rate: o.rate, monthly: o.monthly, months: o.months }).end.v; }
+    function fvBasic(p, o) { o.basic = true; return sim(p, o).end.v; }
 
-    /* ---------- 1,000通りの計算 ---------- */
-    function randn() { var u = 0, v = 0; while (u === 0) u = Math.random(); while (v === 0) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
-    function q(sorted, x) { var i = (sorted.length - 1) * x, lo = Math.floor(i), hi = Math.ceil(i); return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo); }
-    function monte(p) {
-        var cM = p.years * 12, N = p.wd ? Math.max(cM, Math.round((p.endAge - p.age) * 12)) : cM;
-        var Y = Math.ceil(N / 12);
-        var R = (p.rate - p.fee) / 100, s = Math.max(0, p.risk) / 100 / Math.sqrt(12);
-        var mu = Math.log(Math.max(1e-9, 1 + R / 12)) - s * s / 2;
-        var vals = new Float64Array(RUNS * Y), ends = [], ruined = 0, ruinAges = [], prinEnd = 0;
-        for (var r = 0; r < RUNS; r++) {
-            var a = p.initY, prin = p.initY, dead = false, ys = a, hitc = {};
-            for (var m = 0; m < N; m++) {
-                var age = p.age + m / 12;
-                if (m % 12 === 0) ys = a;
-                a *= Math.exp(mu + s * randn());
-                for (var ci = 0; ci < p.crash.length; ci++) if (!hitc[ci] && age >= p.crash[ci].age - 1e-9) { hitc[ci] = true; a *= 1 - p.crash[ci].pct; }
-                if (m < cM) { var c = monthlyAt(p, age); a += c; prin += c; }
-                if (p.wd && age >= p.wdStart - 1e-9) {
-                    var since = Math.floor(age - p.wdStart + 1e-9);
-                    var need = p.wdMethod === "rate" ? ys * p.wdRate / 100 / 12 : p.wdAmt * (p.wdIndex ? Math.pow(1 + p.infl / 100, since) : 1);
-                    if (age >= p.penAge - 1e-9) need = Math.max(0, need - p.pension);
-                    if (need > a + 0.5 && need > 0 && !dead) { dead = true; ruinAges.push(age); }
-                    a = Math.max(0, a - need);
-                }
-                if (m % 12 === 11 || m === N - 1) vals[r * Y + Math.floor(m / 12)] = a;
-                if (m === cM - 1) { ends.push(a); prinEnd = prin; }
-            }
-            if (dead) ruined++;
-        }
-        var bands = { p10: [], p50: [], p90: [] };
-        for (var y = 0; y < Y; y++) {
-            var col = []; for (var k = 0; k < RUNS; k++) col.push(vals[k * Y + y]);
-            col.sort(function (x, z) { return x - z; });
-            bands.p10.push(q(col, 0.1)); bands.p50.push(q(col, 0.5)); bands.p90.push(q(col, 0.9));
-        }
-        ends.sort(function (x, z) { return x - z; });
-        var below = ends.filter(function (v) { return v < prinEnd; }).length / RUNS;
-        var reach = p.targetY > 0 ? ends.filter(function (v) { return v >= p.targetY; }).length / RUNS : null;
-        ruinAges.sort(function (x, z) { return x - z; });
-        return { bands: bands, p10: q(ends, 0.1), p50: q(ends, 0.5), p90: q(ends, 0.9), below: below, reach: reach, prin: prinEnd,
-            ruin: p.wd ? ruined / RUNS : null, ruinAge: ruinAges.length ? q(ruinAges, 0.5) : null, Y: Y };
-    }
-
-    /* ---------- グラフ ---------- */
-    var chart = null, rchart = null;
-    function color() { var c = getComputedStyle(document.body).getPropertyValue("--c").trim(); return /^#[0-9a-f]{6}$/i.test(c) ? c : "#15803d"; }
-    function drawMain(p, S) {
-        if (!window.Chart) return;
-        var labels = S.rows.map(function (r) { return r.age + "歳"; });
-        var c = color();
-        var data = { labels: labels, datasets: [
-            { label: "資産額", data: S.rows.map(function (r) { return Math.round(r.v); }), borderColor: c, backgroundColor: c + "33", fill: true, pointRadius: 0, tension: 0.15 },
-            { label: "元本（積み立てた合計）", data: S.rows.map(function (r) { return Math.round(r.prin); }), borderColor: "#6b7280", borderDash: [6, 4], fill: false, pointRadius: 0 }
-        ] };
-        if (A) {
-            var byAge = {}; A.series.forEach(function (x) { byAge[x[0]] = x[1]; });
-            data.datasets.push({ label: "条件A の資産額", data: S.rows.map(function (r) { return byAge[r.age] != null ? byAge[r.age] : null; }), borderColor: "#d97706", borderDash: [3, 3], fill: false, pointRadius: 0, spanGaps: true });
-        }
-        var opt = { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
-            plugins: { tooltip: { callbacks: { label: function (x) { return x.dataset.label + "：" + man(x.parsed.y); } } } },
-            scales: { y: { ticks: { callback: function (v) { return man(v); } } }, x: { ticks: { maxTicksLimit: 10 } } } };
-        if (chart) { chart.data = data; chart.update(); } else chart = new Chart($("chart"), { type: "line", data: data, options: opt });
-    }
-    function drawRisk(p, S, M) {
-        if (!window.Chart) return;
-        var labels = []; for (var y = 0; y < M.Y; y++) labels.push((p.age + y + 1) + "歳");
-        var c = color();
-        var data = { labels: labels, datasets: [
-            { label: "良かった場合（上位10％）", data: M.bands.p90.map(Math.round), borderColor: c + "66", backgroundColor: c + "22", fill: "+2", pointRadius: 0 },
-            { label: "真ん中（中央値）", data: M.bands.p50.map(Math.round), borderColor: c, pointRadius: 0, borderWidth: 2.5 },
-            { label: "悪かった場合（下位10％）", data: M.bands.p10.map(Math.round), borderColor: c + "66", pointRadius: 0 },
-            { label: "元本（積み立てた合計）", data: S.rows.slice(0, M.Y).map(function (r) { return Math.round(r.prin); }), borderColor: "#6b7280", borderDash: [6, 4], pointRadius: 0 }
-        ] };
-        var opt = { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
-            plugins: { tooltip: { callbacks: { label: function (x) { return x.dataset.label + "：" + man(x.parsed.y); } } } },
-            scales: { y: { ticks: { callback: function (v) { return man(v); } } }, x: { ticks: { maxTicksLimit: 10 } } } };
-        if (rchart) { rchart.data = data; rchart.update(); } else rchart = new Chart($("rchart"), { type: "line", data: data, options: opt });
-    }
-
-    /* ---------- 結果の表示 ---------- */
-    function render() {
-        var p = read();
-        var S = sim(p), E = S.end;
-        var basicEnd = sim(p, { basic: true });
+    function computeT() {
+        var p = readT(), S = sim(p), E = S.end;
         $("kFinal").textContent = p.years + "年後（" + (p.age + p.years) + "歳）の金額";
         $("vFinal").textContent = man(E.v); $("yFinal").textContent = yen(E.v);
         $("vPrin").textContent = man(E.prin); $("yPrin").textContent = yen(E.prin);
         $("vGain").textContent = man(E.v - E.prin); $("yGain").textContent = yen(E.v - E.prin);
         var eff = p.rate - p.fee;
-        $("say").innerHTML = "元本の <b>" + (E.prin > 0 ? (Math.round(E.v / E.prin * 100) / 100) : "―") + "倍</b> になります。" +
+        $("say").innerHTML = "元本の <b>" + (E.prin > 0 ? Math.round(E.v / E.prin * 100) / 100 : "―") + "倍</b> になります。" +
             (eff > 0 ? "年" + pct(eff, 1) + "なら、お金が2倍になるのは約" + (Math.round(72 / eff * 10) / 10) + "年後です（<a href=\"#rule72\">72の法則</a>）。" : "") +
             (p.fee > 0 ? "（信託報酬など" + pct(p.fee, 2) + "を差し引いた利回りで計算）" : "");
-        drawMain(p, S);
-
-        /* 年ごとの表 */
-        var h = "<thead><tr><th>年</th><th>年齢</th><th>その年の積立</th><th>元本</th><th>資産額</th><th>運用益</th>" + (p.nisa ? "<th>うちNISA</th>" : "") + (p.wd ? "<th>取り崩し</th>" : "") + "</tr></thead><tbody>";
-        S.rows.forEach(function (r) {
-            var gain = p.wd && r.age > p.wdStart ? "―" : yen(r.v - r.prin);
-            h += "<tr><td>" + r.y + "年目</td><td>" + r.age + "歳</td><td>" + yen(r.c) + "</td><td>" + yen(r.prin) + "</td><td>" + yen(r.v) + "</td><td>" + gain + "</td>" +
-                (p.nisa ? "<td>" + yen(r.nv) + "</td>" : "") + (p.wd ? "<td>" + yen(r.w) + "</td>" : "") + "</tr>";
-        });
+        var c0 = color();
+        draw("chart", S.rows.map(function (r) { return r.age + "歳"; }), [
+            line("資産額", S.rows.map(function (r) { return r.v; }), c0, { backgroundColor: c0 + "33", fill: true }),
+            line("元本（積み立てた合計）", S.rows.map(function (r) { return r.prin; }), "#6b7280", { borderDash: [6, 4] })
+        ]);
+        var h = "<thead><tr><th>年</th><th>年齢</th><th>その年の積立</th><th>元本</th><th>資産額</th><th>運用益</th>" + (p.nisa ? "<th>うちNISA</th>" : "") + "</tr></thead><tbody>";
+        S.rows.forEach(function (r) { h += "<tr><td>" + r.y + "年目</td><td>" + r.age + "歳</td><td>" + yen(r.c) + "</td><td>" + yen(r.prin) + "</td><td>" + yen(r.v) + "</td><td>" + yen(r.v - r.prin) + "</td>" + (p.nisa ? "<td>" + yen(r.nv) + "</td>" : "") + "</tr>"; });
         $("ytable").innerHTML = h + "</tbody>";
 
-        /* 逆算（元本・一定の積立だけで計算） */
-        var T = p.targetY, base = basicEnd.end.v;
+        /* 新NISA */
+        if (!p.nisa) $("nisaOut").innerHTML = "<p>詳しい設定で「新NISAの枠で運用する」にチェックを入れると、枠に入るかと税金の差を出します。</p>";
+        else {
+            var taxAll = Math.max(0, E.v - E.prin) * TAX, taxNow = Math.max(0, E.tv - E.tp) * TAX, L = [];
+            L.push(S.maxYearIn <= NISA.year ? "<span class=\"ok\">年間の枠360万円に収まっています（最大の年 " + man(S.maxYearIn) + "）</span>" : "<span class=\"warn\">年間の枠360万円を超える年があります（最大 " + man(S.maxYearIn) + "）。超えた分は課税口座で計算</span>");
+            if (p.init > NISA.growth) L.push("元本のうち1年目にNISAに入るのは240万円（成長投資枠）まで。残りは課税口座");
+            L.push("NISAに入る元本：" + man(E.nisaIn) + "（生涯枠1,800万円の" + pct(E.nisaIn / NISA.life * 100) + "）" + (E.over > 0 ? "、課税口座：" + man(E.over) : ""));
+            if (S.fullYear) L.push("生涯枠を使い切るのは " + S.fullYear + "年目（" + (p.age + S.fullYear) + "歳）");
+            L.push("<b>NISAで減らせる税金：<span class=\"ans\">" + man(taxAll - taxNow) + "</span></b>（課税口座なら運用益の約20％、" + man(taxAll) + "）");
+            L.push(p.years + "年後に全部売った手取り：<b>" + man(E.v - taxNow) + "</b>" + (taxNow > 0 ? "" : "（全額非課税）"));
+            $("nisaOut").innerHTML = ul(L);
+        }
+        /* 信託報酬・インフレ */
+        var noFee = sim(p, { fee: 0 }).end.v, C = [];
+        if (p.fee > 0) C.push("信託報酬など" + pct(p.fee, 2) + "で減る額：<b class=\"warn\">" + man(noFee - E.v) + "</b>");
+        C.push("信託報酬などが " + [0.1, 0.5, 1.0, 1.5].map(function (f) { return pct(f, 1) + "なら −" + man(noFee - sim(p, { fee: f }).end.v); }).join("、"));
+        C.push(p.years + "年後の" + man(E.v) + "は、物価が年" + pct(p.infl, 1) + "上がると<b>今のお金で約" + man(E.v / Math.pow(1 + p.infl / 100, p.years)) + "分</b>");
+        $("costOut").innerHTML = ul(C);
+
+        /* 逆算 */
+        var T = p.target;
         if (!T) { $("gPmt").textContent = $("gRate").textContent = $("gYears").textContent = "目標金額を入れると表示します"; }
         else {
-            /* 毎月の額 */
             if (fvBasic(p, { monthly: 0 }) >= T) $("gPmt").textContent = "積立なし（元本だけ）でも届きます";
-            else {
-                var lo = 0, hi = Math.max(T, 1);
-                for (var k = 0; k < 60; k++) { var mid = (lo + hi) / 2; if (fvBasic(p, { monthly: mid }) >= T) hi = mid; else lo = mid; }
-                var need = Math.ceil(hi / 100) * 100;
-                $("gPmt").textContent = "月 " + yen(need) + "（" + p.years + "年・年" + pct(p.rate - p.fee, 1) + "）" + (need > p.monthly ? "　今より月 " + yen(need - p.monthly) + " 多く" : "　今の積立額で届きます");
-            }
-            /* 利回り */
-            var r0 = fvBasic(p, { rate: p.fee }), rHi = fvBasic(p, { rate: 60 + p.fee });
-            if (r0 >= T) $("gRate").textContent = "利回り0％でも届きます（元本 " + man(E.prin) + "）";
-            else if (rHi < T) $("gRate").textContent = "年60％でも届きません。積立額か年数を増やしてください";
-            else {
-                var a = 0, b = 60;
-                for (var j = 0; j < 50; j++) { var md = (a + b) / 2; if (fvBasic(p, { rate: md + p.fee }) >= T) b = md; else a = md; }
-                $("gRate").textContent = "年 " + pct(Math.ceil(b * 10) / 10, 1) + " 以上" + (p.fee > 0 ? "（信託報酬など差し引き後）" : "");
-            }
-            /* 年数 */
-            /* 1年ごとに当たりをつけてから、月単位で詰める */
-            var found = null;
-            for (var ys = 1; ys <= 100 && found === null; ys++) { if (fvBasic(p, { months: ys * 12 }) >= T) found = ys; }
+            else { var lo = 0, hi = Math.max(T, 1); for (var k = 0; k < 60; k++) { var md = (lo + hi) / 2; if (fvBasic(p, { monthly: md }) >= T) hi = md; else lo = md; }
+                var need = Math.ceil(hi / 100) * 100; $("gPmt").textContent = "月 " + yen(need) + "（" + p.years + "年・年" + pct(p.rate - p.fee, 1) + "）" + (need > p.monthly ? "　今より月 " + yen(need - p.monthly) + " 多く" : "　今の積立額で届きます"); }
+            if (fvBasic(p, { rate: p.fee }) >= T) $("gRate").textContent = "利回り0％でも届きます";
+            else if (fvBasic(p, { rate: 60 + p.fee }) < T) $("gRate").textContent = "年60％でも届きません";
+            else { var a = 0, b = 60; for (var j = 0; j < 50; j++) { var mm = (a + b) / 2; if (fvBasic(p, { rate: mm + p.fee }) >= T) b = mm; else a = mm; } $("gRate").textContent = "年 " + pct(Math.ceil(b * 10) / 10, 1) + " 以上"; }
+            var found = null; for (var ys = 1; ys <= 100 && found === null; ys++) if (fvBasic(p, { months: ys * 12 }) >= T) found = ys;
             if (found === null) $("gYears").textContent = "100年たっても届きません";
-            else {
-                var mm = p.mode === "m" ? (found - 1) * 12 + 1 : found * 12;
-                while (mm < found * 12 && fvBasic(p, { months: mm }) < T) mm++;
-                $("gYears").textContent = ym(mm) + "（" + (p.age + Math.ceil(mm / 12)) + "歳ごろ）" + (p.monthly ? "　今の積立額 月" + yen(p.monthly) + " で" : "");
+            else { var mo = p.mode === "m" ? (found - 1) * 12 + 1 : found * 12; while (mo < found * 12 && fvBasic(p, { months: mo }) < T) mo++;
+                $("gYears").textContent = ym(mo) + "（" + (p.age + Math.ceil(mo / 12)) + "歳ごろ）" + (p.monthly ? "　月" + yen(p.monthly) + "のままで" : ""); }
+        }
+        computeCrash(p, S);
+        later("risk", function () { computeRisk(p, S); });
+    }
+
+    function computeRisk(p, S) {
+        var cM = p.years * 12, sc = scen(cM, p.rate - p.fee, p.risk), Y = p.years;
+        var vals = new Float64Array(RUNS * Y), ends = [];
+        for (var r = 0; r < RUNS; r++) {
+            var a = p.init, hit = {}, b = r * cM;
+            for (var m = 0; m < cM; m++) {
+                var age = p.age + m / 12;
+                a *= sc[b + m];
+                for (var ci = 0; ci < p.crash.length; ci++) if (!hit[ci] && age >= p.crash[ci].age - 1e-9) { hit[ci] = true; a *= 1 - p.crash[ci].pct; }
+                a += monthlyAt(p, age);
+                if (m % 12 === 11) vals[r * Y + Math.floor(m / 12)] = a;
             }
+            ends.push(a);
         }
-
-        /* 新NISA */
-        var no = $("nisaOut");
-        if (!p.nisa) no.innerHTML = "<p>チェックを入れると、新NISAの枠に入るかと、税金の差を表示します。</p>";
-        else {
-            var gainsAll = E.v - E.prin, taxAll = Math.max(0, gainsAll) * TAX;
-            var taxNow = Math.max(0, E.tv - E.tp) * TAX;
-            var yearMax = S.maxYearIn;
-            var lines = [];
-            lines.push(yearMax <= NISA.year ? "<span class=\"ok\">毎年の投資額（最大 " + man(yearMax) + "）は、年間の枠360万円に収まっています。</span>"
-                : "<span class=\"warn\">年間の枠360万円を超える年があります（最大 " + man(yearMax) + "）。超えた分は課税口座で計算しています。</span>");
-            if (p.initY > NISA.growth) lines.push("元本 " + man(p.initY) + " のうち、1年目に成長投資枠に入るのは240万円までです。残りは課税口座です。");
-            lines.push("NISAに入る元本：<b>" + man(E.nisaIn) + "</b>（生涯枠1,800万円の " + pct(E.nisaIn / NISA.life * 100) + "）" + (E.overflow > 0 ? "　課税口座：" + man(E.overflow) : ""));
-            if (S.fullYear) lines.push("生涯枠1,800万円を使い切るのは <b>" + S.fullYear + "年目（" + (p.age + S.fullYear) + "歳）</b>です。そのあとの積立は課税口座で計算しています。");
-            lines.push("課税口座だけで運用した場合の税金：" + man(taxAll) + "（運用益の約20％）");
-            lines.push("<b>NISAで減らせる税金：<span class=\"ans\">" + man(taxAll - taxNow) + "</span></b>");
-            lines.push(p.years + "年後に全部売った場合の手取り：<b>" + man(E.v - taxNow) + "</b>" + (taxNow > 0 ? "（課税口座の分の税金 " + man(taxNow) + " を引いた額）" : "（全額非課税）"));
-            no.innerHTML = "<ul class=\"out\"><li>" + lines.join("</li><li>") + "</li></ul>";
-        }
-
-        /* 年齢・取り崩し */
-        $("wdBox").style.display = p.wd ? "" : "none";
-        $("fAmt").style.display = p.wdMethod === "fixed" ? "" : "none";
-        $("fRate").style.display = p.wdMethod === "rate" ? "" : "none";
-        var lo2 = [];
-        lo2.push("積立は " + p.age + "歳から" + (p.age + p.years) + "歳まで（" + p.years + "年）" + (p.sched.length ? "。積立額の変更：" + p.sched.map(function (s) { return s.age + "歳から月" + yen(s.amt); }).join("、") : ""));
-        if (p.wd) {
-            if (p.wdStart < p.age + p.years) lo2.push("<span class=\"warn\">取り崩しの開始が積立期間の途中です。積立と取り崩しが重なる年があります。</span>");
-            var startRow = S.rows.filter(function (r) { return r.age === Math.round(p.wdStart); })[0];
-            lo2.push("取り崩し開始（" + p.wdStart + "歳）の資産：<b>" + man(startRow ? startRow.v : E.v) + "</b>");
-            if (S.depleted !== null) lo2.push("<span class=\"warn\">資産が尽きるのは約 " + Math.floor(S.depleted) + "歳 です（利回りどおりの場合）。</span>");
-            else lo2.push("<span class=\"ok\">" + p.endAge + "歳まで尽きません。</span>" + p.endAge + "歳時点の残り：<b>" + man(S.last) + "</b>");
-            lo2.push("取り崩した合計：" + man(S.wdTotal) + "　値動きによる尽きる確率は「6. リスク」で見られます。");
-        } else lo2.push("取り崩しにチェックを入れると、積立のあと何歳まで資産が持つかを計算します。");
-        $("lifeOut").innerHTML = "<ul class=\"out\"><li>" + lo2.join("</li><li>") + "</li></ul>";
-
-        /* 信託報酬・インフレ */
-        var co = [];
-        var noFee = sim(p, { fee: 0 }).end.v;
-        if (p.fee > 0) co.push("信託報酬など " + pct(p.fee, 2) + " で減る額：<b class=\"warn\">" + man(noFee - E.v) + "</b>（コストがなければ " + man(noFee) + "）");
-        var ex = [0.1, 0.5, 1.0, 1.5].map(function (f) { return pct(f, 1) + "なら −" + man(noFee - sim(p, { fee: f }).end.v); });
-        co.push("同じ条件で、信託報酬などが " + ex.join("、") + " です。");
-        var real = E.v / Math.pow(1 + p.infl / 100, p.years);
-        co.push(p.years + "年後の " + man(E.v) + " は、物価が年" + pct(p.infl, 1) + "上がると、<b>今のお金で約 " + man(real) + " 分</b>の価値です。");
-        $("costOut").innerHTML = "<ul class=\"out\"><li>" + co.join("</li><li>") + "</li></ul>";
-
-        renderCrash(p, S);
-        renderEvent(p);
-        renderCompare(p, S);
-        render72();
-        scheduleRisk(p, S);
-        save(p);
-    }
-    var rTimer = null;
-    function scheduleRisk(p, S) {
-        clearTimeout(rTimer);
-        rTimer = setTimeout(function () {
-            var M = monte(p);
-            var r = [];
-            r.push(p.years + "年後（" + (p.age + p.years) + "歳）の金額は、真ん中で <b>" + man(M.p50) + "</b>。悪かった場合（下位10％）は " + man(M.p10) + "、良かった場合（上位10％）は " + man(M.p90) + " です。");
-            r.push("元本（" + man(M.prin) + "）を下回る確率：<b>" + pct(M.below * 100) + "</b>");
-            if (M.reach !== null) r.push("目標の " + man(p.targetY) + " に届く確率：<b>" + pct(M.reach * 100) + "</b>");
-            if (M.ruin !== null) r.push(p.endAge + "歳までに資産が尽きる確率：<b class=\"" + (M.ruin > 0.2 ? "warn" : "ok") + "\">" + pct(M.ruin * 100) + "</b>" + (M.ruinAge ? "（尽きる場合、真ん中で約" + Math.floor(M.ruinAge) + "歳）" : ""));
-            r.push("利回り " + pct(p.rate - p.fee, 1) + "・リスク " + pct(p.risk) + " で1,000通り計算しています。開くたびに少しずつ変わります。");
-            $("riskOut").innerHTML = "<ul class=\"out\"><li>" + r.join("</li><li>") + "</li></ul>";
-            drawRisk(p, S, M);
-            ikkatsu(p);
-            kuriage(p);
-        }, 150);
+        var p10 = [], p50 = [], p90 = [];
+        for (var y = 0; y < Y; y++) { var col = []; for (var k = 0; k < RUNS; k++) col.push(vals[k * Y + y]); asc(col); p10.push(q(col, 0.1)); p50.push(q(col, 0.5)); p90.push(q(col, 0.9)); }
+        asc(ends);
+        var prin = S.end.prin, below = ends.filter(function (v) { return v < prin; }).length / RUNS;
+        var L = ["<b>" + p.years + "年後の金額</b>：真ん中で <b>" + man(q(ends, 0.5)) + "</b>。悪かった場合（下位10％）は " + man(q(ends, 0.1)) + "、良かった場合（上位10％）は " + man(q(ends, 0.9))];
+        L.push("元本（" + man(prin) + "）を下回る確率：<b>" + pct(below * 100) + "</b>");
+        if (p.target) L.push("目標の" + man(p.target) + "に届く確率：<b>" + pct(ends.filter(function (v) { return v >= p.target; }).length / RUNS * 100) + "</b>");
+        L.push("利回り" + pct(p.rate - p.fee, 1) + "・リスク" + pct(p.risk) + (p.crash.length ? "・下の暴落あり" : "") + "で1,000通り。開くたびに少しずつ変わります");
+        $("riskOut").innerHTML = ul(L);
+        var c0 = color(), lab = S.rows.map(function (r) { return r.age + "歳"; });
+        draw("rchart", lab, [
+            line("良かった場合（上位10％）", p90, c0 + "66", { backgroundColor: c0 + "22", fill: "+2" }),
+            line("真ん中（中央値）", p50, c0, { borderWidth: 2.5 }),
+            line("悪かった場合（下位10％）", p10, c0 + "66"),
+            line("元本（積み立てた合計）", S.rows.map(function (r) { return r.prin; }), "#6b7280", { borderDash: [6, 4] })
+        ]);
     }
 
-
-    /* ---------- 7. 暴落 ---------- */
-    var cchart = null;
-    function renderCrash(p, S) {
+    function computeCrash(p) {
         var out = $("crashOut");
-        if (!p.crash.length) { out.innerHTML = "<p>「＋ 暴落を足す」か、過去と同じ規模のボタンを押すと、暴落があった場合の資産を計算します。</p>"; if (cchart) { cchart.destroy(); cchart = null; } return; }
-        /* 元に戻るまでを見るため、積立期間（取り崩しなら計算する年齢）のあとも運用だけ続けて50年先まで計算する */
-        var base = p.wd ? Math.round((p.endAge - p.age) * 12) : p.years * 12, H = base + 600;
-        var B = sim(p, { track: true, horizon: H }), C = sim(p, { crash: true, track: true, horizon: H });
-        var showTo = base;
-        var lines = [];
+        $("cchartBox").style.display = p.crash.length ? "" : "none";
+        if (!p.crash.length) { out.innerHTML = "<p class=\"note\">「＋ 暴落を足す」か、過去と同じ規模のボタンを押すと、暴落があった場合の資産を計算します。</p>"; return; }
+        var base = p.years * 12, H = base + 600, B = sim(p, { horizon: H }), C = sim(p, { crash: true, horizon: H }), showTo = base, L = [];
         p.crash.forEach(function (c) {
             var m = Math.max(0, Math.ceil((c.age - p.age) * 12 - 1e-9));
-            if (m >= C.track.length) { lines.push(c.age + "歳の暴落は、計算する期間の外です。"); return; }
-            var before = m > 0 ? C.track[m - 1] : p.initY, after = C.track[m];
-            var back = null; for (var k = m + 1; k < C.track.length; k++) if (C.track[k] >= before) { back = k - m; break; }
+            if (m >= C.track.length) { L.push(c.age + "歳の暴落は計算する期間の外です"); return; }
+            var before = m > 0 ? C.track[m - 1] : p.init, after = C.track[m], back = null;
+            for (var k = m + 1; k < C.track.length; k++) if (C.track[k] >= before) { back = k - m; break; }
             if (back !== null) showTo = Math.max(showTo, Math.min(C.track.length, m + back + 24));
-            lines.push("<b>" + c.age + "歳で −" + pct(c.pct * 100) + "</b>：" + man(before) + " → " + man(after) + "（" + man(after - before) + "）。" +
-                (back !== null ? "元の金額に戻るのは <b>約" + ym(back) + "後（" + Math.floor(c.age + back / 12) + "歳）</b>" + (m + back <= p.years * 12 ? "（積立を続けた場合）" : (m < p.years * 12 ? "（積立期間のあとは運用だけ続けた場合）" : "")) : "<span class=\"warn\">50年たっても元の金額に戻りません</span>"));
+            L.push("<b>" + c.age + "歳で −" + pct(c.pct * 100) + "</b>：" + man(before) + " → " + man(after) + "。" + (back !== null ? "元の金額に戻るのは<b>約" + ym(back) + "後（" + Math.floor(c.age + back / 12) + "歳）</b>" + (m + back <= base ? "（積立を続けて）" : "（積立が終わったあとは運用だけ続けて）") : "<span class=\"warn\">50年たっても戻りません</span>"));
         });
-        var endM = p.years * 12 - 1;
-        lines.push(p.years + "年後（" + (p.age + p.years) + "歳）の金額：暴落なし " + man(B.track[endM]) + " → 暴落あり <b>" + man(C.track[endM]) + "</b>（" + man(C.track[endM] - B.track[endM]) + "）");
-        if (p.wd) lines.push(C.depleted !== null && C.depleted < p.endAge ? "<span class=\"warn\">暴落ありだと、資産が尽きるのは約" + Math.floor(C.depleted) + "歳です。</span>" : "<span class=\"ok\">暴落があっても、" + p.endAge + "歳まで尽きません。</span>");
-        lines.push("暴落はいつも利回りどおりに増える計算に重ねています。1,000通りの計算（6.）にも、同じ暴落が入っています。");
-        out.innerHTML = "<ul class=\"out\"><li>" + lines.join("</li><li>") + "</li></ul>";
-        if (!window.Chart) return;
+        L.push(p.years + "年後の金額：暴落なし " + man(B.track[base - 1]) + " → 暴落あり <b>" + man(C.track[base - 1]) + "</b>（" + man(C.track[base - 1] - B.track[base - 1]) + "）");
+        out.innerHTML = ul(L);
         var nY = Math.ceil(showTo / 12), bR = B.rows.slice(0, nY), cR = C.rows.slice(0, nY);
-        var lab = bR.map(function (r) { return r.age + "歳"; }), c0 = color();
-        var data = { labels: lab, datasets: [
-            { label: "暴落なし", data: bR.map(function (r) { return Math.round(r.v); }), borderColor: c0, pointRadius: 0 },
-            { label: "暴落あり", data: cR.map(function (r) { return Math.round(r.v); }), borderColor: "#b42318", backgroundColor: "#b4231822", fill: true, pointRadius: 0 },
-            { label: "元本（積み立てた合計）", data: bR.map(function (r) { return Math.round(r.prin); }), borderColor: "#6b7280", borderDash: [6, 4], pointRadius: 0 }
-        ] };
-        var opt = { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
-            plugins: { tooltip: { callbacks: { label: function (x) { return x.dataset.label + "：" + man(x.parsed.y); } } } },
-            scales: { y: { ticks: { callback: function (v) { return man(v); } } }, x: { ticks: { maxTicksLimit: 10 } } } };
-        if (cchart) { cchart.data = data; cchart.update(); } else cchart = new Chart($("cchart"), { type: "line", data: data, options: opt });
+        draw("cchart", bR.map(function (r) { return r.age + "歳"; }), [
+            line("暴落なし", bR.map(function (r) { return r.v; }), color()),
+            line("暴落あり", cR.map(function (r) { return r.v; }), "#b42318", { backgroundColor: "#b4231822", fill: true }),
+            line("元本（積み立てた合計）", bR.map(function (r) { return r.prin; }), "#6b7280", { borderDash: [6, 4] })
+        ]);
     }
-    function addCrash(a, c) {
-        if (document.querySelectorAll("#crashRows .row").length >= 4) return;
+
+    function addRow(box, cls, a, b, mid, tail) {
         var d = document.createElement("div"); d.className = "row";
-        d.innerHTML = '<input type="number" class="ca" min="0" max="110" step="1" value="' + a + '" aria-label="暴落が起きる年齢"> 歳のときに <input type="number" class="cp" min="1" max="99" step="1" value="' + c + '" aria-label="下落率"> ％下がる <button type="button">削除</button>';
-        d.querySelector("button").addEventListener("click", function () { d.remove(); render(); });
-        $("crashRows").appendChild(d);
+        d.innerHTML = '<input type="number" class="' + cls[0] + '" min="0" max="110" step="1" value="' + a + '" aria-label="年齢"> ' + mid + ' <input type="number" class="' + cls[1] + '" min="0" step="1" value="' + b + '" aria-label="数"> ' + tail + ' <button type="button">削除</button>';
+        d.querySelector("button").addEventListener("click", function () { d.remove(); changed($("tsumitate")); });
+        $(box).appendChild(d);
     }
-    function crashAgeDefault() { var p = read(); return p.age + Math.max(1, Math.floor(p.years * 0.75)); }
-    $("addCrash").addEventListener("click", function () { addCrash(crashAgeDefault(), 40); render(); });
-    document.querySelectorAll("[data-cp]").forEach(function (b) {
-        b.addEventListener("click", function () {
-            addCrash(crashAgeDefault(), Number(b.dataset.cp)); render();
-            if (b.closest("#history")) $("crash").scrollIntoView({ behavior: "smooth" });
+    function addSched(a, m) { if (document.querySelectorAll("#sched .row").length < 5) addRow("sched", ["sa", "sm"], a, m, "歳から 月", "円"); }
+    function addCrash(a, c) { if (document.querySelectorAll("#crashRows .row").length < 4) addRow("crashRows", ["ca", "cp"], a, c, "歳のときに", "％下がる"); }
+    $("addSched").addEventListener("click", function () { var p = readT(); addSched(p.age + 10, p.monthly + 20000); changed($("tsumitate")); });
+    function crashAge() { var p = readT(); return p.age + Math.max(1, Math.floor(p.years * 0.75)); }
+    $("addCrash").addEventListener("click", function () { addCrash(crashAge(), 40); changed($("tsumitate")); });
+    document.querySelectorAll("#crash [data-cp]").forEach(function (b) { b.addEventListener("click", function () { addCrash(crashAge(), Number(b.dataset.cp)); changed($("tsumitate")); }); });
+    $("toWd").addEventListener("click", function () { importTsumi(); location.hash = "torikuzushi"; });
+
+    /* ================= 取り崩し ================= */
+    function readW() {
+        var m = document.querySelector('input[name="wm"]:checked');
+        return { init: Math.max(0, num("wInit", 0)) * 1e4, age: num("wAge", 65), end: Math.max(num("wAge", 65) + 1, num("wEnd", 95)), method: m ? m.value : "fixed",
+            amt: Math.max(0, num("wAmt", 0)), idx: $("wIdx").value === "1", rate: Math.max(0, num("wRate", 4)) / 100, rule: Math.max(0, num("wRule", 4)) / 100,
+            pen: Math.max(0, num("wPen", 0)), penAge: num("wPenAge", 65), ret: num("wRet", 4), risk: Math.max(0, num("wRisk", 10)), inf: num("wInf", 2) / 100, crash: Math.max(0, Math.min(90, num("wCrash", 0))) / 100 };
+    }
+    /* 1本分。g(m) はその月に何倍になるか */
+    function wRun(w, method, g) {
+        var a = w.init * (1 - w.crash), recv = 0, ruin = null, ys = a, last = 0, path = [], N = Math.round((w.end - w.age) * 12);
+        for (var m = 0; m < N; m++) {
+            var y = Math.floor(m / 12), age = w.age + m / 12;
+            if (m % 12 === 0) ys = a;
+            var need = method === "fixed" ? w.amt * (w.idx ? Math.pow(1 + w.inf, y) : 1) : method === "rate" ? ys * w.rate / 12 : w.init * w.rule / 12 * Math.pow(1 + w.inf, y);
+            if (age >= w.penAge - 1e-9) need = Math.max(0, need - w.pen);
+            var take = Math.min(need, a); a -= take; recv += take; last = take;
+            if (take < need - 0.5 && ruin === null) ruin = age;
+            a *= g(m); if (a < 0) a = 0;
+            if (m % 12 === 11 || m === N - 1) path.push(a);
+        }
+        return { a: a, recv: recv, ruin: ruin, last: last, path: path };
+    }
+    function computeW() {
+        var w = readW(), N = Math.round((w.end - w.age) * 12), Y = Math.ceil(N / 12);
+        document.querySelectorAll("#torikuzushi [data-m]").forEach(function (f) { f.style.display = f.dataset.m === w.method ? "" : "none"; });
+        if (N <= 0) return;
+        var det = wRun(w, w.method, function () { return 1 + w.ret / 100 / 12; });
+        $("wvDet").textContent = det.ruin !== null ? Math.floor(det.ruin) + "歳で尽きる" : Math.round(w.end) + "歳まで持つ";
+        $("wyDet").textContent = det.ruin !== null ? "毎年" + pct(w.ret, 1) + "で増えた場合" : "残り " + man(det.a) + "（毎年" + pct(w.ret, 1) + "で増えた場合）";
+        later("w", function () {
+            var sc = scen(N, w.ret, w.risk), res = {};
+            ["fixed", "rate", "rule"].forEach(function (mt) {
+                var runs = [];
+                for (var r = 0; r < RUNS; r++) { var b = r * N; runs.push(wRun(w, mt, function (m) { return sc[b + m]; })); }
+                var ruined = runs.filter(function (x) { return x.ruin !== null; });
+                var bands = { p10: [], p50: [], p90: [] };
+                if (mt === w.method) for (var y = 0; y < Y; y++) { var col = asc(runs.map(function (x) { return x.path[y]; })); bands.p10.push(q(col, 0.1)); bands.p50.push(q(col, 0.5)); bands.p90.push(q(col, 0.9)); }
+                res[mt] = { ruin: ruined.length / RUNS, ruinAge: ruined.length ? q(asc(ruined.map(function (x) { return x.ruin; })), 0.5) : null,
+                    recv: q(asc(runs.map(function (x) { return x.recv; })), 0.5), fin: q(asc(runs.map(function (x) { return x.a; })), 0.5),
+                    last: q(asc(runs.map(function (x) { return x.last; })), 0.5), lastLow: q(asc(runs.map(function (x) { return x.last; })), 0.1), bands: bands };
+            });
+            var R = res[w.method];
+            $("wkRuin").textContent = Math.round(w.end) + "歳までに尽きる確率";
+            $("wvRuin").textContent = pct(R.ruin * 100); $("wvRuin").className = "v" + (R.ruin > 0.2 ? " bad" : "");
+            $("wyRuin").textContent = R.ruinAge ? "尽きる場合、真ん中で約" + Math.floor(R.ruinAge) + "歳" : "1,000通りのうち尽きた割合";
+            $("wvRecv").textContent = man(R.recv); $("wyRecv").textContent = Math.round(w.end) + "歳時点の残り（中央値）" + man(R.fin);
+            var say = R.ruin <= 0.05 ? "<span class=\"ok\">かなり安全な水準です。</span>" : R.ruin <= 0.2 ? "やや注意。悪い相場が続くと途中で尽きることがあります。" : "<span class=\"warn\">尽きる危険が高めです。取り崩し額を下げる・開始を遅らせる・年金を入れるなどを試してください。</span>";
+            if (w.method === "rate") say += "定率は理屈のうえでは尽きませんが、最後の年の毎月の額は真ん中で" + man(R.last) + "、悪かった場合（下位10％）" + man(R.lastLow) + "まで減ります。";
+            if (w.crash > 0) say += "取り崩し開始の年に −" + pct(w.crash * 100) + " の暴落を入れています。";
+            $("wSay").innerHTML = say;
+            var lab = []; for (var y = 0; y < Y; y++) lab.push((Math.floor(w.age) + y + 1) + "歳");
+            var c0 = color();
+            draw("wchart", lab, [
+                line("良かった場合（上位10％）", R.bands.p90, c0 + "66", { backgroundColor: c0 + "22", fill: "+2" }),
+                line("真ん中（中央値）", R.bands.p50, c0, { borderWidth: 2.5 }),
+                line("悪かった場合（下位10％）", R.bands.p10, c0 + "66"),
+                line("毎年" + pct(w.ret, 1) + "で増えた場合", det.path, "#6b7280", { borderDash: [6, 4] })
+            ]);
+            var NAME = { fixed: "定額（月" + yen(w.amt) + (w.idx ? "・物価に合わせて増やす" : "") + "）", rate: "定率（毎年" + pct(w.rate * 100, 1) + "）", rule: "4％ルール（初年度" + pct(w.rule * 100, 1) + "）" };
+            var h = '<div class="table-scroll"><table class="yt"><thead><tr><th>方式</th><th>尽きる確率</th><th>受け取れた合計</th><th>' + Math.round(w.end) + '歳の残り</th><th>最後の年の月額</th></tr></thead><tbody>';
+            ["fixed", "rate", "rule"].forEach(function (mt) { var x = res[mt]; h += "<tr" + (mt === w.method ? " class=\"sel\"" : "") + "><td>" + NAME[mt] + "</td><td>" + pct(x.ruin * 100) + "</td><td>" + man(x.recv) + "</td><td>" + man(x.fin) + "</td><td>" + man(x.last) + "</td></tr>"; });
+            $("wCompare").innerHTML = h + "</tbody></table></div><p class=\"note\">金額は1,000通りの真ん中（中央値）です。</p>";
         });
-    });
+    }
+    function importTsumi() {
+        var p = readT(), E = sim(p).end;
+        $("wInit").value = Math.round(E.v / 1e4); $("wAge").value = Math.max(p.age + p.years, Number($("wAge").value) || 0);
+        $("wRet").value = Math.min(p.rate, 5); $("wRisk").value = Math.min(p.risk, 12); $("wInf").value = p.infl;
+        $("fromNote").textContent = "積立の結果（" + (p.age + p.years) + "歳で" + man(E.v) + "）を入れました。取り崩し中は利回り・リスクを控えめにしています。";
+        changed($("torikuzushi"));
+    }
+    $("fromTsumi").addEventListener("click", importTsumi);
 
+    /* ================= 比べる ================= */
+    function fvS(init, pm, ratePct, years) { var i = ratePct / 100 / 12, v = init, path = []; for (var m = 0; m < years * 12; m++) { v = v * (1 + i) + pm; if (m % 12 === 11) path.push(v); } return { v: v, path: path, prin: init + pm * years * 12 }; }
+    function computeAB() {
+        var g = function (k) { return { init: Math.max(0, num(k + "Init", 0)) * 1e4, pm: Math.max(0, num(k + "Pm", 0)), rate: num(k + "Rate", 0), years: Math.max(1, Math.min(70, Math.round(num(k + "Years", 20)))), fee: num(k + "Fee", 0) }; };
+        var A = g("a"), B = g("b"), ra = fvS(A.init, A.pm, A.rate - A.fee, A.years), rb = fvS(B.init, B.pm, B.rate - B.fee, B.years);
+        var row = function (name, x, y, f) { var d = y - x; if (Math.abs(d) < 0.005) d = 0; return "<tr><td>" + name + "</td><td>" + f(x) + "</td><td>" + f(y) + "</td><td class=\"" + (d > 0 ? "ok" : d < 0 ? "warn" : "") + "\">" + (d === 0 ? "―" : (d > 0 ? "＋" : "") + f(d)) + "</td></tr>"; };
+        var h = '<div class="table-scroll"><table class="yt"><thead><tr><th></th><th>条件A</th><th>条件B</th><th>B − A</th></tr></thead><tbody>' +
+            row("最終金額", ra.v, rb.v, man) + row("元本の合計", ra.prin, rb.prin, man) + row("運用益", ra.v - ra.prin, rb.v - rb.prin, man) +
+            row("何倍になったか", ra.prin ? ra.v / ra.prin : 0, rb.prin ? rb.v / rb.prin : 0, function (x) { return (Math.round(x * 100) / 100) + "倍"; }) + "</tbody></table></div>";
+        var win = rb.v > ra.v ? "B" : rb.v < ra.v ? "A" : null;
+        h = "<p class=\"say\">" + (win ? "最終金額は <b>条件" + win + "</b> のほうが <span class=\"ans\">" + man(Math.abs(rb.v - ra.v)) + "</span> 多くなります。" : "最終金額は同じです。") + "</p>" + h;
+        $("abOut").innerHTML = h;
+        var Y = Math.max(A.years, B.years), lab = []; for (var y = 1; y <= Y; y++) lab.push(y + "年目");
+        var pad = function (a) { var r = a.slice(); while (r.length < Y) r.push(null); return r; };
+        draw("abchart", lab, [line("条件A", pad(ra.path), color()), line("条件B", pad(rb.path), "#d97706")]);
+    }
+    $("aFromT").addEventListener("click", function () { var p = readT(); $("aInit").value = p.init / 1e4; $("aPm").value = p.monthly; $("aRate").value = p.rate; $("aYears").value = p.years; $("aFee").value = p.fee; changed($("hikaku")); });
+    $("swapAB").addEventListener("click", function () { ["Init", "Pm", "Rate", "Years", "Fee"].forEach(function (k) { var t = $("a" + k).value; $("a" + k).value = $("b" + k).value; $("b" + k).value = t; }); changed($("hikaku")); });
+    $("copyAB").addEventListener("click", function () { ["Init", "Pm", "Rate", "Years", "Fee"].forEach(function (k) { $("b" + k).value = $("a" + k).value; }); changed($("hikaku")); });
 
-    /* ---------- 8. 暴落に立ち会ったら ---------- */
-    /* d：高値から底までの下落率、down：高値から底までの月数、up：底から前の高値に戻るまでの月数 */
-    var EVENTS = {
-        covid: { name: "コロナショック", d: 0.34, down: 1, up: 5 },
-        lehman: { name: "リーマンショック", d: 0.57, down: 17, up: 48 },
-        y2022: { name: "2022年の利上げ相場", d: 0.25, down: 9, up: 15 },
-        it: { name: "ITバブル崩壊", d: 0.78, down: 31, up: 150 },
-        japan: { name: "日本のバブル崩壊", d: 0.82, down: 231, up: 179 },
-        bm: { name: "ブラックマンデー", d: 0.36, down: 2, up: 22 },
-        gd: { name: "世界恐慌", d: 0.89, down: 34, up: 268 }
-    };
-    var evChart = null;
-    function renderEvent(p) {
-        var ev = EVENTS[$("evSel").value] || EVENTS.lehman;
-        var hold = Math.max(0, Number($("evHold").value) || 0) * 1e4, pm = Math.max(0, Number($("evPm").value) || 0);
-        var T1 = ev.down, T2 = ev.down + ev.up, lo = Math.log(1 - ev.d);
-        function price(t) { return t <= T1 ? Math.exp(lo * t / T1) : Math.exp(lo * (1 - (t - T1) / ev.up)); }
+    /* ================= 一括か積立か ================= */
+    function computeIk() {
+        later("ik", function () {
+            var total = Math.max(0, num("ikTotal", 0)) * 1e4, split = Math.max(1, Math.round(num("ikSplit", 24))), years = Math.max(1, Math.min(60, Math.round(num("ikYears", 20))));
+            var cash = num("ikCash", 0) / 100 / 12, M = years * 12; if (split > M) split = M;
+            var sc = scen(M, num("ikRet", 8), num("ikRisk", 16));
+            function run(sp) {
+                var L = [], D = [], win = 0;
+                for (var r = 0; r < RUNS; r++) {
+                    var lump = total, inv = 0, wait = total, per = total / sp, b = r * M;
+                    for (var t = 0; t < M; t++) { if (t < sp) { var x = Math.min(per, wait); wait -= x; inv += x; } var g = sc[b + t]; lump *= g; inv *= g; wait *= 1 + cash; }
+                    var d = inv + wait; L.push(lump); D.push(d); if (lump - d >= 1) win++;
+                }
+                asc(L); asc(D);
+                return { win: win / RUNS, l50: q(L, 0.5), d50: q(D, 0.5), l10: q(L, 0.1), d10: q(D, 0.1) };
+            }
+            var R = run(split);
+            var h = "<div class=\"kpis\"><div class=\"kpi\"><div class=\"k\">一括投資のほうが多くなる確率</div><div class=\"v\">" + pct(R.win * 100) + "</div><div class=\"y\">" + years + "年後、" + split + "か月に分けた場合と比べて</div></div></div>";
+            h += '<div class="table-scroll" style="margin-top:10px"><table class="yt"><thead><tr><th>' + years + '年後</th><th>一括投資</th><th>' + split + 'か月に分けて</th></tr></thead><tbody>' +
+                "<tr><td>真ん中（中央値）</td><td>" + man(R.l50) + "</td><td>" + man(R.d50) + "</td></tr><tr><td>悪かった場合（下位10％）</td><td>" + man(R.l10) + "</td><td>" + man(R.d10) + "</td></tr></tbody></table></div>";
+            h += "<p class=\"say\">分ける期間を変えると（一括が勝つ確率）：" + [3, 6, 12, 24, 36, 60].filter(function (x) { return x <= M; }).map(function (x) { return x + "か月 " + pct(run(x).win * 100); }).join("、") + "</p>";
+            $("ikOut").innerHTML = h;
+        });
+    }
+
+    /* ================= 繰り上げ返済か投資か ================= */
+    function computeKu() {
+        later("ku", function () {
+            var bal = Math.max(0, num("kuBal", 0)) * 1e4, lr = Math.max(0, num("kuRate", 0)) / 100, ly = Math.max(1, Math.min(50, Math.round(num("kuYears", 30))));
+            var extra = Math.max(0, num("kuExtra", 0)), lump = Math.max(0, num("kuLump", 0)) * 1e4, tax = Math.max(0, num("kuTax", 0)) / 100;
+            var M = ly * 12, sc = scen(M, num("kuRet", 6), num("kuRisk", 16));
+            function pay(b, r, n) { if (b <= 0) return 0; if (r === 0) return b / n; return b * r / (1 - Math.pow(1 + r, -n)); }
+            function run(rate) {
+                var rM = rate / 12, payment = pay(bal, rM, M), A1 = [], B1 = [], win = 0;
+                for (var r = 0; r < RUNS; r++) {
+                    var bA = Math.max(0, bal - lump), aA = Math.max(0, lump - bal), iA = aA, bB = bal, aB = lump, iB = lump, b = r * M;
+                    for (var t = 0; t < M; t++) {
+                        var g = sc[b + t]; aA *= g; aB *= g; var av = payment + extra;
+                        if (bA > 0) { var inA = bA * rM, prA = Math.min(bA, av - inA); bA = Math.max(0, bA - prA); var lo = av - inA - prA; aA += lo; iA += lo; } else { aA += av; iA += av; }
+                        if (bB > 0) { var inB = bB * rM, prB = Math.min(bB, payment - inB); bB = Math.max(0, bB - prB); var put = av - inB - prB; aB += put; iB += put; } else { aB += av; iB += av; }
+                    }
+                    var nA = aA - Math.max(0, aA - iA) * tax - bA, nB = aB - Math.max(0, aB - iB) * tax - bB;
+                    A1.push(nA); B1.push(nB); if (nB > nA) win++;
+                }
+                asc(A1); asc(B1);
+                return { win: win / RUNS, a50: q(A1, 0.5), b50: q(B1, 0.5), a10: q(A1, 0.1), b10: q(B1, 0.1), payment: payment };
+            }
+            var R = run(lr);
+            var h = "<div class=\"kpis\"><div class=\"kpi\"><div class=\"k\">投資に回したほうが多く残る確率</div><div class=\"v\">" + pct(R.win * 100) + "</div><div class=\"y\">" + ly + "年後の「資産 − ローン残高」で比べて</div></div>" +
+                "<div class=\"kpi\"><div class=\"k\">今の毎月の返済額</div><div class=\"v sub\">" + yen(R.payment) + "</div><div class=\"y\">元利均等・金利" + pct(lr * 100, 2) + "</div></div></div>";
+            h += '<div class="table-scroll" style="margin-top:10px"><table class="yt"><thead><tr><th>' + ly + '年後</th><th>繰り上げ返済</th><th>投資</th></tr></thead><tbody>' +
+                "<tr><td>真ん中（中央値）</td><td>" + man(R.a50) + "</td><td>" + man(R.b50) + "</td></tr><tr><td>悪かった場合（下位10％）</td><td>" + man(R.a10) + "</td><td>" + man(R.b10) + "</td></tr></tbody></table></div>";
+            h += "<p class=\"say\">ローン金利が変わると（投資が勝つ確率）：" + [0.5, 1, 1.5, 2, 3].map(function (x) { return x + "％ " + pct(run(x / 100).win * 100); }).join("、") + "</p>";
+            h += "<p class=\"note\">返済が終わったあとは、返済に使っていたお金も投資に回す計算です。住宅ローン控除・団体信用生命保険・手元のお金の余裕は入れていません。</p>";
+            $("kuOut").innerHTML = h;
+        });
+    }
+
+    /* ================= 過去の暴落に立ち会ったら ================= */
+    var EVENTS = { covid: { name: "コロナショック", d: 0.34, down: 1, up: 5 }, lehman: { name: "リーマンショック", d: 0.57, down: 17, up: 48 }, y2022: { name: "2022年の利上げ相場", d: 0.25, down: 9, up: 15 },
+        it: { name: "ITバブル崩壊", d: 0.78, down: 31, up: 150 }, japan: { name: "日本のバブル崩壊", d: 0.82, down: 231, up: 179 }, bm: { name: "ブラックマンデー", d: 0.36, down: 2, up: 22 }, gd: { name: "世界恐慌", d: 0.89, down: 34, up: 268 } };
+    function computeEv() {
+        var ev = EVENTS[$("evSel").value] || EVENTS.lehman, hold = Math.max(0, num("evHold", 0)) * 1e4, pm = Math.max(0, num("evPm", 0));
+        if (!pm && !hold) { $("evOut").innerHTML = "<p>持っていた資産か、毎月の積立額を入れてください。</p>"; return; }
+        var T1 = ev.down, T2 = ev.down + ev.up, lg = Math.log(1 - ev.d);
+        function price(t) { return t <= T1 ? Math.exp(lg * t / T1) : Math.exp(lg * (1 - (t - T1) / ev.up)); }
         var units = 0, spent = 0, path = [], even = null, worst = 0, worstT = 0;
         for (var t = 0; t <= T2; t++) {
             if (t > 0) { units += pm / price(t); spent += pm; }
-            var val = (hold + units) * price(t), inv = hold + spent, pl = val - inv;   /* 暴落前の資産は高値（価格1）で持っていた口数として扱う */
+            var val = (hold + units) * price(t), inv = hold + spent, pl = val - inv;   /* 暴落前の資産は、高値（価格1）で持っていた口数として扱う */
             path.push({ t: t, pr: price(t), val: val, inv: inv });
             if (pl < worst) { worst = pl; worstT = t; }
             if (even === null && t > T1 && pl >= 0) even = t;
         }
-        var unitsAtPeak = spent; /* 同じお金を高値（価格1）で買った場合の口数 */
-        var gainBuy = units - spent;            /* 戻ったとき、暴落中に買った分の含み益 */
-        var atBottom = path[T1], sellLoss = atBottom.val - atBottom.inv;
-        var keep = path[T2].val;                /* 売らずに続けた場合の、戻ったときの資産 */
-        var sold = atBottom.val + pm * (T2 - T1); /* 底で全部売り、そのあとは積立分を現金でためた場合 */
-        var L = [];
-        if (!pm && !hold) { $("evOut").innerHTML = "<p>持っていた資産か、毎月の積立額を入れてください。</p>"; return; }
-        L.push("<b>" + ev.name + "</b>：高値から約" + ym(ev.down) + "で −" + pct(ev.d * 100) + "、そこから約" + ym(ev.up) + "で前の高値に戻る値動きで計算（毎月 " + yen(pm) + " を積立）");
+        var bottom = path[T1], keep = path[T2].val, sold = bottom.val + pm * (T2 - T1), L = [];
+        L.push("<b>" + ev.name + "</b>：高値から約" + ym(T1) + "で −" + pct(ev.d * 100) + "、そこから約" + ym(ev.up) + "で前の高値に戻る値動き（毎月" + yen(pm) + "を積立）");
         if (pm > 0) {
-            L.push("① 安値で買えた口数：暴落から回復までの " + ym(T2) + " に積み立てた " + man(spent) + " で、<b>高値のまま買った場合の約" + (Math.round(units / unitsAtPeak * 100) / 100) + "倍</b>の口数を買えました（平均の買値は高値の約" + pct(spent / units * 100) + "）。");
-            L.push("② 株価が前の高値に戻ったとき、暴落中に買った分の含み益：<span class=\"ans\">＋" + man(gainBuy) + "</span>（" + man(spent) + " → " + man(units) + "）");
+            L.push("① <b>安値で買えた口数</b>：回復までの" + ym(T2) + "に積み立てた" + man(spent) + "で、高値のまま買った場合の<b>約" + (Math.round(units / spent * 100) / 100) + "倍</b>（平均の買値は高値の約" + pct(spent / units * 100) + "）");
+            L.push("② <b>戻ったときの含み益</b>（暴落中に買った分）：<span class=\"ans\">＋" + man(units - spent) + "</span>（" + man(spent) + " → " + man(units) + "）");
         }
-        if (worst < 0) L.push("いちばん苦しかったとき（暴落から" + ym(worstT) + "後）の含み損：<span class=\"warn\">" + man(worst) + "</span>（投じた " + man(path[worstT].inv) + " に対して −" + pct(Math.abs(worst / path[worstT].inv * 100)) + "）");
-        if (even !== null && pm > 0 && T2 - even >= 1) L.push("株価が前の高値に戻る <b>約" + ym(T2 - even) + "前</b>（暴落から" + ym(even) + "後）に、損益はプラスに戻っていました。下がっている間も買い続けたためです。");
-        L.push("③ 底で慌てて全部売った場合：<span class=\"warn\">" + man(sellLoss) + "</span> の損失が確定します。そのあと積立分を現金でためていても、株価が戻った時点の資産は " + man(sold) + "。売らずに積立を続けた場合（" + man(keep) + "）より <b class=\"warn\">" + man(keep - sold) + "</b> 少なくなります。");
-        $("evOut").innerHTML = "<ul class=\"out\"><li>" + L.join("</li><li>") + "</li></ul>";
-        if (!window.Chart) return;
+        if (worst < 0) L.push("いちばん苦しかったとき（暴落から" + ym(worstT) + "後）の含み損：<span class=\"warn\">" + man(worst) + "</span>（投じた" + man(path[worstT].inv) + "に対して −" + pct(Math.abs(worst / path[worstT].inv * 100)) + "）");
+        if (even !== null && pm > 0 && T2 - even >= 1) L.push("株価が戻る<b>約" + ym(T2 - even) + "前</b>（暴落から" + ym(even) + "後）に、損益はプラスに戻っていました");
+        L.push("③ <b>底で慌てて全部売った場合</b>：<span class=\"warn\">" + man(bottom.val - bottom.inv) + "</span>の損失が確定。そのあと積立分を現金でためても、株価が戻った時点で" + man(sold) + "。売らずに続けた場合（" + man(keep) + "）より<b class=\"warn\">" + man(keep - sold) + "</b>少なくなります");
+        $("evOut").innerHTML = ul(L);
         var step = T2 > 120 ? 12 : (T2 > 36 ? 3 : 1), pts = path.filter(function (x) { return x.t % step === 0 || x.t === T2; });
-        var c0 = color();
-        var data = { labels: pts.map(function (x) { return x.t + "か月"; }), datasets: [
-            { label: "資産の評価額", data: pts.map(function (x) { return Math.round(x.val); }), borderColor: c0, pointRadius: 0, yAxisID: "y" },
-            { label: "投じたお金", data: pts.map(function (x) { return Math.round(x.inv); }), borderColor: "#6b7280", borderDash: [6, 4], pointRadius: 0, yAxisID: "y" },
+        draw("evChart", pts.map(function (x) { return x.t + "か月"; }), [
+            line("資産の評価額", pts.map(function (x) { return x.val; }), color(), { yAxisID: "y" }),
+            line("投じたお金", pts.map(function (x) { return x.inv; }), "#6b7280", { borderDash: [6, 4], yAxisID: "y" }),
             { label: "株価（高値＝100）", data: pts.map(function (x) { return Math.round(x.pr * 1000) / 10; }), borderColor: "#b42318", pointRadius: 0, yAxisID: "y2" }
-        ] };
-        var opt = { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
-            plugins: { tooltip: { callbacks: { label: function (x) { return x.dataset.label + "：" + (x.dataset.yAxisID === "y2" ? x.parsed.y : man(x.parsed.y)); } } } },
-            scales: { y: { ticks: { callback: function (v) { return man(v); } } }, y2: { position: "right", min: 0, max: 100, grid: { drawOnChartArea: false } }, x: { ticks: { maxTicksLimit: 10 } } } };
-        if (evChart) { evChart.data = data; evChart.update(); } else evChart = new Chart($("evChart"), { type: "line", data: data, options: opt });
+        ], true);
     }
 
-    /* ---------- 9. 条件を比べる ---------- */
-    var A = null, ASTORE = "tooldock-fukuri-compare";
-    try { A = JSON.parse(localStorage.getItem(ASTORE) || "null"); } catch (e) { A = null; }
-    function summary(p, S) {
-        var E = S.end, taxAll = Math.max(0, E.v - E.prin) * TAX, taxNow = Math.max(0, E.tv - E.tp) * TAX;
-        return { init: p.initY, monthly: p.monthly, rate: p.rate, years: p.years, fee: p.fee, v: E.v, prin: E.prin, gain: E.v - E.prin,
-            nisa: p.nisa ? taxAll - taxNow : 0, sched: p.sched.length, age: p.age };
+    /* ================= 72の法則（記事の中） ================= */
+    function compute72() {
+        var r = Math.max(0.1, num("r72", 5)), ex = Math.log(2) / Math.log(1 + r / 100);
+        var h = "<p>年" + pct(r, 1) + "なら、72 ÷ " + r + " ＝ <b>約" + (Math.round(72 / r * 10) / 10) + "年</b>で2倍（正確には" + (Math.round(ex * 10) / 10) + "年）。4倍は約" + (Math.round(ex * 20) / 10) + "年、10倍は約" + (Math.round(Math.log(10) / Math.log(1 + r / 100) * 10) / 10) + "年です。</p>";
+        h += '<div class="table-scroll"><table><thead><tr><th>利回り</th><th>72の法則</th><th>正確な年数</th><th>30年で何倍</th></tr></thead><tbody>';
+        [1, 2, 3, 4, 5, 6, 7, 8, 10, 12].forEach(function (x) { h += "<tr><td>" + x + "％</td><td class=\"n\">" + (Math.round(72 / x * 10) / 10) + "年</td><td class=\"n\">" + (Math.round(Math.log(2) / Math.log(1 + x / 100) * 10) / 10) + "年</td><td class=\"n\">" + (Math.round(Math.pow(1 + x / 100, 30) * 10) / 10) + "倍</td></tr>"; });
+        $("r72Out").innerHTML = h + "</tbody></table></div>";
     }
-    function renderCompare(p, S) {
-        var out = $("compareOut");
-        if (!A) { out.innerHTML = "<p>「今の条件をAとして残す」を押してから数字を変えると、ここに並べて表示します。</p>"; return; }
-        var a = A.sum, b = summary(p, S);
-        var rows = [
-            ["元本（初期投資額）", man(a.init), man(b.init), b.init - a.init, man],
-            ["毎月の積立額", yen(a.monthly) + (a.sched ? "（途中で変更あり）" : ""), yen(b.monthly) + (b.sched ? "（途中で変更あり）" : ""), b.monthly - a.monthly, yen],
-            ["想定利回り", pct(a.rate, 1), pct(b.rate, 1), null],
-            ["信託報酬など", pct(a.fee, 2), pct(b.fee, 2), null],
-            ["積立期間", a.years + "年", b.years + "年", null],
-            ["最終金額", man(a.v), man(b.v), b.v - a.v, man],
-            ["元本の合計", man(a.prin), man(b.prin), b.prin - a.prin, man],
-            ["運用益", man(a.gain), man(b.gain), b.gain - a.gain, man],
-            ["NISAで減らせる税金", man(a.nisa), man(b.nisa), b.nisa - a.nisa, man]
-        ];
-        var h = '<div class="table-scroll"><table class="yt"><thead><tr><th></th><th>条件A</th><th>今の条件</th><th>差（今 − A）</th></tr></thead><tbody>';
-        rows.forEach(function (r) { h += "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td><td>" + r[2] + "</td><td>" + (r[3] === null ? "" : (r[3] > 0 ? "＋" : "") + (r[3] === 0 ? "―" : r[4](r[3]))) + "</td></tr>"; });
-        out.innerHTML = h + "</tbody></table></div>";
-    }
-    $("saveA").addEventListener("click", function () {
-        var p = read(), S = sim(p);
-        A = { snap: snapshot(p), sum: summary(p, S), series: S.rows.map(function (r) { return [r.age, Math.round(r.v)]; }) };
-        try { localStorage.setItem(ASTORE, JSON.stringify(A)); } catch (e) { /* 保存できなくても使える */ }
-        render();
-    });
-    $("loadA").addEventListener("click", function () { if (A) { apply(A.snap); render(); } });
-    $("clearA").addEventListener("click", function () { A = null; try { localStorage.removeItem(ASTORE); } catch (e) { /* */ } render(); });
+    $("r72").addEventListener("input", compute72);
 
-    /* ---------- 12. 72の法則 ---------- */
-    function render72() {
-        var r = Math.max(0.1, Number($("r72").value) || 5);
-        var exact = Math.log(2) / Math.log(1 + r / 100);
-        var h = "<p>年" + pct(r, 1) + "なら、72 ÷ " + r + " ＝ <span class=\"ans\">約" + (Math.round(72 / r * 10) / 10) + "年</span> で2倍になります（正確に計算すると " + (Math.round(exact * 10) / 10) + "年）。4倍なら約" + (Math.round(exact * 20) / 10) + "年、10倍なら約" + (Math.round(Math.log(10) / Math.log(1 + r / 100) * 10) / 10) + "年です。</p>";
-        h += '<div class="table-scroll"><table class="yt"><thead><tr><th>利回り</th><th>72の法則</th><th>正確な年数</th><th>30年で何倍</th></tr></thead><tbody>';
-        [1, 2, 3, 4, 5, 6, 7, 8, 10, 12].forEach(function (x) {
-            h += "<tr><td>" + x + "％</td><td>" + (Math.round(72 / x * 10) / 10) + "年</td><td>" + (Math.round(Math.log(2) / Math.log(1 + x / 100) * 10) / 10) + "年</td><td>" + (Math.round(Math.pow(1 + x / 100, 30) * 10) / 10) + "倍</td></tr>";
-        });
-        $("r72Out").innerHTML = h + "</tbody></table></div><p class=\"note\">1年ごとの複利で計算しています。利回りが高いほど、72の法則は少し短めに出ます。</p>";
-    }
+    /* ================= 計算の振り分け・保存 ================= */
+    var timers = {};
+    function later(k, fn) { clearTimeout(timers[k]); timers[k] = setTimeout(fn, 120); }
+    var FN = { tsumitate: computeT, torikuzushi: computeW, hikaku: computeAB, ikkatsu: computeIk, kuriage: computeKu, history: computeEv };
+    function compute(name) { if (FN[name]) FN[name](); }
+    function changed(panel) { if (panel && !panel.hidden) compute(panel.id); save(); }
 
-    /* ---------- 10・11. 同じ相場で比べる（1,000通り） ---------- */
-    function scen(months, R, risk) {
-        var s2 = Math.max(0, risk) / 100 / Math.sqrt(12), mu = Math.log(Math.max(1e-9, 1 + R / 100 / 12)) - s2 * s2 / 2;
-        var arr = new Float64Array(RUNS * months);
-        for (var k = 0; k < arr.length; k++) arr[k] = Math.exp(mu + s2 * randn());
-        return arr;
-    }
-    function ikkatsu(p) {
-        var total = Math.max(0, Number($("ikTotal").value) || 0) * 1e4, split = Math.max(1, Math.min(240, Math.round(Number($("ikSplit").value) || 1)));
-        var years = Math.max(1, Math.min(60, Math.round(Number($("ikYears").value) || 20))), cash = (Number($("ikCash").value) || 0) / 100 / 12;
-        var M = years * 12; if (split > M) split = M;
-        var sc = scen(M, p.rate - p.fee, p.risk);
-        function run(sp) {
-            var L = [], D = [], win = 0, tie = 0;
-            for (var r = 0; r < RUNS; r++) {
-                var lump = total, inv = 0, wait = total, per = total / sp, b = r * M;
-                for (var t = 0; t < M; t++) {
-                    if (t < sp) { var x = Math.min(per, wait); wait -= x; inv += x; }
-                    var g = sc[b + t]; lump *= g; inv *= g; wait *= 1 + cash;
-                }
-                var d = inv + wait; L.push(lump); D.push(d);
-                if (Math.abs(lump - d) < 1) tie++; else if (lump > d) win++;
-            }
-            var asc = function (x) { return x.sort(function (a, b) { return a - b; }); };
-            asc(L); asc(D);
-            return { win: win / RUNS, tie: tie / RUNS, l50: q(L, 0.5), d50: q(D, 0.5), l10: q(L, 0.1), d10: q(D, 0.1) };
-        }
-        var R0 = run(split);
-        var h = "<p>" + years + "年後に一括投資のほうが多くなる確率：<span class=\"ans\">" + pct(R0.win * 100) + "</span>（" + split + "か月に分けた場合と比べて）</p>";
-        h += '<div class="table-scroll"><table class="yt"><thead><tr><th></th><th>一括投資</th><th>' + split + 'か月に分けて投資</th></tr></thead><tbody>' +
-            "<tr><td>真ん中（中央値）</td><td>" + man(R0.l50) + "</td><td>" + man(R0.d50) + "</td></tr>" +
-            "<tr><td>悪かった場合（下位10％）</td><td>" + man(R0.l10) + "</td><td>" + man(R0.d10) + "</td></tr></tbody></table></div>";
-        h += "<p style=\"margin-top:8px\">分ける期間を変えると（一括が勝つ確率）：" + [3, 6, 12, 24, 36, 60].filter(function (x) { return x <= M; }).map(function (x) { return x + "か月 " + pct(run(x).win * 100); }).join("、") + "</p>";
-        h += "<p class=\"note\">利回り " + pct(p.rate - p.fee, 1) + "・リスク " + pct(p.risk) + "。値上がりが期待できる資産ほど早く全額を入れたほうが有利になりやすく、分けると「悪かった場合」の落ち込みが少し浅くなります。</p>";
-        $("ikOut").innerHTML = h;
-    }
-    function kuriage(p) {
-        var bal = Math.max(0, Number($("kuBal").value) || 0) * 1e4, lr = Math.max(0, Number($("kuRate").value) || 0) / 100;
-        var ly = Math.max(1, Math.min(50, Math.round(Number($("kuYears").value) || 30))), extra = Math.max(0, Number($("kuExtra").value) || 0);
-        var lump = Math.max(0, Number($("kuLump").value) || 0) * 1e4, tax = Math.max(0, Number($("kuTax").value) || 0) / 100;
-        var M = ly * 12, sc = scen(M, p.rate - p.fee, p.risk);
-        function pay(b, r, n) { if (b <= 0) return 0; if (r === 0) return b / n; return b * r / (1 - Math.pow(1 + r, -n)); }
-        function run(rate) {
-            var rM = rate / 12, payment = pay(bal, rM, M), A1 = [], B1 = [], win = 0, saveA = 0;
-            for (var r = 0; r < RUNS; r++) {
-                var bA = Math.max(0, bal - lump), aA = Math.max(0, lump - bal), iA = aA, cA = 0, bB = bal, aB = lump, iB = lump, b = r * M;
-                for (var t = 0; t < M; t++) {
-                    var g = sc[b + t]; aA *= g; aB *= g;
-                    var av = payment + extra;
-                    if (bA > 0) { var inA = bA * rM; cA += inA; var prA = Math.min(bA, av - inA); bA = Math.max(0, bA - prA); var lo = av - inA - prA; aA += lo; iA += lo; }
-                    else { aA += av; iA += av; }
-                    if (bB > 0) { var inB = bB * rM; var prB = Math.min(bB, payment - inB); bB = Math.max(0, bB - prB); var put = av - inB - prB; aB += put; iB += put; }
-                    else { aB += av; iB += av; }
-                }
-                var nA = aA - Math.max(0, aA - iA) * tax - bA, nB = aB - Math.max(0, aB - iB) * tax - bB;
-                A1.push(nA); B1.push(nB); if (nB > nA) win++;
-            }
-            var asc = function (x) { return x.sort(function (a, b) { return a - b; }); };
-            asc(A1); asc(B1);
-            return { win: win / RUNS, a50: q(A1, 0.5), b50: q(B1, 0.5), a10: q(A1, 0.1), b10: q(B1, 0.1) };
-        }
-        var R0 = run(lr);
-        var h = "<p>" + ly + "年後に、投資に回したほうが多く残る確率：<span class=\"ans\">" + pct(R0.win * 100) + "</span></p>";
-        h += '<div class="table-scroll"><table class="yt"><thead><tr><th>' + ly + '年後の「資産 − ローン残高」</th><th>繰り上げ返済</th><th>投資</th></tr></thead><tbody>' +
-            "<tr><td>真ん中（中央値）</td><td>" + man(R0.a50) + "</td><td>" + man(R0.b50) + "</td></tr>" +
-            "<tr><td>悪かった場合（下位10％）</td><td>" + man(R0.a10) + "</td><td>" + man(R0.b10) + "</td></tr></tbody></table></div>";
-        h += "<p style=\"margin-top:8px\">ローン金利が変わると（投資が勝つ確率）：" + [0.5, 1, 1.5, 2, 3].map(function (x) { return x + "％ " + pct(run(x / 100).win * 100); }).join("、") + "</p>";
-        h += "<p class=\"note\">繰り上げ返済は「ローン金利と同じ利回りの、確実な運用」と同じです。返済が終わったあとは、返済に使っていたお金も投資に回す計算です。住宅ローン控除・団体信用生命保険・手元のお金の余裕は計算に入れていません。</p>";
-        $("kuOut").innerHTML = h;
-    }
-
-    /* ---------- 積立額の変更の行 ---------- */
-    function addRow(a, m) {
-        if (document.querySelectorAll("#sched .row").length >= 5) return;
-        var d = document.createElement("div"); d.className = "row";
-        d.innerHTML = '<input type="number" class="sa" min="0" max="110" step="1" value="' + a + '" aria-label="年齢"> 歳から 月 <input type="number" class="sm" min="0" step="1000" value="' + m + '" aria-label="毎月の積立額"> 円 <button type="button">削除</button>';
-        d.querySelector("button").addEventListener("click", function () { d.remove(); render(); });
-        $("sched").appendChild(d);
-    }
-    $("addSched").addEventListener("click", function () { var p = read(); addRow(p.age + 10, p.monthly + 20000); render(); });
-
-    /* ---------- 保存・URL ---------- */
-    function snapshot(p) {
+    var DEF = {};
+    function fields() { return document.querySelectorAll(".panel input[id], .panel select[id]"); }
+    function snapshot() {
         var o = {};
-        NUM.forEach(function (k) { o[k] = $(k).value; });
-        o.mode = $("mode").value; o.nisa = $("nisaOn").checked ? 1 : 0; o.wd = $("wdOn").checked ? 1 : 0; o.wdIndex = $("wdIndex").checked ? 1 : 0; o.wdMethod = $("wdMethod").value;
-        o.sched = p.sched.map(function (s) { return s.age + ":" + s.amt; }).join(",");
-        o.crash = p.crash.map(function (c) { return c.age + ":" + Math.round(c.pct * 100); }).join(",");
-        EXTRA.forEach(function (k) { o[k] = $(k).value; });
+        fields().forEach(function (e) { o[e.id] = e.type === "checkbox" ? (e.checked ? "1" : "0") : e.value; });
+        var wm = document.querySelector('input[name="wm"]:checked'); o.wm = wm ? wm.value : "fixed";
+        o.sched = [].map.call(document.querySelectorAll("#sched .row"), function (r) { return r.querySelector(".sa").value + ":" + r.querySelector(".sm").value; }).join(",");
+        o.crash = [].map.call(document.querySelectorAll("#crashRows .row"), function (r) { return r.querySelector(".ca").value + ":" + r.querySelector(".cp").value; }).join(",");
         return o;
     }
     function apply(o) {
-        NUM.forEach(function (k) { if (o[k] != null && o[k] !== "") $(k).value = o[k]; });
-        if (o.mode) $("mode").value = o.mode;
-        if (o.wdMethod) $("wdMethod").value = o.wdMethod;
-        if (o.nisa != null) $("nisaOn").checked = String(o.nisa) === "1" || o.nisa === true;
-        if (o.wd != null) $("wdOn").checked = String(o.wd) === "1" || o.wd === true;
-        if (o.wdIndex != null) $("wdIndex").checked = String(o.wdIndex) === "1" || o.wdIndex === true;
-        EXTRA.forEach(function (k) { if (o[k] != null && o[k] !== "") $(k).value = o[k]; });
-        if (o.crash != null) {
-            $("crashRows").textContent = "";
-            String(o.crash).split(",").filter(Boolean).forEach(function (x) { var t = x.split(":"); addCrash(Number(t[0]), Number(t[1])); });
-        }
-        if (o.sched != null) {
-            $("sched").textContent = "";
-            String(o.sched).split(",").filter(Boolean).forEach(function (x) { var t = x.split(":"); addRow(Number(t[0]), Number(t[1])); });
-        }
+        fields().forEach(function (e) { if (o[e.id] == null) return; if (e.type === "checkbox") e.checked = o[e.id] === "1" || o[e.id] === true; else e.value = o[e.id]; });
+        if (o.wm) { var r = document.querySelector('input[name="wm"][value="' + o.wm + '"]'); if (r) r.checked = true; }
+        if (o.sched != null) { $("sched").textContent = ""; String(o.sched).split(",").filter(Boolean).forEach(function (x) { var t = x.split(":"); addSched(Number(t[0]), Number(t[1])); }); }
+        if (o.crash != null) { $("crashRows").textContent = ""; String(o.crash).split(",").filter(Boolean).forEach(function (x) { var t = x.split(":"); addCrash(Number(t[0]), Number(t[1])); }); }
     }
-    function save(p) { try { localStorage.setItem(STORE, JSON.stringify(snapshot(p))); } catch (e) { /* 保存できなくても使える */ } }
-    function toUrl() {
-        var o = snapshot(read()), qs = [];
-        Object.keys(KEY).forEach(function (k) { if (o[k] != null && String(o[k]) !== String(DEF[k] instanceof Array ? "" : DEF[k])) qs.push(KEY[k] + "=" + encodeURIComponent(o[k])); });
-        return location.origin + location.pathname + (qs.length ? "?" + qs.join("&") : "");
-    }
+    function save() { try { localStorage.setItem(STORE, JSON.stringify(snapshot())); } catch (e) { /* 保存できなくても使える */ } }
+
     $("copyUrl").addEventListener("click", function () {
-        var u = toUrl();
+        var o = snapshot(), qs = [];
+        Object.keys(o).forEach(function (k) { if (String(o[k]) !== String(DEF[k])) qs.push(encodeURIComponent(k) + "=" + encodeURIComponent(o[k])); });
+        var u = location.origin + location.pathname + (qs.length ? "?" + qs.join("&") : "") + "#" + (shown || "tsumitate");
         var done = function () { $("copied").textContent = "コピーしました"; setTimeout(function () { $("copied").textContent = ""; }, 2500); };
-        if (navigator.clipboard) navigator.clipboard.writeText(u).then(done, function () { prompt("このURLをコピーしてください", u); });
-        else prompt("このURLをコピーしてください", u);
+        if (navigator.clipboard) navigator.clipboard.writeText(u).then(done, function () { prompt("このURLをコピーしてください", u); }); else prompt("このURLをコピーしてください", u);
     });
-    $("reset").addEventListener("click", function () {
-        var o = {}; Object.keys(DEF).forEach(function (k) { o[k] = (k === "sched" || k === "crash") ? "" : DEF[k]; });
-        apply(o); history.replaceState(null, "", location.pathname); render();
+    $("reset").addEventListener("click", function () { apply(DEF); history.replaceState(null, "", location.pathname + location.hash); PANELS.forEach(compute); save(); });
+
+    /* 目安ボタン：data-preset="入力1,入力2" に data-v の数字を入れる */
+    document.querySelectorAll("[data-preset]").forEach(function (box) {
+        var ids = box.dataset.preset.split(",");
+        box.querySelectorAll("button[data-v]").forEach(function (b) {
+            b.addEventListener("click", function () { var v = b.dataset.v.split(","); ids.forEach(function (id, k) { $(id === "risk" ? "riskPct" : id).value = v[k]; }); changed(box.closest(".panel")); });
+        });
     });
 
-    /* 目安のボタン */
-    document.querySelectorAll("#presets button").forEach(function (b) {
-        b.addEventListener("click", function () { $("rate").value = b.dataset.r; $("risk").value = b.dataset.k; render(); });
-    });
-
-    /* 起動：URL ＞ 保存 ＞ 初期値 */
+    /* 起動：初期値を覚える → 保存した内容 → 共有URL */
+    DEF = snapshot();
     try { var st = JSON.parse(localStorage.getItem(STORE) || "null"); if (st) apply(st); } catch (e) { /* 壊れていれば初期値 */ }
     var sp = new URLSearchParams(location.search);
-    if ([].concat(Object.values ? Object.values(KEY) : []).some(function (k) { return sp.has(k); })) {
-        /* 共有されたURLは、受け取った人の保存内容ではなく初期値の上に重ねる（送った人と同じ結果にするため） */
-        var o = {}; Object.keys(KEY).forEach(function (k) { o[k] = sp.has(KEY[k]) ? sp.get(KEY[k]) : ((k === "sched" || k === "crash") ? "" : DEF[k]); });
-        apply(o);
+    if (Array.from(sp.keys()).length) {
+        var o = {}; Object.keys(DEF).forEach(function (k) { o[k] = sp.has(k) ? sp.get(k) : DEF[k]; }); apply(o);
     }
-    document.querySelector(".container").addEventListener("input", render);
-    document.querySelector(".container").addEventListener("change", render);
-    render();
+    document.querySelectorAll(".panel").forEach(function (pn) {
+        pn.addEventListener("input", function () { changed(pn); });
+        pn.addEventListener("change", function () { changed(pn); });
+    });
+    $("tabs").addEventListener("click", function (ev) {
+        var a = ev.target.closest("a[data-tab]"); if (!a) return;
+        ev.preventDefault(); history.replaceState(null, "", "#" + a.dataset.tab); show(a.dataset.tab);
+    });
+    compute72();
+    route();
+    if (!shown) show("tsumitate");
 })();
 </script>
 
@@ -1152,7 +1156,6 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
 <h2>同じカテゴリのツール</h2>
 <div class="related-tools-grid">
 <a href="/us-market/" class="related-tool-card"><h3>米国市場ダッシュボード</h3><p>主要銘柄のヒートマップ、円建てS&amp;P500、VIX、Fear &amp; Greed Indexなど、昨夜引けた米国市場を一面にまとめたダッシュボード。</p></a>
-<a href="/torikuzushi/" class="related-tool-card"><h3>取り崩しシミュレーター</h3><p>貯めた資産を取り崩すと何歳まで持つのか、資産が尽きる確率を出すツール。</p></a>
 </div>
 </section>
 <!-- /RELATED --></div>
