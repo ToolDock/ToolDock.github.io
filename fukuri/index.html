@@ -169,6 +169,9 @@ table.yt tr.sel td{ background:color-mix(in srgb, var(--c) 9%, #fff); font-weigh
 .asset button{ font:inherit; font-size:.8rem; padding:5px 9px; border:1px solid var(--line-input); border-radius:var(--r-ctl); background:#fff; cursor:pointer; }
 @media (max-width:640px){ .asset{ grid-template-columns:1fr 1fr 1fr; } .asset .an-box{ grid-column:1 / -1; } .asset .ref-box{ grid-column:1 / 3; } }
 .kpi .v.sub.bad{ color:#b42318; }
+.panel .table-scroll{ overflow-x:auto; max-width:100%; }
+table.yt.wrap th, table.yt.wrap td{ white-space:normal; }
+table.yt.wrap td:first-child{ white-space:nowrap; }
 h3.sub{ margin:30px 0 8px; font-size:1.05rem; padding:6px 10px; border-left:5px solid var(--c); background:var(--surface-2); scroll-margin-top:90px; }
 .r72{ display:flex; align-items:center; gap:8px; margin:8px 0; }
 .r72 input{ font:inherit; width:6em; padding:5px 8px; border:1px solid var(--line-input); border-radius:var(--r-ctl); text-align:right; }
@@ -1213,7 +1216,7 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
         var A = base - (parent ? taxSave(base, pr) : 0);   /* 学生本人は所得税がかからないことが多いので、本人が今払う場合の節税は0とする */
         var Bpay = base * (1 + add), B = Bpay - taxSave(Bpay, sr);
         var keep = base * (Math.pow(1 + ret / 100, yearsAfter) - 1);   /* 追納するまで手元のお金を運用できた場合の増え方の目安 */
-        var h = '<div class="table-scroll"><table class="yt"><thead><tr><th></th><th>今払う（' + (parent ? "親" : "本人") + '）</th><th>特例 → ' + later + '年後に追納</th><th>特例 → 追納しない</th></tr></thead><tbody>' +
+        var h = '<div class="table-scroll"><table class="yt wrap"><thead><tr><th></th><th>今払う（' + (parent ? "親" : "本人") + '）</th><th>特例 → ' + later + '年後に追納</th><th>特例 → 追納しない</th></tr></thead><tbody>' +
             "<tr><td>納める額</td><td>" + man(base) + "</td><td>" + man(Bpay) + (add ? "（加算 約" + pct(add * 100, 1) + "）" : "（加算なし）") + "</td><td>0円</td></tr>" +
             "<tr><td>減る税金</td><td>" + man(base - A) + (parent ? "（親の控除）" : "（学生のうちは税金がかからないことが多い）") + "</td><td>" + man(Bpay - B) + "（本人の控除）</td><td>0円</td></tr>" +
             "<tr><td><b>実質の負担</b></td><td><b>" + man(A) + "</b></td><td><b>" + man(B) + "</b></td><td><b>0円</b></td></tr>" +
