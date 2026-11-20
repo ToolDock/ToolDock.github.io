@@ -27,7 +27,7 @@ window.POPULAR_ALL = ["kintoku", "shippo", "nouryoku", "crystal", "satei", "genk
 window.POPULAR_MONTH = ["kintoku", "nouryoku", "shippo", "satei", "mylife-start", "draft", "nouryoku-pitcher", "takarakuji"];
 
 /* 管理人のおすすめ。人気とは関係なく、持ち主がふだん使っているツールを並べた順に出す
-   （トップの「管理人のおすすめ」。右レールには出さない）。入れ替えたら python3 scripts/build_index.py */
+   （トップの「管理人のおすすめ」。通算ランキングに出ているものは自動で除く。右レールには出さない）。入れ替えたら python3 scripts/build_index.py */
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
