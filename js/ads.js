@@ -128,6 +128,20 @@
     const style = document.createElement("style");
 
     style.textContent = `
+      /* 広告が来なかった枠に出す、ToolDock のほかのページの紹介（houseAd） */
+      .td-house{ display:inline-flex; flex-direction:column; justify-content:center; box-sizing:border-box; text-align:left;
+        vertical-align:top; text-decoration:none; color:#1c1d1f; background:color-mix(in srgb, var(--c) 7%, #fff);
+        border:1px solid color-mix(in srgb, var(--c) 35%, #fff); border-left:5px solid var(--c); padding:8px 14px; overflow:hidden; }
+      .td-house:hover{ background:color-mix(in srgb, var(--c) 12%, #fff); }
+      .td-house b{ font-size:15px; line-height:1.35; color:var(--c); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+      .td-house span{ font-size:12.5px; line-height:1.5; color:#3a3d42; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; margin-top:3px; }
+      .td-house i{ font-style:normal; font-size:12px; font-weight:700; color:var(--c); margin-top:6px; }
+      .td-house.slim{ flex-direction:row; align-items:center; gap:12px; padding:4px 12px; }
+      .td-house.slim b{ -webkit-line-clamp:1; font-size:14px; flex:0 1 auto; }
+      .td-house.slim span{ -webkit-line-clamp:1; margin:0; flex:1 1 0; }
+      .td-house.slim i{ margin:0; white-space:nowrap; }
+      .td-house.tiny span{ display:none; }
+
       /* 右レールの先頭の枠。レールの中身は幅260pxほど */
       /* 300×250 を入れるため、レールの左右の余白（20px）まで広げて幅300pxにする */
       .td-ad-rail {
@@ -672,11 +686,70 @@
 
   /* ---- 起動 ---- */
 
+  /* ---- 広告が来なかった枠に、ToolDock のほかのページを出す ----
+     AdSense は配信できなかった枠の ins に data-ad-status="unfilled" を書く。そのときは枠を隠すかわりに、
+     同じ大きさで自分のサイトのページを紹介する（2026-11-21。申請のいらない自社の宣伝）。
+     ラベルは「スポンサーリンク」から「ToolDockのほかのツール」に変え、広告と見間違えないようにする。
+     下のバー（sticky）は今までどおり、来なければ片付ける */
+  const houseUsed = new Set();
+  function housePick() {
+    const tools = (window.TOOLS || []).filter(t => !t.hidden && t.url);
+    const curId = typeof CURRENT_TOOL !== "undefined" ? CURRENT_TOOL : null;
+    const cur = tools.find(t => t.id === curId || t.url === location.pathname);
+    /* 記事の中では、プロ野球データとパワプロ系を互いにリンクしない（持ち主の方針） */
+    const apart = cur ? { game: "baseball", baseball: "game" }[cur.category] : null;
+    const ok = t => t !== cur && t.category !== apart && !houseUsed.has(t.id) && t.url !== location.pathname;
+    const ids = [].concat(window.POPULAR_MONTH || [], window.POPULAR_ALL || [], window.RECOMMENDED || []);
+    /* 同じ分野のページを先に（関心が近いほど押されやすい）。足りなければ人気のページ・おすすめから */
+    const popular = ids.map(id => tools.find(t => t.id === id)).filter(t => t && ok(t));
+    /* 同じ分野が少ないときは、近い分野（お金まわり・勉強まわり・暮らしまわり）も同じ扱いにする */
+    const NEAR = { finance: ["tax"], tax: ["finance"], math: ["study"], study: ["math"], life: ["work"], work: ["life"] };
+    const near = cur ? [cur.category].concat(NEAR[cur.category] || []) : [];
+    const same = cur ? tools.filter(t => near.includes(t.category) && ok(t)) : [];
+    const sameRank = same.slice().sort((x, y) => (popular.includes(y) ? 1 : 0) - (popular.includes(x) ? 1 : 0));
+    let pool = sameRank.slice(0, 6).concat(popular);
+    if (!pool.length) pool = tools.filter(ok);
+    if (!pool.length) return null;
+    const head = [...new Set(pool)].slice(0, Math.max(4, Math.min(6, sameRank.length)));
+    const t = head[Math.floor(Math.random() * head.length)];
+    houseUsed.add(t.id);
+    return t;
+  }
+  function houseFill(ins) {
+    const box = ins.closest(".td-ad-top, .td-ad-mid, .td-ad-end, .td-ad-share, .td-ad-related, .td-ad-rail");
+    if (!box) return;
+    const t = housePick();
+    if (!t) return;
+    const w = parseInt(ins.style.width, 10) || ins.clientWidth || 300;
+    const h = parseInt(ins.style.height, 10) || ins.clientHeight || 250;
+    const a = document.createElement("a");
+    a.href = t.url;
+    a.className = "td-house c-" + (t.category || "") + (h <= 100 ? " slim" : "") + (h <= 60 ? " tiny" : "");
+    a.style.width = w + "px";
+    a.style.height = h + "px";
+    a.style.maxWidth = "100%";
+    const esc = x => String(x || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    a.innerHTML = `<b>${esc(t.title)}</b><span>${esc(t.desc)}</span><i>使ってみる →</i>`;
+    ins.replaceWith(a);
+    const label = box.querySelector(".td-ad-label");
+    if (label) label.textContent = "ToolDockのほかのツール";
+  }
+  function watchUnfilled() {
+    const check = ins => {
+      if (ins.getAttribute("data-ad-status") === "unfilled" && !ins.closest(".td-ad-sticky")) houseFill(ins);
+    };
+    new MutationObserver(list => {
+      for (const m of list) if (m.target.matches && m.target.matches("ins.adsbygoogle")) check(m.target);
+    }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["data-ad-status"] });
+    document.querySelectorAll('ins.adsbygoogle[data-ad-status="unfilled"]').forEach(check);
+  }
+
   function start() {
     /* 枠を出すのは承認後だけ。それまでは何もしない */
     if (!UNITS_ENABLED) return;
 
     injectStyle();
+    watchUnfilled();
     if (SLOT_TOP) mountTopSlot();
     if (SLOT_END) mountEndSlot();
     if (SLOT_STICKY) mountStickySlot();
