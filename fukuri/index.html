@@ -266,7 +266,7 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 <p class="note">背景と考え方は<a href="#boraku">解説「暴落が来たらどうなる？」</a>へ。「戻るまで」は、配当を入れない株価指数が前の高値を超えるまでの期間です。配当を再投資した場合や、下がっている間も積み立てを続けた場合は、もっと早く元本を取り戻せます（7. で確かめられます）。</p>
 
 <h3 style="margin:22px 0 6px;font-size:1rem" id="tachiai">その暴落に、積立をしながら立ち会っていたら</h3>
-<p class="lead">暴落が始まる前から持っていた資産と、毎月の積立（1. の積立額）を続けた場合に、安値でどれだけ買えたか、戻ったときにいくら増えていたか、底で慌てて売っていたらどうなったかを出します。</p>
+<p class="lead">暴落が始まる前から持っていた資産と、毎月の積立を続けた場合に、安値でどれだけ買えたか、戻ったときにいくら増えていたか、底で慌てて売っていたらどうなったかを出します。</p>
 <div class="form">
     <div class="f"><label for="evSel">暴落</label><select id="evSel">
         <option value="covid">コロナショック（2020年）</option>
@@ -278,6 +278,7 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
         <option value="gd">世界恐慌（1929〜1954年）</option>
     </select></div>
     <div class="f"><label for="evHold">暴落の前から持っていた資産</label><div class="in"><input type="number" id="evHold" min="0" step="10" value="300"><span class="u">万円</span></div></div>
+    <div class="f"><label for="evPm">毎月の積立額</label><div class="in"><input type="number" id="evPm" min="0" step="1000" value="30000"><span class="u">円</span></div></div>
 </div>
 <div class="box" id="evOut" aria-live="polite"></div>
 <div class="chart"><canvas id="evChart"></canvas></div>
@@ -494,7 +495,7 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
     var DEF = { init: 0, monthly: 30000, rate: 5, years: 20, mode: "m", target: 2000, nisa: 1, age: 30, sched: [],
         wd: 0, wdStart: 65, wdMethod: "fixed", wdAmt: 150000, wdRate: 4, pension: 0, penAge: 65, endAge: 95, wdIndex: 0,
         fee: 0, infl: 2, risk: 12, crash: [] };
-    var EXTRA = ["evSel", "evHold", "ikTotal", "ikSplit", "ikYears", "ikCash", "kuBal", "kuRate", "kuYears", "kuExtra", "kuLump", "kuTax", "r72"];
+    var EXTRA = ["evSel", "evHold", "evPm", "ikTotal", "ikSplit", "ikYears", "ikCash", "kuBal", "kuRate", "kuYears", "kuExtra", "kuLump", "kuTax", "r72"];
     var NUM = ["init", "monthly", "rate", "years", "target", "age", "wdStart", "wdAmt", "wdRate", "pension", "penAge", "endAge", "fee", "infl", "risk"];
     var KEY = { init: "i", monthly: "m", rate: "r", years: "y", mode: "md", target: "t", nisa: "n", age: "a", sched: "s",
         wd: "w", wdStart: "ws", wdMethod: "wm", wdAmt: "wa", wdRate: "wr", pension: "pm", penAge: "pa", endAge: "we", wdIndex: "wx",
@@ -884,7 +885,7 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
     var evChart = null;
     function renderEvent(p) {
         var ev = EVENTS[$("evSel").value] || EVENTS.lehman;
-        var hold = Math.max(0, Number($("evHold").value) || 0) * 1e4, pm = p.monthly;
+        var hold = Math.max(0, Number($("evHold").value) || 0) * 1e4, pm = Math.max(0, Number($("evPm").value) || 0);
         var T1 = ev.down, T2 = ev.down + ev.up, lo = Math.log(1 - ev.d);
         function price(t) { return t <= T1 ? Math.exp(lo * t / T1) : Math.exp(lo * (1 - (t - T1) / ev.up)); }
         var units = 0, spent = 0, path = [], even = null, worst = 0, worstT = 0;
@@ -901,7 +902,7 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
         var keep = path[T2].val;                /* 売らずに続けた場合の、戻ったときの資産 */
         var sold = atBottom.val + pm * (T2 - T1); /* 底で全部売り、そのあとは積立分を現金でためた場合 */
         var L = [];
-        if (!pm && !hold) { $("evOut").innerHTML = "<p>持っていた資産か、1. の毎月の積立額を入れてください。</p>"; return; }
+        if (!pm && !hold) { $("evOut").innerHTML = "<p>持っていた資産か、毎月の積立額を入れてください。</p>"; return; }
         L.push("<b>" + ev.name + "</b>：高値から約" + ym(ev.down) + "で −" + pct(ev.d * 100) + "、そこから約" + ym(ev.up) + "で前の高値に戻る値動きで計算（毎月 " + yen(pm) + " を積立）");
         if (pm > 0) {
             L.push("① 安値で買えた口数：暴落から回復までの " + ym(T2) + " に積み立てた " + man(spent) + " で、<b>高値のまま買った場合の約" + (Math.round(units / unitsAtPeak * 100) / 100) + "倍</b>の口数を買えました（平均の買値は高値の約" + pct(spent / units * 100) + "）。");
