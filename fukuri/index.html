@@ -142,6 +142,7 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
         <a href="#risk">リスク（ブレ幅）</a>
         <a href="#crash">暴落を起こす</a>
         <a href="#history">過去の暴落</a>
+        <a href="#tachiai">暴落に立ち会ったら</a>
         <a href="#compare">条件を比べる</a>
         <a href="#ikkatsu">一括か積立か</a>
         <a href="#kuriage">繰り上げ返済か投資か</a>
@@ -250,19 +251,37 @@ details.tbl summary{ cursor:pointer; font-weight:700; font-size:.92rem; }
 <p class="lead">代表的な株価の暴落です。数字は株価指数の値（配当は含まない）で、おおよその値です。「起こす」を押すと、7. に同じ下落率の暴落を足します。</p>
 <div class="table-scroll">
 <table class="yt hist">
-<thead><tr><th>出来事</th><th>時期</th><th>指数</th><th>下落率</th><th>前の高値に戻るまで</th><th></th></tr></thead>
+<thead><tr><th>出来事</th><th>時期</th><th>指数</th><th>下落率</th><th>高値から底まで</th><th>前の高値に戻るまで</th><th></th></tr></thead>
 <tbody>
-<tr><td>世界恐慌</td><td>1929〜1932年</td><td>NYダウ</td><td>約−89％</td><td>約25年（1954年）</td><td><button type="button" class="btn" data-cp="89">起こす</button></td></tr>
-<tr><td>ブラックマンデー</td><td>1987年10月</td><td>NYダウ</td><td>1日で約−23％</td><td>約2年（1989年）</td><td><button type="button" class="btn" data-cp="23">起こす</button></td></tr>
-<tr><td>日本のバブル崩壊</td><td>1989〜2009年</td><td>日経平均</td><td>約−82％</td><td>約34年（2024年）</td><td><button type="button" class="btn" data-cp="82">起こす</button></td></tr>
-<tr><td>ITバブル崩壊</td><td>2000〜2002年</td><td>NASDAQ総合</td><td>約−78％</td><td>約15年（2015年）</td><td><button type="button" class="btn" data-cp="78">起こす</button></td></tr>
-<tr><td>リーマンショック</td><td>2007〜2009年</td><td>S&amp;P500</td><td>約−57％</td><td>約5年半（2013年）</td><td><button type="button" class="btn" data-cp="57">起こす</button></td></tr>
-<tr><td>コロナショック</td><td>2020年2〜3月</td><td>S&amp;P500</td><td>約−34％</td><td>約5か月（2020年8月）</td><td><button type="button" class="btn" data-cp="34">起こす</button></td></tr>
-<tr><td>2022年の利上げ相場</td><td>2022年</td><td>S&amp;P500</td><td>約−25％</td><td>約2年（2024年1月）</td><td><button type="button" class="btn" data-cp="25">起こす</button></td></tr>
+<tr><td>世界恐慌</td><td>1929〜1932年</td><td>NYダウ</td><td>約−89％</td><td>約2年10か月</td><td>約25年（1954年）</td><td><button type="button" class="btn" data-cp="89">起こす</button></td></tr>
+<tr><td>ブラックマンデー</td><td>1987年8〜10月</td><td>NYダウ</td><td>約−36％（1日で約−23％）</td><td>約2か月</td><td>約2年（1989年）</td><td><button type="button" class="btn" data-cp="36">起こす</button></td></tr>
+<tr><td>日本のバブル崩壊</td><td>1989〜2009年</td><td>日経平均</td><td>約−82％</td><td>約19年</td><td>約34年（2024年）</td><td><button type="button" class="btn" data-cp="82">起こす</button></td></tr>
+<tr><td>ITバブル崩壊</td><td>2000〜2002年</td><td>NASDAQ総合</td><td>約−78％</td><td>約2年7か月</td><td>約15年（2015年）</td><td><button type="button" class="btn" data-cp="78">起こす</button></td></tr>
+<tr><td>リーマンショック</td><td>2007〜2009年</td><td>S&amp;P500</td><td>約−57％</td><td>約1年5か月</td><td>約5年半（2013年）</td><td><button type="button" class="btn" data-cp="57">起こす</button></td></tr>
+<tr><td>コロナショック</td><td>2020年2〜3月</td><td>S&amp;P500</td><td>約−34％</td><td>約1か月</td><td>約5か月（2020年8月）</td><td><button type="button" class="btn" data-cp="34">起こす</button></td></tr>
+<tr><td>2022年の利上げ相場</td><td>2022年</td><td>S&amp;P500</td><td>約−25％</td><td>約9か月</td><td>約2年（2024年1月）</td><td><button type="button" class="btn" data-cp="25">起こす</button></td></tr>
 </tbody>
 </table>
 </div>
 <p class="note">背景と考え方は<a href="#boraku">解説「暴落が来たらどうなる？」</a>へ。「戻るまで」は、配当を入れない株価指数が前の高値を超えるまでの期間です。配当を再投資した場合や、下がっている間も積み立てを続けた場合は、もっと早く元本を取り戻せます（7. で確かめられます）。</p>
+
+<h3 style="margin:22px 0 6px;font-size:1rem" id="tachiai">その暴落に、積立をしながら立ち会っていたら</h3>
+<p class="lead">暴落が始まる前から持っていた資産と、毎月の積立（1. の積立額）を続けた場合に、安値でどれだけ買えたか、戻ったときにいくら増えていたか、底で慌てて売っていたらどうなったかを出します。</p>
+<div class="form">
+    <div class="f"><label for="evSel">暴落</label><select id="evSel">
+        <option value="covid">コロナショック（2020年）</option>
+        <option value="lehman" selected>リーマンショック（2007〜2013年）</option>
+        <option value="y2022">2022年の利上げ相場</option>
+        <option value="it">ITバブル崩壊（2000〜2015年）</option>
+        <option value="japan">日本のバブル崩壊（1989〜2024年）</option>
+        <option value="bm">ブラックマンデー（1987〜1989年）</option>
+        <option value="gd">世界恐慌（1929〜1954年）</option>
+    </select></div>
+    <div class="f"><label for="evHold">暴落の前から持っていた資産</label><div class="in"><input type="number" id="evHold" min="0" step="10" value="300"><span class="u">万円</span></div></div>
+</div>
+<div class="box" id="evOut" aria-live="polite"></div>
+<div class="chart"><canvas id="evChart"></canvas></div>
+<p class="note">値動きは、高値から底まで・底から前の高値までを、それぞれなめらかに（毎月同じ率で）つないだ簡略なものです。実際の相場は途中で上下しながら動くので、結果はおおよその目安です。配当・税金・手数料は入れていません。</p>
 
 <h2 class="sec" id="compare">9. 条件を比べる</h2>
 <p class="lead">今の条件を「A」として残し、数字を変えて比べます。Aの資産額は1. のグラフにも点線で出ます。</p>
@@ -475,7 +494,7 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
     var DEF = { init: 0, monthly: 30000, rate: 5, years: 20, mode: "m", target: 2000, nisa: 1, age: 30, sched: [],
         wd: 0, wdStart: 65, wdMethod: "fixed", wdAmt: 150000, wdRate: 4, pension: 0, penAge: 65, endAge: 95, wdIndex: 0,
         fee: 0, infl: 2, risk: 12, crash: [] };
-    var EXTRA = ["ikTotal", "ikSplit", "ikYears", "ikCash", "kuBal", "kuRate", "kuYears", "kuExtra", "kuLump", "kuTax", "r72"];
+    var EXTRA = ["evSel", "evHold", "ikTotal", "ikSplit", "ikYears", "ikCash", "kuBal", "kuRate", "kuYears", "kuExtra", "kuLump", "kuTax", "r72"];
     var NUM = ["init", "monthly", "rate", "years", "target", "age", "wdStart", "wdAmt", "wdRate", "pension", "penAge", "endAge", "fee", "infl", "risk"];
     var KEY = { init: "i", monthly: "m", rate: "r", years: "y", mode: "md", target: "t", nisa: "n", age: "a", sched: "s",
         wd: "w", wdStart: "ws", wdMethod: "wm", wdAmt: "wa", wdRate: "wr", pension: "pm", penAge: "pa", endAge: "we", wdIndex: "wx",
@@ -772,6 +791,7 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
         $("costOut").innerHTML = "<ul class=\"out\"><li>" + co.join("</li><li>") + "</li></ul>";
 
         renderCrash(p, S);
+        renderEvent(p);
         renderCompare(p, S);
         render72();
         scheduleRisk(p, S);
@@ -848,6 +868,62 @@ A. 入力はこのブラウザに自動で保存されます。「この条件�
             if (b.closest("#history")) $("crash").scrollIntoView({ behavior: "smooth" });
         });
     });
+
+
+    /* ---------- 8. 暴落に立ち会ったら ---------- */
+    /* d：高値から底までの下落率、down：高値から底までの月数、up：底から前の高値に戻るまでの月数 */
+    var EVENTS = {
+        covid: { name: "コロナショック", d: 0.34, down: 1, up: 5 },
+        lehman: { name: "リーマンショック", d: 0.57, down: 17, up: 48 },
+        y2022: { name: "2022年の利上げ相場", d: 0.25, down: 9, up: 15 },
+        it: { name: "ITバブル崩壊", d: 0.78, down: 31, up: 150 },
+        japan: { name: "日本のバブル崩壊", d: 0.82, down: 231, up: 179 },
+        bm: { name: "ブラックマンデー", d: 0.36, down: 2, up: 22 },
+        gd: { name: "世界恐慌", d: 0.89, down: 34, up: 268 }
+    };
+    var evChart = null;
+    function renderEvent(p) {
+        var ev = EVENTS[$("evSel").value] || EVENTS.lehman;
+        var hold = Math.max(0, Number($("evHold").value) || 0) * 1e4, pm = p.monthly;
+        var T1 = ev.down, T2 = ev.down + ev.up, lo = Math.log(1 - ev.d);
+        function price(t) { return t <= T1 ? Math.exp(lo * t / T1) : Math.exp(lo * (1 - (t - T1) / ev.up)); }
+        var units = 0, spent = 0, path = [], even = null, worst = 0, worstT = 0;
+        for (var t = 0; t <= T2; t++) {
+            if (t > 0) { units += pm / price(t); spent += pm; }
+            var val = (hold + units) * price(t), inv = hold + spent, pl = val - inv;   /* 暴落前の資産は高値（価格1）で持っていた口数として扱う */
+            path.push({ t: t, pr: price(t), val: val, inv: inv });
+            if (pl < worst) { worst = pl; worstT = t; }
+            if (even === null && t > T1 && pl >= 0) even = t;
+        }
+        var unitsAtPeak = spent; /* 同じお金を高値（価格1）で買った場合の口数 */
+        var gainBuy = units - spent;            /* 戻ったとき、暴落中に買った分の含み益 */
+        var atBottom = path[T1], sellLoss = atBottom.val - atBottom.inv;
+        var keep = path[T2].val;                /* 売らずに続けた場合の、戻ったときの資産 */
+        var sold = atBottom.val + pm * (T2 - T1); /* 底で全部売り、そのあとは積立分を現金でためた場合 */
+        var L = [];
+        if (!pm && !hold) { $("evOut").innerHTML = "<p>持っていた資産か、1. の毎月の積立額を入れてください。</p>"; return; }
+        L.push("<b>" + ev.name + "</b>：高値から約" + ym(ev.down) + "で −" + pct(ev.d * 100) + "、そこから約" + ym(ev.up) + "で前の高値に戻る値動きで計算（毎月 " + yen(pm) + " を積立）");
+        if (pm > 0) {
+            L.push("① 安値で買えた口数：暴落から回復までの " + ym(T2) + " に積み立てた " + man(spent) + " で、<b>高値のまま買った場合の約" + (Math.round(units / unitsAtPeak * 100) / 100) + "倍</b>の口数を買えました（平均の買値は高値の約" + pct(spent / units * 100) + "）。");
+            L.push("② 株価が前の高値に戻ったとき、暴落中に買った分の含み益：<span class=\"ans\">＋" + man(gainBuy) + "</span>（" + man(spent) + " → " + man(units) + "）");
+        }
+        if (worst < 0) L.push("いちばん苦しかったとき（暴落から" + ym(worstT) + "後）の含み損：<span class=\"warn\">" + man(worst) + "</span>（投じた " + man(path[worstT].inv) + " に対して −" + pct(Math.abs(worst / path[worstT].inv * 100)) + "）");
+        if (even !== null && pm > 0 && T2 - even >= 1) L.push("株価が前の高値に戻る <b>約" + ym(T2 - even) + "前</b>（暴落から" + ym(even) + "後）に、損益はプラスに戻っていました。下がっている間も買い続けたためです。");
+        L.push("③ 底で慌てて全部売った場合：<span class=\"warn\">" + man(sellLoss) + "</span> の損失が確定します。そのあと積立分を現金でためていても、株価が戻った時点の資産は " + man(sold) + "。売らずに積立を続けた場合（" + man(keep) + "）より <b class=\"warn\">" + man(keep - sold) + "</b> 少なくなります。");
+        $("evOut").innerHTML = "<ul class=\"out\"><li>" + L.join("</li><li>") + "</li></ul>";
+        if (!window.Chart) return;
+        var step = T2 > 120 ? 12 : (T2 > 36 ? 3 : 1), pts = path.filter(function (x) { return x.t % step === 0 || x.t === T2; });
+        var c0 = color();
+        var data = { labels: pts.map(function (x) { return x.t + "か月"; }), datasets: [
+            { label: "資産の評価額", data: pts.map(function (x) { return Math.round(x.val); }), borderColor: c0, pointRadius: 0, yAxisID: "y" },
+            { label: "投じたお金", data: pts.map(function (x) { return Math.round(x.inv); }), borderColor: "#6b7280", borderDash: [6, 4], pointRadius: 0, yAxisID: "y" },
+            { label: "株価（高値＝100）", data: pts.map(function (x) { return Math.round(x.pr * 1000) / 10; }), borderColor: "#b42318", pointRadius: 0, yAxisID: "y2" }
+        ] };
+        var opt = { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
+            plugins: { tooltip: { callbacks: { label: function (x) { return x.dataset.label + "：" + (x.dataset.yAxisID === "y2" ? x.parsed.y : man(x.parsed.y)); } } } },
+            scales: { y: { ticks: { callback: function (v) { return man(v); } } }, y2: { position: "right", min: 0, max: 100, grid: { drawOnChartArea: false } }, x: { ticks: { maxTicksLimit: 10 } } } };
+        if (evChart) { evChart.data = data; evChart.update(); } else evChart = new Chart($("evChart"), { type: "line", data: data, options: opt });
+    }
 
     /* ---------- 9. 条件を比べる ---------- */
     var A = null, ASTORE = "tooldock-fukuri-compare";
