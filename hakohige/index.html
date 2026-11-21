@@ -157,6 +157,7 @@
     }
   }
 </style>
+<script src="/js/watermark.js" defer></script>
 </head>
 
 <body>
@@ -634,7 +635,7 @@ function downloadImage() {
   const link = document.createElement("a");
 
   link.download = "boxplot.png";
-  link.href = canvas.toDataURL("image/png");
+  link.href = (window.TDMark ? TDMark.copy(canvas) : canvas).toDataURL("image/png");
 
   link.click();
 }

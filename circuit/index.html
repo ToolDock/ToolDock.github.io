@@ -319,6 +319,7 @@ padding: var(--pad); }
         input[type="text"].expr { font-size: 1rem; }
     }
 </style>
+<script src="/js/watermark.js" defer></script>
 </head>
 
 <body>
@@ -1642,6 +1643,7 @@ function downloadPng(svg, size) {
         ctx.fillStyle = "#fff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        if (window.TDMark) TDMark.draw(ctx, canvas.width, canvas.height);
 
         URL.revokeObjectURL(url);
 

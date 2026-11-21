@@ -150,6 +150,7 @@ p{ margin:0 0 12px; }
 .tool-article{ margin-top:34px; }
 footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); border-top:1px solid var(--line-soft); padding-top:14px; }
 </style>
+<script src="/js/watermark.js" defer></script>
 </head>
 
 <body>
@@ -1394,6 +1395,7 @@ function exportPngBlob(cb) {
             canvas.width = w; canvas.height = h;
             var ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, w, h);
+            if (window.TDMark) TDMark.draw(ctx, w, h);
             URL.revokeObjectURL(url);
             canvas.toBlob(function (blob) {
                 var filename = (document.getElementById("p-name").value || "player") + "_card.png";
