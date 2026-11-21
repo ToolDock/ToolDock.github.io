@@ -221,6 +221,7 @@ padding: var(--pad); }
         #paper { width: 100%; }
     }
 </style>
+<script src="/js/watermark.js" defer></script>
 </head>
 
 <body>
@@ -911,7 +912,8 @@ function toast(message) {
 }
 
 function canvasToBlob() {
-    return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+    const out = window.TDMark ? TDMark.copy(canvas) : canvas;
+    return new Promise(resolve => out.toBlob(resolve, "image/png"));
 }
 
 function fileName() {

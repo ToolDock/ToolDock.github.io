@@ -131,6 +131,7 @@ p{ margin:0 0 12px; }
 .tool-article .note{ font-size:0.86rem; color:var(--ink-mute); }
 footer.disclaimer{ margin-top:30px; font-size:0.82rem; color:var(--ink-mute); border-top:1px solid var(--line-soft); padding-top:14px; }
 </style>
+<script src="/js/watermark.js" defer></script>
 </head>
 
 <body>
@@ -1129,6 +1130,7 @@ function makePng() {
     var cv = document.createElement("canvas");
     cv.height = Math.round(canvasHeight() * 2); cv.width = Math.round(W * 2);
     drawFrame(cv, 2, null);
+    if (window.TDMark) TDMark.draw(cv.getContext("2d"), cv.width, cv.height);
     return new Promise(function (resolve) {
         cv.toBlob(function (b) { resolve({ blob: b, name: fileBase() + ".png", type: "image/png" }); }, "image/png");
     });
@@ -1143,6 +1145,7 @@ function makeGif() {
         var frames = [];
         for (var k = 0; k < GIF_FRAMES; k++) {
             drawFrame(cv, scale, k / GIF_FRAMES);
+            if (window.TDMark) TDMark.draw(ctx, cv.width, cv.height);
             frames.push(ctx.getImageData(0, 0, cv.width, cv.height).data);
         }
         /* 色は全コマ共通の256色にする（コマごとに変えると、ちらつく） */
