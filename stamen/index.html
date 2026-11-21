@@ -1130,7 +1130,7 @@ function makePng() {
     var cv = document.createElement("canvas");
     cv.height = Math.round(canvasHeight() * 2); cv.width = Math.round(W * 2);
     drawFrame(cv, 2, null);
-    if (window.TDMark) TDMark.draw(cv.getContext("2d"), cv.width, cv.height);
+    if (window.TDMark) cv = TDMark.extend(cv);
     return new Promise(function (resolve) {
         cv.toBlob(function (b) { resolve({ blob: b, name: fileBase() + ".png", type: "image/png" }); }, "image/png");
     });
@@ -1142,11 +1142,12 @@ function makeGif() {
         var cv = document.createElement("canvas");
         cv.height = Math.round(canvasHeight() * scale); cv.width = Math.round(W * scale);
         var ctx = cv.getContext("2d", { willReadFrequently: true });
-        var frames = [];
+        var frames = [], fw = cv.width, fh = cv.height;
         for (var k = 0; k < GIF_FRAMES; k++) {
             drawFrame(cv, scale, k / GIF_FRAMES);
-            if (window.TDMark) TDMark.draw(ctx, cv.width, cv.height);
-            frames.push(ctx.getImageData(0, 0, cv.width, cv.height).data);
+            var out = window.TDMark ? TDMark.extend(cv) : cv;
+            fw = out.width; fh = out.height;
+            frames.push((out === cv ? ctx : out.getContext("2d")).getImageData(0, 0, fw, fh).data);
         }
         /* 色は全コマ共通の256色にする（コマごとに変えると、ちらつく） */
         var sample = new Uint8ClampedArray(frames[0].length * 2);
@@ -1155,7 +1156,7 @@ function makeGif() {
         var palette = m.quantize(sample, 256);
         var gif = m.GIFEncoder();
         frames.forEach(function (f) {
-            gif.writeFrame(m.applyPalette(f, palette), cv.width, cv.height, { palette: palette, delay: LOOP_MS / GIF_FRAMES });
+            gif.writeFrame(m.applyPalette(f, palette), fw, fh, { palette: palette, delay: LOOP_MS / GIF_FRAMES });
         });
         gif.finish();
         return { blob: new Blob([gif.bytes()], { type: "image/gif" }), name: fileBase() + ".gif", type: "image/gif" };

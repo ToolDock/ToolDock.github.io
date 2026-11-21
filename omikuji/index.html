@@ -912,7 +912,7 @@ function toast(message) {
 }
 
 function canvasToBlob() {
-    const out = window.TDMark ? TDMark.copy(canvas) : canvas;
+    const out = window.TDMark ? TDMark.extend(canvas) : canvas;
     return new Promise(resolve => out.toBlob(resolve, "image/png"));
 }
 
