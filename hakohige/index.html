@@ -635,7 +635,7 @@ function downloadImage() {
   const link = document.createElement("a");
 
   link.download = "boxplot.png";
-  link.href = (window.TDMark ? TDMark.copy(canvas) : canvas).toDataURL("image/png");
+  link.href = (window.TDMark ? TDMark.extend(canvas) : canvas).toDataURL("image/png");
 
   link.click();
 }

@@ -1786,7 +1786,7 @@ function exportPngBlob(cb) {
             canvas.width = w; canvas.height = h;
             var ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, w, h);
-            if (window.TDMark) TDMark.draw(ctx, w, h);
+            if (window.TDMark) canvas = TDMark.extend(canvas);
             URL.revokeObjectURL(url);
             canvas.toBlob(function (blob) {
                 var filename = (document.getElementById("p-name").value || "player") + "_card.png";
