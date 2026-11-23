@@ -73,6 +73,9 @@
   /* ページのいちばん下の細い枠（共有の上・同じカテゴリのツールの上）は、そこまで読む人が少なく、
      画面1枚半手前から取りに行くと視認可能率が2割ほどだった（2026-11-17）。この2つだけ画面半分手前にする */
   const LAZY_PX_BOTTOM = Math.round(window.innerHeight * 0.5);
+  /* 記事の途中の枠は、画面1枚半手前だと視認可能率が45%ほど（2026-11-17〜23）。
+     読まれないまま表示に数えられる分を減らすため、画面1枚手前にする（2026-11-24） */
+  const LAZY_PX_MID = Math.max(600, window.innerHeight);
 
   /* 注意：adsbygoogle.push({}) は「どの枠を埋めるか」を指定できず、ページの中でまだ埋まっていない
      最初の ins から順に埋める。遅らせる枠の ins を先に置いておくと、ほかの枠（下のバーなど）の push が
@@ -343,10 +346,7 @@
 
       box.innerHTML = `
         <div class="td-ad-label">スポンサーリンク</div>
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:300px;height:250px"
-             data-ad-client="${CLIENT}"
-             data-ad-slot="${SLOT_RAIL}"></ins>
+        ${placeholder(300, 250)}
       `;
 
       return box;
@@ -355,11 +355,16 @@
     const mount = () => {
       if (rail.querySelector(".td-ad-rail")) return;
 
-      rail.insertBefore(make(""), rail.firstChild);
-      rail.appendChild(make("td-ad-rail-end"));   /* js/sidebar.js は、レールの中身をこの枠の手前に入れる */
+      const top = make("");
+      const end = make("td-ad-rail-end");
+      rail.insertBefore(top, rail.firstChild);
+      rail.appendChild(end);   /* js/sidebar.js は、レールの中身をこの枠の手前に入れる */
 
-      pushAd();
-      pushAd();
+      fillPlaceholders(top, SLOT_RAIL);
+      /* 一番下の枠は、開いた時点で読み込むと、短く読んで帰る人には見られないまま数えられる
+         （右の列の視認可能率が56%、2026-11-17〜23）。画面に入ってから読み込む
+         （レールは画面に貼りついていて、一度出た一番下の枠はそのあと映り続けるので、出るのが少し遅れても見られる） */
+      whenNear(end, () => fillPlaceholders(end, SLOT_RAIL), 0);
     };
 
     if (mq.matches) {
@@ -560,7 +565,7 @@
         ${placeholder(w, hh)}
       `;
 
-      whenNear(box, () => fillPlaceholders(box, SLOT_MID));
+      whenNear(box, () => fillPlaceholders(box, SLOT_MID), LAZY_PX_MID);
     }
   }
 
@@ -605,7 +610,8 @@
     const count = pair.clientWidth >= 640 ? 2 : 1;
     if (count === 2) pair.insertAdjacentHTML("beforeend", unit());
 
-    whenNear(box, () => fillPlaceholders(box, SLOT_END));
+    /* ページ末尾は画面1枚半手前だと視認可能率が33%ほど（2026-11-17〜23）。下の細い枠と同じく画面半分手前にする */
+    whenNear(box, () => fillPlaceholders(box, SLOT_END), LAZY_PX_BOTTOM);
   }
 
   /* ---- 下から出るバー ---- */
@@ -777,7 +783,8 @@
     if (SLOT_STICKY) mountStickySlot();
     if (SLOT_RAIL) mountRailSlot();
     if (SLOT_SHARE) setTimeout(mountShareSlot, 0);
-    if (SLOT_RELATED) setTimeout(mountRelatedSlot, 0);
+    /* 「同じカテゴリのツール」の上の細い枠は、すぐ下のページ末尾の枠と並んでいて、
+       どちらも視認可能率が33%ほどだった（2026-11-17〜23）。ページの下の広告を減らすため、やめる（2026-11-24） */
     /* 記事の高さは、ほかの欄（共有・同じカテゴリ）が入ってから測る */
     if (SLOT_MID) setTimeout(mountMidSlot, 0);
   }
