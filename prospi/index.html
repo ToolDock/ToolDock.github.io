@@ -243,7 +243,7 @@ body .td-rail-inline{ padding:0 16px; }
                 </div>
                 <div><label for="fSpirits">スピリッツ</label><input type="number" id="fSpirits" value="4600" min="0" max="99999"></div>
                 <div><label for="fCost">コスト</label><input type="number" id="fCost" value="35" min="0" max="99"></div>
-                <div><label for="fTokkun">特訓</label><input type="text" id="fTokkun" value="MAX" maxlength="4"></div>
+                <div><label for="fTokkun">特訓</label><select id="fTokkun"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10" selected>10（MAX）</option></select></div>
                 <div><label for="fLv">レベル</label>
                     <div class="pair"><input type="number" id="fLv" value="75" min="1" max="99"><input type="number" id="fLvMax" value="75" min="1" max="99" aria-label="最大レベル"></div>
                 </div>
@@ -1691,7 +1691,11 @@ function drawCard(ctx) {
     box(ctx, 226, y1, [
         { w: 139, label: "特訓", cell: "dark", draw: (x, y, w, h) => {
             text(ctx, "Lv.", x + 18, y + h - 8, 19, { weight: 500, family: FONT_EN, fill: "#bbb" });
-            maxText(ctx, $("fTokkun").value, x + 80, y + h - 8, 23);
+            /* 特訓は0〜10。10のときだけ「MAX」 */
+            const tv = $("fTokkun").value;
+            const tk = tv === "" || tv === "MAX" ? 10 : Number(tv);
+            if (tk >= 10) maxText(ctx, "MAX", x + 80, y + h - 8, 23);
+            else text(ctx, String(tk), x + 80, y + h - 6, 28, { align: "center", weight: 500, family: FONT_EN, shadow: 3 });
         } }
     ]);
     box(ctx, 381, y1, [
