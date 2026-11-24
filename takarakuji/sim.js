@@ -443,10 +443,13 @@ function buildSelect() {
         }
         groups[l.group].appendChild(new Option(l.name, l.id));
     }
-    const og = document.createElement("optgroup");
-    og.label = "そのほか";
-    og.appendChild(new Option("自分で入力", CUSTOM_ID));
-    sel.appendChild(og);
+    /* 「自分で入力」は宝くじシミュレーターだけ（年末ジャンボのページなど、宝くじを決めたページには出さない） */
+    if (!Array.isArray(window.TK_ONLY)) {
+        const og = document.createElement("optgroup");
+        og.label = "そのほか";
+        og.appendChild(new Option("自分で入力", CUSTOM_ID));
+        sel.appendChild(og);
+    }
 
     const src = $("copySource");
     for (const l of LOTTERIES) src.appendChild(new Option(l.name, l.id));
