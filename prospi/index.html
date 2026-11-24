@@ -1346,13 +1346,13 @@ function maxText(ctx, str, cx, y, size) {
 
 /* 弾道の矢印。上向きの角度はアーチスト→パワーヒッター→高弾道→中弾道→ラインドライブの順に小さくなり、低弾道は真横、グラウンダーは右下 */
 const TRAJ = {
-    5: { text: "アーチスト", color: "#c86ae8", ang: -50 },
-    4: { text: "パワーヒッター", color: "#f05050", ang: -40 },
-    3: { text: "高弾道", color: "#f49a35", ang: -30 },
-    2: { text: "中弾道", color: "#e9cf32", ang: -20 },
+    5: { text: "アーチスト", color: "#c86ae8", ang: -55 },
+    4: { text: "パワーヒッター", color: "#f05050", ang: -45 },
+    3: { text: "高弾道", color: "#f49a35", ang: -36 },
+    2: { text: "中弾道", color: "#e9cf32", ang: -26 },
     1: { text: "低弾道", color: "#58aef0", ang: 0 },
-    L: { text: "ラインドライブ", color: "#3cc84a", ang: -10 },
-    G: { text: "グラウンダー", color: "#4a8cf0", ang: 38 }
+    L: { text: "ラインドライブ", color: "#3cc84a", ang: -18 },
+    G: { text: "グラウンダー", color: "#4a8cf0", ang: 30 }
 };
 function arrow(ctx, x, y, size, ang, color) {
     ctx.save();
@@ -1896,15 +1896,28 @@ syncLayers();
 fitView();
 draw();
 if (document.fonts) {
+    /* Webフォントは、字の範囲ごとに分かれていて、使う字を頼んだときに読み込まれる。キャンバスに描く字は
+       自動では頼まれず、読み込まれていない字（「低」など）は別の書体（中国語の形になることがある）で描かれてしまう。
+       描く字をまとめて先に頼み、読み込めたら描き直す */
+    const FIXED = "スピリッツ守備適性コスト特訓レベル･経験値弾道ミートパワー走力球威制球スタミナLv.MAX0123456789/ " +
+                  Object.values(TRAJ).map((t) => t.text).join("") + "捕一二三遊左中右先継抑SABCDEFG";
+    const loadGlyphs = () => {
+        const txt = FIXED + FIELDS.map((id) => $(id).value).join("");
+        return Promise.all(["500", "700", "800", "900"].map((w) =>
+            document.fonts.load(w + ' 30px "M PLUS Rounded 1c"', txt).catch(() => {})));
+    };
     Promise.all([
-        document.fonts.load('500 30px "M PLUS Rounded 1c"'),
-        document.fonts.load('800 30px "M PLUS Rounded 1c"'),
-        document.fonts.load('900 30px "M PLUS Rounded 1c"'),
-        document.fonts.load('700 30px "M PLUS Rounded 1c"'),
+        loadGlyphs(),
         document.fonts.load('900 30px "M PLUS 1p"', "SABCD"),
         document.fonts.load('900 30px "Zen Old Mincho"', "極")
     ]).then(draw, draw);
     document.fonts.ready.then(draw);
+    document.fonts.addEventListener && document.fonts.addEventListener("loadingdone", draw);
+    let glyphTimer = 0;
+    FIELDS.forEach((id) => $(id).addEventListener("input", () => {
+        clearTimeout(glyphTimer);
+        glyphTimer = setTimeout(() => loadGlyphs().then(draw), 300);
+    }));
 }
 </script>
 
