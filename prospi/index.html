@@ -213,7 +213,8 @@ body .td-rail-inline{ padding:0 16px; }
                     <div class="sliders">
                         <label for="brush">ブラシ</label><input type="range" id="brush" min="4" max="120" step="1" value="28"><output id="brushOut"></output>
                     </div>
-                    <p class="note" id="cutNote">「自動で切り抜く」は、写真の中のいちばん目立つもの（人と、手に持ったバットやグローブ）を残します。初回だけ切り抜き用のデータ（約50MB）を読み込みます。残ったところや消えすぎたところは、消しゴムと戻すブラシで直せます。</p>
+                    <label class="fit"><input type="checkbox" id="cutGhost" checked> 直しているあいだ、消えた部分を薄く表示する</label>
+                    <p class="note" id="cutNote">「自動で切り抜く」は、写真の中のいちばん目立つもの（人と、手に持ったバットやグローブ）を残します。初回だけ切り抜き用のデータ（約50MB）を読み込みます。残ったところや消えすぎたところは、消しゴムと戻すブラシで直せます。直しているあいだは、消えた部分が薄く見えるので、戻すブラシでなぞるだけで元に戻せます。</p>
                 </div>
             </div>
         </section>
@@ -548,7 +549,8 @@ const cur = () => layers[selected] || null;
 $("lyScale").addEventListener("input", () => { const L = cur(); if (L) { L.s = $("lyScale").value / 100; draw(); } syncOutputs(); });
 $("lyRot").addEventListener("input", () => { const L = cur(); if (L) { L.rot = $("lyRot").value * Math.PI / 180; draw(); } syncOutputs(); });
 $("lyAlpha").addEventListener("input", () => { const L = cur(); if (L) { L.alpha = $("lyAlpha").value / 100; draw(); } syncOutputs(); });
-$("brush").addEventListener("input", syncOutputs);
+$("brush").addEventListener("input", () => { syncOutputs(); draw(); });
+$("cutGhost").addEventListener("change", draw);
 $("lyFlip").addEventListener("click", () => { const L = cur(); if (L) { L.flip *= -1; draw(); } });
 $("lyCenter").addEventListener("click", () => { const L = cur(); if (L) { L.x = W / 2; L.y = 360 + DY; L.rot = 0; syncLayers(); draw(); } });
 $("lyUp").addEventListener("click", () => {
@@ -801,6 +803,7 @@ $("cutAuto").addEventListener("click", async () => {
 const mode = () => document.querySelector('input[name="mode"]:checked').value;
 document.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener("change", () => {
     view.classList.toggle("brush", mode() !== "move");
+    draw();
 }));
 
 function toCanvas(e) {
@@ -887,7 +890,9 @@ view.addEventListener("pointerdown", (e) => {
     draw();
 });
 
+view.addEventListener("pointerleave", () => { hoverPt = null; draw(); });
 view.addEventListener("pointermove", (e) => {
+    if (e.pointerType === "mouse") { hoverPt = toCanvas(e); if (mode() === "erase" || mode() === "restore") draw(); }
     if (!pointers.has(e.pointerId)) return;
     const p = toCanvas(e);
     pointers.set(e.pointerId, p);
@@ -1067,15 +1072,24 @@ function drawCover(ctx, img) {
     ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
 }
 
-function drawLayer(ctx, L) {
+function drawLayer(ctx, L, ghost) {
     ctx.save();
-    ctx.globalAlpha = L.alpha;
     ctx.translate(L.x, L.y);
     ctx.rotate(L.rot);
     ctx.scale(L.s * L.flip, L.s);
+    /* 切り抜きを直しているあいだは、消えた部分を薄く見せる（どこを戻せばいいか分かるように） */
+    if (ghost) {
+        ctx.globalAlpha = 0.35;
+        ctx.drawImage(L.src, -L.src.width / 2, -L.src.height / 2);
+    }
+    ctx.globalAlpha = L.alpha;
     ctx.drawImage(L.cut, -L.src.width / 2, -L.src.height / 2);
     ctx.restore();
 }
+
+/* 切り抜きを直す操作（消しゴム・戻すブラシ・囲む）を選んでいるか */
+const editingCut = () => mode() !== "move";
+let hoverPt = null;
 
 function drawSelection(ctx, L) {
     ctx.save();
@@ -1176,7 +1190,7 @@ function statValue(ctx, v, x, y, w, h) {
     const g = grade(v);
     const cx = x + w / 2, by = y + h - 7;
     text(ctx, String(v), cx + 8, by, 29, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
-    text(ctx, g, cx + 14, by, 30, { weight: 800, family: FONT_EN, fill: GRADE_COLOR[g], stroke: 5, strokeColor: "#1a1a1a" });
+    text(ctx, g, cx + 14, by, 26, { wide: 1.15, weight: 800, family: FONT_EN, fill: GRADE_COLOR[g], stroke: 5, strokeColor: "#1a1a1a" });
 }
 
 /* 「MAX」のオレンジの文字 */
@@ -1486,7 +1500,7 @@ function drawCard(ctx) {
     box(ctx, left, y1, [
         { w: 72, label: pit ? "適性" : "守備", cell: posCell, draw: (x, y, w, h) => {
             text(ctx, pos, x + 22, y + h - 7, 24, { align: "center", weight: 500, shadow: 3 });
-            text(ctx, pg, x + 49, y + h - 7, 28, { align: "center", weight: 800, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 5, strokeColor: "#1a1a1a" });
+            text(ctx, pg, x + 49, y + h - 7, 25, { wide: 1.15, align: "center", weight: 800, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 5, strokeColor: "#1a1a1a" });
         } },
         { w: 71, label: "コスト", cell: "blue", draw: (x, y, w, h) => {
             text(ctx, String($("fCost").value), x + w / 2, y + h - 7, 28, { align: "center", weight: 500, family: FONT_EN, shadow: 3 });
@@ -1556,7 +1570,7 @@ function render(ctx, preview) {
     ctx.save();
     ctx.clearRect(0, 0, W, H);
     if (!layers.some((L) => L.isBg)) ctx.drawImage(baseBackground(), 0, 0);
-    layers.forEach((L) => drawLayer(ctx, L));
+    layers.forEach((L) => drawLayer(ctx, L, preview && editingCut() && L === cur() && !L.isBg && $("cutGhost").checked));
     drawCard(ctx);
     ctx.restore();
     ctx.save();
@@ -1565,6 +1579,15 @@ function render(ctx, preview) {
             text(ctx, "「画像を追加」から", W / 2, 300 + DY, 28, { align: "center", weight: 700, stroke: 5, strokeColor: "#000" });
             text(ctx, "選手の写真を入れてください", W / 2, 345 + DY, 28, { align: "center", weight: 700, stroke: 5, strokeColor: "#000" });
         } else if (cur()) drawSelection(ctx, cur());
+        /* ブラシの大きさの丸（マウスのとき） */
+        if (hoverPt && (mode() === "erase" || mode() === "restore")) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(hoverPt.x, hoverPt.y, Number($("brush").value) / 2, 0, Math.PI * 2);
+            ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke();
+            ctx.lineWidth = 1; ctx.strokeStyle = "#000"; ctx.stroke();
+            ctx.restore();
+        }
         if (gesture && gesture.type === "lasso" && gesture.pts.length > 1) {
             ctx.save();
             ctx.beginPath();
