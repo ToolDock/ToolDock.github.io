@@ -52,7 +52,7 @@ body .td-rail-inline{ padding:0 16px; }
 @media (max-width: 899px){
     .stage-col{ display:contents; }
     .stage{ position:sticky; top:0; z-index:20; display:flex; justify-content:center; }
-    #view{ width:auto; max-width:100%; max-height:46vh; }
+    /* 大きさは fitView() が縦横比を保って決める（CSSの max-height だけだと Safari で横に伸びる） */
 }
 @media (min-width: 900px){
     .studio{ grid-template-columns:minmax(0, 420px) minmax(0, 1fr); align-items:start; }
@@ -151,7 +151,7 @@ body .td-rail-inline{ padding:0 16px; }
             <button type="button" id="btnDownload">PNG画像をダウンロード</button>
             <button type="button" id="btnShare">共有して保存（スマホ向け）</button>
         </div>
-        <p class="note">画像の上をドラッグすると動かせます。2本指でつまむと大きさと向きを変えられます（パソコンはホイールで大きさ）。</p>
+        <p class="note">画像の上をドラッグすると動かせます。2本指でつまむと大きさを変えられます（パソコンはホイール）。傾けるときは「回転」のスライダーを使います。</p>
     </div>
 
     <div class="inputs">
@@ -180,7 +180,7 @@ body .td-rail-inline{ padding:0 16px; }
                     <button type="button" class="btn small secondary" id="lyUp">前へ</button>
                     <button type="button" class="btn small secondary" id="lyDown">後ろへ</button>
                     <button type="button" class="btn small secondary" id="lyFlip">左右反転</button>
-                    <button type="button" class="btn small secondary" id="lyCenter">真ん中に戻す</button>
+                    <button type="button" class="btn small secondary" id="lyCenter">位置を元に戻す</button>
                     <button type="button" class="btn small secondary" id="lyDel">この画像を消す</button>
                 </div>
                 <div class="sliders">
@@ -303,7 +303,7 @@ body .td-rail-inline{ padding:0 16px; }
 </p>
 <p>
     写真の選手は、サイトの中で自動で切り抜けます。切り抜いたあとは、消しゴム・戻すブラシ・囲んで残す／消すで細かいところを直し、
-    ドラッグや2本指のつまみで、大きさと向きを自由に変えられます。画像は何枚でも重ねられるので、
+    ドラッグや2本指のつまみで位置と大きさを、スライダーで向きを自由に変えられます。画像は何枚でも重ねられるので、
     「TIME SELECTION」のようなロゴや、エフェクトの画像を前に重ねることもできます。
 </p>
 
@@ -364,8 +364,9 @@ A. 画像の下の細い余白に、小さくこのページのURLを入れて�
 /* 画像の形：縦長（スマホの画面 9:16）と、選手カードの部分だけ。
    カードの文字や枠は、縦長のときは DY だけ下にずらす */
 const W = 750;
-const SHAPES = { tall: { H: 1334, DY: 170 }, card: { H: 862, DY: 0 } };
-let H = 1334, DY = 170;
+/* 縦長のときのカードの位置は、iPhoneのゲーム画面を横幅ぴったりにしたときの位置（下にモデルビューアーのボタンが来る） */
+const SHAPES = { tall: { H: 1334, DY: 10 }, card: { H: 862, DY: 0 } };
+let H = 1334, DY = 10;
 const $ = (id) => document.getElementById(id);
 const view = $("view");
 const vctx = view.getContext("2d");
@@ -480,13 +481,20 @@ $("bgImage").addEventListener("change", async (e) => {
 });
 /* 背景をカードいっぱいに広げる。スマホの画面のような縦長の画像は、上の端（時計などが出る帯、高さの6.5%）を外に出して上にそろえる */
 function coverBg(L) {
+    /* 背景はいつも横幅ぴったりにする（左右が見切れない。ゲーム画面のスクショなら、ボタンや枠がカードと同じ縮尺になる）。
+       縦に長いときは、スマホの上の時計の帯（iPhoneの縦長の画面で高さの6.5%、それ以外は3%）を外に出して上にそろえる。
+       横に広くて縦が足りないときだけ、縦いっぱいに合わせて左右を切る */
     const w = L.src.width, h = L.src.height;
-    const tall = h / w > (H / W) * 1.1;
-    /* 画像より縦に長いスマホの画面は、少し大きくして、上の帯と下のボタンを外に出す */
-    L.s = Math.max(W / w, H / h) * (tall ? 1.15 : 1);
-    L.x = W / 2;
     L.rot = 0;
-    L.y = tall ? h * L.s / 2 - h * 0.065 * L.s : H / 2;
+    L.x = W / 2;
+    L.s = W / w;
+    if (h * L.s < H) {
+        L.s = H / h;
+        L.y = H / 2;
+        return;
+    }
+    const band = h / w > 2 ? 0.065 : 0.03;
+    L.y = h * L.s / 2 - h * band * L.s;
 }
 
 /* 画像の形を変える */
@@ -496,6 +504,7 @@ function applyShape() {
     const dd = sh.DY - DY;
     H = sh.H; DY = sh.DY;
     view.height = H;
+    fitView();
     baseBg = null;
     layers.forEach((L) => { if (L.isBg) coverBg(L); else L.y += dd; });
     draw();
@@ -588,7 +597,7 @@ $("brush").addEventListener("input", () => { syncOutputs(); draw(); });
 $("cutGhost").addEventListener("change", draw);
 $("smartTol").addEventListener("input", syncOutputs);
 $("lyFlip").addEventListener("click", () => { const L = cur(); if (L) { L.flip *= -1; draw(); } });
-$("lyCenter").addEventListener("click", () => { const L = cur(); if (L) { L.x = W / 2; L.y = 360 + DY; L.rot = 0; syncLayers(); draw(); } });
+$("lyCenter").addEventListener("click", () => { const L = cur(); if (!L) return; if (L.isBg) coverBg(L); else { L.x = W / 2; L.y = 360 + DY; L.rot = 0; } syncLayers(); draw(); });
 $("lyUp").addEventListener("click", () => {
     if (selected < 0 || selected >= layers.length - 1) return;
     [layers[selected], layers[selected + 1]] = [layers[selected + 1], layers[selected]];
@@ -1014,7 +1023,7 @@ view.addEventListener("pointermove", (e) => {
         const g = gesture, L = g.L;
         const d = Math.hypot(b.x - a.x, b.y - a.y);
         L.s = Math.max(0.03, g.s0 * d / g.d0);
-        L.rot = g.r0 + Math.atan2(b.y - a.y, b.x - a.x) - g.a0;
+        /* 2本指では大きさと位置だけを変える（回転はスライダーで。つまむときに傾いてしまわないように） */
         L.x = g.x0 + (a.x + b.x) / 2 - g.mx0;
         L.y = g.y0 + (a.y + b.y) / 2 - g.my0;
         draw();
@@ -1725,6 +1734,21 @@ function render(ctx, preview) {
     ctx.restore();
 }
 
+/* プレビューの表示の大きさ。狭い画面では、画面の高さの半分ほどに収まるように、縦横比を保って縮める */
+function fitView() {
+    if (window.matchMedia("(max-width: 899px)").matches) {
+        const avail = view.parentElement.clientWidth;
+        const maxH = window.innerHeight * 0.5;
+        const w = Math.min(avail, maxH * W / H);
+        view.style.width = Math.floor(w) + "px";
+        view.style.height = Math.floor(w * H / W) + "px";
+    } else {
+        view.style.width = "";
+        view.style.height = "";
+    }
+}
+window.addEventListener("resize", fitView);
+
 let raf = 0;
 function draw() {
     if (raf) return;
@@ -1815,6 +1839,7 @@ $("btnShare").addEventListener("click", async () => {
 
 syncKind();
 syncLayers();
+fitView();
 draw();
 if (document.fonts) {
     Promise.all([
