@@ -213,8 +213,8 @@ body .td-rail-inline{ padding:0 16px; }
                     <div class="sliders">
                         <label for="brush">ブラシ</label><input type="range" id="brush" min="4" max="120" step="1" value="28"><output id="brushOut"></output>
                     </div>
-                    <label class="fit"><input type="checkbox" id="cutGhost" checked> 直しているあいだ、消えた部分を薄く表示する</label>
-                    <p class="note" id="cutNote">「自動で切り抜く」は、写真の中のいちばん目立つもの（人と、手に持ったバットやグローブ）を残します。初回だけ切り抜き用のデータ（約50MB）を読み込みます。残ったところや消えすぎたところは、消しゴムと戻すブラシで直せます。直しているあいだは、消えた部分が薄く見えるので、戻すブラシでなぞるだけで元に戻せます。</p>
+                    <label class="fit"><input type="checkbox" id="cutGhost" checked> 直しているあいだ、消えた部分を赤く透かして表示する</label>
+                    <p class="note" id="cutNote">「自動で切り抜く」は、写真の中のいちばん目立つもの（人と、手に持ったバットやグローブ）を残します。初回だけ切り抜き用のデータ（約50MB）を読み込みます。残ったところや消えすぎたところは、消しゴムと戻すブラシで直せます。直しているあいだは、消えた部分が赤く透けて見えるので、戻すブラシでなぞるだけで元に戻せます。</p>
                 </div>
             </div>
         </section>
@@ -415,6 +415,23 @@ function refreshCut(L) {
     c.globalCompositeOperation = "destination-in";
     c.drawImage(L.mask, 0, 0);
     c.globalCompositeOperation = "source-over";
+    L.ghost = null;   /* 消えた部分の表示は、次に描くときに作り直す */
+}
+
+/* 消えた部分を、元の写真に赤みをかけて作る（切り抜きを直すときの目印） */
+function ghostOf(L) {
+    if (L.ghost) return L.ghost;
+    const g = document.createElement("canvas");
+    g.width = L.src.width; g.height = L.src.height;
+    const x = g.getContext("2d");
+    x.drawImage(L.src, 0, 0);
+    x.globalCompositeOperation = "destination-out";
+    x.drawImage(L.mask, 0, 0);
+    x.globalCompositeOperation = "source-atop";
+    x.fillStyle = "rgba(255,40,80,.55)";
+    x.fillRect(0, 0, g.width, g.height);
+    L.ghost = g;
+    return g;
 }
 
 async function addImageFile(file) {
@@ -1079,8 +1096,8 @@ function drawLayer(ctx, L, ghost) {
     ctx.scale(L.s * L.flip, L.s);
     /* 切り抜きを直しているあいだは、消えた部分を薄く見せる（どこを戻せばいいか分かるように） */
     if (ghost) {
-        ctx.globalAlpha = 0.35;
-        ctx.drawImage(L.src, -L.src.width / 2, -L.src.height / 2);
+        ctx.globalAlpha = 0.6;
+        ctx.drawImage(ghostOf(L), -L.src.width / 2, -L.src.height / 2);
     }
     ctx.globalAlpha = L.alpha;
     ctx.drawImage(L.cut, -L.src.width / 2, -L.src.height / 2);
@@ -1190,7 +1207,7 @@ function statValue(ctx, v, x, y, w, h) {
     const g = grade(v);
     const cx = x + w / 2, by = y + h - 7;
     text(ctx, String(v), cx + 8, by, 29, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
-    text(ctx, g, cx + 14, by, 26, { wide: 1.15, weight: 800, family: FONT_EN, fill: GRADE_COLOR[g], stroke: 5, strokeColor: "#1a1a1a" });
+    text(ctx, g, cx + 14, by, 26, { weight: 800, family: FONT_EN, fill: GRADE_COLOR[g], stroke: 5, strokeColor: "#1a1a1a" });
 }
 
 /* 「MAX」のオレンジの文字 */
@@ -1500,7 +1517,7 @@ function drawCard(ctx) {
     box(ctx, left, y1, [
         { w: 72, label: pit ? "適性" : "守備", cell: posCell, draw: (x, y, w, h) => {
             text(ctx, pos, x + 22, y + h - 7, 24, { align: "center", weight: 500, shadow: 3 });
-            text(ctx, pg, x + 49, y + h - 7, 25, { wide: 1.15, align: "center", weight: 800, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 5, strokeColor: "#1a1a1a" });
+            text(ctx, pg, x + 49, y + h - 7, 25, { align: "center", weight: 800, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 5, strokeColor: "#1a1a1a" });
         } },
         { w: 71, label: "コスト", cell: "blue", draw: (x, y, w, h) => {
             text(ctx, String($("fCost").value), x + w / 2, y + h - 7, 28, { align: "center", weight: 500, family: FONT_EN, shadow: 3 });
