@@ -186,6 +186,7 @@ body .td-rail-inline{ padding:0 16px; }
                 <div class="sliders">
                     <label for="lyScale">大きさ</label><input type="range" id="lyScale" min="5" max="400" step="1"><output id="lyScaleOut"></output>
                     <label for="lyRot">回転</label><input type="range" id="lyRot" min="-180" max="180" step="1"><output id="lyRotOut"></output>
+                    <label for="lyShadow">影</label><input type="range" id="lyShadow" min="0" max="100" step="1"><output id="lyShadowOut"></output>
                     <label for="lyAlpha">濃さ</label><input type="range" id="lyAlpha" min="10" max="100" step="1"><output id="lyAlphaOut"></output>
                 </div>
 
@@ -406,7 +407,7 @@ function makeLayer(src, name) {
     cut.width = src.width; cut.height = src.height;
     /* 最初はカードの上半分に収まる大きさで、少し右寄りに置く */
     const s = Math.min(640 / src.height, 720 / src.width);
-    const L = { id: nextId++, name, src, mask, cut, x: W * 0.5, y: 360 + DY, s, rot: 0, flip: 1, alpha: 1, undo: [] };
+    const L = { id: nextId++, name, src, mask, cut, x: W * 0.5, y: 360 + DY, s, rot: 0, flip: 1, alpha: 1, shadow: 0.7, undo: [] };
     refreshCut(L);
     return L;
 }
@@ -461,6 +462,7 @@ $("bgImage").addEventListener("change", async (e) => {
         layers = layers.filter((L) => !L.isBg);
         const L = makeLayer(src, "背景");
         L.isBg = true;
+        L.shadow = 0;
         coverBg(L);
         layers.unshift(L);
         selected = 0;
@@ -553,6 +555,7 @@ function syncLayers() {
         $("lyScale").value = Math.round(L.s * 100);
         $("lyRot").value = Math.round(L.rot * 180 / Math.PI);
         $("lyAlpha").value = Math.round(L.alpha * 100);
+        $("lyShadow").value = Math.round(L.shadow * 100);
         $("cutUndo").disabled = !L.undo.length;
     }
     syncOutputs();
@@ -562,6 +565,7 @@ function syncOutputs() {
     $("lyScaleOut").textContent = $("lyScale").value + "%";
     $("lyRotOut").textContent = $("lyRot").value + "°";
     $("lyAlphaOut").textContent = $("lyAlpha").value + "%";
+    $("lyShadowOut").textContent = $("lyShadow").value + "%";
     $("brushOut").textContent = $("brush").value;
     $("smartTolOut").textContent = $("smartTol").value;
 }
@@ -570,6 +574,7 @@ const cur = () => layers[selected] || null;
 
 $("lyScale").addEventListener("input", () => { const L = cur(); if (L) { L.s = $("lyScale").value / 100; draw(); } syncOutputs(); });
 $("lyRot").addEventListener("input", () => { const L = cur(); if (L) { L.rot = $("lyRot").value * Math.PI / 180; draw(); } syncOutputs(); });
+$("lyShadow").addEventListener("input", () => { const L = cur(); if (L) { L.shadow = $("lyShadow").value / 100; draw(); } syncOutputs(); });
 $("lyAlpha").addEventListener("input", () => { const L = cur(); if (L) { L.alpha = $("lyAlpha").value / 100; draw(); } syncOutputs(); });
 $("brush").addEventListener("input", () => { syncOutputs(); draw(); });
 $("cutGhost").addEventListener("change", draw);
@@ -1182,6 +1187,13 @@ function drawLayer(ctx, L, ghost) {
         ctx.drawImage(ghostOf(L), -L.src.width / 2, -L.src.height / 2);
     }
     ctx.globalAlpha = L.alpha;
+    /* 影：本物は選手のうしろ（右）にぼかした黒い影が落ちている。shadow は画面の座標で効くので、大きさや回転に左右されない */
+    if (!ghost && L.shadow > 0) {
+        ctx.shadowColor = "rgba(0,0,0," + (0.75 * L.shadow).toFixed(3) + ")";
+        ctx.shadowBlur = 14;
+        ctx.shadowOffsetX = 9;
+        ctx.shadowOffsetY = 4;
+    }
     ctx.drawImage(L.cut, -L.src.width / 2, -L.src.height / 2);
     ctx.restore();
 }
