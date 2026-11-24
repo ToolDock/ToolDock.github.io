@@ -260,7 +260,9 @@ body .td-rail-inline{ padding:0 16px; }
                         <option value="4">パワーヒッター</option>
                         <option value="3">高弾道</option>
                         <option value="2">中弾道</option>
+                        <option value="L">ラインドライブ</option>
                         <option value="1">低弾道</option>
+                        <option value="G">グラウンダー</option>
                     </select>
                 </div>
                 <div class="only-bat"><label for="fMeet">ミート</label><input type="number" id="fMeet" value="85" min="1" max="99"></div>
@@ -1348,7 +1350,9 @@ const TRAJ = {
     4: { text: "パワーヒッター", color: "#f05050", ang: -40 },
     3: { text: "高弾道", color: "#f49a35", ang: -30 },
     2: { text: "中弾道", color: "#e9cf32", ang: -18 },
-    1: { text: "低弾道", color: "#58aef0", ang: -6 }
+    1: { text: "低弾道", color: "#58aef0", ang: -6 },
+    L: { text: "ラインドライブ", color: "#3cc84a", ang: 0 },
+    G: { text: "グラウンダー", color: "#4a8cf0", ang: 38 }
 };
 function arrow(ctx, x, y, size, ang, color) {
     ctx.save();
