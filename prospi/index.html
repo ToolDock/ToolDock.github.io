@@ -346,7 +346,6 @@ const FONT_NAME = '"Kosugi Maru", ' + FONT_JP;
 /* 画像（レイヤー）。下から順に描く */
 let layers = [];
 let selected = -1;
-let bgImg = null;     /* 背景の画像（無ければ用意した背景を描く） */
 let markImg = null;   /* 球団マークの画像 */
 let nextId = 1;
 
@@ -415,9 +414,30 @@ $("addImage").addEventListener("change", (e) => { addImageFile(e.target.files[0]
 $("bgImage").addEventListener("change", async (e) => {
     const f = e.target.files[0]; e.target.value = "";
     if (!f) return;
-    try { bgImg = await loadImageFile(f); $("bgClear").hidden = false; draw(); } catch (err) { alert(err.message); }
+    try {
+        /* 背景も画像のひとつとして、いちばん後ろに置く（ドラッグ・拡大で、見せる範囲を選べる）。
+           最初はカードを覆う大きさで、縦長の画像（ゲームの画面など）は上にそろえる */
+        const src = await loadImageFile(f);
+        layers = layers.filter((L) => !L.isBg);
+        const L = makeLayer(src, "背景");
+        L.isBg = true;
+        L.s = Math.max(W / src.width, H / src.height);
+        L.x = W / 2;
+        /* スマホの画面のような縦長の画像は、上の端（時計などが出る帯、高さの6.5%）を外に出して上にそろえる */
+        const tall = src.height / src.width > 1.6;
+        L.y = tall ? src.height * L.s / 2 - src.height * 0.065 * L.s : H / 2;
+        layers.unshift(L);
+        selected = 0;
+        $("bgClear").hidden = false;
+        syncLayers(); draw();
+    } catch (err) { alert(err.message); }
 });
-$("bgClear").addEventListener("click", () => { bgImg = null; $("bgClear").hidden = true; draw(); });
+$("bgClear").addEventListener("click", () => {
+    layers = layers.filter((L) => !L.isBg);
+    selected = layers.length - 1;
+    $("bgClear").hidden = true;
+    syncLayers(); draw();
+});
 $("markImage").addEventListener("change", async (e) => {
     const f = e.target.files[0]; e.target.value = "";
     if (!f) return;
@@ -508,6 +528,7 @@ $("lyDel").addEventListener("click", () => {
     if (selected < 0) return;
     layers.splice(selected, 1);
     selected = layers.length - 1;
+    $("bgClear").hidden = !layers.some((L) => L.isBg);
     syncLayers(); draw();
 });
 
@@ -804,7 +825,8 @@ view.addEventListener("pointerdown", (e) => {
     /* 選んでいる画像の上ならそれを、そうでなければ上から順に当たった画像を動かす */
     let idx = -1;
     if (cur() && hit(cur(), p)) idx = selected;
-    else for (let i = layers.length - 1; i >= 0; i--) if (hit(layers[i], p)) { idx = i; break; }
+    /* 背景は、一覧で選んでいるときだけ動かす（人を動かそうとして外したときに、背景がずれないように） */
+    else for (let i = layers.length - 1; i >= 0; i--) if (!layers[i].isBg && hit(layers[i], p)) { idx = i; break; }
     if (idx < 0) return;
     if (idx !== selected) { selected = idx; syncLayers(); }
     const L = layers[idx];
@@ -1283,11 +1305,11 @@ function clampStat(v) { return Math.max(1, Math.min(99, Math.floor(Number(v) || 
 function render(ctx, preview) {
     ctx.save();
     ctx.clearRect(0, 0, W, H);
-    if (bgImg) drawCover(ctx, bgImg); else ctx.drawImage(baseBackground(), 0, 0);
+    if (!layers.some((L) => L.isBg)) ctx.drawImage(baseBackground(), 0, 0);
     layers.forEach((L) => drawLayer(ctx, L));
     drawCard(ctx);
     if (preview) {
-        if (!layers.length) {
+        if (!layers.some((L) => !L.isBg)) {
             text(ctx, "「画像を追加」から", W / 2, 300, 28, { align: "center", weight: 700, stroke: 5, strokeColor: "#000" });
             text(ctx, "選手の写真を入れてください", W / 2, 345, 28, { align: "center", weight: 700, stroke: 5, strokeColor: "#000" });
         } else if (cur()) drawSelection(ctx, cur());
