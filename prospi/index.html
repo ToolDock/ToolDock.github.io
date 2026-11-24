@@ -209,12 +209,13 @@ body .td-rail-inline{ padding:0 16px; }
                         <span class="seg" role="radiogroup" aria-label="囲んで切り抜く">
                             <label><input type="radio" name="mode" value="lassoKeep"><span>囲んで残す</span></label>
                             <label><input type="radio" name="mode" value="lassoErase"><span>囲んで消す</span></label>
+                            <label><input type="radio" name="mode" value="crop"><span>トリミング</span></label>
                         </span>
                     </div>
                     <div class="sliders">
                         <label for="brush">ブラシ</label><input type="range" id="brush" min="4" max="120" step="1" value="28"><output id="brushOut"></output>
                     </div>
-                    <label class="fit"><input type="checkbox" id="smartBrush" checked> スマートブラシ（なぞった色とつながっているところだけを戻す・消す）</label>
+                    <label class="fit"><input type="checkbox" id="smartBrush"> スマートブラシ（なぞった色とつながっているところだけを戻す・消す）</label>
                     <div class="sliders">
                         <label for="smartTol">色の幅</label><input type="range" id="smartTol" min="10" max="120" step="1" value="48"><output id="smartTolOut"></output>
                     </div>
@@ -322,9 +323,10 @@ body .td-rail-inline{ padding:0 16px; }
 <h2>切り抜きのコツ</h2>
 <ul>
     <li>選手がはっきり写っていて、背景とまぎれていない写真ほどきれいに切り抜けます。暗い写真では、腕などが消えることがあります。</li>
-    <li>消えた部分は、戻すブラシでなぞると元に戻ります。スマートブラシ（初めからオン）は、なぞった色とつながっているところだけを戻すので、まわりの背景まで戻りにくくなります。</li>
+    <li>消えた部分は、戻すブラシでなぞると元に戻ります。スマートブラシ（チェックを入れると使えます）は、なぞった色とつながっているところだけを戻すので、まわりの背景まで戻りにくくなります。</li>
     <li>背景と色が近いところは、スマートブラシの「色の幅」を狭くするか、戻りすぎたところを消しゴムで消して整えます。</li>
     <li>大まかに切り抜くときは「囲んで残す」で選手のまわりを指でなぞると、外側がまとめて消えます。</li>
+    <li>写真のいらない部分は「トリミング」を選んで、残したい範囲を四角くドラッグすると切り落とせます。</li>
     <li>失敗したら「1つ前に戻す」、最初からやり直すときは「切り抜きを元に戻す」を押します。</li>
 </ul>
 
@@ -987,6 +989,13 @@ view.addEventListener("pointerdown", (e) => {
     }
     if (pointers.size > 1) return;
 
+    if (mode() === "crop") {
+        const L = cur();
+        if (!L) return;
+        gesture = { type: "crop", L, a: p, b: p };
+        draw();
+        return;
+    }
     if (mode() === "lassoKeep" || mode() === "lassoErase") {
         const L = cur();
         if (!L) return;
@@ -1040,12 +1049,42 @@ view.addEventListener("pointermove", (e) => {
     } else if (gesture.type === "brush") {
         brushAt(gesture.L, p);
         draw();
+    } else if (gesture.type === "crop") {
+        gesture.b = p;
+        draw();
     } else if (gesture.type === "lasso") {
         const q = gesture.pts[gesture.pts.length - 1];
         if (Math.hypot(p.x - q.x, p.y - q.y) > 3) gesture.pts.push(p);
         draw();
     }
 });
+
+/* トリミング：ドラッグした四角の中だけを残し、画像そのものを小さくする（位置はそのまま） */
+function applyCrop(g) {
+    const L = g.L;
+    const pts = [g.a, { x: g.b.x, y: g.a.y }, g.b, { x: g.a.x, y: g.b.y }].map((p) => toLocal(L, p));
+    const x0 = Math.max(0, Math.floor(Math.min(...pts.map((q) => q.x))));
+    const y0 = Math.max(0, Math.floor(Math.min(...pts.map((q) => q.y))));
+    const x1 = Math.min(L.src.width, Math.ceil(Math.max(...pts.map((q) => q.x))));
+    const y1 = Math.min(L.src.height, Math.ceil(Math.max(...pts.map((q) => q.y))));
+    const w = x1 - x0, h = y1 - y0;
+    if (w < 8 || h < 8) return;
+    const cut = (c) => { const n = document.createElement("canvas"); n.width = w; n.height = h; n.getContext("2d").drawImage(c, x0, y0, w, h, 0, 0, w, h); return n; };
+    /* 残す四角の中心が、画面上で同じ場所にくるように位置を直す */
+    const lx = x0 + w / 2 - L.src.width / 2, ly = y0 + h / 2 - L.src.height / 2;
+    const c = Math.cos(L.rot), sn = Math.sin(L.rot);
+    const dx = lx * L.s * L.flip, dy = ly * L.s;
+    L.x += dx * c - dy * sn;
+    L.y += dx * sn + dy * c;
+    L.src = cut(L.src);
+    L.mask = cut(L.mask);
+    L.cut = document.createElement("canvas");
+    L.cut.width = w; L.cut.height = h;
+    L.undo = [];
+    L.file = null; L.srcData = null;
+    refreshCut(L);
+    syncLayers();
+}
 
 /* 囲んだ形で切り抜く。「残す」は囲みの外を消し、「消す」は囲みの中を消す */
 function applyLasso(g) {
@@ -1069,6 +1108,7 @@ function endPointer(e) {
     if (gesture && (gesture.type !== "pinch" || pointers.size < 2)) {
         const wasBrush = gesture.type === "brush" || gesture.type === "lasso";
         if (gesture.type === "lasso") applyLasso(gesture);
+        if (gesture.type === "crop") applyCrop(gesture);
         gesture = null;
         lastBrush = null;
         view.classList.remove("dragging");
@@ -1777,6 +1817,16 @@ function render(ctx, preview) {
             ctx.arc(hoverPt.x, hoverPt.y, Number($("brush").value) / 2, 0, Math.PI * 2);
             ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke();
             ctx.lineWidth = 1; ctx.strokeStyle = "#000"; ctx.stroke();
+            ctx.restore();
+        }
+        if (gesture && gesture.type === "crop") {
+            const x = Math.min(gesture.a.x, gesture.b.x), y = Math.min(gesture.a.y, gesture.b.y);
+            const w = Math.abs(gesture.b.x - gesture.a.x), h = Math.abs(gesture.b.y - gesture.a.y);
+            ctx.save();
+            ctx.fillStyle = "rgba(0,0,0,.45)";
+            ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.rect(x, y, w, h); ctx.fill("evenodd");
+            ctx.setLineDash([8, 6]); ctx.lineWidth = 3; ctx.strokeStyle = "#fff";
+            ctx.strokeRect(x, y, w, h);
             ctx.restore();
         }
         if (gesture && gesture.type === "lasso" && gesture.pts.length > 1) {
