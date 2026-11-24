@@ -32,7 +32,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet">
 <!-- ランクのメダルの文字だけに使う（使う字だけを読み込む） -->
-<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Zen+Old+Mincho:wght@900&text=SABC%E6%A5%B5&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@900&family=Zen+Old+Mincho:wght@900&text=SABC%E6%A5%B5&display=swap" rel="stylesheet">
 <meta name="keywords" content="プロスピA,プロスピ,選手画像,コラ画像,ジェネレーター,選手カード,切り抜き,背景透過,スピリッツ,TS,OB,画像作成,無料">
 
 <style>
@@ -1217,7 +1217,8 @@ function arrow(ctx, x, y, size, ang, color) {
 }
 
 /* 左下のランクのメダル（金のコインに浮き出た文字） */
-const FONT_RANK = '"Alfa Slab One", ' + FONT_JP;
+/* ランクの文字は、丸ゴシック（M PLUS Rounded 1c）と同じ形で角のある M PLUS 1p の極太（持ち主が見比べて選んだ） */
+const FONT_RANK = '"M PLUS 1p", ' + FONT_JP;
 const FONT_KIWAMI = '"Zen Old Mincho", ' + FONT_JP;
 
 /* コインの地の金のラメ（毎回同じ模様にするため、一度だけ作る） */
@@ -1291,13 +1292,13 @@ function medal(ctx, cx, cy, rank, kiwami) {
     });
     ctx.restore();
 
-    /* ランクの文字。本物は先が縦に切れたスラブセリフの太い字なので、Alfa Slab One で描く。
+    /* ランクの文字。本物は角のある極太のゴシックなので、M PLUS 1p の900で描く。
        クリーム色の面のまわりを、黒いふち → 細い金の線 → 黒いふちで囲む。
        面は左上が白く、右下ほど金がかったベージュ（光が左上から当たる陰影） */
     {
-        const size = 46, sxr = 0.86;   /* 本物は少し縦長 */
+        const size = 52, sxr = 0.94;   /* 本物は少し縦長 */
         ctx.save();
-        ctx.font = size + "px " + FONT_RANK;
+        ctx.font = "900 " + size + "px " + FONT_RANK;
         ctx.textAlign = "center";
         ctx.lineJoin = "round";
         const m = ctx.measureText(rank);
@@ -1313,7 +1314,7 @@ function medal(ctx, cx, cy, rank, kiwami) {
         const fc = document.createElement("canvas");
         fc.width = bw; fc.height = bh;
         const f = fc.getContext("2d");
-        f.font = size + "px " + FONT_RANK;
+        f.font = "900 " + size + "px " + FONT_RANK;
         f.textAlign = "center";
         const fx = bw / 2, fy = pad + asc;
         const base = f.createLinearGradient(0, 0, bw, bh);
@@ -1490,7 +1491,7 @@ function drawCard(ctx) {
                 ctx.fillStyle = g; ctx.fill();
             }
             ctx.restore();
-            if (lv >= mx) maxText(ctx, "MAX", bx + bw / 2, by + bh + 2, 20);
+            if (lv >= mx) maxText(ctx, "MAX", bx + bw / 2, by + bh / 2 + 8.5, 23);   /* バーの上（たての真ん中）に重ねる */
         } }
     ]);
 
@@ -1651,7 +1652,7 @@ if (document.fonts) {
         document.fonts.load('800 30px "M PLUS Rounded 1c"'),
         document.fonts.load('900 30px "M PLUS Rounded 1c"'),
         document.fonts.load('700 30px "M PLUS Rounded 1c"'),
-        document.fonts.load('30px "Alfa Slab One"', "SABC"),
+        document.fonts.load('900 30px "M PLUS 1p"', "SABC"),
         document.fonts.load('900 30px "Zen Old Mincho"', "極")
     ]).then(draw, draw);
     document.fonts.ready.then(draw);
