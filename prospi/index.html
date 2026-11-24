@@ -30,7 +30,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&family=Varela+Round&family=Kosugi+Maru&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet">
 <meta name="keywords" content="プロスピA,プロスピ,選手画像,コラ画像,ジェネレーター,選手カード,切り抜き,背景透過,スピリッツ,TS,OB,画像作成,無料">
 
 <style>
@@ -356,9 +356,9 @@ const view = $("view");
 const vctx = view.getContext("2d");
 
 const FONT_JP = '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif';
-/* 英数字（シリーズ・数字・ランクの文字）と選手名は、細めで横に広い丸い書体にする */
-const FONT_EN = '"Varela Round", ' + FONT_JP;
-const FONT_NAME = '"Kosugi Maru", ' + FONT_JP;
+/* 英数字・選手名も同じ書体（500の太さ）にする（持ち主が見比べて選んだ） */
+const FONT_EN = FONT_JP;
+const FONT_NAME = FONT_JP;
 
 /* 画像（レイヤー）。下から順に描く */
 let layers = [];
@@ -1156,8 +1156,8 @@ function box(ctx, x, y, cols) {
 function statValue(ctx, v, x, y, w, h) {
     const g = grade(v);
     const cx = x + w / 2, by = y + h - 7;
-    text(ctx, String(v), cx + 8, by, 29, { align: "right", weight: 400, family: FONT_EN, shadow: 3 });
-    text(ctx, g, cx + 14, by, 29, { weight: 400, family: FONT_EN, fill: GRADE_COLOR[g], stroke: 4, strokeColor: "#1a1a1a" });
+    text(ctx, String(v), cx + 8, by, 29, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
+    text(ctx, g, cx + 14, by, 29, { weight: 500, family: FONT_EN, fill: GRADE_COLOR[g], stroke: 4, strokeColor: "#1a1a1a" });
 }
 
 /* 「MAX」のオレンジの文字 */
@@ -1303,8 +1303,8 @@ function drawCard(ctx) {
         }
         ctx.restore();
     }
-    text(ctx, $("fSeries").value, 330, 640, 27, { weight: 400, family: FONT_EN, stroke: 5, strokeColor: "#111", maxW: right - 326 });
-    text(ctx, $("fName").value, 330, 686, 37, { weight: 400, family: FONT_NAME, stroke: 5, strokeColor: "#111", maxW: right - 330 });
+    text(ctx, $("fSeries").value, 330, 640, 27, { weight: 500, family: FONT_EN, stroke: 5, strokeColor: "#111", maxW: right - 326 });
+    text(ctx, $("fName").value, 330, 686, 37, { weight: 500, family: FONT_NAME, stroke: 5, strokeColor: "#111", maxW: right - 330 });
 
     /* 1段目：守備（適性）・コスト／特訓／レベル */
     const y1 = 701;
@@ -1313,24 +1313,24 @@ function drawCard(ctx) {
     box(ctx, left, y1, [
         { w: 72, label: pit ? "適性" : "守備", cell: "gold", draw: (x, y, w, h) => {
             text(ctx, pos, x + 22, y + h - 7, 24, { align: "center", weight: 500, shadow: 3 });
-            text(ctx, pg, x + 48, y + h - 7, 27, { align: "center", weight: 400, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 3, strokeColor: "#1a1a1a" });
+            text(ctx, pg, x + 48, y + h - 7, 27, { align: "center", weight: 500, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 3, strokeColor: "#1a1a1a" });
         } },
         { w: 71, label: "コスト", cell: "blue", draw: (x, y, w, h) => {
-            text(ctx, String($("fCost").value), x + w / 2, y + h - 7, 28, { align: "center", weight: 400, family: FONT_EN, shadow: 3 });
+            text(ctx, String($("fCost").value), x + w / 2, y + h - 7, 28, { align: "center", weight: 500, family: FONT_EN, shadow: 3 });
         } }
     ]);
     box(ctx, 226, y1, [
         { w: 139, label: "特訓", cell: "dark", draw: (x, y, w, h) => {
-            text(ctx, "Lv.", x + 18, y + h - 8, 19, { weight: 400, family: FONT_EN, fill: "#bbb" });
+            text(ctx, "Lv.", x + 18, y + h - 8, 19, { weight: 500, family: FONT_EN, fill: "#bbb" });
             maxText(ctx, $("fTokkun").value, x + 80, y + h - 8, 23);
         } }
     ]);
     box(ctx, 381, y1, [
         { w: right - 381, label: "レベル・経験値", cell: "dark", draw: (x, y, w, h) => {
             const lv = Number($("fLv").value) || 1, mx = Number($("fLvMax").value) || 1;
-            text(ctx, "Lv.", x + 14, y + h - 8, 19, { weight: 400, family: FONT_EN, fill: "#bbb" });
-            text(ctx, lv + "/", x + 107, y + h - 6, 30, { align: "right", weight: 400, family: FONT_EN, shadow: 3 });
-            text(ctx, String(mx), x + 159, y + h - 6, 30, { align: "right", weight: 400, family: FONT_EN, shadow: 3 });
+            text(ctx, "Lv.", x + 14, y + h - 8, 19, { weight: 500, family: FONT_EN, fill: "#bbb" });
+            text(ctx, lv + "/", x + 107, y + h - 6, 30, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
+            text(ctx, String(mx), x + 159, y + h - 6, 30, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
             /* 経験値のバー */
             const bx = x + 168, by = y + 10, bw = w - 175, bh = 16;
             ctx.save();
@@ -1355,8 +1355,14 @@ function drawCard(ctx) {
         const t = TRAJ[$("fTraj").value] || TRAJ[2];
         box(ctx, left, y2, [
             { w: 195, label: "弾道", cell: "green", draw: (x, y, w, h) => {
-                arrow(ctx, x + 26, y + h / 2, 31, t.ang, t.color);
-                text(ctx, t.text, x + 46, y + h - 8, 23, { weight: 500, shadow: 3, maxW: w - 52 });
+                /* 矢印と文字をひとまとまりにして、枠の中央にそろえる */
+                ctx.save();
+                ctx.font = "500 23px " + FONT_JP;
+                const tw = Math.min(ctx.measureText(t.text).width, w - 52);
+                ctx.restore();
+                const gx = x + (w - (30 + 8 + tw)) / 2;
+                arrow(ctx, gx + 15, y + h / 2, 31, t.ang, t.color);
+                text(ctx, t.text, gx + 38, y + h - 8, 23, { weight: 500, shadow: 3, maxW: w - 52 });
             } }
         ]);
         [[279, "ミート", "fMeet"], [416, "パワー", "fPow"], [555, "走力", "fRun"]].forEach(([x, lb, id]) => {
@@ -1500,8 +1506,7 @@ if (document.fonts) {
         document.fonts.load('500 30px "M PLUS Rounded 1c"'),
         document.fonts.load('800 30px "M PLUS Rounded 1c"'),
         document.fonts.load('900 30px "M PLUS Rounded 1c"'),
-        document.fonts.load('400 30px "Varela Round"'),
-        document.fonts.load('400 30px "Kosugi Maru"')
+        document.fonts.load('700 30px "M PLUS Rounded 1c"')
     ]).then(draw, draw);
     document.fonts.ready.then(draw);
 }
