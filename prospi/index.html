@@ -30,7 +30,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&family=Varela+Round&family=Kosugi+Maru&display=swap" rel="stylesheet">
 <meta name="keywords" content="プロスピA,プロスピ,選手画像,コラ画像,ジェネレーター,選手カード,切り抜き,背景透過,スピリッツ,TS,OB,画像作成,無料">
 
 <style>
@@ -111,6 +111,7 @@ body .td-rail-inline{ padding:0 16px; }
 .sliders input[type=range]{ width:100%; }
 .sliders output{ min-width:3.2em; text-align:right; font-variant-numeric:tabular-nums; }
 .mode{ margin-top:10px; }
+.fit{ display:block; margin-top:8px; font-size:.85rem; }
 .file-btn{ position:relative; overflow:hidden; display:inline-block; }
 .file-btn input{ position:absolute; inset:0; opacity:0; cursor:pointer; }
 .drop-hint{ font-size:.82rem; margin:6px 0 0; }
@@ -182,10 +183,11 @@ body .td-rail-inline{ padding:0 16px; }
                 <div class="cut-box" id="cutBox">
                     <strong>切り抜き</strong>
                     <div class="tools">
-                        <button type="button" class="btn small" id="cutAuto">人物を自動で切り抜く</button>
+                        <button type="button" class="btn small" id="cutAuto">自動で切り抜く</button>
                         <button type="button" class="btn small secondary" id="cutReset">切り抜きを元に戻す</button>
                         <button type="button" class="btn small secondary" id="cutUndo" disabled>1つ前に戻す</button>
                     </div>
+                    <label class="fit"><input type="checkbox" id="cutFit" checked> 切り抜いたら、大きさと位置をカードに合わせる</label>
                     <div class="mode">
                         <span class="seg" role="radiogroup" aria-label="プレビューでの操作">
                             <label><input type="radio" name="mode" value="move" checked><span>動かす</span></label>
@@ -196,7 +198,7 @@ body .td-rail-inline{ padding:0 16px; }
                     <div class="sliders">
                         <label for="brush">ブラシ</label><input type="range" id="brush" min="4" max="120" step="1" value="28"><output id="brushOut"></output>
                     </div>
-                    <p class="note" id="cutNote">「人物を自動で切り抜く」は、初回だけ切り抜き用のデータ（約25MB）を読み込みます。残ったところや消えすぎたところは、消しゴムと戻すブラシで直せます。</p>
+                    <p class="note" id="cutNote">「自動で切り抜く」は、写真の中のいちばん目立つもの（人と、手に持ったバットやグローブ）を残します。初回だけ切り抜き用のデータ（約50MB）を読み込みます。残ったところや消えすぎたところは、消しゴムと戻すブラシで直せます。</p>
                 </div>
             </div>
         </section>
@@ -337,6 +339,9 @@ const view = $("view");
 const vctx = view.getContext("2d");
 
 const FONT_JP = '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif';
+/* 英数字（シリーズ・数字・ランクの文字）と選手名は、細めで横に広い丸い書体にする */
+const FONT_EN = '"Varela Round", ' + FONT_JP;
+const FONT_NAME = '"Kosugi Maru", ' + FONT_JP;
 
 /* 画像（レイヤー）。下から順に描く */
 let layers = [];
@@ -538,28 +543,26 @@ $("cutReset").addEventListener("click", () => {
     refreshCut(L); syncLayers(); draw();
 });
 
-/* 人物の切り抜きは MediaPipe の画像セグメンテーション（ブラウザの中で動く）を使う。
-   初めて押したときだけ読み込む */
-const MP_VER = "0.10.14";
-const MP_BASE = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@" + MP_VER;
-const MP_MODEL = "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite";
-let segmenterPromise = null;
+/* 切り抜きは ISNet（DIS の汎用の切り抜きモデル。Apache-2.0）を onnxruntime-web でブラウザの中で動かす。
+   人だけでなく、手に持ったバットやグローブもいっしょに残る。
+   モデルは8ビットに縮めたもの（約46MB）をこのサイトに置き、初めて押したときだけ読み込む */
+const ORT_BASE = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
+const MODEL_URL = "/prospi/model/isnet-general-use-q8.onnx";
+const SIZE = 1024;
+let sessionPromise = null;
 
-function getSegmenter() {
-    if (!segmenterPromise) {
-        segmenterPromise = (async () => {
-            const vision = await import(MP_BASE + "/vision_bundle.mjs");
-            const files = await vision.FilesetResolver.forVisionTasks(MP_BASE + "/wasm");
-            return vision.ImageSegmenter.createFromOptions(files, {
-                baseOptions: { modelAssetPath: MP_MODEL },
-                runningMode: "IMAGE",
-                outputCategoryMask: false,
-                outputConfidenceMasks: true
-            });
+function getSession() {
+    if (!sessionPromise) {
+        sessionPromise = (async () => {
+            const ort = await import(ORT_BASE + "ort.wasm.min.mjs");
+            ort.env.wasm.wasmPaths = ORT_BASE;
+            ort.env.wasm.numThreads = Math.min(4, navigator.hardwareConcurrency || 1);
+            const session = await ort.InferenceSession.create(MODEL_URL, { executionProviders: ["wasm"], graphOptimizationLevel: "all" });
+            return { ort, session };
         })();
-        segmenterPromise.catch(() => { segmenterPromise = null; });
+        sessionPromise.catch(() => { sessionPromise = null; });
     }
-    return segmenterPromise;
+    return sessionPromise;
 }
 
 function busy(msg) {
@@ -568,33 +571,145 @@ function busy(msg) {
     b.textContent = msg || "";
 }
 
+/* 1024×1024 に縮めた画像から、0〜1 の切り抜きの濃さ（1024×1024）を作る */
+async function predict(src) {
+    const { ort, session } = await getSession();
+    const c = document.createElement("canvas");
+    c.width = SIZE; c.height = SIZE;
+    const x = c.getContext("2d", { willReadFrequently: true });
+    x.drawImage(src, 0, 0, SIZE, SIZE);
+    const px = x.getImageData(0, 0, SIZE, SIZE).data;
+    const N = SIZE * SIZE;
+    const input = new Float32Array(3 * N);
+    const mean = [0.485, 0.456, 0.406];
+    for (let i = 0; i < N; i++) {
+        input[i] = px[i * 4] / 255 - mean[0];
+        input[N + i] = px[i * 4 + 1] / 255 - mean[1];
+        input[2 * N + i] = px[i * 4 + 2] / 255 - mean[2];
+    }
+    const feeds = {};
+    feeds[session.inputNames[0]] = new ort.Tensor("float32", input, [1, 3, SIZE, SIZE]);
+    const out = await session.run(feeds);
+    const o = out[session.outputNames[0]].data;
+    let mn = Infinity, mx = -Infinity;
+    for (let i = 0; i < N; i++) { if (o[i] < mn) mn = o[i]; if (o[i] > mx) mx = o[i]; }
+    const a = new Float32Array(N);
+    const k = 1 / (mx - mn || 1);
+    for (let i = 0; i < N; i++) a[i] = (o[i] - mn) * k;
+    return a;
+}
+
+/* 人とつながっていない小さなかたまり（画面の文字・エフェクトのかけらなど）を落とす。
+   濃さ0.5以上をかたまりに分け、いちばん大きいものの15%に満たないかたまりは消す */
+function keepMain(a) {
+    const N = SIZE * SIZE;
+    const lab = new Int32Array(N).fill(-1);
+    const sizes = [];
+    const stack = new Int32Array(N);
+    for (let i = 0; i < N; i++) {
+        if (a[i] < 0.5 || lab[i] >= 0) continue;
+        const id = sizes.length;
+        let n = 0, sp = 0;
+        stack[sp++] = i; lab[i] = id;
+        while (sp) {
+            const p = stack[--sp]; n++;
+            const px = p % SIZE, py = (p / SIZE) | 0;
+            if (px > 0 && lab[p - 1] < 0 && a[p - 1] >= 0.5) { lab[p - 1] = id; stack[sp++] = p - 1; }
+            if (px < SIZE - 1 && lab[p + 1] < 0 && a[p + 1] >= 0.5) { lab[p + 1] = id; stack[sp++] = p + 1; }
+            if (py > 0 && lab[p - SIZE] < 0 && a[p - SIZE] >= 0.5) { lab[p - SIZE] = id; stack[sp++] = p - SIZE; }
+            if (py < SIZE - 1 && lab[p + SIZE] < 0 && a[p + SIZE] >= 0.5) { lab[p + SIZE] = id; stack[sp++] = p + SIZE; }
+        }
+        sizes.push(n);
+    }
+    if (!sizes.length) return a;
+    const big = Math.max(...sizes);
+    const keep = sizes.map((n) => n >= big * 0.15);
+    /* 残すかたまりを少し太らせた範囲（ふちの半透明を残すため）の外は 0 にする */
+    const R = 6;
+    const near = new Uint8Array(N);
+    for (let y = 0; y < SIZE; y++) {
+        let run = -1e9;
+        for (let x = 0; x < SIZE; x++) {
+            const l = lab[y * SIZE + x];
+            if (l >= 0 && keep[l]) run = x;
+            if (x - run <= R) near[y * SIZE + x] = 1;
+        }
+        run = 1e9;
+        for (let x = SIZE - 1; x >= 0; x--) {
+            const l = lab[y * SIZE + x];
+            if (l >= 0 && keep[l]) run = x;
+            if (run - x <= R) near[y * SIZE + x] = 1;
+        }
+    }
+    const near2 = new Uint8Array(N);
+    for (let x = 0; x < SIZE; x++) {
+        let run = -1e9;
+        for (let y = 0; y < SIZE; y++) { if (near[y * SIZE + x]) run = y; if (y - run <= R) near2[y * SIZE + x] = 1; }
+        run = 1e9;
+        for (let y = SIZE - 1; y >= 0; y--) { if (near[y * SIZE + x]) run = y; if (run - y <= R) near2[y * SIZE + x] = 1; }
+    }
+    const b = new Float32Array(N);
+    for (let i = 0; i < N; i++) b[i] = near2[i] ? a[i] : 0;
+    return b;
+}
+
+/* 切り抜いた人がカードの上半分にきれいに収まるように、大きさと位置を合わせる */
+function fitToCard(L) {
+    const m = L.mask;
+    const k = Math.min(1, 512 / Math.max(m.width, m.height));
+    const w = Math.max(1, Math.round(m.width * k)), h = Math.max(1, Math.round(m.height * k));
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const x = c.getContext("2d", { willReadFrequently: true });
+    x.drawImage(m, 0, 0, w, h);
+    const d = x.getImageData(0, 0, w, h).data;
+    let x0 = w, y0 = h, x1 = -1, y1 = -1;
+    for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
+        if (d[(yy * w + xx) * 4 + 3] > 128) {
+            if (xx < x0) x0 = xx; if (xx > x1) x1 = xx;
+            if (yy < y0) y0 = yy; if (yy > y1) y1 = yy;
+        }
+    }
+    if (x1 < 0) return;
+    const bw = (x1 - x0 + 1) / k, bh = (y1 - y0 + 1) / k;
+    const bx = (x0 / k + bw / 2) - L.src.width / 2, by = (y0 / k + bh / 2) - L.src.height / 2;
+    /* 人の高さ 640px（横が広いときは 700px まで）、足もとが名前のあたり（y=700）にくるように。
+       写真の下の端で切れている（上半身だけなど）ときは、切れ目が下の枠に隠れる大きさにする。
+       小さい写真を引き伸ばしすぎるとぼやけるので、3倍までにする */
+    const cutBottom = y1 >= h * 0.97;
+    let s, top;
+    if (cutBottom) {
+        /* 頭を上から70pxに置き、切れ目が下の枠（y=760）より下に隠れる大きさにする */
+        s = Math.min(690 / bh, 3);
+        top = 70;
+    } else {
+        s = Math.min(640 / bh, 700 / bw, 3);
+        top = 700 - bh * s;
+    }
+    L.s = s; L.rot = 0;
+    L.x = W / 2 - bx * s * L.flip;
+    L.y = top + bh * s / 2 - by * s;
+}
+
 $("cutAuto").addEventListener("click", async () => {
     const L = cur(); if (!L) return;
     const btn = $("cutAuto");
     btn.disabled = true;
-    busy(segmenterPromise ? "切り抜いています…" : "切り抜きの準備をしています…（初回だけ少し時間がかかります）");
+    busy(sessionPromise ? "切り抜いています…" : "切り抜きの準備をしています…（初回だけ、データの読み込みに少し時間がかかります）");
     try {
-        const seg = await getSegmenter();
-        busy("切り抜いています…");
+        await getSession();
+        busy("切り抜いています…（10秒ほどかかることがあります）");
         await new Promise((r) => setTimeout(r, 30));
-        const res = seg.segment(L.src);
-        const masks = res.confidenceMasks;
-        const mw = masks[0].width, mh = masks[0].height;
-        const bg = masks[0].getAsFloat32Array();   /* 0番が「背景」。人物（髪・肌・服・持ち物）は 1 − 背景 */
+        const a = keepMain(await predict(L.src));
         const small = document.createElement("canvas");
-        small.width = mw; small.height = mh;
+        small.width = SIZE; small.height = SIZE;
         const sx = small.getContext("2d");
-        const id = sx.createImageData(mw, mh);
-        for (let i = 0; i < mw * mh; i++) {
-            const a = 1 - bg[i];
-            /* 境目を少しくっきりさせる（0.3〜0.7 を 0〜1 に引き伸ばす） */
-            const t = Math.min(1, Math.max(0, (a - 0.3) / 0.4));
-            const v = t * t * (3 - 2 * t);
+        const id = sx.createImageData(SIZE, SIZE);
+        for (let i = 0; i < SIZE * SIZE; i++) {
             id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = 255;
-            id.data[i * 4 + 3] = Math.round(v * 255);
+            id.data[i * 4 + 3] = Math.round(Math.min(1, Math.max(0, a[i])) * 255);
         }
         sx.putImageData(id, 0, 0);
-        masks.forEach((m) => m.close && m.close());
         pushUndo(L);
         const m = L.mask.getContext("2d");
         m.globalCompositeOperation = "copy";
@@ -602,7 +717,9 @@ $("cutAuto").addEventListener("click", async () => {
         m.imageSmoothingQuality = "high";
         m.drawImage(small, 0, 0, L.mask.width, L.mask.height);
         m.globalCompositeOperation = "source-over";
-        refreshCut(L); syncLayers(); draw();
+        refreshCut(L);
+        if ($("cutFit").checked) fitToCard(L);
+        syncLayers(); draw();
     } catch (e) {
         console.error(e);
         alert("自動の切り抜きを読み込めませんでした。通信の状態を確かめて、もう一度お試しください。消しゴムで手で切り抜くこともできます。");
@@ -949,8 +1066,8 @@ function box(ctx, x, y, cols) {
 function statValue(ctx, v, x, y, w, h) {
     const g = grade(v);
     const cx = x + w / 2, by = y + h - 7;
-    text(ctx, String(v), cx + 8, by, 27, { align: "right", weight: 500, shadow: 3 });
-    text(ctx, g, cx + 14, by, 27, { weight: 800, fill: GRADE_COLOR[g], stroke: 3, strokeColor: "#1a1a1a" });
+    text(ctx, String(v), cx + 8, by, 29, { align: "right", weight: 400, family: FONT_EN, shadow: 3 });
+    text(ctx, g, cx + 14, by, 29, { weight: 400, family: FONT_EN, fill: GRADE_COLOR[g], stroke: 4, strokeColor: "#1a1a1a" });
 }
 
 /* 「MAX」のオレンジの文字 */
@@ -1059,7 +1176,7 @@ function drawCard(ctx) {
     {
         const s = String(Math.max(0, Math.floor(Number($("fSpirits").value) || 0)));
         ctx.save();
-        ctx.font = "800 44px " + FONT_JP;
+        ctx.font = "800 45px " + FONT_JP;
         const g = ctx.createLinearGradient(0, -34, 0, 0);   /* translate のあとで塗るので、文字の位置を0にした座標 */
         g.addColorStop(0, "#ffb070");
         g.addColorStop(0.45, "#ff6a2a");
@@ -1094,8 +1211,8 @@ function drawCard(ctx) {
         }
         ctx.restore();
     }
-    text(ctx, $("fSeries").value, 330, 640, 26, { weight: 800, stroke: 5, strokeColor: "#111", maxW: right - 326 });
-    text(ctx, $("fName").value, 330, 686, 37, { weight: 700, stroke: 6, strokeColor: "#111", maxW: right - 330 });
+    text(ctx, $("fSeries").value, 330, 640, 27, { weight: 400, family: FONT_EN, stroke: 5, strokeColor: "#111", maxW: right - 326 });
+    text(ctx, $("fName").value, 330, 686, 37, { weight: 400, family: FONT_NAME, stroke: 5, strokeColor: "#111", maxW: right - 330 });
 
     /* 1段目：守備（適性）・コスト／特訓／レベル */
     const y1 = 701;
@@ -1104,24 +1221,24 @@ function drawCard(ctx) {
     box(ctx, left, y1, [
         { w: 72, label: pit ? "適性" : "守備", cell: "gold", draw: (x, y, w, h) => {
             text(ctx, pos, x + 22, y + h - 7, 24, { align: "center", weight: 500, shadow: 3 });
-            text(ctx, pg, x + 48, y + h - 7, 25, { align: "center", weight: 800, fill: GRADE_COLOR[pg] || "#fff", stroke: 3, strokeColor: "#1a1a1a" });
+            text(ctx, pg, x + 48, y + h - 7, 27, { align: "center", weight: 400, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 3, strokeColor: "#1a1a1a" });
         } },
         { w: 71, label: "コスト", cell: "blue", draw: (x, y, w, h) => {
-            text(ctx, String($("fCost").value), x + w / 2, y + h - 7, 26, { align: "center", weight: 500, shadow: 3 });
+            text(ctx, String($("fCost").value), x + w / 2, y + h - 7, 28, { align: "center", weight: 400, family: FONT_EN, shadow: 3 });
         } }
     ]);
     box(ctx, 226, y1, [
         { w: 139, label: "特訓", cell: "dark", draw: (x, y, w, h) => {
-            text(ctx, "Lv.", x + 18, y + h - 8, 18, { weight: 500, fill: "#bbb" });
+            text(ctx, "Lv.", x + 18, y + h - 8, 19, { weight: 400, family: FONT_EN, fill: "#bbb" });
             maxText(ctx, $("fTokkun").value, x + 80, y + h - 8, 23);
         } }
     ]);
     box(ctx, 381, y1, [
         { w: right - 381, label: "レベル・経験値", cell: "dark", draw: (x, y, w, h) => {
             const lv = Number($("fLv").value) || 1, mx = Number($("fLvMax").value) || 1;
-            text(ctx, "Lv.", x + 14, y + h - 8, 18, { weight: 500, fill: "#bbb" });
-            text(ctx, lv + "/", x + 107, y + h - 6, 29, { align: "right", weight: 500, shadow: 3 });
-            text(ctx, String(mx), x + 159, y + h - 6, 29, { align: "right", weight: 500, shadow: 3 });
+            text(ctx, "Lv.", x + 14, y + h - 8, 19, { weight: 400, family: FONT_EN, fill: "#bbb" });
+            text(ctx, lv + "/", x + 107, y + h - 6, 30, { align: "right", weight: 400, family: FONT_EN, shadow: 3 });
+            text(ctx, String(mx), x + 159, y + h - 6, 30, { align: "right", weight: 400, family: FONT_EN, shadow: 3 });
             /* 経験値のバー */
             const bx = x + 168, by = y + 10, bw = w - 175, bh = 16;
             ctx.save();
@@ -1272,7 +1389,9 @@ if (document.fonts) {
     Promise.all([
         document.fonts.load('500 30px "M PLUS Rounded 1c"'),
         document.fonts.load('800 30px "M PLUS Rounded 1c"'),
-        document.fonts.load('900 30px "M PLUS Rounded 1c"')
+        document.fonts.load('900 30px "M PLUS Rounded 1c"'),
+        document.fonts.load('400 30px "Varela Round"'),
+        document.fonts.load('400 30px "Kosugi Maru"')
     ]).then(draw, draw);
     document.fonts.ready.then(draw);
 }
