@@ -1295,33 +1295,50 @@ function medal(ctx, cx, cy, rank, kiwami) {
        A・B・C は書体で同じ見た目にする */
     const layersOf = (paint) => {
         ctx.lineJoin = "round";
-        [[9, "#140900"], [6.2, "#e3b648"], [4.4, "#140900"]].forEach(([extra, col]) => paint(extra, col));
+        [[10.5, "#140900"], [7.6, "#f2c94c"], [5.2, "#140900"]].forEach(([extra, col]) => paint(extra, col));
     };
     if (rank === "S") {
-        const h = 39, w = 29;
-        const ox = cx - 5 - w / 2, oy = cy - h / 2 - 2;
+        /* 本物の形：太い線のS。上の端は右へ、下の端は左へ水平に出て、縦にまっすぐ切れる */
+        const h = 38, w = 27;
+        const ox = cx - w / 2 - 1, oy = cy - h * 0.47;
         const P = (x, y) => [ox + x * w, oy + y * h / 1.17];
-        const path = () => {
-            ctx.beginPath();
-            ctx.moveTo(...P(0.86, 0.33));
-            ctx.bezierCurveTo(...P(0.84, 0.12), ...P(0.66, 0.04), ...P(0.47, 0.04));
-            ctx.bezierCurveTo(...P(0.25, 0.04), ...P(0.10, 0.16), ...P(0.10, 0.32));
-            ctx.bezierCurveTo(...P(0.10, 0.50), ...P(0.33, 0.54), ...P(0.50, 0.59));
-            ctx.bezierCurveTo(...P(0.68, 0.64), ...P(0.86, 0.71), ...P(0.86, 0.87));
-            ctx.bezierCurveTo(...P(0.86, 1.04), ...P(0.68, 1.13), ...P(0.47, 1.13));
-            ctx.bezierCurveTo(...P(0.27, 1.13), ...P(0.10, 1.05), ...P(0.07, 0.84));
+        const path = (c) => {
+            c.beginPath();
+            c.moveTo(...P(0.97, 0.30));
+            c.lineTo(...P(0.84, 0.30));
+            c.bezierCurveTo(...P(0.82, 0.12), ...P(0.66, 0.04), ...P(0.47, 0.04));
+            c.bezierCurveTo(...P(0.25, 0.04), ...P(0.10, 0.16), ...P(0.10, 0.32));
+            c.bezierCurveTo(...P(0.10, 0.50), ...P(0.33, 0.54), ...P(0.50, 0.59));
+            c.bezierCurveTo(...P(0.68, 0.64), ...P(0.86, 0.71), ...P(0.86, 0.87));
+            c.bezierCurveTo(...P(0.86, 1.04), ...P(0.68, 1.13), ...P(0.47, 1.13));
+            c.bezierCurveTo(...P(0.27, 1.13), ...P(0.12, 1.05), ...P(0.11, 0.88));
+            c.lineTo(...P(0.01, 0.88));
         };
-        const sw = 9.6;
+        const sw = 7.4;
         ctx.save();
         ctx.lineCap = "butt";
-        layersOf((extra, col) => { path(); ctx.lineWidth = sw + extra; ctx.strokeStyle = col; ctx.stroke(); });
-        path();
-        ctx.lineWidth = sw;
-        const lg = ctx.createLinearGradient(0, oy, 0, oy + h);
-        lg.addColorStop(0, "#fffefa"); lg.addColorStop(0.35, "#fbf1d8"); lg.addColorStop(0.75, "#ead2a0"); lg.addColorStop(1, "#d6b274");
-        ctx.strokeStyle = lg;
-        ctx.stroke();
+        layersOf((extra, col) => { path(ctx); ctx.lineWidth = sw + extra; ctx.strokeStyle = col; ctx.stroke(); });
         ctx.restore();
+        /* 面：左上が白く、右下ほど金がかったベージュ（光が左上から当たる陰影）。ふちの内側に細い白い照り */
+        const pad = 12;
+        const fc = document.createElement("canvas");
+        fc.width = Math.ceil(w + pad * 2); fc.height = Math.ceil(h + pad * 2);
+        const f = fc.getContext("2d");
+        f.translate(pad - ox, pad - oy);
+        f.lineCap = "butt"; f.lineJoin = "round";
+        path(f);
+        f.lineWidth = sw;
+        const base = f.createLinearGradient(ox, oy, ox + w, oy + h);
+        base.addColorStop(0, "#fffaea"); base.addColorStop(0.3, "#f8e8c0"); base.addColorStop(0.65, "#ecd096"); base.addColorStop(1, "#cfa55c");
+        f.strokeStyle = base;
+        f.stroke();
+        f.globalCompositeOperation = "source-atop";
+        f.translate(-0.8, -0.8);
+        path(f);
+        f.lineWidth = sw * 0.3;
+        f.strokeStyle = "rgba(255,255,255,.35)";
+        f.stroke();
+        ctx.drawImage(fc, ox - pad, oy - pad);
     } else {
         const size = 46;
         const x = cx - 3, y = cy + 16;
@@ -1341,7 +1358,6 @@ function medal(ctx, cx, cy, rank, kiwami) {
         const x = cx + 25, y = cy + 34;
         ctx.save();
         ctx.translate(x, y);
-        ctx.transform(1, 0, -0.12, 1, 0, 0);
         ctx.font = "900 " + size + "px " + FONT_KIWAMI;
         ctx.textAlign = "center";
         ctx.lineJoin = "round";
@@ -1364,41 +1380,60 @@ function drawCard(ctx) {
 
     /* ランク・スピリッツ・マーク・シリーズ・名前 */
     medal(ctx, 103, 656, $("fRank").value, $("fKiwami").value === "1");
-    text(ctx, "スピリッツ", 152, 640, 16, { weight: 800, fill: "#ff9b2e", stroke: 3.5, strokeColor: "#2a1200" });
+    text(ctx, "スピリッツ", 152, 640, 16, { weight: 800, grad: ["#ffb060", "#f0601e"], stroke: 4, strokeColor: "#080300" });
     {
         const s = String(Math.max(0, Math.floor(Number($("fSpirits").value) || 0)));
+        /* 本物：真っ黒の太いふち。数字の線は、ふち側が赤く、線の中ほどがクリーム色に明るい（筒のような陰影）。上ほど黄みが強い */
+        const font = "800 47px " + FONT_JP;
         ctx.save();
-        ctx.font = "900 47px " + FONT_JP;
-        const g = ctx.createLinearGradient(0, -35, 0, 0);   /* translate のあとで塗るので、文字の位置を0にした座標 */
-        g.addColorStop(0, "#ffd6b8");
-        g.addColorStop(0.32, "#ff9a5c");
-        g.addColorStop(0.68, "#f45e2c");
-        g.addColorStop(1, "#d23716");
-        let sx = 1;
-        const w = ctx.measureText(s).width;
-        sx = Math.min(0.9, 114 / w);   /* 本物は少し縦長の数字 */
+        ctx.font = font;
+        const tw = ctx.measureText(s).width;
+        const sx = Math.min(0.9, 114 / tw);
         ctx.translate(151, 684);
         ctx.scale(sx, 1);
         ctx.lineJoin = "round";
-        /* 影 → 黒茶のふち → 面 → 上半分のつや → 内側の細い明るい線 */
-        ctx.save();
-        ctx.shadowColor = "rgba(0,0,0,.85)";
-        ctx.shadowBlur = 5;
-        ctx.shadowOffsetY = 2.5;
-        ctx.lineWidth = 7;
-        ctx.strokeStyle = "#240c02";
+        ctx.shadowColor = "rgba(0,0,0,.8)";
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetY = 2;
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = "#050200";
         ctx.strokeText(s, 0, 0);
         ctx.restore();
-        ctx.fillStyle = g;
-        ctx.fillText(s, 0, 0);
-        const gloss = ctx.createLinearGradient(0, -35, 0, -12);
-        gloss.addColorStop(0, "rgba(255,255,255,.22)");
-        gloss.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.fillStyle = gloss;
-        ctx.fillText(s, 0, 0);
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = "rgba(255,220,190,.3)";
-        ctx.strokeText(s, 0, 0);
+
+        const pad = 10, CW = Math.ceil(tw) + pad * 2, CH = 60;
+        const fc = document.createElement("canvas");
+        fc.width = CW; fc.height = CH;
+        const f = fc.getContext("2d");
+        f.font = font;
+        f.lineJoin = "round";
+        const by = 48;
+        const base = f.createLinearGradient(0, by - 35, 0, by);
+        base.addColorStop(0, "#ffaa36"); base.addColorStop(0.5, "#f56a28"); base.addColorStop(1, "#d63016");
+        f.fillStyle = base;
+        f.fillText(s, pad, by);
+        /* 線の中ほどを明るく：細らせた字をぼかして重ねる */
+        const inner = document.createElement("canvas");
+        inner.width = CW; inner.height = CH;
+        const ix = inner.getContext("2d");
+        ix.font = font; ix.lineJoin = "round";
+        ix.fillStyle = "#000";
+        ix.fillText(s, pad, by);
+        ix.globalCompositeOperation = "destination-out";
+        ix.lineWidth = 5;
+        ix.strokeText(s, pad, by);
+        ix.globalCompositeOperation = "source-in";
+        const lg = ix.createLinearGradient(0, by - 35, 0, by);
+        lg.addColorStop(0, "#ffe8a0"); lg.addColorStop(0.45, "#ffbc6a"); lg.addColorStop(1, "#ff8a4c");
+        ix.fillStyle = lg;
+        ix.fillRect(0, 0, CW, CH);
+        f.globalCompositeOperation = "source-atop";
+        f.filter = "blur(1.2px)";
+        f.drawImage(inner, 0, 0);
+        f.filter = "none";
+        ctx.save();
+        ctx.translate(151, 684);
+        ctx.scale(sx, 1);
+        ctx.drawImage(fc, -pad, -by);
         ctx.restore();
     }
     /* 球団マーク */
