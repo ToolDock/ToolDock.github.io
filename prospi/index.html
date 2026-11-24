@@ -262,7 +262,6 @@ body .td-rail-inline{ padding:0 16px; }
                 <div class="only-pit" hidden><label for="fApt">適性</label>
                     <div class="pair">
                         <select id="fApt"><option>先</option><option>中</option><option>継</option><option>抑</option></select>
-                        <select id="fAptG" class="grade-sel"></select>
                     </div>
                 </div>
                 <div class="only-pit" hidden><label for="fVel">球威</label><input type="number" id="fVel" value="88" min="1" max="99"></div>
@@ -960,7 +959,7 @@ function grade(v) {
     v = Number(v) || 0;
     return v >= 90 ? "S" : v >= 80 ? "A" : v >= 70 ? "B" : v >= 60 ? "C" : v >= 50 ? "D" : v >= 40 ? "E" : v >= 20 ? "F" : "G";
 }
-const GRADE_COLOR = { S: "#ffe14d", A: "#f3a6ea", B: "#ff6f7d", C: "#ffa53a", D: "#f2cc3d", E: "#9bdc6a", F: "#79b8f2", G: "#bdbdbd" };
+const GRADE_COLOR = { S: "#ffffff", A: "#f3a6ea", B: "#ff6f7d", C: "#ffa53a", D: "#f2cc3d", E: "#9bdc6a", F: "#79b8f2", G: "#bdbdbd" };
 
 function rr(ctx, x, y, w, h, r) {
     ctx.beginPath();
@@ -1211,49 +1210,46 @@ function arrow(ctx, x, y, size, ang, color) {
 
 /* 左下のランクのメダル（金のコインに浮き出た文字） */
 function medal(ctx, cx, cy, rank, kiwami) {
+    /* 本物に合わせる：黒に近い焦げ茶のコインに金の細い輪が2本、文字は白っぽい金に光が入ったもの */
     const r = 33;
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,.7)";
     ctx.shadowBlur = 5;
     ctx.shadowOffsetY = 2;
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fillStyle = "#3a2504"; ctx.fill();
+    ctx.fillStyle = "#140b03"; ctx.fill();
     ctx.restore();
     ctx.save();
-    /* 外のふち（明るい金） */
+    /* 外の金の輪 */
     let g = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
-    g.addColorStop(0, "#fff6c4"); g.addColorStop(0.3, "#f2c548"); g.addColorStop(0.65, "#a36a12"); g.addColorStop(1, "#f6d36a");
-    ctx.beginPath(); ctx.arc(cx, cy, r - 1.5, 0, Math.PI * 2);
-    ctx.fillStyle = g; ctx.fill();
-    /* 内側（少し暗い金） */
-    g = ctx.createLinearGradient(cx, cy - r, cx, cy + r);
-    g.addColorStop(0, "#c88a1c"); g.addColorStop(0.5, "#8a5a0c"); g.addColorStop(1, "#c38a22");
-    ctx.beginPath(); ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
-    ctx.fillStyle = g; ctx.fill();
+    g.addColorStop(0, "#fff2b0"); g.addColorStop(0.3, "#e8bd4a"); g.addColorStop(0.6, "#8a5a10"); g.addColorStop(0.85, "#f0cf70"); g.addColorStop(1, "#a8761c");
+    ctx.beginPath(); ctx.arc(cx, cy, r - 2.5, 0, Math.PI * 2);
+    ctx.lineWidth = 4; ctx.strokeStyle = g; ctx.stroke();
+    /* 内側の暗い円 */
+    const rg = ctx.createRadialGradient(cx - 8, cy - 10, 2, cx, cy, r - 5);
+    rg.addColorStop(0, "#4a3210"); rg.addColorStop(0.7, "#22160a"); rg.addColorStop(1, "#120a03");
+    ctx.beginPath(); ctx.arc(cx, cy, r - 5, 0, Math.PI * 2);
+    ctx.fillStyle = rg; ctx.fill();
+    /* 内側の細い金の輪 */
+    ctx.beginPath(); ctx.arc(cx, cy, r - 8, 0, Math.PI * 2);
+    ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(230,190,90,.85)"; ctx.stroke();
     ctx.restore();
-    /* 浮き出た文字 */
-    ctx.save();
-    ctx.font = "900 50px " + FONT_JP;
-    ctx.textAlign = "center";
-    const tx = cx - 2, ty = cy + 18;
-    ctx.lineJoin = "round";
-    ctx.lineWidth = 5; ctx.strokeStyle = "#3a2200"; ctx.strokeText(rank, tx, ty);
-    g = ctx.createLinearGradient(0, ty - 34, 0, ty);
-    g.addColorStop(0, "#fffbe0"); g.addColorStop(0.45, "#ffd24a"); g.addColorStop(1, "#c98612");
-    ctx.fillStyle = g; ctx.fillText(rank, tx, ty);
-    ctx.restore();
-    if (kiwami) {
+
+    /* 金属の文字：黒いふち → 濃い金のふち → 上が白く下が金のグラデーション */
+    const metal = (str, x, y, size) => {
         ctx.save();
-        ctx.font = "900 25px " + FONT_JP;
+        ctx.font = "900 " + size + "px " + FONT_JP;
         ctx.textAlign = "center";
-        const kx = cx + 24, ky = cy + 33;
         ctx.lineJoin = "round";
-        ctx.lineWidth = 5; ctx.strokeStyle = "#3a1c00"; ctx.strokeText("極", kx, ky);
-        g = ctx.createLinearGradient(0, ky - 18, 0, ky);
-        g.addColorStop(0, "#fff1b8"); g.addColorStop(0.5, "#ffc23a"); g.addColorStop(1, "#d27a10");
-        ctx.fillStyle = g; ctx.fillText("極", kx, ky);
+        ctx.lineWidth = size * 0.2; ctx.strokeStyle = "#1a0d00"; ctx.strokeText(str, x, y);
+        ctx.lineWidth = size * 0.08; ctx.strokeStyle = "#b8862a"; ctx.strokeText(str, x, y);
+        const lg = ctx.createLinearGradient(0, y - size * 0.78, 0, y);
+        lg.addColorStop(0, "#fffdf2"); lg.addColorStop(0.42, "#fbeab8"); lg.addColorStop(0.55, "#e9c46e"); lg.addColorStop(1, "#b8852a");
+        ctx.fillStyle = lg; ctx.fillText(str, x, y);
         ctx.restore();
-    }
+    };
+    metal(rank, cx - 3, cy + 19, 54);
+    if (kiwami) metal("極", cx + 25, cy + 34, 27);
 }
 
 function drawCard(ctx) {
@@ -1268,14 +1264,15 @@ function drawCard(ctx) {
     {
         const s = String(Math.max(0, Math.floor(Number($("fSpirits").value) || 0)));
         ctx.save();
-        ctx.font = "800 45px " + FONT_JP;
-        const g = ctx.createLinearGradient(0, -34, 0, 0);   /* translate のあとで塗るので、文字の位置を0にした座標 */
-        g.addColorStop(0, "#ffb070");
-        g.addColorStop(0.45, "#ff6a2a");
-        g.addColorStop(1, "#d41c10");
+        ctx.font = "800 47px " + FONT_JP;
+        const g = ctx.createLinearGradient(0, -35, 0, 0);   /* translate のあとで塗るので、文字の位置を0にした座標 */
+        g.addColorStop(0, "#ffe6d2");
+        g.addColorStop(0.3, "#ffb487");
+        g.addColorStop(0.62, "#f86a34");
+        g.addColorStop(1, "#d8381a");
         let sx = 1;
         const w = ctx.measureText(s).width;
-        if (w > 114) sx = 114 / w;
+        sx = Math.min(0.9, 114 / w);   /* 本物は少し縦長の数字 */
         ctx.translate(151, 684);
         ctx.scale(sx, 1);
         ctx.lineJoin = "round";
@@ -1309,9 +1306,11 @@ function drawCard(ctx) {
     /* 1段目：守備（適性）・コスト／特訓／レベル */
     const y1 = 701;
     const pos = pit ? $("fApt").value : $("fPos").value;
-    const pg = pit ? $("fAptG").value : $("fPosG").value;
+    /* 投手の適性は必ずS。守備の枠の色は、外野は緑・内野は黄・捕手は青・投手は赤 */
+    const pg = pit ? "S" : $("fPosG").value;
+    const posCell = pit ? "red" : pos === "捕" ? "blue" : "左中右".includes(pos) ? "green" : "gold";
     box(ctx, left, y1, [
-        { w: 72, label: pit ? "適性" : "守備", cell: "gold", draw: (x, y, w, h) => {
+        { w: 72, label: pit ? "適性" : "守備", cell: posCell, draw: (x, y, w, h) => {
             text(ctx, pos, x + 22, y + h - 7, 24, { align: "center", weight: 500, shadow: 3 });
             text(ctx, pg, x + 48, y + h - 7, 27, { align: "center", weight: 500, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 3, strokeColor: "#1a1a1a" });
         } },
@@ -1418,15 +1417,14 @@ function draw() {
 /* ======================================================
    入力
    ====================================================== */
-["fPosG", "fAptG"].forEach((id) => {
+["fPosG"].forEach((id) => {
     const s = $(id);
     "SABCDEFG".split("").forEach((g) => s.appendChild(new Option(g, g)));
 });
 $("fPosG").value = "B";
-$("fAptG").value = "S";
 
 const FIELDS = ["fName", "fSeries", "fRank", "fKiwami", "fSpirits", "fCost", "fTokkun", "fLv", "fLvMax", "fPos", "fPosG",
-                "fTraj", "fMeet", "fPow", "fRun", "fApt", "fAptG", "fVel", "fCtl", "fSta", "fMark", "fMarkFg", "fMarkBg", "fShape"];
+                "fTraj", "fMeet", "fPow", "fRun", "fApt", "fVel", "fCtl", "fSta", "fMark", "fMarkFg", "fMarkBg", "fShape"];
 const STORE = "tooldock-prospi-v1";
 const DEFAULTS = {};
 FIELDS.forEach((id) => { DEFAULTS[id] = $(id).value; });
