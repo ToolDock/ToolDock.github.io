@@ -1094,9 +1094,10 @@ function text(ctx, str, x, y, size, opt = {}) {
     ctx.textAlign = opt.align || "left";
     ctx.textBaseline = "alphabetic";
     let sx = 1;
+    if (opt.wide) sx = opt.wide;   /* 横に広げる（本物のシリーズ名は横長の字） */
     if (opt.maxW) {
-        const w = ctx.measureText(str).width;
-        if (w > opt.maxW) sx = opt.maxW / w;
+        const w = ctx.measureText(str).width * sx;
+        if (w > opt.maxW) sx *= opt.maxW / w;
     }
     ctx.translate(x, y);
     ctx.scale(sx, 1);
@@ -1140,7 +1141,7 @@ function box(ctx, x, y, cols) {
     /* 外の細い明るい線と黒いふち */
     ctx.save();
     rr(ctx, x - 1.5, y - 1.5, w + 3, h + 3, 4);
-    ctx.fillStyle = "rgba(150,160,140,.55)";
+    ctx.fillStyle = "rgba(190,195,185,.7)";
     ctx.fill();
     rr(ctx, x - 0.5, y - 0.5, w + 1, h + 1, 3);
     ctx.fillStyle = "#020202";
@@ -1467,8 +1468,9 @@ function drawCard(ctx) {
         }
         ctx.restore();
     }
-    text(ctx, $("fSeries").value, 330, 640, 27, { weight: 700, family: FONT_EN, stroke: 6.5, strokeColor: "#2b2b2b", shadow: 4, grad: ["#ffffff", "#d9d9d9"], maxW: right - 326 });
-    text(ctx, $("fName").value, 330, 686, 37, { weight: 500, family: FONT_NAME, stroke: 7, strokeColor: "#2b2b2b", shadow: 5, grad: ["#ffffff", "#dcdcdc"], maxW: right - 330 });
+    text(ctx, $("fSeries").value, 330, 640, 27, { wide: 1.12, weight: 700, family: FONT_EN, stroke: 6.5, strokeColor: "#2b2b2b", shadow: 4, grad: ["#ffffff", "#d9d9d9"], maxW: right - 326 });
+    /* 姓と名のあいだの空白は、本物に合わせて半角より広め（en space）にそろえる */
+    text(ctx, $("fName").value.trim().replace(/[ \u3000]+/g, "\u2002"), 330, 686, 37, { weight: 500, family: FONT_NAME, stroke: 7, strokeColor: "#2b2b2b", shadow: 5, grad: ["#ffffff", "#dcdcdc"], maxW: right - 330 });
 
     /* 1段目：守備（適性）・コスト／特訓／レベル */
     const y1 = 701;
