@@ -1022,16 +1022,22 @@ function baseBackground() {
     ctx.fillStyle = grass;
     ctx.fillRect(0, GY, W, H - GY);
     /* 芝の細かい模様（奥ほど細かく） */
-    for (let i = 0; i < 26000; i++) {
-        const y = GY + Math.pow(r(), 0.8) * (H - GY);
+    /* 芝の葉：明るい葉と暗い影を細い縦の線で重ねる（手前ほど長く太い） */
+    for (let i = 0; i < 70000; i++) {
+        const y = GY + Math.pow(r(), 0.75) * (H - GY);
         const x = r() * W;
         const depth = (y - GY) / (H - GY);
-        const s = 0.8 + depth * 2.6;
+        const len = 1.2 + depth * 6 * (0.5 + r());
+        const wd = 0.6 + depth * 1.6;
         const l = r();
-        ctx.fillStyle = l < 0.5
-            ? `rgba(${120 + r() * 60 | 0},${170 + r() * 60 | 0},${60 + r() * 40 | 0},${0.18 + r() * 0.25})`
-            : `rgba(0,${20 + r() * 25 | 0},0,${0.2 + r() * 0.3})`;
-        ctx.fillRect(x, y, s, s * (0.8 + r() * 0.8));
+        ctx.fillStyle = l < 0.55
+            ? `rgba(${90 + r() * 70 | 0},${150 + r() * 80 | 0},${40 + r() * 40 | 0},${0.35 + r() * 0.4})`
+            : `rgba(${r() * 10 | 0},${18 + r() * 30 | 0},0,${0.35 + r() * 0.4})`;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate((r() - 0.5) * 0.5);
+        ctx.fillRect(-wd / 2, -len, wd, len);
+        ctx.restore();
     }
     /* 芝とスタンドの境目をなじませる */
     const blend = ctx.createLinearGradient(0, GY - 40, 0, GY + 40);
@@ -1164,7 +1170,7 @@ function statValue(ctx, v, x, y, w, h) {
     const g = grade(v);
     const cx = x + w / 2, by = y + h - 7;
     text(ctx, String(v), cx + 8, by, 29, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
-    text(ctx, g, cx + 14, by, 29, { weight: 500, family: FONT_EN, fill: GRADE_COLOR[g], stroke: 4, strokeColor: "#1a1a1a" });
+    text(ctx, g, cx + 14, by, 30, { weight: 800, family: FONT_EN, fill: GRADE_COLOR[g], stroke: 5, strokeColor: "#1a1a1a" });
 }
 
 /* 「MAX」のオレンジの文字 */
@@ -1175,10 +1181,9 @@ function maxText(ctx, str, cx, y, size) {
     /* 字の高さのまん中あたりに、白い細い横線（つや）を入れる */
     const g = ctx.createLinearGradient(0, y - size * 0.74, 0, y);
     g.addColorStop(0, "#ffd27a");
-    g.addColorStop(0.44, "#ffa036");
-    g.addColorStop(0.44, "#fff4d6");
-    g.addColorStop(0.53, "#fff4d6");
-    g.addColorStop(0.53, "#ff8a22");
+    g.addColorStop(0.42, "#ffa036");
+    g.addColorStop(0.47, "#ffe8c0");
+    g.addColorStop(0.52, "#ff9a30");
     g.addColorStop(1, "#e2560e");
     ctx.lineJoin = "round";
     ctx.lineWidth = 3.5;
@@ -1474,7 +1479,7 @@ function drawCard(ctx) {
     box(ctx, left, y1, [
         { w: 72, label: pit ? "適性" : "守備", cell: posCell, draw: (x, y, w, h) => {
             text(ctx, pos, x + 22, y + h - 7, 24, { align: "center", weight: 500, shadow: 3 });
-            text(ctx, pg, x + 48, y + h - 7, 27, { align: "center", weight: 500, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 3, strokeColor: "#1a1a1a" });
+            text(ctx, pg, x + 49, y + h - 7, 28, { align: "center", weight: 800, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 5, strokeColor: "#1a1a1a" });
         } },
         { w: 71, label: "コスト", cell: "blue", draw: (x, y, w, h) => {
             text(ctx, String($("fCost").value), x + w / 2, y + h - 7, 28, { align: "center", weight: 500, family: FONT_EN, shadow: 3 });
@@ -1487,7 +1492,7 @@ function drawCard(ctx) {
         } }
     ]);
     box(ctx, 381, y1, [
-        { w: right - 381, label: "レベル・経験値", cell: "dark", draw: (x, y, w, h) => {
+        { w: right - 381, label: "レベル･経験値", cell: "dark", draw: (x, y, w, h) => {
             const lv = Number($("fLv").value) || 1, mx = Number($("fLvMax").value) || 1;
             text(ctx, "Lv.", x + 14, y + h - 8, 19, { weight: 500, family: FONT_EN, fill: "#bbb" });
             text(ctx, lv + "/", x + 107, y + h - 7, 28, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
@@ -1506,7 +1511,7 @@ function drawCard(ctx) {
                 ctx.fillStyle = g; ctx.fill();
             }
             ctx.restore();
-            if (lv >= mx) maxText(ctx, "MAX", bx + bw / 2, by + bh / 2 + 8.5, 23);   /* バーの上（たての真ん中）に重ねる */
+            if (lv >= mx) maxText(ctx, "MAX", bx + bw / 2, by + bh / 2 + 9, 25);   /* バーの上（たての真ん中）に重ねる */
         } }
     ]);
 
@@ -1521,9 +1526,9 @@ function drawCard(ctx) {
                 ctx.font = "500 23px " + FONT_JP;
                 const tw = Math.min(ctx.measureText(t.text).width, w - 52);
                 ctx.restore();
-                const gx = x + (w - (30 + 8 + tw)) / 2;
-                arrow(ctx, gx + 15, y + h / 2, 31, t.ang, t.color);
-                text(ctx, t.text, gx + 38, y + h - 8, 23, { weight: 500, shadow: 3, maxW: w - 52 });
+                const gx = x + (w - (34 + 3 + tw)) / 2;
+                arrow(ctx, gx + 17, y + h / 2, 35, t.ang, t.color);
+                text(ctx, t.text, gx + 37, y + h - 8, 23, { weight: 500, shadow: 3, maxW: w - 52 });
             } }
         ]);
         [[279, "ミート", "fMeet"], [416, "パワー", "fPow"], [555, "走力", "fRun"]].forEach(([x, lb, id]) => {
