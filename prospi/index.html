@@ -1655,9 +1655,10 @@ function drawCard(ctx) {
             box(ctx, x, y2, [{ w: 126, label: lb, cell: "green", draw: (cx, cy, cw, ch) => statValue(ctx, clampStat($(id).value), cx, cy, cw, ch) }]);
         });
     } else {
-        const sw = Math.floor((right - left - 2 * 12) / 3);
+        /* 本物は3つの枠のあいだが約17px */
+        const sw = Math.floor((right - left - 2 * 17) / 3);
         [["球威", "fVel"], ["制球", "fCtl"], ["スタミナ", "fSta"]].forEach(([lb, id], i) => {
-            box(ctx, left + i * (sw + 12), y2, [{ w: sw, label: lb, cell: "red", draw: (cx, cy, cw, ch) => statValue(ctx, clampStat($(id).value), cx, cy, cw, ch) }]);
+            box(ctx, left + i * (sw + 17), y2, [{ w: sw, label: lb, cell: "red", draw: (cx, cy, cw, ch) => statValue(ctx, clampStat($(id).value), cx, cy, cw, ch) }]);
         });
     }
     ctx.restore();
