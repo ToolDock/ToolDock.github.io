@@ -142,7 +142,7 @@ body .td-rail-inline{ padding:0 16px; }
 
     <div class="stage-col">
         <div class="stage">
-            <canvas id="view" width="750" height="862" aria-label="選手画像のプレビュー"></canvas>
+            <canvas id="view" width="750" height="1334" aria-label="選手画像のプレビュー"></canvas>
             <div class="stage-busy" id="busy" hidden></div>
         </div>
         <div class="actions">
@@ -156,6 +156,13 @@ body .td-rail-inline{ padding:0 16px; }
 
         <section class="panel">
             <h2>1. 画像</h2>
+            <div class="row" style="margin-bottom:10px">
+                <label for="fShape">画像の形</label>
+                <select id="fShape">
+                    <option value="tall">縦長（スマホの画面・9:16）</option>
+                    <option value="card">選手カードの部分だけ</option>
+                </select>
+            </div>
             <div class="tools">
                 <span class="file-btn btn">画像を追加（選手・ロゴ・エフェクト）<input type="file" id="addImage" accept="image/*"></span>
                 <span class="file-btn btn secondary">背景の画像を入れる<input type="file" id="bgImage" accept="image/*"></span>
@@ -193,6 +200,12 @@ body .td-rail-inline{ padding:0 16px; }
                             <label><input type="radio" name="mode" value="move" checked><span>動かす</span></label>
                             <label><input type="radio" name="mode" value="erase"><span>消しゴム</span></label>
                             <label><input type="radio" name="mode" value="restore"><span>戻すブラシ</span></label>
+                        </span>
+                    </div>
+                    <div class="mode">
+                        <span class="seg" role="radiogroup" aria-label="囲んで切り抜く">
+                            <label><input type="radio" name="mode" value="lassoKeep"><span>囲んで残す</span></label>
+                            <label><input type="radio" name="mode" value="lassoErase"><span>囲んで消す</span></label>
                         </span>
                     </div>
                     <div class="sliders">
@@ -333,7 +346,11 @@ A. 画像の下の細い余白に、小さくこのページのURLを入れて�
 /* ======================================================
    基本
    ====================================================== */
-const W = 750, H = 862;
+/* 画像の形：縦長（スマホの画面 9:16）と、選手カードの部分だけ。
+   カードの文字や枠は、縦長のときは DY だけ下にずらす */
+const W = 750;
+const SHAPES = { tall: { H: 1334, DY: 170 }, card: { H: 862, DY: 0 } };
+let H = 1334, DY = 170;
 const $ = (id) => document.getElementById(id);
 const view = $("view");
 const vctx = view.getContext("2d");
@@ -383,7 +400,7 @@ function makeLayer(src, name) {
     cut.width = src.width; cut.height = src.height;
     /* 最初はカードの上半分に収まる大きさで、少し右寄りに置く */
     const s = Math.min(640 / src.height, 720 / src.width);
-    const L = { id: nextId++, name, src, mask, cut, x: W * 0.5, y: 360, s, rot: 0, flip: 1, alpha: 1, undo: [] };
+    const L = { id: nextId++, name, src, mask, cut, x: W * 0.5, y: 360 + DY, s, rot: 0, flip: 1, alpha: 1, undo: [] };
     refreshCut(L);
     return L;
 }
@@ -421,17 +438,36 @@ $("bgImage").addEventListener("change", async (e) => {
         layers = layers.filter((L) => !L.isBg);
         const L = makeLayer(src, "背景");
         L.isBg = true;
-        L.s = Math.max(W / src.width, H / src.height);
-        L.x = W / 2;
-        /* スマホの画面のような縦長の画像は、上の端（時計などが出る帯、高さの6.5%）を外に出して上にそろえる */
-        const tall = src.height / src.width > 1.6;
-        L.y = tall ? src.height * L.s / 2 - src.height * 0.065 * L.s : H / 2;
+        coverBg(L);
         layers.unshift(L);
         selected = 0;
         $("bgClear").hidden = false;
         syncLayers(); draw();
     } catch (err) { alert(err.message); }
 });
+/* 背景をカードいっぱいに広げる。スマホの画面のような縦長の画像は、上の端（時計などが出る帯、高さの6.5%）を外に出して上にそろえる */
+function coverBg(L) {
+    const w = L.src.width, h = L.src.height;
+    const tall = h / w > (H / W) * 1.1;
+    /* 画像より縦に長いスマホの画面は、少し大きくして、上の帯と下のボタンを外に出す */
+    L.s = Math.max(W / w, H / h) * (tall ? 1.15 : 1);
+    L.x = W / 2;
+    L.rot = 0;
+    L.y = tall ? h * L.s / 2 - h * 0.065 * L.s : H / 2;
+}
+
+/* 画像の形を変える */
+function applyShape() {
+    const sh = SHAPES[$("fShape").value] || SHAPES.tall;
+    if (sh.H === H) return;
+    const dd = sh.DY - DY;
+    H = sh.H; DY = sh.DY;
+    view.height = H;
+    baseBg = null;
+    layers.forEach((L) => { if (L.isBg) coverBg(L); else L.y += dd; });
+    draw();
+}
+
 $("bgClear").addEventListener("click", () => {
     layers = layers.filter((L) => !L.isBg);
     selected = layers.length - 1;
@@ -513,7 +549,7 @@ $("lyRot").addEventListener("input", () => { const L = cur(); if (L) { L.rot = $
 $("lyAlpha").addEventListener("input", () => { const L = cur(); if (L) { L.alpha = $("lyAlpha").value / 100; draw(); } syncOutputs(); });
 $("brush").addEventListener("input", syncOutputs);
 $("lyFlip").addEventListener("click", () => { const L = cur(); if (L) { L.flip *= -1; draw(); } });
-$("lyCenter").addEventListener("click", () => { const L = cur(); if (L) { L.x = W / 2; L.y = 360; L.rot = 0; syncLayers(); draw(); } });
+$("lyCenter").addEventListener("click", () => { const L = cur(); if (L) { L.x = W / 2; L.y = 360 + DY; L.rot = 0; syncLayers(); draw(); } });
 $("lyUp").addEventListener("click", () => {
     if (selected < 0 || selected >= layers.length - 1) return;
     [layers[selected], layers[selected + 1]] = [layers[selected + 1], layers[selected]];
@@ -625,15 +661,15 @@ async function predict(src) {
 function keepMain(a) {
     const N = SIZE * SIZE;
     const lab = new Int32Array(N).fill(-1);
-    const sizes = [];
+    const sizes = [], means = [];
     const stack = new Int32Array(N);
     for (let i = 0; i < N; i++) {
         if (a[i] < 0.5 || lab[i] >= 0) continue;
         const id = sizes.length;
-        let n = 0, sp = 0;
+        let n = 0, sum = 0, sp = 0;
         stack[sp++] = i; lab[i] = id;
         while (sp) {
-            const p = stack[--sp]; n++;
+            const p = stack[--sp]; n++; sum += a[p];
             const px = p % SIZE, py = (p / SIZE) | 0;
             if (px > 0 && lab[p - 1] < 0 && a[p - 1] >= 0.5) { lab[p - 1] = id; stack[sp++] = p - 1; }
             if (px < SIZE - 1 && lab[p + 1] < 0 && a[p + 1] >= 0.5) { lab[p + 1] = id; stack[sp++] = p + 1; }
@@ -641,10 +677,13 @@ function keepMain(a) {
             if (py < SIZE - 1 && lab[p + SIZE] < 0 && a[p + SIZE] >= 0.5) { lab[p + SIZE] = id; stack[sp++] = p + SIZE; }
         }
         sizes.push(n);
+        means.push(sum / n);
     }
     if (!sizes.length) return a;
     const big = Math.max(...sizes);
-    const keep = sizes.map((n) => n >= big * 0.15);
+    /* 体から離れていても、はっきり写っている物（投げたバットなど）は残す：
+       大きさが最大の1%以上で、濃さの平均が0.85以上 */
+    const keep = sizes.map((n, i) => n >= big * 0.15 || (n >= big * 0.01 && means[i] >= 0.85));
     /* 残すかたまりを少し太らせた範囲（ふちの半透明を残すため）の外は 0 にする */
     const R = 6;
     const near = new Uint8Array(N);
@@ -702,10 +741,10 @@ function fitToCard(L) {
     if (cutBottom) {
         /* 頭を上から70pxに置き、切れ目が下の枠（y=760）より下に隠れる大きさにする */
         s = Math.min(690 / bh, 3);
-        top = 70;
+        top = 70 + DY * 0.6;
     } else {
         s = Math.min(640 / bh, 700 / bw, 3);
-        top = 700 - bh * s;
+        top = 700 + DY - bh * s;
     }
     L.s = s; L.rot = 0;
     L.x = W / 2 - bx * s * L.flip;
@@ -812,6 +851,13 @@ view.addEventListener("pointerdown", (e) => {
     }
     if (pointers.size > 1) return;
 
+    if (mode() === "lassoKeep" || mode() === "lassoErase") {
+        const L = cur();
+        if (!L) return;
+        gesture = { type: "lasso", L, pts: [p] };
+        draw();
+        return;
+    }
     if (mode() !== "move") {
         const L = cur();
         if (!L) return;
@@ -856,13 +902,35 @@ view.addEventListener("pointermove", (e) => {
     } else if (gesture.type === "brush") {
         brushAt(gesture.L, p);
         draw();
+    } else if (gesture.type === "lasso") {
+        const q = gesture.pts[gesture.pts.length - 1];
+        if (Math.hypot(p.x - q.x, p.y - q.y) > 3) gesture.pts.push(p);
+        draw();
     }
 });
+
+/* 囲んだ形で切り抜く。「残す」は囲みの外を消し、「消す」は囲みの中を消す */
+function applyLasso(g) {
+    if (g.pts.length < 3) return;
+    const L = g.L;
+    pushUndo(L);
+    const m = L.mask.getContext("2d");
+    m.save();
+    m.globalCompositeOperation = mode() === "lassoKeep" ? "destination-in" : "destination-out";
+    m.beginPath();
+    g.pts.forEach((p, i) => { const q = toLocal(L, p); if (i) m.lineTo(q.x, q.y); else m.moveTo(q.x, q.y); });
+    m.closePath();
+    m.fillStyle = "#fff";
+    m.fill();
+    m.restore();
+    refreshCut(L);
+}
 
 function endPointer(e) {
     pointers.delete(e.pointerId);
     if (gesture && (gesture.type !== "pinch" || pointers.size < 2)) {
-        const wasBrush = gesture.type === "brush";
+        const wasBrush = gesture.type === "brush" || gesture.type === "lasso";
+        if (gesture.type === "lasso") applyLasso(gesture);
         gesture = null;
         lastBrush = null;
         view.classList.remove("dragging");
@@ -917,7 +985,7 @@ function baseBackground() {
     const c = document.createElement("canvas");
     c.width = W; c.height = H;
     const ctx = c.getContext("2d");
-    const GY = 520;
+    const GY = 520 + DY;
     /* 空とスタンド */
     const sky = ctx.createLinearGradient(0, 0, 0, GY);
     sky.addColorStop(0, "#05070c");
@@ -1189,6 +1257,8 @@ function medal(ctx, cx, cy, rank, kiwami) {
 }
 
 function drawCard(ctx) {
+    ctx.save();
+    ctx.translate(0, DY);
     const pit = document.querySelector('input[name="kind"]:checked').value === "pit";
     const left = 67, right = 681;
 
@@ -1298,6 +1368,7 @@ function drawCard(ctx) {
             box(ctx, left + i * (sw + 12), y2, [{ w: sw, label: lb, cell: "red", draw: (cx, cy, cw, ch) => statValue(ctx, clampStat($(id).value), cx, cy, cw, ch) }]);
         });
     }
+    ctx.restore();
 }
 
 function clampStat(v) { return Math.max(1, Math.min(99, Math.floor(Number(v) || 1))); }
@@ -1308,11 +1379,26 @@ function render(ctx, preview) {
     if (!layers.some((L) => L.isBg)) ctx.drawImage(baseBackground(), 0, 0);
     layers.forEach((L) => drawLayer(ctx, L));
     drawCard(ctx);
+    ctx.restore();
+    ctx.save();
     if (preview) {
         if (!layers.some((L) => !L.isBg)) {
-            text(ctx, "「画像を追加」から", W / 2, 300, 28, { align: "center", weight: 700, stroke: 5, strokeColor: "#000" });
-            text(ctx, "選手の写真を入れてください", W / 2, 345, 28, { align: "center", weight: 700, stroke: 5, strokeColor: "#000" });
+            text(ctx, "「画像を追加」から", W / 2, 300 + DY, 28, { align: "center", weight: 700, stroke: 5, strokeColor: "#000" });
+            text(ctx, "選手の写真を入れてください", W / 2, 345 + DY, 28, { align: "center", weight: 700, stroke: 5, strokeColor: "#000" });
         } else if (cur()) drawSelection(ctx, cur());
+        if (gesture && gesture.type === "lasso" && gesture.pts.length > 1) {
+            ctx.save();
+            ctx.beginPath();
+            gesture.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+            ctx.closePath();
+            ctx.fillStyle = mode() === "lassoKeep" ? "rgba(80,200,255,.18)" : "rgba(255,80,80,.18)";
+            ctx.fill();
+            ctx.setLineDash([8, 6]);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#fff";
+            ctx.stroke();
+            ctx.restore();
+        }
     }
     ctx.restore();
 }
@@ -1334,7 +1420,7 @@ $("fPosG").value = "B";
 $("fAptG").value = "S";
 
 const FIELDS = ["fName", "fSeries", "fRank", "fKiwami", "fSpirits", "fCost", "fTokkun", "fLv", "fLvMax", "fPos", "fPosG",
-                "fTraj", "fMeet", "fPow", "fRun", "fApt", "fAptG", "fVel", "fCtl", "fSta", "fMark", "fMarkFg", "fMarkBg"];
+                "fTraj", "fMeet", "fPow", "fRun", "fApt", "fAptG", "fVel", "fCtl", "fSta", "fMark", "fMarkFg", "fMarkBg", "fShape"];
 const STORE = "tooldock-prospi-v1";
 const DEFAULTS = {};
 FIELDS.forEach((id) => { DEFAULTS[id] = $(id).value; });
@@ -1359,6 +1445,7 @@ function load(o) {
     const k = document.querySelector('input[name="kind"][value="' + (o.kind || "bat") + '"]');
     if (k) k.checked = true;
     syncKind();
+    applyShape();
 }
 try { const o = JSON.parse(localStorage.getItem(STORE) || "null"); if (o) load(o); } catch (e) { /* 読めなければ初期値 */ }
 
@@ -1366,6 +1453,7 @@ FIELDS.forEach((id) => {
     $(id).addEventListener("input", () => { save(); draw(); });
     $(id).addEventListener("change", () => { save(); draw(); });
 });
+$("fShape").addEventListener("change", applyShape);
 document.querySelectorAll('input[name="kind"]').forEach((r) => r.addEventListener("change", () => { syncKind(); save(); draw(); }));
 
 twoStepButton($("btnReset"), () => { load(DEFAULTS); save(); draw(); }, "もう一度押すと、文字の入力を初期値に戻します");
