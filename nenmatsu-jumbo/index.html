@@ -392,6 +392,14 @@
     .guide-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
     .guide-table td.num, .guide-table td:first-child { white-space: nowrap; }
 
+    .nen-link {
+        margin: 0 0 18px;
+        padding: 10px 14px;
+        border-left: 4px solid var(--c);
+        background: var(--bg);
+        font-size: var(--fs-m);
+    }
+
     footer.container {
         font-size: var(--fs-s);
     }
@@ -434,6 +442,8 @@
           発売は2026年11月24日（火）〜12月25日（金）、抽せんは12月31日（木）です。
       </p>
     </div>
+
+    <p class="nen-link"><a href="/takarakuji/"><strong>去年までの年末ジャンボ・ほかのジャンボ・ロト・ナンバーズは、宝くじシミュレーターへ</strong></a></p>
 
     <div class="form">
         <label for="lottery">宝くじ</label>
@@ -540,7 +550,7 @@
         <li>1回分の当たった数と収支に加えて、同じ買い方を1万回くり返したときに黒字になった割合が出ます。</li>
     </ol>
     <p>
-        去年（2025年）の年末ジャンボも選べます。年末以外のジャンボやロト・ナンバーズ、自分で当せん金を入れて試すときは、
+        去年までの年末ジャンボ、年末以外のジャンボやロト・ナンバーズ、自分で当せん金を入れて試すときは、
         <a href="/takarakuji/">宝くじシミュレーター</a>を使ってください。
     </p>
 
@@ -695,7 +705,7 @@
     このツールは完全にブラウザ上で動作します。入力した内容が外部に送信されることはありません。
 </footer>
 
-<script>window.TK_ONLY = ["nenmatsu", "nenmatsu-mini", "nenmatsu-2025"];</script>
+<script>window.TK_ONLY = ["nenmatsu", "nenmatsu-mini"];</script>
 <script src="/takarakuji/sim.js"></script>
 
 <div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->

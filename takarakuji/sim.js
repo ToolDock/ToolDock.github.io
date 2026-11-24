@@ -40,8 +40,8 @@ const LOTTERIES = [
         ]
     },
     {
-        /* 去年の年末ジャンボ。比べる用で、年末ジャンボのページ（/nenmatsu-jumbo/）でだけ出す */
-        id: "nenmatsu-2025", group: "去年の年末ジャンボ", type: "jumbo", past: true,
+        /* 去年の年末ジャンボ。宝くじシミュレーター（/takarakuji/）でだけ出す（年末ジャンボのページは今年の回だけ） */
+        id: "nenmatsu-2025", group: "過去の回", type: "jumbo", past: true,
         name: "年末ジャンボ宝くじ（2025年）", note: "2025年・第1082回の当せん金と本数",
         price: 300, unit: 20000000, units: 23,
         tiers: [
@@ -191,13 +191,13 @@ const LOTTERIES = [
 ];
 
 /* ページごとに出す宝くじを選ぶ。window.TK_ONLY（id の並び）があればそれだけをその順に、
-   無ければ past（去年の回）を除いた全部 */
+   無ければ全部（past の回は最後にまとめる） */
 (() => {
     const all = LOTTERIES.slice();
     LOTTERIES.length = 0;
     const pick = Array.isArray(window.TK_ONLY)
         ? window.TK_ONLY.map((id) => all.find((l) => l.id === id)).filter(Boolean)
-        : all.filter((l) => !l.past);
+        : all.filter((l) => !l.past).concat(all.filter((l) => l.past));
     pick.forEach((l) => LOTTERIES.push(l));
 })();
 
