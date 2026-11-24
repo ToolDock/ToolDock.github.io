@@ -1094,9 +1094,9 @@ function text(ctx, str, x, y, size, opt = {}) {
     ctx.scale(sx, 1);
     ctx.lineJoin = "round";
     if (opt.shadow) {
-        ctx.shadowColor = "rgba(0,0,0,.75)";
+        ctx.shadowColor = "rgba(0,0,0,.85)";
         ctx.shadowBlur = opt.shadow;
-        ctx.shadowOffsetY = opt.shadow / 3;
+        ctx.shadowOffsetY = Math.max(1.5, opt.shadow / 2);
     }
     if (opt.stroke) {
         ctx.lineWidth = opt.stroke;
@@ -1104,7 +1104,13 @@ function text(ctx, str, x, y, size, opt = {}) {
         ctx.strokeText(str, 0, 0);
         ctx.shadowColor = "transparent";
     }
-    ctx.fillStyle = opt.fill || "#fff";
+    if (opt.grad) {
+        /* 上から下へ、少しだけ暗くする（のっぺりさせない） */
+        const g = ctx.createLinearGradient(0, -size * 0.8, 0, size * 0.1);
+        g.addColorStop(0, opt.grad[0]);
+        g.addColorStop(1, opt.grad[1]);
+        ctx.fillStyle = g;
+    } else ctx.fillStyle = opt.fill || "#fff";
     ctx.fillText(str, 0, 0);
     ctx.restore();
 }
@@ -1138,7 +1144,7 @@ function box(ctx, x, y, cols) {
         /* 見出し */
         ctx.fillStyle = "#4a4a4a";
         ctx.fillRect(ix, y + 2, iw, HH - 2);
-        text(ctx, c.label, ix + iw / 2, y + HH - 6, 19, { align: "center", fill: "#a8a8a8", weight: 500, maxW: iw - 8 });
+        text(ctx, c.label, ix + iw / 2, y + HH - 6, 20, { align: "center", fill: "#b0b0b0", weight: 500, maxW: iw - 8 });
         /* 中身 */
         const [t, b] = CELL[c.cell];
         const g = ctx.createLinearGradient(0, y + HH, 0, y + HH + VH - 2);
@@ -1210,46 +1216,92 @@ function arrow(ctx, x, y, size, ang, color) {
 
 /* 左下のランクのメダル（金のコインに浮き出た文字） */
 function medal(ctx, cx, cy, rank, kiwami) {
-    /* 本物に合わせる：黒に近い焦げ茶のコインに金の細い輪が2本、文字は白っぽい金に光が入ったもの */
+    /* 本物に合わせる：焦げ茶のコインに太い金の輪と細い金の輪。
+       文字は白っぽい金で、ふちの少し内側に濃い金の線が1本入る（彫り込んだような線） */
     const r = 33;
     ctx.save();
-    ctx.shadowColor = "rgba(0,0,0,.7)";
-    ctx.shadowBlur = 5;
+    ctx.shadowColor = "rgba(0,0,0,.75)";
+    ctx.shadowBlur = 6;
     ctx.shadowOffsetY = 2;
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fillStyle = "#140b03"; ctx.fill();
     ctx.restore();
     ctx.save();
-    /* 外の金の輪 */
     let g = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
-    g.addColorStop(0, "#fff2b0"); g.addColorStop(0.3, "#e8bd4a"); g.addColorStop(0.6, "#8a5a10"); g.addColorStop(0.85, "#f0cf70"); g.addColorStop(1, "#a8761c");
-    ctx.beginPath(); ctx.arc(cx, cy, r - 2.5, 0, Math.PI * 2);
-    ctx.lineWidth = 4; ctx.strokeStyle = g; ctx.stroke();
-    /* 内側の暗い円 */
-    const rg = ctx.createRadialGradient(cx - 8, cy - 10, 2, cx, cy, r - 5);
-    rg.addColorStop(0, "#4a3210"); rg.addColorStop(0.7, "#22160a"); rg.addColorStop(1, "#120a03");
-    ctx.beginPath(); ctx.arc(cx, cy, r - 5, 0, Math.PI * 2);
+    g.addColorStop(0, "#fff6c8"); g.addColorStop(0.22, "#f0c650"); g.addColorStop(0.5, "#8c5c12");
+    g.addColorStop(0.75, "#f6d878"); g.addColorStop(1, "#9c6a16");
+    ctx.beginPath(); ctx.arc(cx, cy, r - 3, 0, Math.PI * 2);
+    ctx.lineWidth = 5.5; ctx.strokeStyle = g; ctx.stroke();
+    const rg = ctx.createRadialGradient(cx - 9, cy - 11, 2, cx, cy, r - 6);
+    rg.addColorStop(0, "#5a3c12"); rg.addColorStop(0.65, "#24170a"); rg.addColorStop(1, "#110903");
+    ctx.beginPath(); ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
     ctx.fillStyle = rg; ctx.fill();
-    /* 内側の細い金の輪 */
-    ctx.beginPath(); ctx.arc(cx, cy, r - 8, 0, Math.PI * 2);
-    ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(230,190,90,.85)"; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, r - 8.5, 0, Math.PI * 2);
+    ctx.lineWidth = 1.2; ctx.strokeStyle = "rgba(236,196,96,.9)"; ctx.stroke();
+    /* 輪のきらめき */
+    [[-0.75, 1], [2.2, 0.7]].forEach(([a, k]) => {
+        const sx = cx + Math.cos(a) * (r - 3), sy = cy + Math.sin(a) * (r - 3);
+        const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, 7 * k);
+        sg.addColorStop(0, "rgba(255,255,240,.95)"); sg.addColorStop(1, "rgba(255,255,240,0)");
+        ctx.fillStyle = sg; ctx.fillRect(sx - 8, sy - 8, 16, 16);
+    });
     ctx.restore();
+    metalText(ctx, rank, cx - 3, cy + 19, 56, 1.08, true);
+    if (kiwami) metalText(ctx, "極", cx + 25, cy + 34, 28, 1, false);
+}
 
-    /* 金属の文字：黒いふち → 濃い金のふち → 上が白く下が金のグラデーション */
-    const metal = (str, x, y, size) => {
-        ctx.save();
-        ctx.font = "900 " + size + "px " + FONT_JP;
-        ctx.textAlign = "center";
-        ctx.lineJoin = "round";
-        ctx.lineWidth = size * 0.2; ctx.strokeStyle = "#1a0d00"; ctx.strokeText(str, x, y);
-        ctx.lineWidth = size * 0.08; ctx.strokeStyle = "#b8862a"; ctx.strokeText(str, x, y);
-        const lg = ctx.createLinearGradient(0, y - size * 0.78, 0, y);
-        lg.addColorStop(0, "#fffdf2"); lg.addColorStop(0.42, "#fbeab8"); lg.addColorStop(0.55, "#e9c46e"); lg.addColorStop(1, "#b8852a");
-        ctx.fillStyle = lg; ctx.fillText(str, x, y);
-        ctx.restore();
-    };
-    metal(rank, cx - 3, cy + 19, 54);
-    if (kiwami) metal("極", cx + 25, cy + 34, 27);
+/* 金属の文字。黒いふち・濃い金のふち・白っぽい金の面に、内側の線（彫り）を入れる */
+function metalText(ctx, str, x, y, size, wide, engrave) {
+    const pad = Math.ceil(size * 0.5);
+    const c = document.createElement("canvas");
+    c.width = Math.ceil(size * 2.2) + pad * 2; c.height = Math.ceil(size * 1.4) + pad * 2;
+    const o = c.getContext("2d");
+    const ox = c.width / 2, oy = pad + size * 1.05;
+    o.font = "900 " + size + "px " + FONT_JP;
+    o.textAlign = "center";
+    o.lineJoin = "round";
+    o.translate(ox, oy); o.scale(wide, 1); o.translate(-ox, -oy);
+    /* ふち */
+    o.lineWidth = size * 0.22; o.strokeStyle = "#160b00"; o.strokeText(str, ox, oy);
+    o.lineWidth = size * 0.09; o.strokeStyle = "#a8771e"; o.strokeText(str, ox, oy);
+    /* 面 */
+    const lg = o.createLinearGradient(0, oy - size * 0.8, 0, oy);
+    lg.addColorStop(0, "#fffef6"); lg.addColorStop(0.45, "#fcefc4"); lg.addColorStop(0.6, "#efd28a"); lg.addColorStop(1, "#c8963a");
+    o.fillStyle = lg; o.fillText(str, ox, oy);
+    /* 彫りの線：文字の形を少し細らせたものの輪郭を、濃い金で引く（小さい字には入れない） */
+    if (!engrave) { ctx.drawImage(c, x - ox, y - oy); return; }
+    const e = document.createElement("canvas");
+    e.width = c.width; e.height = c.height;
+    const ex = e.getContext("2d");
+    ex.font = o.font; ex.textAlign = "center"; ex.lineJoin = "round";
+    ex.translate(ox, oy); ex.scale(wide, 1); ex.translate(-ox, -oy);
+    ex.fillStyle = "#000"; ex.fillText(str, ox, oy);
+    ex.globalCompositeOperation = "destination-out";
+    ex.lineWidth = size * 0.13; ex.strokeText(str, ox, oy);        /* 細らせた形 A */
+    const ring = document.createElement("canvas");
+    ring.width = c.width; ring.height = c.height;
+    const rx = ring.getContext("2d");
+    rx.drawImage(e, 0, 0);
+    rx.globalCompositeOperation = "destination-out";
+    rx.save();
+    rx.font = o.font; rx.textAlign = "center"; rx.lineJoin = "round";
+    rx.translate(ox, oy); rx.scale(wide, 1); rx.translate(-ox, -oy);
+    rx.restore();
+    const inner = document.createElement("canvas");
+    inner.width = c.width; inner.height = c.height;
+    const ix = inner.getContext("2d");
+    ix.font = o.font; ix.textAlign = "center"; ix.lineJoin = "round";
+    ix.translate(ox, oy); ix.scale(wide, 1); ix.translate(-ox, -oy);
+    ix.fillStyle = "#000"; ix.fillText(str, ox, oy);
+    ix.globalCompositeOperation = "destination-out";
+    ix.lineWidth = size * 0.2; ix.strokeText(str, ox, oy);         /* もっと細らせた形 B */
+    rx.drawImage(inner, 0, 0);                                      /* A − B が線になる */
+    rx.globalCompositeOperation = "source-in";
+    rx.fillStyle = "rgba(176,124,36,.85)";
+    rx.fillRect(0, 0, ring.width, ring.height);
+    o.setTransform(1, 0, 0, 1, 0, 0);
+    o.drawImage(ring, 0, 0);
+    ctx.drawImage(c, x - ox, y - oy);
 }
 
 function drawCard(ctx) {
@@ -1264,23 +1316,37 @@ function drawCard(ctx) {
     {
         const s = String(Math.max(0, Math.floor(Number($("fSpirits").value) || 0)));
         ctx.save();
-        ctx.font = "800 47px " + FONT_JP;
+        ctx.font = "900 47px " + FONT_JP;
         const g = ctx.createLinearGradient(0, -35, 0, 0);   /* translate のあとで塗るので、文字の位置を0にした座標 */
-        g.addColorStop(0, "#ffe6d2");
-        g.addColorStop(0.3, "#ffb487");
-        g.addColorStop(0.62, "#f86a34");
-        g.addColorStop(1, "#d8381a");
+        g.addColorStop(0, "#ffd6b8");
+        g.addColorStop(0.32, "#ff9a5c");
+        g.addColorStop(0.68, "#f45e2c");
+        g.addColorStop(1, "#d23716");
         let sx = 1;
         const w = ctx.measureText(s).width;
         sx = Math.min(0.9, 114 / w);   /* 本物は少し縦長の数字 */
         ctx.translate(151, 684);
         ctx.scale(sx, 1);
         ctx.lineJoin = "round";
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = "#1e0a00";
+        /* 影 → 黒茶のふち → 面 → 上半分のつや → 内側の細い明るい線 */
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,.85)";
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetY = 2.5;
+        ctx.lineWidth = 7;
+        ctx.strokeStyle = "#240c02";
         ctx.strokeText(s, 0, 0);
+        ctx.restore();
         ctx.fillStyle = g;
         ctx.fillText(s, 0, 0);
+        const gloss = ctx.createLinearGradient(0, -35, 0, -12);
+        gloss.addColorStop(0, "rgba(255,255,255,.22)");
+        gloss.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = gloss;
+        ctx.fillText(s, 0, 0);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(255,220,190,.3)";
+        ctx.strokeText(s, 0, 0);
         ctx.restore();
     }
     /* 球団マーク */
@@ -1300,8 +1366,8 @@ function drawCard(ctx) {
         }
         ctx.restore();
     }
-    text(ctx, $("fSeries").value, 330, 640, 27, { weight: 500, family: FONT_EN, stroke: 5, strokeColor: "#111", maxW: right - 326 });
-    text(ctx, $("fName").value, 330, 686, 37, { weight: 500, family: FONT_NAME, stroke: 5, strokeColor: "#111", maxW: right - 330 });
+    text(ctx, $("fSeries").value, 330, 640, 27, { weight: 700, family: FONT_EN, stroke: 5, strokeColor: "#141414", shadow: 4, grad: ["#ffffff", "#d9d9d9"], maxW: right - 326 });
+    text(ctx, $("fName").value, 330, 686, 37, { weight: 500, family: FONT_NAME, stroke: 5, strokeColor: "#141414", shadow: 5, grad: ["#ffffff", "#dcdcdc"], maxW: right - 330 });
 
     /* 1段目：守備（適性）・コスト／特訓／レベル */
     const y1 = 701;
@@ -1328,8 +1394,8 @@ function drawCard(ctx) {
         { w: right - 381, label: "レベル・経験値", cell: "dark", draw: (x, y, w, h) => {
             const lv = Number($("fLv").value) || 1, mx = Number($("fLvMax").value) || 1;
             text(ctx, "Lv.", x + 14, y + h - 8, 19, { weight: 500, family: FONT_EN, fill: "#bbb" });
-            text(ctx, lv + "/", x + 107, y + h - 6, 30, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
-            text(ctx, String(mx), x + 159, y + h - 6, 30, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
+            text(ctx, lv + "/", x + 107, y + h - 7, 28, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
+            text(ctx, String(mx), x + 159, y + h - 7, 28, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
             /* 経験値のバー */
             const bx = x + 168, by = y + 10, bw = w - 175, bh = 16;
             ctx.save();
