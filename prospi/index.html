@@ -282,7 +282,7 @@ body .td-rail-inline{ padding:0 16px; }
                 <div><label for="fMarkFg">マークの色</label>
                     <div class="pair"><input type="color" id="fMarkFg" value="#ffffff" aria-label="文字の色"><input type="color" id="fMarkBg" value="#1d3f8c" aria-label="地の色"></div>
                 </div>
-                <div class="wide"><span class="file-btn btn small secondary">マークを画像で入れる<input type="file" id="markImage" accept="image/*"></span>
+                <div class="wide tools" style="margin-top:0"><span class="file-btn btn small secondary">マークを画像で入れる<input type="file" id="markImage" accept="image/*"></span>
                     <button type="button" class="btn small secondary" id="markClear" hidden>マークの画像を外す</button></div>
             </div>
             <div class="actions">
@@ -1675,7 +1675,7 @@ function drawCard(ctx) {
     }
     text(ctx, $("fSeries").value, 330, 639, 24, { wide: 1.24, weight: 700, family: FONT_EN, stroke: 6.5, strokeColor: "#2b2b2b", shadow: 4, grad: ["#ffffff", "#d9d9d9"], maxW: right - 326 });
     /* 姓と名のあいだの空白は、本物に合わせて半角より広め（en space）にそろえる */
-    text(ctx, $("fName").value.trim().replace(/[ \u3000]+/g, "\u2002"), 330, 686, 36, { weight: 500, family: FONT_NAME, stroke: 7, strokeColor: "#2b2b2b", shadow: 5, grad: ["#ffffff", "#dcdcdc"], maxW: right - 330 });
+    text(ctx, $("fName").value.trim().replace(/[ \u3000]+/g, "\u2002"), 330, 686, 36, { weight: 500, family: FONT_NAME, stroke: 5.5, strokeColor: "#333333", shadow: 2.5, grad: ["#ffffff", "#dcdcdc"], maxW: right - 330 });
 
     /* 1段目：守備（適性）・コスト／特訓／レベル */
     const y1 = 701;
@@ -1928,6 +1928,8 @@ function save() {
 }
 function load(o) {
     FIELDS.forEach((id) => { if (o[id] != null) $(id).value = o[id]; });
+    /* 前の版で「MAX」と入れていた特訓は10にする（選択肢に無い値は空になるため） */
+    if (!$("fTokkun").value) $("fTokkun").value = "10";
     const k = document.querySelector('input[name="kind"][value="' + (o.kind || "bat") + '"]');
     if (k) k.checked = true;
     syncKind();
