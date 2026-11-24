@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プロスピA風 選手画像ジェネレーター｜写真を自動で切り抜いて選手詳細の画像を作成 - ToolDock</title>
+<meta name="description" content="プロスピA風の選手画像（選手詳細の画面）を作れる無料ジェネレーターです。ランクのメダル・スピリッツ・能力の枠は用意済み。選手の写真を入れるとサイトの中で自動で切り抜き、ドラッグで自由に配置できます。背景やロゴも画像で重ねられ、スマホと同じ縦長の画像をPNGで保存できます。">
+<link rel="canonical" href="https://tooldock.github.io/prospi/">
+<!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToolDock">
+<meta property="og:title" content="プロスピA風 選手画像ジェネレーター｜写真を自動で切り抜いて選手詳細の画像を作成 | ToolDock">
+<meta property="og:description" content="プロスピA風の選手画像（選手詳細の画面）を作れる無料ジェネレーターです。ランクのメダル・スピリッツ・能力の枠は用意済み。選手の写真を入れるとサイトの中で自動で切り抜き、ドラッグで自由に配置できます。背景やロゴも画像で重ねられ、スマホと同じ縦長の画像をPNGで保存できます。">
+<meta property="og:url" content="https://tooldock.github.io/prospi/">
+<meta property="og:image" content="https://tooldock.github.io/ogp/prospi.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OGP -->
+<script> const CURRENT_TOOL = "prospi"; </script>
+<script src="/js/tool-data.js"></script>
+<script src="/js/head.js"></script>
+<script src="/js/analytics.js"></script>
+<script src="/js/two-step.js"></script>
+<script src="/js/watermark.js" defer></script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8349615939902537" crossorigin="anonymous"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet">
+<!-- ランクのメダルの文字だけに使う（使う字だけを読み込む） -->
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@900&family=Zen+Old+Mincho:wght@900&text=SABC%E6%A5%B5&display=swap" rel="stylesheet">
+<meta name="keywords" content="プロスピA,プロスピ,選手画像,コラ画像,ジェネレーター,選手カード,切り抜き,背景透過,スピリッツ,TS,OB,画像作成,無料">
+
+<style>
+*{ box-sizing:border-box; }
+body{
+    margin:0; padding:0 0 48px;
+    font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    color:var(--ink); line-height:1.75; background:var(--bg);
+}
+.page-wrapper{ max-width:1000px; margin:0 auto; padding:0 16px; }
+body .td-rail-inline{ padding:0 16px; }
+.container{ background:var(--surface); border:1px solid var(--line); padding:18px; margin:0 0 20px; }
+
+/* ===== 画面の並び：広い画面はプレビューと入力を左右に ===== */
+.studio{ display:grid; grid-template-columns:minmax(0, 1fr); gap:18px; }
+/* スマホ・タブレット：プレビューを画面の上に貼りつけて、下の入力やブラシで直しながら見られるようにする */
+@media (max-width: 899px){
+    .stage-col{ display:contents; }
+    .stage{ position:sticky; top:0; z-index:20; display:flex; justify-content:center; }
+    #view{ width:auto; max-width:100%; max-height:46vh; }
+}
+@media (min-width: 900px){
+    .studio{ grid-template-columns:minmax(0, 420px) minmax(0, 1fr); align-items:start; }
+    .stage-col{ position:sticky; top:12px; }
+}
+
+.stage{ position:relative; background:#111; border-radius:6px; overflow:hidden; }
+#view{ display:block; width:100%; height:auto; touch-action:none; cursor:grab; }
+#view.brush{ cursor:crosshair; }
+#view.dragging{ cursor:grabbing; }
+.stage-busy{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.55); color:#fff; font-weight:700; text-align:center; padding:20px; font-size:.95rem;
+}
+.stage-busy[hidden]{ display:none; }
+
+.actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.actions button, .btn{
+    font:inherit; font-size:.9rem; font-weight:700; padding:8px 14px; border-radius:var(--r-ctl, 6px);
+    border:1px solid var(--c, #2563eb); background:var(--c, #2563eb); color:#fff; cursor:pointer;
+}
+.actions button.secondary, .btn.secondary{ background:var(--surface); color:var(--c, #2563eb); }
+.btn.small{ font-size:.82rem; padding:5px 10px; }
+.btn:disabled{ opacity:.45; cursor:default; }
+.note{ font-size:var(--fs-s, .85rem); margin:8px 0 0; color:var(--ink); }
+
+/* ===== 入力 ===== */
+.panel h2{ font-size:1.05rem; margin:0 0 10px; padding-bottom:6px; border-bottom:2px solid var(--c, #2563eb); }
+.panel + .panel{ margin-top:18px; }
+.grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:10px 12px; }
+.grid label, .row label{ display:block; font-size:.82rem; font-weight:700; margin-bottom:2px; }
+.grid input[type=text], .grid input[type=number], .grid select,
+.row input[type=text], .row select{
+    width:100%; padding:6px 8px; border:1px solid var(--line-input, #ccc); border-radius:var(--r-ctl, 6px);
+    background:var(--surface); color:var(--ink); font:inherit; font-size:.95rem;
+}
+.grid .wide{ grid-column:1 / -1; }
+.pair{ display:flex; gap:6px; }
+.pair > *{ flex:1; min-width:0; }
+.seg{ display:inline-flex; border:1px solid var(--c, #2563eb); border-radius:var(--r-ctl, 6px); overflow:hidden; }
+.seg label{ margin:0; }
+.seg input{ position:absolute; opacity:0; pointer-events:none; }
+.seg span{ display:block; padding:6px 14px; font-weight:700; font-size:.9rem; cursor:pointer; color:var(--c, #2563eb); background:var(--surface); }
+.seg input:checked + span{ background:var(--c, #2563eb); color:#fff; }
+.seg input:focus-visible + span{ outline:2px solid var(--ink); outline-offset:-3px; }
+.only-bat[hidden], .only-pit[hidden]{ display:none; }
+
+/* 画像の重なり（レイヤー） */
+.layers{ list-style:none; margin:8px 0 0; padding:0; border:1px solid var(--line); border-radius:6px; }
+.layers li{ display:flex; align-items:center; gap:8px; padding:6px 8px; border-top:1px solid var(--line-soft, #eee); cursor:pointer; }
+.layers li:first-child{ border-top:0; }
+.layers li.sel{ background:var(--surface-2, #eef3ff); outline:2px solid var(--c, #2563eb); outline-offset:-2px; }
+.layers img{ width:40px; height:40px; object-fit:contain; background:repeating-conic-gradient(#ddd 0 25%, #fff 0 50%) 0 0/12px 12px; border-radius:4px; }
+.layers .nm{ flex:1; min-width:0; font-size:.88rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.layers .empty{ color:var(--ink); font-size:.85rem; cursor:default; }
+.tools{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.sliders{ display:grid; grid-template-columns:max-content 1fr max-content; gap:6px 10px; align-items:center; margin-top:10px; font-size:.85rem; }
+.sliders input[type=range]{ width:100%; }
+.sliders output{ min-width:3.2em; text-align:right; font-variant-numeric:tabular-nums; }
+.mode{ margin-top:10px; }
+.fit{ display:block; margin-top:8px; font-size:.85rem; }
+.file-btn{ position:relative; overflow:hidden; display:inline-block; }
+.file-btn input{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+.drop-hint{ font-size:.82rem; margin:6px 0 0; }
+.cut-box{ margin-top:10px; padding:10px; border:1px dashed var(--line-input, #ccc); border-radius:6px; }
+.cut-box[hidden]{ display:none; }
+
+/* ===== 説明 ===== */
+.tool-article h2{ font-size:var(--fs-h2, 1.2rem); border-bottom:2px solid var(--c, #2563eb); padding-bottom:6px; margin-top:28px; }
+.tool-article h3{ font-size:var(--fs-h3, 1.05rem); margin:20px 0 6px; }
+.disclaimer{ font-size:.8rem; margin-top:20px; }
+</style>
+</head>
+<body>
+<!-- BREADCRUMB: scripts/static_html.py が書く。手で書き換えない -->
+<nav class="breadcrumb" aria-label="パンくずリスト"><a href="/">ToolDock</a> <span class="bc-sep">›</span> <a href="/category/?cat=game">ゲーム</a> <span class="bc-sep">›</span> <span>プロスピA風 選手画像ジェネレーター</span></nav>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ToolDock", "item": "https://tooldock.github.io/"}, {"@type": "ListItem", "position": 2, "name": "ゲーム", "item": "https://tooldock.github.io/category/?cat=game"}, {"@type": "ListItem", "position": 3, "name": "プロスピA風 選手画像ジェネレーター", "item": "https://tooldock.github.io/prospi/"}]}</script>
+<!-- /BREADCRUMB -->
+
+<div class="page-wrapper">
+
+<div class="td-banner">
+    <h1>プロスピA風 選手画像ジェネレーター</h1>
+    <p>選手の写真と背景を入れると、サイトの中で人物を切り抜き、ドラッグで自由に配置して、プロスピA風の選手画像を作れます。</p>
+</div>
+
+<div class="container">
+<div class="studio">
+
+    <div class="stage-col">
+        <div class="stage">
+            <canvas id="view" width="750" height="1334" aria-label="選手画像のプレビュー"></canvas>
+            <div class="stage-busy" id="busy" hidden></div>
+        </div>
+        <div class="actions">
+            <button type="button" id="btnDownload">PNG画像をダウンロード</button>
+            <button type="button" id="btnShare">共有して保存（スマホ向け）</button>
+        </div>
+        <p class="note">画像の上をドラッグすると動かせます。2本指でつまむと大きさと向きを変えられます（パソコンはホイールで大きさ）。</p>
+    </div>
+
+    <div class="inputs">
+
+        <section class="panel">
+            <h2>1. 画像</h2>
+            <div class="row" style="margin-bottom:10px">
+                <label for="fShape">画像の形</label>
+                <select id="fShape">
+                    <option value="tall">縦長（スマホの画面・9:16）</option>
+                    <option value="card">選手カードの部分だけ</option>
+                </select>
+            </div>
+            <div class="tools">
+                <span class="file-btn btn">画像を追加（選手・ロゴ・エフェクト）<input type="file" id="addImage" accept="image/*"></span>
+                <span class="file-btn btn secondary">背景の画像を入れる<input type="file" id="bgImage" accept="image/*"></span>
+                <button type="button" class="btn secondary" id="bgClear" hidden>背景の画像を外す</button>
+            </div>
+            <p class="drop-hint">選手の写真のほか、「TIME SELECTION」などのロゴやエフェクトの画像（背景が透明なPNG）も、重ねて自由に配置できます。背景の画像を入れないときは、夜のスタジアムと芝の背景になります。プレビューにドラッグ＆ドロップでも入れられます。画像はこの端末の中だけで使い、どこにも送りません。</p>
+
+
+            <ul class="layers" id="layers"></ul>
+
+            <div id="layerTools" hidden>
+                <div class="tools">
+                    <button type="button" class="btn small secondary" id="lyUp">前へ</button>
+                    <button type="button" class="btn small secondary" id="lyDown">後ろへ</button>
+                    <button type="button" class="btn small secondary" id="lyFlip">左右反転</button>
+                    <button type="button" class="btn small secondary" id="lyCenter">真ん中に戻す</button>
+                    <button type="button" class="btn small secondary" id="lyDel">この画像を消す</button>
+                </div>
+                <div class="sliders">
+                    <label for="lyScale">大きさ</label><input type="range" id="lyScale" min="5" max="400" step="1"><output id="lyScaleOut"></output>
+                    <label for="lyRot">回転</label><input type="range" id="lyRot" min="-180" max="180" step="1"><output id="lyRotOut"></output>
+                    <label for="lyShadow">影</label><input type="range" id="lyShadow" min="0" max="100" step="1"><output id="lyShadowOut"></output>
+                    <label for="lyAlpha">濃さ</label><input type="range" id="lyAlpha" min="10" max="100" step="1"><output id="lyAlphaOut"></output>
+                </div>
+
+                <div class="cut-box" id="cutBox">
+                    <strong>切り抜き</strong>
+                    <div class="tools">
+                        <button type="button" class="btn small" id="cutAuto">自動で切り抜く</button>
+                        <button type="button" class="btn small secondary" id="cutReset">切り抜きを元に戻す</button>
+                        <button type="button" class="btn small secondary" id="cutUndo" disabled>1つ前に戻す</button>
+                    </div>
+                    <label class="fit"><input type="checkbox" id="cutFit" checked> 切り抜いたら、大きさと位置をカードに合わせる</label>
+                    <div class="mode">
+                        <span class="seg" role="radiogroup" aria-label="プレビューでの操作">
+                            <label><input type="radio" name="mode" value="move" checked><span>動かす</span></label>
+                            <label><input type="radio" name="mode" value="erase"><span>消しゴム</span></label>
+                            <label><input type="radio" name="mode" value="restore"><span>戻すブラシ</span></label>
+                        </span>
+                    </div>
+                    <div class="mode">
+                        <span class="seg" role="radiogroup" aria-label="囲んで切り抜く">
+                            <label><input type="radio" name="mode" value="lassoKeep"><span>囲んで残す</span></label>
+                            <label><input type="radio" name="mode" value="lassoErase"><span>囲んで消す</span></label>
+                        </span>
+                    </div>
+                    <div class="sliders">
+                        <label for="brush">ブラシ</label><input type="range" id="brush" min="4" max="120" step="1" value="28"><output id="brushOut"></output>
+                    </div>
+                    <label class="fit"><input type="checkbox" id="smartBrush" checked> スマートブラシ（なぞった色とつながっているところだけを戻す・消す）</label>
+                    <div class="sliders">
+                        <label for="smartTol">色の幅</label><input type="range" id="smartTol" min="10" max="120" step="1" value="48"><output id="smartTolOut"></output>
+                    </div>
+                    <label class="fit"><input type="checkbox" id="cutGhost" checked> 直しているあいだ、消えた部分を赤く透かして表示する</label>
+                    <p class="note" id="cutNote">「自動で切り抜く」は、写真の中のいちばん目立つもの（人と、手に持ったバットやグローブ）を残します。初回だけ切り抜き用のデータ（約50MB）を読み込みます。残ったところや消えすぎたところは、消しゴムと戻すブラシで直せます。直しているあいだは、消えた部分が赤く透けて見えるので、戻すブラシでなぞるだけで元に戻せます。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>2. 選手の情報</h2>
+            <div class="mode" style="margin:0 0 10px">
+                <span class="seg" role="radiogroup" aria-label="野手か投手か">
+                    <label><input type="radio" name="kind" value="bat" checked><span>野手</span></label>
+                    <label><input type="radio" name="kind" value="pit"><span>投手</span></label>
+                </span>
+            </div>
+            <div class="grid">
+                <div><label for="fName">選手名</label><input type="text" id="fName" value="ドック 太郎" maxlength="12"></div>
+                <div><label for="fSeries">シリーズ</label><input type="text" id="fSeries" value="2026 Series1 TS" maxlength="24"></div>
+                <div><label for="fRank">ランク</label>
+                    <div class="pair">
+                        <select id="fRank"><option>S</option><option>A</option><option>B</option><option>C</option></select>
+                        <select id="fKiwami"><option value="1">極</option><option value="0">なし</option></select>
+                    </div>
+                </div>
+                <div><label for="fSpirits">スピリッツ</label><input type="number" id="fSpirits" value="4600" min="0" max="99999"></div>
+                <div><label for="fCost">コスト</label><input type="number" id="fCost" value="35" min="0" max="99"></div>
+                <div><label for="fTokkun">特訓</label><input type="text" id="fTokkun" value="MAX" maxlength="4"></div>
+                <div><label for="fLv">レベル</label>
+                    <div class="pair"><input type="number" id="fLv" value="75" min="1" max="99"><input type="number" id="fLvMax" value="75" min="1" max="99" aria-label="最大レベル"></div>
+                </div>
+
+                <div class="only-bat"><label for="fPos">守備</label>
+                    <div class="pair">
+                        <select id="fPos"><option>捕</option><option>一</option><option>二</option><option>三</option><option>遊</option><option>左</option><option selected>中</option><option>右</option></select>
+                        <select id="fPosG" class="grade-sel"></select>
+                    </div>
+                </div>
+                <div class="only-bat"><label for="fTraj">弾道</label>
+                    <select id="fTraj">
+                        <option value="5">アーチスト</option>
+                        <option value="4">パワーヒッター</option>
+                        <option value="3">高弾道</option>
+                        <option value="2">中弾道</option>
+                        <option value="1">低弾道</option>
+                    </select>
+                </div>
+                <div class="only-bat"><label for="fMeet">ミート</label><input type="number" id="fMeet" value="85" min="1" max="99"></div>
+                <div class="only-bat"><label for="fPow">パワー</label><input type="number" id="fPow" value="88" min="1" max="99"></div>
+                <div class="only-bat"><label for="fRun">走力</label><input type="number" id="fRun" value="79" min="1" max="99"></div>
+
+                <div class="only-pit" hidden><label for="fApt">適性</label>
+                    <div class="pair">
+                        <select id="fApt"><option>先</option><option>中</option><option>継</option><option>抑</option></select>
+                    </div>
+                </div>
+                <div class="only-pit" hidden><label for="fVel">球威</label><input type="number" id="fVel" value="88" min="1" max="99"></div>
+                <div class="only-pit" hidden><label for="fCtl">制球</label><input type="number" id="fCtl" value="82" min="1" max="99"></div>
+                <div class="only-pit" hidden><label for="fSta">スタミナ</label><input type="number" id="fSta" value="76" min="1" max="99"></div>
+
+                <div><label for="fMark">球団マーク（1〜2文字）</label><input type="text" id="fMark" value="D" maxlength="2"></div>
+                <div><label for="fMarkFg">マークの色</label>
+                    <div class="pair"><input type="color" id="fMarkFg" value="#ffffff" aria-label="文字の色"><input type="color" id="fMarkBg" value="#1d3f8c" aria-label="地の色"></div>
+                </div>
+                <div class="wide"><span class="file-btn btn small secondary">マークを画像で入れる<input type="file" id="markImage" accept="image/*"></span>
+                    <button type="button" class="btn small secondary" id="markClear" hidden>マークの画像を外す</button></div>
+            </div>
+            <div class="actions">
+                <button type="button" class="secondary" id="btnReset">文字の入力を初期値に戻す</button>
+            </div>
+        </section>
+
+    </div>
+</div>
+</div>
+
+<article class="tool-article" data-ad-mid="2">
+
+<h2>プロスピA風 選手画像ジェネレーターについて</h2>
+<p>
+    プロスピA（プロ野球スピリッツA）の選手詳細の画面のような画像を作るツールです。
+    ランクのメダル・スピリッツ・シリーズ・選手名・守備・コスト・特訓・レベル・弾道・能力の枠は、こちらで用意しています。
+    選手の写真と背景（エフェクトやロゴ）を入れて能力を入力すると、スマホの画面と同じ縦長（9:16）の1枚の画像になります。
+    インスタやYouTubeのサムネイル、SNSの「もしこの選手が出たら」の画像づくりに使えます。
+</p>
+<p>
+    写真の選手は、サイトの中で自動で切り抜けます。切り抜いたあとは、消しゴム・戻すブラシ・囲んで残す／消すで細かいところを直し、
+    ドラッグや2本指のつまみで、大きさと向きを自由に変えられます。画像は何枚でも重ねられるので、
+    「TIME SELECTION」のようなロゴや、エフェクトの画像を前に重ねることもできます。
+</p>
+
+<h2>使い方</h2>
+<ol>
+    <li>「画像を追加」で選手の写真を入れます。</li>
+    <li>「自動で切り抜く」を押します。切り抜いたあと、選手の大きさと位置は自動でカードに合わせます。</li>
+    <li>残ったところは消しゴム、消えすぎたところは戻すブラシでなぞって直します。直しているあいだは、消えた部分が赤く透けて見えます。</li>
+    <li>「動かす」に戻して、プレビューの上でドラッグして位置を決めます。大きさ・回転・影の強さはスライダーでも変えられます。</li>
+    <li>「背景の画像を入れる」で、好きな背景を入れます（入れなければ、夜のスタジアムと芝の背景になります）。</li>
+    <li>選手名・シリーズ・ランク・能力を入力して、「PNG画像をダウンロード」か「共有して保存」で保存します。</li>
+</ol>
+
+<h2>切り抜きのコツ</h2>
+<ul>
+    <li>選手がはっきり写っていて、背景とまぎれていない写真ほどきれいに切り抜けます。暗い写真では、腕などが消えることがあります。</li>
+    <li>消えた部分は、戻すブラシでなぞると元に戻ります。スマートブラシ（初めからオン）は、なぞった色とつながっているところだけを戻すので、まわりの背景まで戻りにくくなります。</li>
+    <li>背景と色が近いところは、スマートブラシの「色の幅」を狭くするか、戻りすぎたところを消しゴムで消して整えます。</li>
+    <li>大まかに切り抜くときは「囲んで残す」で選手のまわりを指でなぞると、外側がまとめて消えます。</li>
+    <li>失敗したら「1つ前に戻す」、最初からやり直すときは「切り抜きを元に戻す」を押します。</li>
+</ul>
+
+<h2>能力のランク（A・B・Cなど）と色の決まり方</h2>
+<p>
+    ミート・パワー・走力（投手は球威・制球・スタミナ）は、数字を入れるとランクの文字と色が自動で決まります。
+    90以上がS、80〜89がA、70〜79がB、60〜69がC、50〜59がD、40〜49がE、20〜39がF、19以下がGです。
+    守備のランクは自分で選びます。投手の適性はSです。
+</p>
+<p>
+    守備の枠の色は、外野（左・中・右）が緑、内野（一・二・三・遊）が黄、捕手が青、投手が赤になります。
+</p>
+
+<h2>よくある質問</h2>
+<p><strong>Q. 入れた画像はどこかに送られますか？</strong><br>
+A. 送りません。切り抜きも含めて、すべてこの端末のブラウザの中で動きます。初めて自動で切り抜くときに、切り抜きの仕組み（約50MB）を読み込むだけです。</p>
+<p><strong>Q. 公式の背景やエフェクトの画像は入っていますか？</strong><br>
+A. 入っていません。背景やロゴは自分で用意した画像を入れてください。入れないときは、夜のスタジアムと芝の背景になります。</p>
+<p><strong>Q. 自動の切り抜きに時間がかかります。</strong><br>
+A. 1枚につき10秒ほどかかります。初めてのときは、切り抜きの仕組みの読み込みに加えて少し長くかかります。</p>
+<p><strong>Q. 保存した画像の下にURLが入ります。</strong><br>
+A. 画像の下の細い余白に、小さくこのページのURLを入れています。いらなければ、余白ごと切り取ってください。</p>
+
+<p class="disclaimer">
+    このツールは非公式のファンメイドツールで、株式会社コナミデジタルエンタテインメントとは関係ありません。
+    「プロ野球スピリッツA」は同社の商標です。人の写真を使うときは、その写真を使ってよいかを確かめてください。
+</p>
+
+</article>
+
+</div>
+
+<script>
+"use strict";
+
+/* ======================================================
+   基本
+   ====================================================== */
+/* 画像の形：縦長（スマホの画面 9:16）と、選手カードの部分だけ。
+   カードの文字や枠は、縦長のときは DY だけ下にずらす */
+const W = 750;
+const SHAPES = { tall: { H: 1334, DY: 170 }, card: { H: 862, DY: 0 } };
+let H = 1334, DY = 170;
+const $ = (id) => document.getElementById(id);
+const view = $("view");
+const vctx = view.getContext("2d");
+
+const FONT_JP = '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif';
+/* 英数字・選手名も同じ書体（500の太さ）にする（持ち主が見比べて選んだ） */
+const FONT_EN = FONT_JP;
+const FONT_NAME = FONT_JP;
+
+/* 画像（レイヤー）。下から順に描く */
+let layers = [];
+let selected = -1;
+let markImg = null;   /* 球団マークの画像 */
+let nextId = 1;
+
+const MAX_SIDE = 1600;   /* 大きすぎる写真は、この大きさに縮めて扱う（メモリと速さのため） */
+
+/* ======================================================
+   画像の読み込み
+   ====================================================== */
+function loadImageFile(file) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            let w = img.naturalWidth, h = img.naturalHeight;
+            const k = Math.min(1, MAX_SIDE / Math.max(w, h));
+            w = Math.max(1, Math.round(w * k)); h = Math.max(1, Math.round(h * k));
+            const c = document.createElement("canvas");
+            c.width = w; c.height = h;
+            c.getContext("2d").drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(url);
+            resolve(c);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("画像を読み込めませんでした")); };
+        img.src = url;
+    });
+}
+
+function makeLayer(src, name) {
+    const mask = document.createElement("canvas");
+    mask.width = src.width; mask.height = src.height;
+    const m = mask.getContext("2d");
+    m.fillStyle = "#fff";
+    m.fillRect(0, 0, mask.width, mask.height);
+    const cut = document.createElement("canvas");
+    cut.width = src.width; cut.height = src.height;
+    /* 最初はカードの上半分に収まる大きさで、少し右寄りに置く */
+    const s = Math.min(640 / src.height, 720 / src.width);
+    const L = { id: nextId++, name, src, mask, cut, x: W * 0.5, y: 360 + DY, s, rot: 0, flip: 1, alpha: 1, shadow: 0.7, undo: [] };
+    refreshCut(L);
+    return L;
+}
+
+function refreshCut(L) {
+    const c = L.cut.getContext("2d");
+    c.globalCompositeOperation = "source-over";
+    c.clearRect(0, 0, L.cut.width, L.cut.height);
+    c.drawImage(L.src, 0, 0);
+    c.globalCompositeOperation = "destination-in";
+    c.drawImage(L.mask, 0, 0);
+    c.globalCompositeOperation = "source-over";
+    L.ghost = null;   /* 消えた部分の表示は、次に描くときに作り直す */
+}
+
+/* 消えた部分を、元の写真に赤みをかけて作る（切り抜きを直すときの目印） */
+function ghostOf(L) {
+    if (L.ghost) return L.ghost;
+    const g = document.createElement("canvas");
+    g.width = L.src.width; g.height = L.src.height;
+    const x = g.getContext("2d");
+    x.drawImage(L.src, 0, 0);
+    x.globalCompositeOperation = "destination-out";
+    x.drawImage(L.mask, 0, 0);
+    x.globalCompositeOperation = "source-atop";
+    x.fillStyle = "rgba(255,40,80,.55)";
+    x.fillRect(0, 0, g.width, g.height);
+    L.ghost = g;
+    return g;
+}
+
+async function addImageFile(file) {
+    if (!file || !/^image\//.test(file.type)) return;
+    try {
+        const src = await loadImageFile(file);
+        const L = makeLayer(src, file.name || "画像");
+        layers.push(L);
+        selected = layers.length - 1;
+        syncLayers();
+        draw();
+    } catch (e) { alert(e.message); }
+}
+
+$("addImage").addEventListener("change", (e) => { addImageFile(e.target.files[0]); e.target.value = ""; });
+$("bgImage").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    try {
+        /* 背景も画像のひとつとして、いちばん後ろに置く（ドラッグ・拡大で、見せる範囲を選べる）。
+           最初はカードを覆う大きさで、縦長の画像（ゲームの画面など）は上にそろえる */
+        const src = await loadImageFile(f);
+        layers = layers.filter((L) => !L.isBg);
+        const L = makeLayer(src, "背景");
+        L.isBg = true;
+        L.shadow = 0;
+        coverBg(L);
+        layers.unshift(L);
+        selected = 0;
+        $("bgClear").hidden = false;
+        syncLayers(); draw();
+    } catch (err) { alert(err.message); }
+});
+/* 背景をカードいっぱいに広げる。スマホの画面のような縦長の画像は、上の端（時計などが出る帯、高さの6.5%）を外に出して上にそろえる */
+function coverBg(L) {
+    const w = L.src.width, h = L.src.height;
+    const tall = h / w > (H / W) * 1.1;
+    /* 画像より縦に長いスマホの画面は、少し大きくして、上の帯と下のボタンを外に出す */
+    L.s = Math.max(W / w, H / h) * (tall ? 1.15 : 1);
+    L.x = W / 2;
+    L.rot = 0;
+    L.y = tall ? h * L.s / 2 - h * 0.065 * L.s : H / 2;
+}
+
+/* 画像の形を変える */
+function applyShape() {
+    const sh = SHAPES[$("fShape").value] || SHAPES.tall;
+    if (sh.H === H) return;
+    const dd = sh.DY - DY;
+    H = sh.H; DY = sh.DY;
+    view.height = H;
+    baseBg = null;
+    layers.forEach((L) => { if (L.isBg) coverBg(L); else L.y += dd; });
+    draw();
+}
+
+$("bgClear").addEventListener("click", () => {
+    layers = layers.filter((L) => !L.isBg);
+    selected = layers.length - 1;
+    $("bgClear").hidden = true;
+    syncLayers(); draw();
+});
+$("markImage").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    try { markImg = await loadImageFile(f); $("markClear").hidden = false; draw(); } catch (err) { alert(err.message); }
+});
+$("markClear").addEventListener("click", () => { markImg = null; $("markClear").hidden = true; draw(); });
+
+/* プレビューへのドラッグ＆ドロップ */
+view.addEventListener("dragover", (e) => { e.preventDefault(); });
+view.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const files = [...(e.dataTransfer && e.dataTransfer.files || [])];
+    files.forEach(addImageFile);
+});
+
+/* ======================================================
+   レイヤーの一覧と操作
+   ====================================================== */
+function thumbOf(L) {
+    const c = document.createElement("canvas");
+    const k = 80 / Math.max(L.cut.width, L.cut.height);
+    c.width = Math.max(1, Math.round(L.cut.width * k)); c.height = Math.max(1, Math.round(L.cut.height * k));
+    c.getContext("2d").drawImage(L.cut, 0, 0, c.width, c.height);
+    return c.toDataURL();
+}
+
+function syncLayers() {
+    const ul = $("layers");
+    ul.innerHTML = "";
+    if (!layers.length) {
+        const li = document.createElement("li");
+        li.className = "empty";
+        li.textContent = "まだ画像がありません。「選手の画像を追加」から入れてください。";
+        ul.appendChild(li);
+    }
+    /* 上に描くものを上に並べる */
+    for (let i = layers.length - 1; i >= 0; i--) {
+        const L = layers[i];
+        const li = document.createElement("li");
+        if (i === selected) li.className = "sel";
+        const img = document.createElement("img");
+        img.alt = "";
+        img.src = thumbOf(L);
+        const nm = document.createElement("span");
+        nm.className = "nm";
+        nm.textContent = (i === layers.length - 1 ? "いちばん前：" : "") + L.name;
+        li.append(img, nm);
+        li.addEventListener("click", () => { selected = i; syncLayers(); draw(); });
+        ul.appendChild(li);
+    }
+    const L = layers[selected];
+    $("layerTools").hidden = !L;
+    if (L) {
+        $("lyScale").value = Math.round(L.s * 100);
+        $("lyRot").value = Math.round(L.rot * 180 / Math.PI);
+        $("lyAlpha").value = Math.round(L.alpha * 100);
+        $("lyShadow").value = Math.round(L.shadow * 100);
+        $("cutUndo").disabled = !L.undo.length;
+    }
+    syncOutputs();
+}
+
+function syncOutputs() {
+    $("lyScaleOut").textContent = $("lyScale").value + "%";
+    $("lyRotOut").textContent = $("lyRot").value + "°";
+    $("lyAlphaOut").textContent = $("lyAlpha").value + "%";
+    $("lyShadowOut").textContent = $("lyShadow").value + "%";
+    $("brushOut").textContent = $("brush").value;
+    $("smartTolOut").textContent = $("smartTol").value;
+}
+
+const cur = () => layers[selected] || null;
+
+$("lyScale").addEventListener("input", () => { const L = cur(); if (L) { L.s = $("lyScale").value / 100; draw(); } syncOutputs(); });
+$("lyRot").addEventListener("input", () => { const L = cur(); if (L) { L.rot = $("lyRot").value * Math.PI / 180; draw(); } syncOutputs(); });
+$("lyShadow").addEventListener("input", () => { const L = cur(); if (L) { L.shadow = $("lyShadow").value / 100; draw(); } syncOutputs(); });
+$("lyAlpha").addEventListener("input", () => { const L = cur(); if (L) { L.alpha = $("lyAlpha").value / 100; draw(); } syncOutputs(); });
+$("brush").addEventListener("input", () => { syncOutputs(); draw(); });
+$("cutGhost").addEventListener("change", draw);
+$("smartTol").addEventListener("input", syncOutputs);
+$("lyFlip").addEventListener("click", () => { const L = cur(); if (L) { L.flip *= -1; draw(); } });
+$("lyCenter").addEventListener("click", () => { const L = cur(); if (L) { L.x = W / 2; L.y = 360 + DY; L.rot = 0; syncLayers(); draw(); } });
+$("lyUp").addEventListener("click", () => {
+    if (selected < 0 || selected >= layers.length - 1) return;
+    [layers[selected], layers[selected + 1]] = [layers[selected + 1], layers[selected]];
+    selected++; syncLayers(); draw();
+});
+$("lyDown").addEventListener("click", () => {
+    if (selected <= 0) return;
+    [layers[selected], layers[selected - 1]] = [layers[selected - 1], layers[selected]];
+    selected--; syncLayers(); draw();
+});
+$("lyDel").addEventListener("click", () => {
+    if (selected < 0) return;
+    layers.splice(selected, 1);
+    selected = layers.length - 1;
+    $("bgClear").hidden = !layers.some((L) => L.isBg);
+    syncLayers(); draw();
+});
+
+/* ======================================================
+   切り抜き
+   ====================================================== */
+function pushUndo(L) {
+    const c = document.createElement("canvas");
+    c.width = L.mask.width; c.height = L.mask.height;
+    c.getContext("2d").drawImage(L.mask, 0, 0);
+    L.undo.push(c);
+    if (L.undo.length > 15) L.undo.shift();
+    $("cutUndo").disabled = false;
+}
+
+$("cutUndo").addEventListener("click", () => {
+    const L = cur(); if (!L || !L.undo.length) return;
+    const c = L.undo.pop();
+    const m = L.mask.getContext("2d");
+    m.globalCompositeOperation = "copy";
+    m.drawImage(c, 0, 0);
+    m.globalCompositeOperation = "source-over";
+    refreshCut(L); syncLayers(); draw();
+});
+
+$("cutReset").addEventListener("click", () => {
+    const L = cur(); if (!L) return;
+    pushUndo(L);
+    const m = L.mask.getContext("2d");
+    m.globalCompositeOperation = "source-over";
+    m.fillStyle = "#fff";
+    m.fillRect(0, 0, L.mask.width, L.mask.height);
+    refreshCut(L); syncLayers(); draw();
+});
+
+/* 切り抜きは ISNet（DIS の汎用の切り抜きモデル。Apache-2.0）を onnxruntime-web でブラウザの中で動かす。
+   人だけでなく、手に持ったバットやグローブもいっしょに残る。
+   モデルは8ビットに縮めたもの（約46MB）をこのサイトに置き、初めて押したときだけ読み込む */
+const ORT_BASE = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
+const MODEL_URL = "/prospi/model/isnet-general-use-q8.onnx";
+const SIZE = 1024;
+let sessionPromise = null;
+
+function getSession() {
+    if (!sessionPromise) {
+        sessionPromise = (async () => {
+            const ort = await import(ORT_BASE + "ort.wasm.min.mjs");
+            ort.env.wasm.wasmPaths = ORT_BASE;
+            ort.env.wasm.numThreads = Math.min(4, navigator.hardwareConcurrency || 1);
+            const session = await ort.InferenceSession.create(MODEL_URL, { executionProviders: ["wasm"], graphOptimizationLevel: "all" });
+            return { ort, session };
+        })();
+        sessionPromise.catch(() => { sessionPromise = null; });
+    }
+    return sessionPromise;
+}
+
+function busy(msg) {
+    const b = $("busy");
+    b.hidden = !msg;
+    b.textContent = msg || "";
+}
+
+/* 1024×1024 に縮めた画像から、0〜1 の切り抜きの濃さ（1024×1024）を作る */
+async function predict(src) {
+    const { ort, session } = await getSession();
+    const c = document.createElement("canvas");
+    c.width = SIZE; c.height = SIZE;
+    const x = c.getContext("2d", { willReadFrequently: true });
+    x.drawImage(src, 0, 0, SIZE, SIZE);
+    const px = x.getImageData(0, 0, SIZE, SIZE).data;
+    const N = SIZE * SIZE;
+    const input = new Float32Array(3 * N);
+    const mean = [0.485, 0.456, 0.406];
+    for (let i = 0; i < N; i++) {
+        input[i] = px[i * 4] / 255 - mean[0];
+        input[N + i] = px[i * 4 + 1] / 255 - mean[1];
+        input[2 * N + i] = px[i * 4 + 2] / 255 - mean[2];
+    }
+    const feeds = {};
+    feeds[session.inputNames[0]] = new ort.Tensor("float32", input, [1, 3, SIZE, SIZE]);
+    const out = await session.run(feeds);
+    const o = out[session.outputNames[0]].data;
+    let mn = Infinity, mx = -Infinity;
+    for (let i = 0; i < N; i++) { if (o[i] < mn) mn = o[i]; if (o[i] > mx) mx = o[i]; }
+    const a = new Float32Array(N);
+    const k = 1 / (mx - mn || 1);
+    for (let i = 0; i < N; i++) a[i] = (o[i] - mn) * k;
+    return a;
+}
+
+/* 人とつながっていない小さなかたまり（画面の文字・エフェクトのかけらなど）を落とす。
+   濃さ0.5以上をかたまりに分け、いちばん大きいものの15%に満たないかたまりは消す */
+function keepMain(a) {
+    const N = SIZE * SIZE;
+    const lab = new Int32Array(N).fill(-1);
+    const sizes = [], means = [];
+    const stack = new Int32Array(N);
+    for (let i = 0; i < N; i++) {
+        if (a[i] < 0.5 || lab[i] >= 0) continue;
+        const id = sizes.length;
+        let n = 0, sum = 0, sp = 0;
+        stack[sp++] = i; lab[i] = id;
+        while (sp) {
+            const p = stack[--sp]; n++; sum += a[p];
+            const px = p % SIZE, py = (p / SIZE) | 0;
+            if (px > 0 && lab[p - 1] < 0 && a[p - 1] >= 0.5) { lab[p - 1] = id; stack[sp++] = p - 1; }
+            if (px < SIZE - 1 && lab[p + 1] < 0 && a[p + 1] >= 0.5) { lab[p + 1] = id; stack[sp++] = p + 1; }
+            if (py > 0 && lab[p - SIZE] < 0 && a[p - SIZE] >= 0.5) { lab[p - SIZE] = id; stack[sp++] = p - SIZE; }
+            if (py < SIZE - 1 && lab[p + SIZE] < 0 && a[p + SIZE] >= 0.5) { lab[p + SIZE] = id; stack[sp++] = p + SIZE; }
+        }
+        sizes.push(n);
+        means.push(sum / n);
+    }
+    if (!sizes.length) return a;
+    const big = Math.max(...sizes);
+    /* 体から離れていても、はっきり写っている物（投げたバットなど）は残す：
+       大きさが最大の1%以上で、濃さの平均が0.85以上 */
+    const keep = sizes.map((n, i) => n >= big * 0.15 || (n >= big * 0.01 && means[i] >= 0.85));
+    /* 残すかたまりを少し太らせた範囲（ふちの半透明を残すため）の外は 0 にする */
+    const R = 6;
+    const near = new Uint8Array(N);
+    for (let y = 0; y < SIZE; y++) {
+        let run = -1e9;
+        for (let x = 0; x < SIZE; x++) {
+            const l = lab[y * SIZE + x];
+            if (l >= 0 && keep[l]) run = x;
+            if (x - run <= R) near[y * SIZE + x] = 1;
+        }
+        run = 1e9;
+        for (let x = SIZE - 1; x >= 0; x--) {
+            const l = lab[y * SIZE + x];
+            if (l >= 0 && keep[l]) run = x;
+            if (run - x <= R) near[y * SIZE + x] = 1;
+        }
+    }
+    const near2 = new Uint8Array(N);
+    for (let x = 0; x < SIZE; x++) {
+        let run = -1e9;
+        for (let y = 0; y < SIZE; y++) { if (near[y * SIZE + x]) run = y; if (y - run <= R) near2[y * SIZE + x] = 1; }
+        run = 1e9;
+        for (let y = SIZE - 1; y >= 0; y--) { if (near[y * SIZE + x]) run = y; if (run - y <= R) near2[y * SIZE + x] = 1; }
+    }
+    const b = new Float32Array(N);
+    for (let i = 0; i < N; i++) b[i] = near2[i] ? a[i] : 0;
+    return b;
+}
+
+/* 切り抜いた人がカードの上半分にきれいに収まるように、大きさと位置を合わせる */
+function fitToCard(L) {
+    const m = L.mask;
+    const k = Math.min(1, 512 / Math.max(m.width, m.height));
+    const w = Math.max(1, Math.round(m.width * k)), h = Math.max(1, Math.round(m.height * k));
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const x = c.getContext("2d", { willReadFrequently: true });
+    x.drawImage(m, 0, 0, w, h);
+    const d = x.getImageData(0, 0, w, h).data;
+    let x0 = w, y0 = h, x1 = -1, y1 = -1;
+    for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
+        if (d[(yy * w + xx) * 4 + 3] > 128) {
+            if (xx < x0) x0 = xx; if (xx > x1) x1 = xx;
+            if (yy < y0) y0 = yy; if (yy > y1) y1 = yy;
+        }
+    }
+    if (x1 < 0) return;
+    const bw = (x1 - x0 + 1) / k, bh = (y1 - y0 + 1) / k;
+    const bx = (x0 / k + bw / 2) - L.src.width / 2, by = (y0 / k + bh / 2) - L.src.height / 2;
+    /* 人の高さ 640px（横が広いときは 700px まで）、足もとが名前のあたり（y=700）にくるように。
+       写真の下の端で切れている（上半身だけなど）ときは、切れ目が下の枠に隠れる大きさにする。
+       小さい写真を引き伸ばしすぎるとぼやけるので、3倍までにする */
+    /* 写真の下の端で体が切れているか：いちばん下の行で、人が横幅の3割以上を占めていれば「切れている」。
+       足先が下の端に少しかかっているだけの全身写真は、切れていない扱いにする */
+    let bottomRun = 0;
+    for (let xx = 0; xx < w; xx++) if (d[((h - 1) * w + xx) * 4 + 3] > 128) bottomRun++;
+    const cutBottom = y1 >= h - 2 && bottomRun > (x1 - x0 + 1) * 0.3;
+    let s, top;
+    if (cutBottom) {
+        /* 頭を上から70pxに置き、切れ目が下の枠（y=760）より下に隠れる大きさにする */
+        s = Math.min(690 / bh, 3);
+        top = 70 + DY * 0.6;
+    } else {
+        /* 本物の画面では、全身の選手は高さ560px前後で、足もとが名前のすぐ下（y=665）にくる */
+        s = Math.min(560 / bh, 620 / bw, 3);
+        top = 665 + DY - bh * s;
+    }
+    L.s = s; L.rot = 0;
+    L.x = W / 2 - bx * s * L.flip;
+    L.y = top + bh * s / 2 - by * s;
+}
+
+$("cutAuto").addEventListener("click", async () => {
+    const L = cur(); if (!L) return;
+    const btn = $("cutAuto");
+    btn.disabled = true;
+    busy(sessionPromise ? "切り抜いています…" : "切り抜きの準備をしています…（初回だけ、データの読み込みに少し時間がかかります）");
+    try {
+        await getSession();
+        busy("切り抜いています…（10秒ほどかかることがあります）");
+        await new Promise((r) => setTimeout(r, 30));
+        const a = keepMain(await predict(L.src));
+        const small = document.createElement("canvas");
+        small.width = SIZE; small.height = SIZE;
+        const sx = small.getContext("2d");
+        const id = sx.createImageData(SIZE, SIZE);
+        for (let i = 0; i < SIZE * SIZE; i++) {
+            id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = 255;
+            id.data[i * 4 + 3] = Math.round(Math.min(1, Math.max(0, a[i])) * 255);
+        }
+        sx.putImageData(id, 0, 0);
+        pushUndo(L);
+        const m = L.mask.getContext("2d");
+        m.globalCompositeOperation = "copy";
+        m.imageSmoothingEnabled = true;
+        m.imageSmoothingQuality = "high";
+        m.drawImage(small, 0, 0, L.mask.width, L.mask.height);
+        m.globalCompositeOperation = "source-over";
+        refreshCut(L);
+        if ($("cutFit").checked) fitToCard(L);
+        syncLayers(); draw();
+    } catch (e) {
+        console.error(e);
+        alert("自動の切り抜きを読み込めませんでした。通信の状態を確かめて、もう一度お試しください。消しゴムで手で切り抜くこともできます。");
+    } finally {
+        busy("");
+        btn.disabled = false;
+    }
+});
+
+/* ======================================================
+   プレビューの操作（動かす・つまむ・ブラシ）
+   ====================================================== */
+const mode = () => document.querySelector('input[name="mode"]:checked').value;
+document.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener("change", () => {
+    view.classList.toggle("brush", mode() !== "move");
+    draw();
+}));
+
+function toCanvas(e) {
+    const r = view.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height };
+}
+/* キャンバスの点 → レイヤーの画像の中の点 */
+function toLocal(L, p) {
+    const dx = p.x - L.x, dy = p.y - L.y;
+    const c = Math.cos(-L.rot), s = Math.sin(-L.rot);
+    const rx = dx * c - dy * s, ry = dx * s + dy * c;
+    return { x: rx / (L.s * L.flip) + L.src.width / 2, y: ry / L.s + L.src.height / 2 };
+}
+function hit(L, p) {
+    const q = toLocal(L, p);
+    return q.x >= 0 && q.y >= 0 && q.x <= L.src.width && q.y <= L.src.height;
+}
+
+const pointers = new Map();
+let gesture = null;
+let lastBrush = null;
+
+function brushAt(L, p) {
+    const q = toLocal(L, p);
+    const r = Number($("brush").value) / L.s / 2;
+    if ($("smartBrush").checked) {
+        /* スマートブラシ：前の点から今の点まで、半径の1/3ごとに打つ */
+        const from = lastBrush || q;
+        const dist = Math.hypot(q.x - from.x, q.y - from.y);
+        const n = Math.max(1, Math.ceil(dist / Math.max(1, r / 3)));
+        for (let i = lastBrush ? 1 : 0; i <= n; i++) {
+            smartDab(L, from.x + (q.x - from.x) * i / n, from.y + (q.y - from.y) * i / n, r);
+        }
+        lastBrush = q;
+        refreshCut(L);
+        return;
+    }
+    const m = L.mask.getContext("2d");
+    m.globalCompositeOperation = mode() === "erase" ? "destination-out" : "source-over";
+    m.fillStyle = "#fff";
+    m.strokeStyle = "#fff";
+    m.lineCap = "round";
+    m.lineWidth = r * 2;
+    if (lastBrush) {
+        m.beginPath(); m.moveTo(lastBrush.x, lastBrush.y); m.lineTo(q.x, q.y); m.stroke();
+    } else {
+        m.beginPath(); m.arc(q.x, q.y, r, 0, Math.PI * 2); m.fill();
+    }
+    m.globalCompositeOperation = "source-over";
+    lastBrush = q;
+    refreshCut(L);
+}
+
+/* スマートブラシの1打ち。ブラシの真ん中の色を拾い、そこから色がつながっている範囲だけを
+   円の中で塗る（戻す・消す）。腕をなぞれば、まわりの背景は戻らない */
+function srcPixels(L) {
+    if (!L.srcData) L.srcData = L.src.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, L.src.width, L.src.height).data;
+    return L.srcData;
+}
+function smartDab(L, cx, cy, r) {
+    const W0 = L.src.width, H0 = L.src.height;
+    const x0 = Math.max(0, Math.floor(cx - r)), y0 = Math.max(0, Math.floor(cy - r));
+    const x1 = Math.min(W0 - 1, Math.ceil(cx + r)), y1 = Math.min(H0 - 1, Math.ceil(cy + r));
+    if (x1 < x0 || y1 < y0) return;
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+    const src = srcPixels(L);
+    const icx = Math.round(Math.min(W0 - 1, Math.max(0, cx))), icy = Math.round(Math.min(H0 - 1, Math.max(0, cy)));
+    /* 真ん中の3×3の平均の色 */
+    let sr = 0, sg = 0, sb = 0, sn = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const xx = icx + dx, yy = icy + dy;
+        if (xx < 0 || yy < 0 || xx >= W0 || yy >= H0) continue;
+        const i = (yy * W0 + xx) * 4;
+        sr += src[i]; sg += src[i + 1]; sb += src[i + 2]; sn++;
+    }
+    sr /= sn; sg /= sn; sb /= sn;
+    const tol = Number($("smartTol").value);
+    const lim = tol * 1.3;
+    const r2 = r * r;
+    const val = new Float32Array(bw * bh);   /* 0〜1：塗る強さ */
+    const seen = new Uint8Array(bw * bh);
+    const stack = [];
+    const start = (icy - y0) * bw + (icx - x0);
+    if (icx < x0 || icx > x1 || icy < y0 || icy > y1) return;
+    stack.push(start); seen[start] = 1;
+    while (stack.length) {
+        const k = stack.pop();
+        const lx = k % bw, ly = (k / bw) | 0;
+        const gx = lx + x0, gy = ly + y0;
+        const i = (gy * W0 + gx) * 4;
+        const d = Math.hypot(src[i] - sr, src[i + 1] - sg, src[i + 2] - sb);
+        if (d > lim) continue;
+        val[k] = Math.min(1, (lim - d) / (lim - tol * 0.7));
+        const nb = [k - 1, k + 1, k - bw, k + bw];
+        const ok = [lx > 0, lx < bw - 1, ly > 0, ly < bh - 1];
+        for (let j = 0; j < 4; j++) {
+            if (!ok[j] || seen[nb[j]]) continue;
+            const nx = nb[j] % bw + x0, ny = ((nb[j] / bw) | 0) + y0;
+            if ((nx - cx) * (nx - cx) + (ny - cy) * (ny - cy) > r2) continue;
+            seen[nb[j]] = 1;
+            stack.push(nb[j]);
+        }
+    }
+    const m = L.mask.getContext("2d", { willReadFrequently: true });
+    const img = m.getImageData(x0, y0, bw, bh);
+    const a = img.data;
+    const restore = mode() === "restore";
+    for (let k = 0; k < bw * bh; k++) {
+        const v = val[k];
+        if (!v) continue;
+        const j = k * 4 + 3;
+        a[k * 4] = a[k * 4 + 1] = a[k * 4 + 2] = 255;
+        a[j] = restore ? Math.max(a[j], Math.round(v * 255)) : Math.min(a[j], Math.round((1 - v) * 255));
+    }
+    m.putImageData(img, x0, y0);
+}
+
+view.addEventListener("pointerdown", (e) => {
+    const p = toCanvas(e);
+    view.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, p);
+
+    if (pointers.size === 2 && cur()) {
+        const [a, b] = [...pointers.values()];
+        const L = cur();
+        gesture = { type: "pinch", L, d0: Math.hypot(b.x - a.x, b.y - a.y), a0: Math.atan2(b.y - a.y, b.x - a.x),
+                    s0: L.s, r0: L.rot, mx0: (a.x + b.x) / 2, my0: (a.y + b.y) / 2, x0: L.x, y0: L.y };
+        lastBrush = null;
+        return;
+    }
+    if (pointers.size > 1) return;
+
+    if (mode() === "lassoKeep" || mode() === "lassoErase") {
+        const L = cur();
+        if (!L) return;
+        gesture = { type: "lasso", L, pts: [p] };
+        draw();
+        return;
+    }
+    if (mode() !== "move") {
+        const L = cur();
+        if (!L) return;
+        pushUndo(L);
+        lastBrush = null;
+        gesture = { type: "brush", L };
+        brushAt(L, p);
+        draw();
+        return;
+    }
+    /* 選んでいる画像の上ならそれを、そうでなければ上から順に当たった画像を動かす */
+    let idx = -1;
+    if (cur() && hit(cur(), p)) idx = selected;
+    /* 背景は、一覧で選んでいるときだけ動かす（人を動かそうとして外したときに、背景がずれないように） */
+    else for (let i = layers.length - 1; i >= 0; i--) if (!layers[i].isBg && hit(layers[i], p)) { idx = i; break; }
+    if (idx < 0) return;
+    if (idx !== selected) { selected = idx; syncLayers(); }
+    const L = layers[idx];
+    gesture = { type: "move", L, px: p.x, py: p.y, x0: L.x, y0: L.y };
+    view.classList.add("dragging");
+    draw();
+});
+
+view.addEventListener("pointerleave", () => { hoverPt = null; draw(); });
+view.addEventListener("pointermove", (e) => {
+    if (e.pointerType === "mouse") { hoverPt = toCanvas(e); if (mode() === "erase" || mode() === "restore") draw(); }
+    if (!pointers.has(e.pointerId)) return;
+    const p = toCanvas(e);
+    pointers.set(e.pointerId, p);
+    if (!gesture) return;
+    if (gesture.type === "pinch" && pointers.size >= 2) {
+        const [a, b] = [...pointers.values()];
+        const g = gesture, L = g.L;
+        const d = Math.hypot(b.x - a.x, b.y - a.y);
+        L.s = Math.max(0.03, g.s0 * d / g.d0);
+        L.rot = g.r0 + Math.atan2(b.y - a.y, b.x - a.x) - g.a0;
+        L.x = g.x0 + (a.x + b.x) / 2 - g.mx0;
+        L.y = g.y0 + (a.y + b.y) / 2 - g.my0;
+        draw();
+    } else if (gesture.type === "move") {
+        gesture.L.x = gesture.x0 + p.x - gesture.px;
+        gesture.L.y = gesture.y0 + p.y - gesture.py;
+        draw();
+    } else if (gesture.type === "brush") {
+        brushAt(gesture.L, p);
+        draw();
+    } else if (gesture.type === "lasso") {
+        const q = gesture.pts[gesture.pts.length - 1];
+        if (Math.hypot(p.x - q.x, p.y - q.y) > 3) gesture.pts.push(p);
+        draw();
+    }
+});
+
+/* 囲んだ形で切り抜く。「残す」は囲みの外を消し、「消す」は囲みの中を消す */
+function applyLasso(g) {
+    if (g.pts.length < 3) return;
+    const L = g.L;
+    pushUndo(L);
+    const m = L.mask.getContext("2d");
+    m.save();
+    m.globalCompositeOperation = mode() === "lassoKeep" ? "destination-in" : "destination-out";
+    m.beginPath();
+    g.pts.forEach((p, i) => { const q = toLocal(L, p); if (i) m.lineTo(q.x, q.y); else m.moveTo(q.x, q.y); });
+    m.closePath();
+    m.fillStyle = "#fff";
+    m.fill();
+    m.restore();
+    refreshCut(L);
+}
+
+function endPointer(e) {
+    pointers.delete(e.pointerId);
+    if (gesture && (gesture.type !== "pinch" || pointers.size < 2)) {
+        const wasBrush = gesture.type === "brush" || gesture.type === "lasso";
+        if (gesture.type === "lasso") applyLasso(gesture);
+        gesture = null;
+        lastBrush = null;
+        view.classList.remove("dragging");
+        syncLayers();
+        if (wasBrush) $("cutUndo").disabled = !(cur() && cur().undo.length);
+    }
+}
+view.addEventListener("pointerup", endPointer);
+view.addEventListener("pointercancel", endPointer);
+
+view.addEventListener("wheel", (e) => {
+    const L = cur();
+    if (!L || mode() !== "move") return;
+    e.preventDefault();
+    L.s = Math.max(0.03, L.s * Math.exp(-e.deltaY * 0.0015));
+    syncLayers(); draw();
+}, { passive: false });
+
+/* ======================================================
+   描画
+   本物の画面（750×882）を測った位置と色に合わせる。
+   ・枠：外に細い明るい線、その内側に黒いふち（2px）
+   ・見出し：平らな灰色（#4a4a4a）に、薄い灰色の文字
+   ・中身：上が暗く、下に向かって明るくなるグラデーション
+   ====================================================== */
+function grade(v) {
+    v = Number(v) || 0;
+    return v >= 90 ? "S" : v >= 80 ? "A" : v >= 70 ? "B" : v >= 60 ? "C" : v >= 50 ? "D" : v >= 40 ? "E" : v >= 20 ? "F" : "G";
+}
+const GRADE_COLOR = { S: "#ffffff", A: "#f3a6ea", B: "#ff6f7d", C: "#ffa53a", D: "#f2cc3d", E: "#9bdc6a", F: "#79b8f2", G: "#bdbdbd" };
+
+function rr(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+}
+
+/* 擬似乱数（背景の芝の模様を毎回同じにする） */
+function rng(seed) {
+    let s = seed >>> 0;
+    return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+}
+
+/* 背景の画像が無いときの背景：夜のスタジアムと芝だけ（エフェクトやロゴは画像で入れてもらう） */
+let baseBg = null;
+function baseBackground() {
+    if (baseBg) return baseBg;
+    const c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const ctx = c.getContext("2d");
+    const GY = 520 + DY;
+    /* 空とスタンド */
+    const sky = ctx.createLinearGradient(0, 0, 0, GY);
+    sky.addColorStop(0, "#05070c");
+    sky.addColorStop(0.55, "#121722");
+    sky.addColorStop(1, "#262b33");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, GY + 20);
+    /* ぼやけたスタンドの明かり */
+    const r = rng(7);
+    ctx.save();
+    ctx.filter = "blur(3px)";
+    for (let i = 0; i < 260; i++) {
+        const x = r() * W, y = 230 + r() * (GY - 250);
+        const a = 0.05 + r() * 0.18;
+        ctx.fillStyle = `rgba(${200 + r() * 55 | 0},${200 + r() * 55 | 0},${190 + r() * 60 | 0},${a})`;
+        ctx.fillRect(x, y, 2 + r() * 6, 2 + r() * 4);
+    }
+    ctx.restore();
+    /* 照明（左右上） */
+    [[60, 20, 260], [W - 60, 20, 260], [W / 2, -40, 200]].forEach(([x, y, rad], i) => {
+        const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
+        g.addColorStop(0, "rgba(255,255,255," + (i < 2 ? 0.95 : 0.35) + ")");
+        g.addColorStop(0.18, "rgba(235,240,255," + (i < 2 ? 0.55 : 0.2) + ")");
+        g.addColorStop(1, "rgba(200,210,255,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, GY);
+    });
+    /* 芝 */
+    const grass = ctx.createLinearGradient(0, GY, 0, H);
+    grass.addColorStop(0, "#2d5a1d");
+    grass.addColorStop(0.4, "#2a5a1b");
+    grass.addColorStop(1, "#1c4412");
+    ctx.fillStyle = grass;
+    ctx.fillRect(0, GY, W, H - GY);
+    /* 芝の細かい模様（奥ほど細かく） */
+    /* 芝の葉：明るい葉と暗い影を細い縦の線で重ねる（手前ほど長く太い） */
+    for (let i = 0; i < 70000; i++) {
+        const y = GY + Math.pow(r(), 0.75) * (H - GY);
+        const x = r() * W;
+        const depth = (y - GY) / (H - GY);
+        const len = 1.2 + depth * 6 * (0.5 + r());
+        const wd = 0.6 + depth * 1.6;
+        const l = r();
+        ctx.fillStyle = l < 0.55
+            ? `rgba(${90 + r() * 70 | 0},${150 + r() * 80 | 0},${40 + r() * 40 | 0},${0.35 + r() * 0.4})`
+            : `rgba(${r() * 10 | 0},${18 + r() * 30 | 0},0,${0.35 + r() * 0.4})`;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate((r() - 0.5) * 0.5);
+        ctx.fillRect(-wd / 2, -len, wd, len);
+        ctx.restore();
+    }
+    /* 芝とスタンドの境目をなじませる */
+    const blend = ctx.createLinearGradient(0, GY - 40, 0, GY + 40);
+    blend.addColorStop(0, "rgba(38,43,51,0)");
+    blend.addColorStop(0.5, "rgba(30,40,30,.75)");
+    blend.addColorStop(1, "rgba(30,60,25,0)");
+    ctx.fillStyle = blend;
+    ctx.fillRect(0, GY - 40, W, 80);
+    /* 奥の芝を少しぼかした感じにする */
+    const haze = ctx.createLinearGradient(0, GY, 0, GY + 140);
+    haze.addColorStop(0, "rgba(60,90,50,.35)");
+    haze.addColorStop(1, "rgba(60,90,50,0)");
+    ctx.fillStyle = haze;
+    ctx.fillRect(0, GY, W, 140);
+    baseBg = c;
+    return c;
+}
+
+function drawCover(ctx, img) {
+    const k = Math.max(W / img.width, H / img.height);
+    const w = img.width * k, h = img.height * k;
+    ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+}
+
+function drawLayer(ctx, L, ghost) {
+    ctx.save();
+    ctx.translate(L.x, L.y);
+    ctx.rotate(L.rot);
+    ctx.scale(L.s * L.flip, L.s);
+    /* 切り抜きを直しているあいだは、消えた部分を薄く見せる（どこを戻せばいいか分かるように） */
+    if (ghost) {
+        ctx.globalAlpha = 0.6;
+        ctx.drawImage(ghostOf(L), -L.src.width / 2, -L.src.height / 2);
+    }
+    ctx.globalAlpha = L.alpha;
+    /* 影：本物は選手のうしろ（右）にぼかした黒い影が落ちている。shadow は画面の座標で効くので、大きさや回転に左右されない */
+    if (!ghost && L.shadow > 0) {
+        ctx.shadowColor = "rgba(0,0,0," + (0.75 * L.shadow).toFixed(3) + ")";
+        ctx.shadowBlur = 14;
+        ctx.shadowOffsetX = 9;
+        ctx.shadowOffsetY = 4;
+    }
+    ctx.drawImage(L.cut, -L.src.width / 2, -L.src.height / 2);
+    ctx.restore();
+}
+
+/* 切り抜きを直す操作（消しゴム・戻すブラシ・囲む）を選んでいるか */
+const editingCut = () => mode() !== "move";
+let hoverPt = null;
+
+function drawSelection(ctx, L) {
+    ctx.save();
+    ctx.translate(L.x, L.y);
+    ctx.rotate(L.rot);
+    const w = L.src.width * L.s, h = L.src.height * L.s;
+    ctx.setLineDash([10, 8]);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(255,255,255,.9)";
+    ctx.strokeRect(-w / 2, -h / 2, w, h);
+    ctx.lineDashOffset = 9;
+    ctx.strokeStyle = "rgba(0,0,0,.7)";
+    ctx.strokeRect(-w / 2, -h / 2, w, h);
+    ctx.restore();
+}
+
+/* 文字。opt.stroke：ふちの太さ（0でなし）、opt.shadow：下に落とす影 */
+function text(ctx, str, x, y, size, opt = {}) {
+    ctx.save();
+    ctx.font = (opt.weight || 500) + " " + size + "px " + (opt.family || FONT_JP);
+    ctx.textAlign = opt.align || "left";
+    ctx.textBaseline = "alphabetic";
+    let sx = 1;
+    if (opt.wide) sx = opt.wide;   /* 横に広げる（本物のシリーズ名は横長の字） */
+    if (opt.maxW) {
+        const w = ctx.measureText(str).width * sx;
+        if (w > opt.maxW) sx *= opt.maxW / w;
+    }
+    ctx.translate(x, y);
+    ctx.scale(sx, 1);
+    ctx.lineJoin = "round";
+    if (opt.shadow) {
+        ctx.shadowColor = "rgba(0,0,0,.85)";
+        ctx.shadowBlur = opt.shadow;
+        ctx.shadowOffsetY = Math.max(1.5, opt.shadow / 2);
+    }
+    if (opt.stroke) {
+        ctx.lineWidth = opt.stroke;
+        ctx.strokeStyle = opt.strokeColor || "#000";
+        ctx.strokeText(str, 0, 0);
+        ctx.shadowColor = "transparent";
+    }
+    if (opt.grad) {
+        /* 上から下へ、少しだけ暗くする（のっぺりさせない） */
+        const g = ctx.createLinearGradient(0, -size * 0.8, 0, size * 0.1);
+        g.addColorStop(0, opt.grad[0]);
+        g.addColorStop(1, opt.grad[1]);
+        ctx.fillStyle = g;
+    } else ctx.fillStyle = opt.fill || "#fff";
+    ctx.fillText(str, 0, 0);
+    ctx.restore();
+}
+
+/* 中身の色（上が暗く、下が明るい）。本物の画面から測った値 */
+const CELL = {
+    green: ["#10240b", "#3d6b2b"],
+    gold:  ["#2e290c", "#8f7e30"],
+    blue:  ["#03060b", "#3b628b"],
+    dark:  ["#181818", "#464644"],
+    red:   ["#2a0607", "#8a2a2a"]
+};
+
+/* 枠ひとつ。cols：[{w, label, cell, draw(x, y, w, h)}] を横に並べる */
+const HH = 27, VH = 37;
+function box(ctx, x, y, cols) {
+    const w = cols.reduce((s, c) => s + c.w, 0);
+    const h = HH + VH;
+    /* 外の細い明るい線と黒いふち */
+    ctx.save();
+    rr(ctx, x - 1.5, y - 1.5, w + 3, h + 3, 4);
+    ctx.fillStyle = "rgba(190,195,185,.7)";
+    ctx.fill();
+    rr(ctx, x - 0.5, y - 0.5, w + 1, h + 1, 3);
+    ctx.fillStyle = "#020202";
+    ctx.fill();
+    ctx.restore();
+    let cx = x;
+    cols.forEach((c, i) => {
+        const ix = cx + (i === 0 ? 2 : 1), iw = c.w - (i === 0 ? 2 : 1) - (i === cols.length - 1 ? 2 : 1);
+        /* 見出し */
+        ctx.fillStyle = "#4a4a4a";
+        ctx.fillRect(ix, y + 2, iw, HH - 2);
+        text(ctx, c.label, ix + iw / 2, y + HH - 6, 20, { align: "center", fill: "#b0b0b0", weight: 500, maxW: iw - 8 });
+        /* 中身 */
+        const [t, b] = CELL[c.cell];
+        const g = ctx.createLinearGradient(0, y + HH, 0, y + HH + VH - 2);
+        g.addColorStop(0, t);
+        g.addColorStop(1, b);
+        ctx.fillStyle = g;
+        ctx.fillRect(ix, y + HH, iw, VH - 2);
+        c.draw(ix, y + HH, iw, VH - 2);
+        cx += c.w;
+    });
+}
+
+/* 数字とランク（「86 A」） */
+function statValue(ctx, v, x, y, w, h) {
+    const g = grade(v);
+    const cx = x + w / 2, by = y + h - 7;
+    text(ctx, String(v), cx + 8, by, 29, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
+    text(ctx, g, cx + 14, by, 26, { weight: 800, family: FONT_EN, fill: GRADE_COLOR[g], stroke: 5, strokeColor: "#1a1a1a" });
+}
+
+/* 「MAX」のオレンジの文字 */
+function maxText(ctx, str, cx, y, size) {
+    ctx.save();
+    ctx.font = "900 " + size + "px " + FONT_JP;
+    ctx.textAlign = "center";
+    /* 字の高さのまん中あたりに、白い細い横線（つや）を入れる */
+    const g = ctx.createLinearGradient(0, y - size * 0.74, 0, y);
+    g.addColorStop(0, "#ffd27a");
+    g.addColorStop(0.42, "#ffa036");
+    g.addColorStop(0.47, "#ffe8c0");
+    g.addColorStop(0.52, "#ff9a30");
+    g.addColorStop(1, "#e2560e");
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = "#1c0b00";
+    ctx.strokeText(str, cx, y);
+    ctx.fillStyle = g;
+    ctx.fillText(str, cx, y);
+    ctx.restore();
+}
+
+/* 弾道の矢印 */
+const TRAJ = {
+    5: { text: "アーチスト", color: "#c86ae8", ang: -50 },
+    4: { text: "パワーヒッター", color: "#f05050", ang: -40 },
+    3: { text: "高弾道", color: "#f49a35", ang: -30 },
+    2: { text: "中弾道", color: "#e9cf32", ang: -18 },
+    1: { text: "低弾道", color: "#58aef0", ang: -6 }
+};
+function arrow(ctx, x, y, size, ang, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(ang * Math.PI / 180);
+    const L = size, t = size * 0.3, hw = size * 0.78, hl = size * 0.52;
+    ctx.beginPath();
+    ctx.moveTo(-L / 2, -t / 2);
+    ctx.lineTo(L / 2 - hl, -t / 2);
+    ctx.lineTo(L / 2 - hl, -hw / 2);
+    ctx.lineTo(L / 2, 0);
+    ctx.lineTo(L / 2 - hl, hw / 2);
+    ctx.lineTo(L / 2 - hl, t / 2);
+    ctx.lineTo(-L / 2, t / 2);
+    ctx.closePath();
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#1a0f1f";
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+}
+
+/* 左下のランクのメダル（金のコインに浮き出た文字） */
+/* ランクの文字は、丸ゴシック（M PLUS Rounded 1c）と同じ形で角のある M PLUS 1p の極太（持ち主が見比べて選んだ） */
+const FONT_RANK = '"M PLUS 1p", ' + FONT_JP;
+const FONT_KIWAMI = '"Zen Old Mincho", ' + FONT_JP;
+
+/* コインの地の金のラメ（毎回同じ模様にするため、一度だけ作る） */
+let lameCache = null;
+function lame(r) {
+    if (lameCache && lameCache.r === r) return lameCache.c;
+    const S = Math.ceil(r * 2 * 2);      /* 2倍の細かさで作って縮める */
+    const c = document.createElement("canvas");
+    c.width = c.height = S;
+    const x = c.getContext("2d");
+    const k = S / (r * 2);
+    const base = x.createRadialGradient(S * 0.4, S * 0.35, 0, S / 2, S / 2, S / 2);
+    base.addColorStop(0, "#8a6418");
+    base.addColorStop(0.55, "#5e3f0c");
+    base.addColorStop(1, "#3a2406");
+    x.fillStyle = base;
+    x.fillRect(0, 0, S, S);
+    const rand = rng(31);
+    for (let i = 0; i < 900; i++) {
+        const px = rand() * S, py = rand() * S;
+        const t = rand();
+        const sz = (0.4 + rand() * 1.3) * k;
+        x.fillStyle = t < 0.5 ? `rgba(235,${170 + rand() * 50 | 0},${50 + rand() * 60 | 0},${0.3 + rand() * 0.4})`
+                    : t < 0.92 ? `rgba(30,16,2,${0.35 + rand() * 0.4})`
+                    : `rgba(255,240,190,${0.4 + rand() * 0.4})`;
+        x.beginPath(); x.arc(px, py, sz, 0, Math.PI * 2); x.fill();
+    }
+    lameCache = { r, c };
+    return c;
+}
+
+function medal(ctx, cx, cy, rank, kiwami) {
+    /* 本物（750px幅の画面で直径約66px）を拡大して写した形：
+       ・外のふちは濃い焦げ茶
+       ・太い金の輪（左下と上に白い光）
+       ・内側は金のラメ
+       ・文字は先が縦に切れたセリフの太い字。クリーム色の面に、黒いふち → 細い金の線 → 黒いふち */
+    const r = 33;
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.7)";
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = "#2a1803"; ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    /* 内側のラメ */
+    ctx.beginPath(); ctx.arc(cx, cy, r - 6.5, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(lame(r), cx - r, cy - r, r * 2, r * 2);
+    ctx.restore();
+
+    ctx.save();
+    /* 太い金の輪 */
+    const g = ctx.createLinearGradient(cx - r, cy - r, cx + r * 0.6, cy + r);
+    g.addColorStop(0, "#fff3a0"); g.addColorStop(0.25, "#f6cf3a"); g.addColorStop(0.55, "#c98d12");
+    g.addColorStop(0.8, "#f2c93c"); g.addColorStop(1, "#a86c0a");
+    ctx.beginPath(); ctx.arc(cx, cy, r - 3.8, 0, Math.PI * 2);
+    ctx.lineWidth = 5.5; ctx.strokeStyle = g; ctx.stroke();
+    /* 輪の内と外の細い濃いふち */
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(60,32,0,.9)";
+    ctx.beginPath(); ctx.arc(cx, cy, r - 6.6, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, r - 1, 0, Math.PI * 2); ctx.stroke();
+    /* 輪の白い光（左下と上） */
+    ctx.lineCap = "round";
+    [[2.0, 2.9, 2.2, 0.95], [-2.2, -1.6, 1.6, 0.8], [-0.9, -0.5, 1.2, 0.6]].forEach(([a0, a1, lw, al]) => {
+        ctx.beginPath(); ctx.arc(cx, cy, r - 3.8, a0, a1);
+        ctx.lineWidth = lw; ctx.strokeStyle = `rgba(255,255,240,${al})`; ctx.stroke();
+    });
+    ctx.restore();
+
+    /* ランクの文字。本物は角のある極太のゴシックなので、M PLUS 1p の900で描く。
+       クリーム色の面のまわりを、黒いふち → 細い金の線 → 黒いふちで囲む。
+       面は左上が白く、右下ほど金がかったベージュ（光が左上から当たる陰影） */
+    {
+        const size = 52, sxr = 0.94;   /* 本物は少し縦長 */
+        ctx.save();
+        ctx.font = "900 " + size + "px " + FONT_RANK;
+        ctx.textAlign = "center";
+        ctx.lineJoin = "round";
+        const m = ctx.measureText(rank);
+        const asc = m.actualBoundingBoxAscent || size * 0.7, desc = m.actualBoundingBoxDescent || 0;
+        const x = cx, y = cy + (asc - desc) / 2;
+        ctx.translate(x, 0); ctx.scale(sxr, 1); ctx.translate(-x, 0);
+        [[10.5, "#140900"], [7.6, "#f2c94c"], [5.2, "#140900"]].forEach(([lw, col]) => {
+            ctx.lineWidth = lw; ctx.strokeStyle = col; ctx.strokeText(rank, x, y);
+        });
+        ctx.restore();
+        /* 面（別のキャンバスで描いて、文字の形の中だけに陰影を入れる） */
+        const pad = 6, bw = Math.ceil(m.width) + pad * 2, bh = Math.ceil(asc + desc) + pad * 2;
+        const fc = document.createElement("canvas");
+        fc.width = bw; fc.height = bh;
+        const f = fc.getContext("2d");
+        f.font = "900 " + size + "px " + FONT_RANK;
+        f.textAlign = "center";
+        const fx = bw / 2, fy = pad + asc;
+        const base = f.createLinearGradient(0, 0, bw, bh);
+        base.addColorStop(0, "#fff3cc"); base.addColorStop(0.35, "#f4d99a"); base.addColorStop(0.7, "#dfb46a"); base.addColorStop(1, "#bd863a");
+        f.fillStyle = base;
+        f.fillText(rank, fx, fy);
+        f.globalCompositeOperation = "source-atop";
+        /* 左上の照り */
+        const sh = f.createRadialGradient(bw * 0.3, bh * 0.2, 1, bw * 0.3, bh * 0.25, bh * 0.75);
+        sh.addColorStop(0, "rgba(255,255,255,.4)"); sh.addColorStop(1, "rgba(255,255,255,0)");
+        f.fillStyle = sh;
+        f.fillRect(0, 0, bw, bh);
+        /* 文字のつや：上半分を白っぽくし、まん中でくっきり切る。左上に強い照り */
+        const gloss = f.createLinearGradient(0, fy - asc, 0, fy - asc * 0.5);
+        gloss.addColorStop(0, "rgba(255,255,255,.75)");
+        gloss.addColorStop(1, "rgba(255,255,255,.25)");
+        f.fillStyle = gloss;
+        f.fillRect(0, 0, bw, fy - asc * 0.5);
+        const spec = f.createRadialGradient(bw * 0.32, fy - asc * 0.78, 0, bw * 0.32, fy - asc * 0.78, asc * 0.35);
+        spec.addColorStop(0, "rgba(255,255,255,.9)");
+        spec.addColorStop(1, "rgba(255,255,255,0)");
+        f.fillStyle = spec;
+        f.fillRect(0, 0, bw, bh);
+        /* ふちの内側の細い濃い線（立体感） */
+        f.lineWidth = 1.4;
+        f.strokeStyle = "rgba(150,100,30,.55)";
+        f.strokeText(rank, fx, fy);
+        ctx.save();
+        ctx.translate(x, 0); ctx.scale(sxr, 1); ctx.translate(-x, 0);
+        ctx.drawImage(fc, x - fx, y - fy);
+        ctx.restore();
+    }
+    /* 極（筆の明朝体を少し斜めに、金のグラデーション） */
+    if (kiwami) {
+        const size = 29;
+        const x = cx + 25, y = cy + 34;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.font = "900 " + size + "px " + FONT_KIWAMI;
+        ctx.textAlign = "center";
+        ctx.lineJoin = "round";
+        ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 3; ctx.shadowOffsetY = 1;
+        ctx.lineWidth = 5; ctx.strokeStyle = "#2a1200"; ctx.strokeText("極", 0, 0);
+        ctx.shadowColor = "transparent";
+        const lg = ctx.createLinearGradient(0, -size * 0.85, 0, 0);
+        lg.addColorStop(0, "#fffbe2"); lg.addColorStop(0.5, "#f3d27a"); lg.addColorStop(1, "#c98a20");
+        ctx.fillStyle = lg;
+        ctx.fillText("極", 0, 0);
+        /* 少しだけ太く：同じ色で細いふちを足す */
+        ctx.lineWidth = 1.3;
+        ctx.strokeStyle = lg;
+        ctx.strokeText("極", 0, 0);
+        ctx.restore();
+    }
+}
+
+function drawCard(ctx) {
+    ctx.save();
+    ctx.translate(0, DY);
+    const pit = document.querySelector('input[name="kind"]:checked').value === "pit";
+    const left = 67, right = 681;
+
+    /* ランク・スピリッツ・マーク・シリーズ・名前 */
+    medal(ctx, 103, 656, $("fRank").value, $("fKiwami").value === "1");
+    text(ctx, "スピリッツ", 152, 640, 16, { weight: 800, grad: ["#ffb060", "#f0601e"], stroke: 4, strokeColor: "#080300" });
+    {
+        const s = String(Math.max(0, Math.floor(Number($("fSpirits").value) || 0)));
+        /* 本物：真っ黒の太いふち。数字の線は、ふち側が赤く、線の中ほどがクリーム色に明るい（筒のような陰影）。上ほど黄みが強い */
+        const font = "800 47px " + FONT_JP;
+        ctx.save();
+        ctx.font = font;
+        const tw = ctx.measureText(s).width;
+        const sx = Math.min(0.9, 114 / tw);
+        ctx.translate(151, 684);
+        ctx.scale(sx, 1);
+        ctx.lineJoin = "round";
+        ctx.shadowColor = "rgba(0,0,0,.8)";
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetY = 2;
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = "#050200";
+        ctx.strokeText(s, 0, 0);
+        ctx.restore();
+
+        const pad = 10, CW = Math.ceil(tw) + pad * 2, CH = 60;
+        const fc = document.createElement("canvas");
+        fc.width = CW; fc.height = CH;
+        const f = fc.getContext("2d");
+        f.font = font;
+        f.lineJoin = "round";
+        const by = 48;
+        const base = f.createLinearGradient(0, by - 35, 0, by);
+        base.addColorStop(0, "#ffb020"); base.addColorStop(0.5, "#ff8418"); base.addColorStop(1, "#ee5a10");
+        f.fillStyle = base;
+        f.fillText(s, pad, by);
+        /* 線の中ほどを明るく：細らせた字をぼかして重ねる */
+        const inner = document.createElement("canvas");
+        inner.width = CW; inner.height = CH;
+        const ix = inner.getContext("2d");
+        ix.font = font; ix.lineJoin = "round";
+        ix.fillStyle = "#000";
+        ix.fillText(s, pad, by);
+        ix.globalCompositeOperation = "destination-out";
+        ix.lineWidth = 5;
+        ix.strokeText(s, pad, by);
+        ix.globalCompositeOperation = "source-in";
+        const lg = ix.createLinearGradient(0, by - 35, 0, by);
+        lg.addColorStop(0, "#ffe68a"); lg.addColorStop(0.45, "#ffc050"); lg.addColorStop(1, "#ff9634");
+        ix.fillStyle = lg;
+        ix.fillRect(0, 0, CW, CH);
+        f.globalCompositeOperation = "source-atop";
+        f.filter = "blur(1.2px)";
+        f.drawImage(inner, 0, 0);
+        f.filter = "none";
+        /* つや：上半分に白を重ね、真ん中でくっきり切る */
+        const gl = f.createLinearGradient(0, by - 36, 0, by - 17);
+        gl.addColorStop(0, "rgba(255,255,255,.32)");
+        gl.addColorStop(1, "rgba(255,255,255,.06)");
+        f.fillStyle = gl;
+        f.fillRect(0, 0, CW, by - 17);
+        ctx.save();
+        ctx.translate(151, 684);
+        ctx.scale(sx, 1);
+        ctx.drawImage(fc, -pad, -by);
+        ctx.restore();
+    }
+    /* 球団マーク */
+    {
+        const mx = 271, my = 637, ms = 41;
+        ctx.save();
+        if (markImg) {
+            const k = Math.min(ms / markImg.width, ms / markImg.height);
+            const w = markImg.width * k, h = markImg.height * k;
+            ctx.drawImage(markImg, mx + (ms - w) / 2, my + (ms - h) / 2, w, h);
+        } else {
+            ctx.fillStyle = $("fMarkBg").value;
+            ctx.fillRect(mx, my, ms, ms);
+            const t = $("fMark").value.trim();
+            if (t) text(ctx, t, mx + ms / 2, my + ms / 2 + (t.length > 1 ? 7 : 10), t.length > 1 ? 18 : 27,
+                { align: "center", weight: 800, fill: $("fMarkFg").value, maxW: ms - 4 });
+        }
+        ctx.restore();
+    }
+    text(ctx, $("fSeries").value, 330, 639, 24, { wide: 1.24, weight: 700, family: FONT_EN, stroke: 6.5, strokeColor: "#2b2b2b", shadow: 4, grad: ["#ffffff", "#d9d9d9"], maxW: right - 326 });
+    /* 姓と名のあいだの空白は、本物に合わせて半角より広め（en space）にそろえる */
+    text(ctx, $("fName").value.trim().replace(/[ \u3000]+/g, "\u2002"), 330, 686, 36, { weight: 500, family: FONT_NAME, stroke: 7, strokeColor: "#2b2b2b", shadow: 5, grad: ["#ffffff", "#dcdcdc"], maxW: right - 330 });
+
+    /* 1段目：守備（適性）・コスト／特訓／レベル */
+    const y1 = 701;
+    const pos = pit ? $("fApt").value : $("fPos").value;
+    /* 投手の適性は必ずS。守備の枠の色は、外野は緑・内野は黄・捕手は青・投手は赤 */
+    const pg = pit ? "S" : $("fPosG").value;
+    const posCell = pit ? "red" : pos === "捕" ? "blue" : "左中右".includes(pos) ? "green" : "gold";
+    box(ctx, left, y1, [
+        { w: 72, label: pit ? "適性" : "守備", cell: posCell, draw: (x, y, w, h) => {
+            text(ctx, pos, x + 22, y + h - 7, 24, { align: "center", weight: 500, shadow: 3 });
+            text(ctx, pg, x + 49, y + h - 7, 25, { align: "center", weight: 800, family: FONT_EN, fill: GRADE_COLOR[pg] || "#fff", stroke: 5, strokeColor: "#1a1a1a" });
+        } },
+        { w: 71, label: "コスト", cell: "blue", draw: (x, y, w, h) => {
+            text(ctx, String($("fCost").value), x + w / 2, y + h - 7, 28, { align: "center", weight: 500, family: FONT_EN, shadow: 3 });
+        } }
+    ]);
+    box(ctx, 226, y1, [
+        { w: 139, label: "特訓", cell: "dark", draw: (x, y, w, h) => {
+            text(ctx, "Lv.", x + 18, y + h - 8, 19, { weight: 500, family: FONT_EN, fill: "#bbb" });
+            maxText(ctx, $("fTokkun").value, x + 80, y + h - 8, 23);
+        } }
+    ]);
+    box(ctx, 381, y1, [
+        { w: right - 381, label: "レベル･経験値", cell: "dark", draw: (x, y, w, h) => {
+            const lv = Number($("fLv").value) || 1, mx = Number($("fLvMax").value) || 1;
+            text(ctx, "Lv.", x + 14, y + h - 8, 19, { weight: 500, family: FONT_EN, fill: "#bbb" });
+            text(ctx, lv + "/", x + 107, y + h - 7, 28, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
+            text(ctx, String(mx), x + 159, y + h - 7, 28, { align: "right", weight: 500, family: FONT_EN, shadow: 3 });
+            /* 経験値のバー */
+            const bx = x + 168, by = y + 10, bw = w - 175, bh = 16;
+            ctx.save();
+            rr(ctx, bx, by, bw, bh, bh / 2);
+            ctx.fillStyle = "#0c0c0c"; ctx.fill();
+            ctx.lineWidth = 2; ctx.strokeStyle = "#8a8a8a"; ctx.stroke();
+            const ratio = Math.max(0, Math.min(1, lv / mx));
+            if (lv < mx && ratio > 0) {
+                rr(ctx, bx + 2, by + 2, (bw - 4) * ratio, bh - 4, (bh - 4) / 2);
+                const g = ctx.createLinearGradient(0, by, 0, by + bh);
+                g.addColorStop(0, "#ffd27a"); g.addColorStop(1, "#e2700e");
+                ctx.fillStyle = g; ctx.fill();
+            }
+            ctx.restore();
+            if (lv >= mx) maxText(ctx, "MAX", bx + bw / 2, by + bh / 2 + 9, 25);   /* バーの上（たての真ん中）に重ねる */
+        } }
+    ]);
+
+    /* 2段目 */
+    const y2 = 776;
+    if (!pit) {
+        const t = TRAJ[$("fTraj").value] || TRAJ[2];
+        box(ctx, left, y2, [
+            { w: 195, label: "弾道", cell: "green", draw: (x, y, w, h) => {
+                /* 矢印と文字をひとまとまりにして、枠の中央にそろえる */
+                ctx.save();
+                ctx.font = "500 23px " + FONT_JP;
+                const tw = Math.min(ctx.measureText(t.text).width, w - 52);
+                ctx.restore();
+                const gx = x + (w - (34 + 3 + tw)) / 2;
+                arrow(ctx, gx + 17, y + h / 2, 35, t.ang, t.color);
+                text(ctx, t.text, gx + 37, y + h - 8, 23, { weight: 500, shadow: 3, maxW: w - 52 });
+            } }
+        ]);
+        [[279, "ミート", "fMeet"], [416, "パワー", "fPow"], [555, "走力", "fRun"]].forEach(([x, lb, id]) => {
+            box(ctx, x, y2, [{ w: 126, label: lb, cell: "green", draw: (cx, cy, cw, ch) => statValue(ctx, clampStat($(id).value), cx, cy, cw, ch) }]);
+        });
+    } else {
+        /* 本物は3つの枠のあいだが約17px */
+        const sw = Math.floor((right - left - 2 * 17) / 3);
+        [["球威", "fVel"], ["制球", "fCtl"], ["スタミナ", "fSta"]].forEach(([lb, id], i) => {
+            box(ctx, left + i * (sw + 17), y2, [{ w: sw, label: lb, cell: "red", draw: (cx, cy, cw, ch) => statValue(ctx, clampStat($(id).value), cx, cy, cw, ch) }]);
+        });
+    }
+    ctx.restore();
+}
+
+function clampStat(v) { return Math.max(1, Math.min(99, Math.floor(Number(v) || 1))); }
+
+function render(ctx, preview) {
+    ctx.save();
+    ctx.clearRect(0, 0, W, H);
+    if (!layers.some((L) => L.isBg)) ctx.drawImage(baseBackground(), 0, 0);
+    layers.forEach((L) => drawLayer(ctx, L, preview && editingCut() && L === cur() && !L.isBg && $("cutGhost").checked));
+    drawCard(ctx);
+    ctx.restore();
+    ctx.save();
+    if (preview) {
+        if (!layers.some((L) => !L.isBg)) {
+            text(ctx, "「画像を追加」から", W / 2, 300 + DY, 28, { align: "center", weight: 700, stroke: 5, strokeColor: "#000" });
+            text(ctx, "選手の写真を入れてください", W / 2, 345 + DY, 28, { align: "center", weight: 700, stroke: 5, strokeColor: "#000" });
+        } else if (cur()) drawSelection(ctx, cur());
+        /* ブラシの大きさの丸（マウスのとき） */
+        if (hoverPt && (mode() === "erase" || mode() === "restore")) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(hoverPt.x, hoverPt.y, Number($("brush").value) / 2, 0, Math.PI * 2);
+            ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke();
+            ctx.lineWidth = 1; ctx.strokeStyle = "#000"; ctx.stroke();
+            ctx.restore();
+        }
+        if (gesture && gesture.type === "lasso" && gesture.pts.length > 1) {
+            ctx.save();
+            ctx.beginPath();
+            gesture.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+            ctx.closePath();
+            ctx.fillStyle = mode() === "lassoKeep" ? "rgba(80,200,255,.18)" : "rgba(255,80,80,.18)";
+            ctx.fill();
+            ctx.setLineDash([8, 6]);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#fff";
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+    ctx.restore();
+}
+
+let raf = 0;
+function draw() {
+    if (raf) return;
+    raf = requestAnimationFrame(() => { raf = 0; render(vctx, true); });
+}
+
+/* ======================================================
+   入力
+   ====================================================== */
+["fPosG"].forEach((id) => {
+    const s = $(id);
+    "SABCDEFG".split("").forEach((g) => s.appendChild(new Option(g, g)));
+});
+$("fPosG").value = "B";
+
+const FIELDS = ["fName", "fSeries", "fRank", "fKiwami", "fSpirits", "fCost", "fTokkun", "fLv", "fLvMax", "fPos", "fPosG",
+                "fTraj", "fMeet", "fPow", "fRun", "fApt", "fVel", "fCtl", "fSta", "fMark", "fMarkFg", "fMarkBg", "fShape"];
+const STORE = "tooldock-prospi-v1";
+const DEFAULTS = {};
+FIELDS.forEach((id) => { DEFAULTS[id] = $(id).value; });
+DEFAULTS.kind = "bat";
+
+function syncKind() {
+    const pit = document.querySelector('input[name="kind"]:checked').value === "pit";
+    document.querySelectorAll(".only-bat").forEach((el) => { el.hidden = pit; });
+    document.querySelectorAll(".only-pit").forEach((el) => { el.hidden = !pit; });
+}
+
+function save() {
+    try {
+        const o = {};
+        FIELDS.forEach((id) => { o[id] = $(id).value; });
+        o.kind = document.querySelector('input[name="kind"]:checked').value;
+        localStorage.setItem(STORE, JSON.stringify(o));
+    } catch (e) { /* 保存できない環境では何もしない */ }
+}
+function load(o) {
+    FIELDS.forEach((id) => { if (o[id] != null) $(id).value = o[id]; });
+    const k = document.querySelector('input[name="kind"][value="' + (o.kind || "bat") + '"]');
+    if (k) k.checked = true;
+    syncKind();
+    applyShape();
+}
+try { const o = JSON.parse(localStorage.getItem(STORE) || "null"); if (o) load(o); } catch (e) { /* 読めなければ初期値 */ }
+
+FIELDS.forEach((id) => {
+    $(id).addEventListener("input", () => { save(); draw(); });
+    $(id).addEventListener("change", () => { save(); draw(); });
+});
+$("fShape").addEventListener("change", applyShape);
+document.querySelectorAll('input[name="kind"]').forEach((r) => r.addEventListener("change", () => { syncKind(); save(); draw(); }));
+
+twoStepButton($("btnReset"), () => { load(DEFAULTS); save(); draw(); }, "もう一度押すと、文字の入力を初期値に戻します");
+
+/* ======================================================
+   保存
+   ====================================================== */
+function fileName() {
+    const n = ($("fName").value || "player").replace(/[\\/:*?"<>|\s]+/g, "");
+    return (n || "player") + "_prospi.png";
+}
+function exportBlob() {
+    const c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    render(c.getContext("2d"), false);
+    const out = window.TDMark ? TDMark.extend(c) : c;
+    return new Promise((resolve) => out.toBlob(resolve, "image/png"));
+}
+$("btnDownload").addEventListener("click", async () => {
+    const blob = await exportBlob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+$("btnShare").addEventListener("click", async () => {
+    const blob = await exportBlob();
+    const file = new File([blob], fileName(), { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: fileName() }).catch(() => { /* キャンセルは無視 */ });
+    } else {
+        alert("この端末・ブラウザでは共有機能が使えません。「PNG画像をダウンロード」をお使いください。");
+    }
+});
+
+syncKind();
+syncLayers();
+draw();
+if (document.fonts) {
+    Promise.all([
+        document.fonts.load('500 30px "M PLUS Rounded 1c"'),
+        document.fonts.load('800 30px "M PLUS Rounded 1c"'),
+        document.fonts.load('900 30px "M PLUS Rounded 1c"'),
+        document.fonts.load('700 30px "M PLUS Rounded 1c"'),
+        document.fonts.load('900 30px "M PLUS 1p"', "SABC"),
+        document.fonts.load('900 30px "Zen Old Mincho"', "極")
+    ]).then(draw, draw);
+    document.fonts.ready.then(draw);
+}
+</script>
+
+<div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
+<section class="related-tools-section">
+<h2>同じカテゴリのツール</h2>
+<div class="related-tools-grid">
+<a href="/kyudan-clicker/" class="related-tool-card"><h3>球団経営クリッカー</h3><p>球場をタップしてファンを増やす、ドット絵の野球クリッカーゲーム。施設・試合・優勝・殿堂・実績とやり込み要素たっぷり。球団名とユニフォームの色も決められます。</p></a>
+<a href="/mylife-start/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ アピールポイントのすゝめ</h3><p>経歴・ドラフト順位・アピールポイント・ウィークポイントによる初期能力とボーナスの解説です。</p></a>
+<a href="/eikan-kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 栄冠ナイン 金特と転生選手（金特持ち）一覧</h3><p>栄冠ナインの金特の取り方と、金特持ちの転生選手（OB・プロ・コラボ）65人の一覧。金特からも選手からも検索できます。</p></a>
+<a href="/shippo/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 尻尾 入手方法一覧</h3><p>尻尾12種の入手方法とオススメ度。9個でMAXになるので、あと何個かも分かります。</p></a>
+<a href="/crystal-banno/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 万能クリスタル（小）（大）入手方法一覧</h3><p>万能クリスタル（小）9通りと（大）の入手方法を、チェックしながら管理できる一覧。</p></a>
+<a href="/crystal/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ イベントクリスタル（小）（大）入手方法一覧</h3><p>特殊能力ファイルに使うイベントクリスタルの入手方法と、怪しい露店の交換レート一覧。</p></a>
+<a href="/kintoku/" class="related-tool-card"><h3>パワプロ2026-2027 マイライフ 能力研究所の金特ミッション一覧</h3><p>マイライフの能力研究所で受けられる金特ミッションの内容と取得条件の一覧。2024-2025 とも共通です。</p></a>
+<a href="/satei/" class="related-tool-card"><h3>パワプロ2026-2027 ⭐︎(星)計算ツール</h3><p>能力値と所持する特殊能力を入力すると、査定である☆(星)を計算します。</p></a>
+<a href="/nouryoku/" class="related-tool-card"><h3>パワプロ風 能力画像ジェネレーター（野手）</h3><p>パワプロ風の能力画像を作れる能力メーカー。野手の能力値と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
+<a href="/nouryoku-pitcher/" class="related-tool-card"><h3>パワプロ風 能力画像ジェネレーター（投手）</h3><p>パワプロ風の能力画像を作れる能力メーカー。投手の能力値・変化球と特殊能力を入れるだけで、選手能力カード風の画像を作成できます。</p></a>
+<a href="/stamen/" class="related-tool-card"><h3>パワプロ風 スタメン画像ジェネレーター</h3><p>名前・守備位置・調子を入れるだけで、パワプロ風のスターティングオーダーを画像・GIFアニメ・動画にできます。</p></a>
+</div>
+</section>
+<!-- /RELATED --></div>
+<script src="/js/related.js"></script>
+
+</body>
+</html>

@@ -31,6 +31,7 @@ window.POPULAR_MONTH = ["kintoku", "nouryoku", "shippo", "satei", "mylife-start"
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-24", id: "prospi", kind: "new", text: "プロスピA風の選手画像ジェネレーターを公開。写真の選手をサイトの中で自動で切り抜き、メダル・スピリッツ・能力の枠つきの縦長画像を作れます" },
   { date: "2026-11-24", id: "nenmatsu-jumbo", kind: "new", text: "年末ジャンボ2026（第1134回）とミニのシミュレーターを公開。公式の当せん金と本数で抽せんでき、何枚買えば当たるか・去年との違い・ミニとの比較も分かります" },
   { date: "2026-11-21", id: "fukuri", kind: "update", text: "大学生向けに「学生納付特例を使う？今払う？」を追加。親が払う・特例で就職後に追納・追納しないの3つを、節税と加算額込みで比べられます" },
   { date: "2026-11-21", id: "fukuri", kind: "update", text: "「返済か投資か」タブに、国民年金の追納（学生納付特例・納付猶予・免除）と投資の比較を追加。令和8年度の追納額と年金額で、元が取れる年齢や節税額も分かります" },
@@ -615,6 +616,16 @@ window.TOOLS = [
     themeColor: "#2563eb",
     category: "game",
     url: "/satei/"
+  },
+  {
+    id: "prospi",
+    title: "プロスピA風 選手画像ジェネレーター",
+    desc: "写真を入れると選手を自動で切り抜き。ランクのメダル・スピリッツ・能力の枠つきで、プロスピA風の選手画像を作れます。",
+    seoTitle: "プロスピA風 選手画像ジェネレーター｜写真を自動で切り抜いて選手詳細の画像を作成",
+    seoDesc: "プロスピA風の選手画像（選手詳細の画面）を作れる無料ジェネレーターです。ランクのメダル・スピリッツ・能力の枠は用意済み。選手の写真を入れるとサイトの中で自動で切り抜き、ドラッグで自由に配置できます。背景やロゴも画像で重ねられ、スマホと同じ縦長の画像をPNGで保存できます。",
+    themeColor: "#7c3aed",
+    category: "game",
+    url: "/prospi/"
   },
   {
     id: "nouryoku",
