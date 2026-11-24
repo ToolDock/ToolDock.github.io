@@ -1344,14 +1344,14 @@ function maxText(ctx, str, cx, y, size) {
     ctx.restore();
 }
 
-/* 弾道の矢印 */
+/* 弾道の矢印。上向きの角度はアーチスト→パワーヒッター→高弾道→中弾道→ラインドライブの順に小さくなり、低弾道は真横、グラウンダーは右下 */
 const TRAJ = {
     5: { text: "アーチスト", color: "#c86ae8", ang: -50 },
     4: { text: "パワーヒッター", color: "#f05050", ang: -40 },
     3: { text: "高弾道", color: "#f49a35", ang: -30 },
-    2: { text: "中弾道", color: "#e9cf32", ang: -18 },
-    1: { text: "低弾道", color: "#58aef0", ang: -6 },
-    L: { text: "ラインドライブ", color: "#3cc84a", ang: 0 },
+    2: { text: "中弾道", color: "#e9cf32", ang: -20 },
+    1: { text: "低弾道", color: "#58aef0", ang: 0 },
+    L: { text: "ラインドライブ", color: "#3cc84a", ang: -10 },
     G: { text: "グラウンダー", color: "#4a8cf0", ang: 38 }
 };
 function arrow(ctx, x, y, size, ang, color) {
