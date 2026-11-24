@@ -1172,9 +1172,13 @@ function maxText(ctx, str, cx, y, size) {
     ctx.save();
     ctx.font = "900 " + size + "px " + FONT_JP;
     ctx.textAlign = "center";
-    const g = ctx.createLinearGradient(0, y - size * 0.8, 0, y);
+    /* 字の高さのまん中あたりに、白い細い横線（つや）を入れる */
+    const g = ctx.createLinearGradient(0, y - size * 0.74, 0, y);
     g.addColorStop(0, "#ffd27a");
-    g.addColorStop(0.55, "#ff9a2a");
+    g.addColorStop(0.44, "#ffa036");
+    g.addColorStop(0.44, "#fff4d6");
+    g.addColorStop(0.53, "#fff4d6");
+    g.addColorStop(0.53, "#ff8a22");
     g.addColorStop(1, "#e2560e");
     ctx.lineJoin = "round";
     ctx.lineWidth = 3.5;
@@ -1326,6 +1330,17 @@ function medal(ctx, cx, cy, rank, kiwami) {
         const sh = f.createRadialGradient(bw * 0.3, bh * 0.2, 1, bw * 0.3, bh * 0.25, bh * 0.75);
         sh.addColorStop(0, "rgba(255,255,255,.4)"); sh.addColorStop(1, "rgba(255,255,255,0)");
         f.fillStyle = sh;
+        f.fillRect(0, 0, bw, bh);
+        /* 文字のつや：上半分を白っぽくし、まん中でくっきり切る。左上に強い照り */
+        const gloss = f.createLinearGradient(0, fy - asc, 0, fy - asc * 0.5);
+        gloss.addColorStop(0, "rgba(255,255,255,.75)");
+        gloss.addColorStop(1, "rgba(255,255,255,.25)");
+        f.fillStyle = gloss;
+        f.fillRect(0, 0, bw, fy - asc * 0.5);
+        const spec = f.createRadialGradient(bw * 0.32, fy - asc * 0.78, 0, bw * 0.32, fy - asc * 0.78, asc * 0.35);
+        spec.addColorStop(0, "rgba(255,255,255,.9)");
+        spec.addColorStop(1, "rgba(255,255,255,0)");
+        f.fillStyle = spec;
         f.fillRect(0, 0, bw, bh);
         /* ふちの内側の細い濃い線（立体感） */
         f.lineWidth = 1.4;
