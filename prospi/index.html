@@ -1298,20 +1298,20 @@ function medal(ctx, cx, cy, rank, kiwami) {
         [[9, "#140900"], [6.2, "#e3b648"], [4.4, "#140900"]].forEach(([extra, col]) => paint(extra, col));
     };
     if (rank === "S") {
-        const h = 42, w = 28;
-        const ox = cx - 4 - w / 2, oy = cy - h / 2 - 1;
+        const h = 39, w = 29;
+        const ox = cx - 5 - w / 2, oy = cy - h / 2 - 2;
         const P = (x, y) => [ox + x * w, oy + y * h / 1.17];
         const path = () => {
             ctx.beginPath();
-            ctx.moveTo(...P(0.82, 0.27));
-            ctx.bezierCurveTo(...P(0.80, 0.10), ...P(0.64, 0.04), ...P(0.47, 0.04));
+            ctx.moveTo(...P(0.86, 0.33));
+            ctx.bezierCurveTo(...P(0.84, 0.12), ...P(0.66, 0.04), ...P(0.47, 0.04));
             ctx.bezierCurveTo(...P(0.25, 0.04), ...P(0.10, 0.16), ...P(0.10, 0.32));
             ctx.bezierCurveTo(...P(0.10, 0.50), ...P(0.33, 0.54), ...P(0.50, 0.59));
             ctx.bezierCurveTo(...P(0.68, 0.64), ...P(0.86, 0.71), ...P(0.86, 0.87));
             ctx.bezierCurveTo(...P(0.86, 1.04), ...P(0.68, 1.13), ...P(0.47, 1.13));
-            ctx.bezierCurveTo(...P(0.29, 1.13), ...P(0.14, 1.06), ...P(0.10, 0.90));
+            ctx.bezierCurveTo(...P(0.27, 1.13), ...P(0.10, 1.05), ...P(0.07, 0.84));
         };
-        const sw = 9.5;
+        const sw = 9.6;
         ctx.save();
         ctx.lineCap = "butt";
         layersOf((extra, col) => { path(); ctx.lineWidth = sw + extra; ctx.strokeStyle = col; ctx.stroke(); });
@@ -1418,8 +1418,8 @@ function drawCard(ctx) {
         }
         ctx.restore();
     }
-    text(ctx, $("fSeries").value, 330, 640, 27, { weight: 700, family: FONT_EN, stroke: 8, strokeColor: "#101010", shadow: 4, grad: ["#ffffff", "#d9d9d9"], maxW: right - 326 });
-    text(ctx, $("fName").value, 330, 686, 37, { weight: 500, family: FONT_NAME, stroke: 9, strokeColor: "#101010", shadow: 5, grad: ["#ffffff", "#dcdcdc"], maxW: right - 330 });
+    text(ctx, $("fSeries").value, 330, 640, 27, { weight: 700, family: FONT_EN, stroke: 6.5, strokeColor: "#2b2b2b", shadow: 4, grad: ["#ffffff", "#d9d9d9"], maxW: right - 326 });
+    text(ctx, $("fName").value, 330, 686, 37, { weight: 500, family: FONT_NAME, stroke: 7, strokeColor: "#2b2b2b", shadow: 5, grad: ["#ffffff", "#dcdcdc"], maxW: right - 330 });
 
     /* 1段目：守備（適性）・コスト／特訓／レベル */
     const y1 = 701;
