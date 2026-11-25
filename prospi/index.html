@@ -221,6 +221,12 @@ body.ed-lock{ overflow:hidden; }
                         </span>
                     </div>
                     <div class="mode">
+                        <span class="seg" role="radiogroup" aria-label="タップで選ぶ">
+                            <label><input type="radio" name="mode" value="tapKeep"><span>タップで残す</span></label>
+                            <label><input type="radio" name="mode" value="tapErase"><span>タップで消す</span></label>
+                        </span>
+                    </div>
+                    <div class="mode">
                         <span class="seg" role="radiogroup" aria-label="囲んで切り抜く">
                             <label><input type="radio" name="mode" value="lassoKeep"><span>囲んで残す</span></label>
                             <label><input type="radio" name="mode" value="lassoErase"><span>囲んで消す</span></label>
@@ -235,7 +241,7 @@ body.ed-lock{ overflow:hidden; }
                         <label for="smartTol">色の幅</label><input type="range" id="smartTol" min="10" max="120" step="1" value="48"><output id="smartTolOut"></output>
                     </div>
                     <label class="fit"><input type="checkbox" id="cutGhost" checked> 直しているあいだ、消えた部分を赤く透かして表示する</label>
-                    <p class="note ed-hide" id="cutNote">「自動で切り抜く」は、写真の中のいちばん目立つもの（人と、手に持ったバットやグローブ）を残します。初回だけ切り抜き用のデータ（約56MB）を読み込みます。残ったところや消えすぎたところは、消しゴムと戻すブラシで直せます。直しているあいだは、消えた部分が赤く透けて見えるので、戻すブラシでなぞるだけで元に戻せます。</p>
+                    <p class="note ed-hide" id="cutNote">「自動で切り抜く」は、写真の中のいちばん目立つもの（人と、手に持ったバットやグローブ）を残します。初回だけ切り抜き用のデータ（約56MB）を読み込みます。消えたバットなどは「タップで残す」でその物をタップすると戻ります（初回だけ約44MBを読み込みます）。残ったところや消えすぎたところは、消しゴムと戻すブラシでも直せます。直しているあいだは、消えた部分が赤く透けて見えるので、戻すブラシでなぞるだけで元に戻せます。</p>
                 </div>
             </div>
         </section>
@@ -352,6 +358,7 @@ body.ed-lock{ overflow:hidden; }
     <li>背景と色が近いところは、スマートブラシの「色の幅」を狭くするか、戻りすぎたところを消しゴムで消して整えます。</li>
     <li>大まかに切り抜くときは「囲んで残す」で選手のまわりを指でなぞると、外側がまとめて消えます。</li>
     <li>写真のいらない部分は「トリミング」を選んで、残したい範囲を四角くドラッグすると切り落とせます。</li>
+    <li>消えてしまったバットやグローブは「タップで残す」を選んでその物をタップすると、丸ごと戻ります。残った背景のかたまりは「タップで消す」でタップすると消えます。</li>
     <li>細かいところは「大きな画面で切り抜く」を押すと、画像だけを画面いっぱいに出して直せます。2本指（パソコンはホイール）で拡大でき、「見る」を選ぶと1本指で動かせます。</li>
     <li>失敗したら「1つ前に戻す」、最初からやり直すときは「切り抜きを元に戻す」を押します。</li>
 </ul>
@@ -712,6 +719,101 @@ function busy(msg) {
     b.textContent = msg || "";
 }
 
+/* ======================================================
+   タップで選ぶ（MobileSAM。Apache-2.0）
+   タップした物（バット・グローブ・背景のかたまりなど）を1つ丸ごと選んで、残す／消す。
+   画像1枚につき最初の1回だけ「エンコーダ」（約28MB）で画像の特徴を作り、タップのたびに「デコーダ」（約16MB）で形を出す
+   ====================================================== */
+const SAM_ENC = "/prospi/model/mobilesam-enc.onnx";
+const SAM_DEC = "/prospi/model/mobilesam-dec.onnx";
+let samPromise = null;
+function getSam() {
+    if (!samPromise) {
+        samPromise = (async () => {
+            const ort = await import(ORT_BASE + "ort.wasm.min.mjs");
+            ort.env.wasm.wasmPaths = ORT_BASE;
+            ort.env.wasm.numThreads = Math.min(4, navigator.hardwareConcurrency || 1);
+            const opt = { executionProviders: ["wasm"], graphOptimizationLevel: "all" };
+            const [enc, dec] = await Promise.all([ort.InferenceSession.create(SAM_ENC, opt), ort.InferenceSession.create(SAM_DEC, opt)]);
+            return { ort, enc, dec };
+        })();
+        samPromise.catch(() => { samPromise = null; });
+    }
+    return samPromise;
+}
+/* 画像の特徴（1×256×64×64）。画像ごとに1回だけ作る（トリミングすると作り直す） */
+async function samEmbed(L) {
+    if (L.samEmb && L.samFor === L.src) return L.samEmb;
+    const { ort, enc } = await getSam();
+    const w = L.src.width, h = L.src.height, s = 1024 / Math.max(w, h);
+    const nw = Math.round(w * s), nh = Math.round(h * s);
+    const c = document.createElement("canvas");
+    c.width = nw; c.height = nh;
+    const x = c.getContext("2d", { willReadFrequently: true });
+    x.drawImage(L.src, 0, 0, nw, nh);
+    const px = x.getImageData(0, 0, nw, nh).data;
+    const N = 1024 * 1024, input = new Float32Array(3 * N);
+    const mean = [123.675, 116.28, 103.53], std = [58.395, 57.12, 57.375];
+    for (let yy = 0; yy < nh; yy++) for (let xx = 0; xx < nw; xx++) {
+        const i = (yy * nw + xx) * 4, j = yy * 1024 + xx;
+        input[j] = (px[i] - mean[0]) / std[0];
+        input[N + j] = (px[i + 1] - mean[1]) / std[1];
+        input[2 * N + j] = (px[i + 2] - mean[2]) / std[2];
+    }
+    const out = await enc.run({ image: new ort.Tensor("float32", input, [1, 3, 1024, 1024]) });
+    L.samEmb = out.embeddings;
+    L.samFor = L.src;
+    L.samScale = s;
+    return L.samEmb;
+}
+let samBusy = false;
+async function samTap(L, q, keep) {
+    if (samBusy) return;
+    samBusy = true;
+    const first = !samPromise;
+    busy(first ? "タップで選ぶ準備をしています…（初回だけ、データの読み込みに少し時間がかかります）" : (L.samEmb && L.samFor === L.src ? "" : "画像を読み取っています…"));
+    try {
+        const emb = await samEmbed(L);
+        busy("");
+        const { ort, dec } = await getSam();
+        const s = L.samScale;
+        const w = L.src.width, h = L.src.height;
+        const out = await dec.run({
+            image_embeddings: emb,
+            point_coords: new ort.Tensor("float32", new Float32Array([q.x * s, q.y * s, 0, 0]), [1, 2, 2]),
+            point_labels: new ort.Tensor("float32", new Float32Array([1, -1]), [1, 2]),
+            mask_input: new ort.Tensor("float32", new Float32Array(256 * 256), [1, 1, 256, 256]),
+            has_mask_input: new ort.Tensor("float32", new Float32Array([0]), [1]),
+            orig_im_size: new ort.Tensor("float32", new Float32Array([h, w]), [2])
+        });
+        const m = out.masks.data;   /* h×w のロジット。0より大きいところが選ばれた物 */
+        pushUndo(L);
+        const mc = L.mask.getContext("2d", { willReadFrequently: true });
+        const img = mc.getImageData(0, 0, w, h);
+        const a = img.data;
+        for (let i = 0; i < w * h; i++) {
+            /* ふちを少しなめらかにする（ロジット -2〜2 を 0〜1 に） */
+            const v = Math.min(1, Math.max(0, (m[i] + 2) / 4));
+            if (!v) continue;
+            const j = i * 4;
+            a[j] = a[j + 1] = a[j + 2] = 255;
+            a[j + 3] = keep ? Math.max(a[j + 3], Math.round(v * 255)) : Math.min(a[j + 3], Math.round((1 - v) * 255));
+        }
+        mc.putImageData(img, 0, 0);
+        refreshCut(L);
+        $("cutUndo").disabled = false;
+        syncLayers();
+        draw();
+    } catch (e) {
+        console.error(e);
+        busy("");
+        alert("タップで選ぶ仕組みを読み込めませんでした。通信の状態を確かめて、もう一度お試しください。");
+    } finally {
+        samBusy = false;
+    }
+}
+const isTapMode = () => mode() === "tapKeep" || mode() === "tapErase";
+
 /* 1024×1024 に縮めた画像から、0〜1 の切り抜きの濃さ（1024×1024）を作る */
 async function predict(src) {
     const { ort, session } = await getSession();
@@ -1017,6 +1119,12 @@ view.addEventListener("pointerdown", (e) => {
     }
     if (pointers.size > 1) return;
 
+    if (isTapMode()) {
+        const L = cur();
+        if (!L) return;
+        gesture = { type: "tap", L, p0: p, moved: false };
+        return;
+    }
     if (mode() === "crop") {
         const L = cur();
         if (!L) return;
@@ -1077,6 +1185,8 @@ view.addEventListener("pointermove", (e) => {
     } else if (gesture.type === "brush") {
         brushAt(gesture.L, p);
         draw();
+    } else if (gesture.type === "tap") {
+        if (Math.hypot(p.x - gesture.p0.x, p.y - gesture.p0.y) > 8) gesture.moved = true;
     } else if (gesture.type === "crop") {
         gesture.b = p;
         draw();
@@ -1137,6 +1247,10 @@ function endPointer(e) {
         const wasBrush = gesture.type === "brush" || gesture.type === "lasso";
         if (gesture.type === "lasso") applyLasso(gesture);
         if (gesture.type === "crop") applyCrop(gesture);
+        if (gesture.type === "tap" && !gesture.moved) {
+            const q = toLocal(gesture.L, gesture.p0);
+            if (q.x >= 0 && q.y >= 0 && q.x < gesture.L.src.width && q.y < gesture.L.src.height) samTap(gesture.L, q, mode() === "tapKeep");
+        }
         gesture = null;
         lastBrush = null;
         view.classList.remove("dragging");
@@ -2104,6 +2218,7 @@ edCanvas.addEventListener("pointerdown", (e) => {
     if (edPointers.size > 2) return;
     const md = mode();
     if (md === "move") { gesture = { type: "edPan", px: p.x, py: p.y, ox: ed.ox, oy: ed.oy }; return; }
+    if (md === "tapKeep" || md === "tapErase") { gesture = { type: "tap", L, p0: p, moved: false }; return; }
     if (md === "crop") { gesture = { type: "crop", L, a: p, b: p }; edDraw(); return; }
     if (md === "lassoKeep" || md === "lassoErase") { gesture = { type: "lasso", L, pts: [p] }; edDraw(); return; }
     pushUndo(L);
@@ -2136,6 +2251,8 @@ edCanvas.addEventListener("pointermove", (e) => {
     } else if (gesture.type === "lasso") {
         const q = gesture.pts[gesture.pts.length - 1];
         if (Math.hypot(p.x - q.x, p.y - q.y) > 3 * ed.dpr) gesture.pts.push(p);
+    } else if (gesture.type === "tap") {
+        if (Math.hypot(p.x - gesture.p0.x, p.y - gesture.p0.y) > 8 * ed.dpr) gesture.moved = true;
     } else if (gesture.type === "crop") {
         gesture.b = p;
     }
@@ -2151,6 +2268,10 @@ function edUp(e) {
     lastBrush = null;
     if (g.type === "lasso") applyLasso(g);
     if (g.type === "crop") { applyCrop(g); edFit(); }
+    if (g.type === "tap" && !g.moved) {
+        const q = toLocal(g.L, g.p0);
+        if (q.x >= 0 && q.y >= 0 && q.x < g.L.src.width && q.y < g.L.src.height) samTap(g.L, q, mode() === "tapKeep");
+    }
     $("cutUndo").disabled = !(cur() && cur().undo.length);
     edDraw();
     draw();
