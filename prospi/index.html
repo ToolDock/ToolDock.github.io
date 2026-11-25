@@ -119,6 +119,19 @@ body .td-rail-inline{ padding:0 16px; }
 .drop-hint{ font-size:.82rem; margin:6px 0 0; }
 .cut-box{ margin-top:10px; padding:10px; border:1px dashed var(--line-input, #ccc); border-radius:6px; }
 .cut-box[hidden]{ display:none; }
+.ed-head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.ed-head strong{ margin-right:auto; }
+#edClose{ display:none; }
+/* 切り抜きの画面（画面いっぱい） */
+.editor{ position:fixed; inset:0; z-index:1000; background:#1b1d22; display:none; flex-direction:column; }
+.editor.on{ display:flex; }
+.editor .ed-stage{ flex:1; min-height:0; position:relative; }
+#edCanvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; display:block; }
+.editor .cut-box{ margin:0; border:0; border-top:1px solid #444; border-radius:0; background:var(--surface); max-height:42vh; overflow:auto; }
+.editor #edOpen{ display:none; }
+.editor #edClose{ display:inline-block; }
+.editor .ed-hide{ display:none; }
+body.ed-lock{ overflow:hidden; }
 
 /* ===== 説明 ===== */
 .tool-article h2{ font-size:var(--fs-h2, 1.2rem); border-bottom:2px solid var(--c, #2563eb); padding-bottom:6px; margin-top:28px; }
@@ -191,16 +204,18 @@ body .td-rail-inline{ padding:0 16px; }
                 </div>
 
                 <div class="cut-box" id="cutBox">
-                    <strong>切り抜き</strong>
+                    <div class="ed-head"><strong>切り抜き</strong>
+                        <button type="button" class="btn small" id="edOpen">大きな画面で切り抜く</button>
+                        <button type="button" class="btn small" id="edClose">完了</button></div>
                     <div class="tools">
                         <button type="button" class="btn small" id="cutAuto">自動で切り抜く</button>
                         <button type="button" class="btn small secondary" id="cutReset">切り抜きを元に戻す</button>
                         <button type="button" class="btn small secondary" id="cutUndo" disabled>1つ前に戻す</button>
                     </div>
-                    <label class="fit"><input type="checkbox" id="cutFit" checked> 切り抜いたら、大きさと位置をカードに合わせる</label>
+                    <label class="fit ed-hide"><input type="checkbox" id="cutFit" checked> 切り抜いたら、大きさと位置をカードに合わせる</label>
                     <div class="mode">
                         <span class="seg" role="radiogroup" aria-label="プレビューでの操作">
-                            <label><input type="radio" name="mode" value="move" checked><span>動かす</span></label>
+                            <label><input type="radio" name="mode" value="move" checked><span id="modeMoveLabel">動かす</span></label>
                             <label><input type="radio" name="mode" value="erase"><span>消しゴム</span></label>
                             <label><input type="radio" name="mode" value="restore"><span>戻すブラシ</span></label>
                         </span>
@@ -220,7 +235,7 @@ body .td-rail-inline{ padding:0 16px; }
                         <label for="smartTol">色の幅</label><input type="range" id="smartTol" min="10" max="120" step="1" value="48"><output id="smartTolOut"></output>
                     </div>
                     <label class="fit"><input type="checkbox" id="cutGhost" checked> 直しているあいだ、消えた部分を赤く透かして表示する</label>
-                    <p class="note" id="cutNote">「自動で切り抜く」は、写真の中のいちばん目立つもの（人と、手に持ったバットやグローブ）を残します。初回だけ切り抜き用のデータ（約50MB）を読み込みます。残ったところや消えすぎたところは、消しゴムと戻すブラシで直せます。直しているあいだは、消えた部分が赤く透けて見えるので、戻すブラシでなぞるだけで元に戻せます。</p>
+                    <p class="note ed-hide" id="cutNote">「自動で切り抜く」は、写真の中のいちばん目立つもの（人と、手に持ったバットやグローブ）を残します。初回だけ切り抜き用のデータ（約56MB）を読み込みます。残ったところや消えすぎたところは、消しゴムと戻すブラシで直せます。直しているあいだは、消えた部分が赤く透けて見えるので、戻すブラシでなぞるだけで元に戻せます。</p>
                 </div>
             </div>
         </section>
@@ -295,6 +310,10 @@ body .td-rail-inline{ padding:0 16px; }
 </div>
 </div>
 
+<div class="editor" id="editor" aria-label="切り抜きの画面">
+    <div class="ed-stage" id="edStage"><canvas id="edCanvas"></canvas></div>
+</div>
+
 <article class="tool-article" data-ad-mid="2">
 
 <h2>プロスピA風 選手画像ジェネレーターについて</h2>
@@ -333,6 +352,7 @@ body .td-rail-inline{ padding:0 16px; }
     <li>背景と色が近いところは、スマートブラシの「色の幅」を狭くするか、戻りすぎたところを消しゴムで消して整えます。</li>
     <li>大まかに切り抜くときは「囲んで残す」で選手のまわりを指でなぞると、外側がまとめて消えます。</li>
     <li>写真のいらない部分は「トリミング」を選んで、残したい範囲を四角くドラッグすると切り落とせます。</li>
+    <li>細かいところは「大きな画面で切り抜く」を押すと、画像だけを画面いっぱいに出して直せます。2本指（パソコンはホイール）で拡大でき、「見る」を選ぶと1本指で動かせます。</li>
     <li>失敗したら「1つ前に戻す」、最初からやり直すときは「切り抜きを元に戻す」を押します。</li>
 </ul>
 
@@ -348,7 +368,7 @@ body .td-rail-inline{ padding:0 16px; }
 
 <h2>よくある質問</h2>
 <p><strong>Q. 入れた画像はどこかに送られますか？</strong><br>
-A. 送りません。切り抜きも含めて、すべてこの端末のブラウザの中で動きます。初めて自動で切り抜くときに、切り抜きの仕組み（約50MB）を読み込むだけです。</p>
+A. 送りません。切り抜きも含めて、すべてこの端末のブラウザの中で動きます。初めて自動で切り抜くときに、切り抜きの仕組み（約56MB）を読み込むだけです。</p>
 <p><strong>Q. ページを閉じても、作りかけの画像は残りますか？</strong><br>
 A. 残ります。入れた画像・切り抜き・位置・入力した文字は、この端末のブラウザの中に保存しておき、次に開いたときに元に戻します（どこにも送りません）。プライベートブラウズでは残りません。消したいときは、画像を選んで「この画像を消す」を押してください。</p>
 <p><strong>Q. 公式の背景やエフェクトの画像は入っていますか？</strong><br>
@@ -666,7 +686,9 @@ $("cutReset").addEventListener("click", () => {
    人だけでなく、手に持ったバットやグローブもいっしょに残る。
    モデルは8ビットに縮めたもの（約46MB）をこのサイトに置き、初めて押したときだけ読み込む */
 const ORT_BASE = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
-const MODEL_URL = "/prospi/model/isnet-general-use-q8.onnx";
+/* 細かいところを担う浅い層（stage1〜3・side）は元の精度のまま、深い層だけ8ビットにしたもの（約56MB）。
+   全部を8ビットにすると、背景が暗い写真で背景が残った（2026-11-25） */
+const MODEL_URL = "/prospi/model/isnet-general-use-mix8.onnx";
 const SIZE = 1024;
 let sessionPromise = null;
 
@@ -710,11 +732,10 @@ async function predict(src) {
     feeds[session.inputNames[0]] = new ort.Tensor("float32", input, [1, 3, SIZE, SIZE]);
     const out = await session.run(feeds);
     const o = out[session.outputNames[0]].data;
-    let mn = Infinity, mx = -Infinity;
-    for (let i = 0; i < N; i++) { if (o[i] < mn) mn = o[i]; if (o[i] > mx) mx = o[i]; }
+    /* 出力は0〜1。最小〜最大で引き伸ばすと、背景のわずかな値まで持ち上がって残るので、
+       0.35以下を0、0.7以上を1にして、そのあいだだけをなめらかにつなぐ */
     const a = new Float32Array(N);
-    const k = 1 / (mx - mn || 1);
-    for (let i = 0; i < N; i++) a[i] = (o[i] - mn) * k;
+    for (let i = 0; i < N; i++) a[i] = Math.min(1, Math.max(0, (o[i] - 0.35) / 0.35));
     return a;
 }
 
@@ -871,6 +892,7 @@ function toCanvas(e) {
 }
 /* キャンバスの点 → レイヤーの画像の中の点 */
 function toLocal(L, p) {
+    if (ed.on) return { x: (p.x - ed.ox) / ed.k, y: (p.y - ed.oy) / ed.k };   /* 切り抜きの画面では、その画面の座標から */
     const dx = p.x - L.x, dy = p.y - L.y;
     const c = Math.cos(-L.rot), s = Math.sin(-L.rot);
     const rx = dx * c - dy * s, ry = dx * s + dy * c;
@@ -887,7 +909,7 @@ let lastBrush = null;
 
 function brushAt(L, p) {
     const q = toLocal(L, p);
-    const r = Number($("brush").value) / L.s / 2;
+    const r = Number($("brush").value) / (ed.on ? ed.k / ed.dpr : L.s) / 2;
     if ($("smartBrush").checked) {
         /* スマートブラシ：前の点から今の点まで、半径の1/3ごとに打つ */
         const from = lastBrush || q;
@@ -1945,8 +1967,210 @@ function fitView() {
 }
 window.addEventListener("resize", fitView);
 
+/* ======================================================
+   切り抜きの画面（大きな画面で、選んだ画像だけを切り抜く）
+   1本指：選んだ道具（消しゴム・戻すブラシ・囲む・トリミング）。「見る」のときは画面を動かす
+   2本指：画面の拡大・移動（画像そのものの大きさや位置は変わらない）
+   座標はこの画面のキャンバスの点（端末の画素）で、ed.k が拡大率、ed.ox/oy が画像の左上の位置
+   ====================================================== */
+const ed = { on: false, k: 1, ox: 0, oy: 0, dpr: 1, home: null, next: null, hover: null };
+const edCanvas = $("edCanvas");
+const edCtx = edCanvas.getContext("2d");
+const edPointers = new Map();
+let edChecker = null;
+
+function edFit() {
+    const L = cur(); if (!L) return;
+    const r = edCanvas.getBoundingClientRect();
+    ed.dpr = window.devicePixelRatio || 1;
+    edCanvas.width = Math.max(1, Math.round(r.width * ed.dpr));
+    edCanvas.height = Math.max(1, Math.round(r.height * ed.dpr));
+    const m = 16 * ed.dpr;
+    ed.k = Math.min((edCanvas.width - m * 2) / L.src.width, (edCanvas.height - m * 2) / L.src.height);
+    ed.ox = (edCanvas.width - L.src.width * ed.k) / 2;
+    ed.oy = (edCanvas.height - L.src.height * ed.k) / 2;
+}
+
+function edDraw() {
+    const L = cur(); if (!L || !ed.on) return;
+    const c = edCtx, d = ed.dpr;
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.fillStyle = "#1b1d22";
+    c.fillRect(0, 0, edCanvas.width, edCanvas.height);
+    if (!edChecker) {
+        const t = document.createElement("canvas"); t.width = t.height = 16;
+        const x = t.getContext("2d");
+        x.fillStyle = "#cfcfcf"; x.fillRect(0, 0, 16, 16);
+        x.fillStyle = "#ffffff"; x.fillRect(0, 0, 8, 8); x.fillRect(8, 8, 8, 8);
+        edChecker = c.createPattern(t, "repeat");
+    }
+    c.fillStyle = edChecker;
+    c.fillRect(ed.ox, ed.oy, L.src.width * ed.k, L.src.height * ed.k);
+    c.save();
+    c.translate(ed.ox, ed.oy);
+    c.scale(ed.k, ed.k);
+    c.imageSmoothingQuality = "high";
+    if ($("cutGhost").checked) { c.globalAlpha = 0.6; c.drawImage(ghostOf(L), 0, 0); c.globalAlpha = 1; }
+    c.drawImage(L.cut, 0, 0);
+    c.restore();
+    c.strokeStyle = "rgba(255,255,255,.35)"; c.lineWidth = 1;
+    c.strokeRect(ed.ox, ed.oy, L.src.width * ed.k, L.src.height * ed.k);
+
+    if (gesture && gesture.type === "lasso" && gesture.pts.length > 1) {
+        c.save();
+        c.beginPath();
+        gesture.pts.forEach((p, i) => i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y));
+        c.closePath();
+        c.fillStyle = mode() === "lassoKeep" ? "rgba(80,200,255,.2)" : "rgba(255,80,80,.2)";
+        c.fill();
+        c.setLineDash([8 * d, 6 * d]); c.lineWidth = 2.5 * d; c.strokeStyle = "#fff"; c.stroke();
+        c.restore();
+    }
+    if (gesture && gesture.type === "crop") {
+        const x = Math.min(gesture.a.x, gesture.b.x), y = Math.min(gesture.a.y, gesture.b.y);
+        const w = Math.abs(gesture.b.x - gesture.a.x), h = Math.abs(gesture.b.y - gesture.a.y);
+        c.save();
+        c.fillStyle = "rgba(0,0,0,.5)";
+        c.beginPath(); c.rect(0, 0, edCanvas.width, edCanvas.height); c.rect(x, y, w, h); c.fill("evenodd");
+        c.setLineDash([8 * d, 6 * d]); c.lineWidth = 2.5 * d; c.strokeStyle = "#fff"; c.strokeRect(x, y, w, h);
+        c.restore();
+    }
+    if (ed.hover && (mode() === "erase" || mode() === "restore")) {
+        c.save();
+        c.beginPath(); c.arc(ed.hover.x, ed.hover.y, Number($("brush").value) * d / 2, 0, Math.PI * 2);
+        c.lineWidth = 2 * d; c.strokeStyle = "#fff"; c.stroke();
+        c.lineWidth = 1 * d; c.strokeStyle = "#000"; c.stroke();
+        c.restore();
+    }
+}
+
+function edOpen() {
+    const L = cur();
+    if (!L) { alert("先に画像を入れて、一覧で選んでください。"); return; }
+    const box = $("cutBox");
+    ed.home = box.parentNode; ed.next = box.nextSibling;
+    $("editor").appendChild(box);
+    ed.busyHome = $("busy").parentNode;
+    $("edStage").appendChild($("busy"));
+    $("editor").classList.add("on");
+    document.body.classList.add("ed-lock");
+    ed.on = true;
+    $("modeMoveLabel").textContent = "見る";
+    requestAnimationFrame(() => { edFit(); edDraw(); });
+}
+function edClose() {
+    ed.on = false;
+    gesture = null; lastBrush = null; edPointers.clear();
+    $("editor").classList.remove("on");
+    document.body.classList.remove("ed-lock");
+    ed.home.insertBefore($("cutBox"), ed.next);
+    ed.busyHome.appendChild($("busy"));
+    $("modeMoveLabel").textContent = "動かす";
+    /* 戻ったら「動かす」にする（消しゴムのままだと、赤い表示が残り、プレビューで消してしまう） */
+    const mv = document.querySelector('input[name="mode"][value="move"]');
+    mv.checked = true;
+    view.classList.remove("brush");
+    syncLayers(); draw();
+}
+$("edOpen").addEventListener("click", edOpen);
+$("edClose").addEventListener("click", edClose);
+window.addEventListener("resize", () => { if (ed.on) { edFit(); edDraw(); } });
+
+function edPt(e) {
+    const r = edCanvas.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * ed.dpr, y: (e.clientY - r.top) * ed.dpr };
+}
+
+edCanvas.addEventListener("pointerdown", (e) => {
+    const L = cur(); if (!L) return;
+    const p = edPt(e);
+    edCanvas.setPointerCapture(e.pointerId);
+    edPointers.set(e.pointerId, p);
+    if (edPointers.size === 2) {
+        /* 2本目の指が来たら、1本目で描きかけたものを取り消して、画面の拡大・移動にする */
+        if (gesture && gesture.type === "brush" && L.undo.length) {
+            const c = L.undo.pop();
+            const m = L.mask.getContext("2d");
+            m.globalCompositeOperation = "copy"; m.drawImage(c, 0, 0); m.globalCompositeOperation = "source-over";
+            refreshCut(L);
+        }
+        const [a, b] = [...edPointers.values()];
+        gesture = { type: "edPinch", d0: Math.hypot(b.x - a.x, b.y - a.y) || 1, k0: ed.k,
+                    mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, ox: ed.ox, oy: ed.oy };
+        lastBrush = null;
+        edDraw();
+        return;
+    }
+    if (edPointers.size > 2) return;
+    const md = mode();
+    if (md === "move") { gesture = { type: "edPan", px: p.x, py: p.y, ox: ed.ox, oy: ed.oy }; return; }
+    if (md === "crop") { gesture = { type: "crop", L, a: p, b: p }; edDraw(); return; }
+    if (md === "lassoKeep" || md === "lassoErase") { gesture = { type: "lasso", L, pts: [p] }; edDraw(); return; }
+    pushUndo(L);
+    lastBrush = null;
+    gesture = { type: "brush", L };
+    brushAt(L, p);
+    edDraw();
+});
+
+edCanvas.addEventListener("pointermove", (e) => {
+    const p = edPt(e);
+    if (e.pointerType === "mouse") { ed.hover = p; if (!edPointers.size) edDraw(); }
+    if (!edPointers.has(e.pointerId)) return;
+    edPointers.set(e.pointerId, p);
+    if (!gesture) return;
+    if (gesture.type === "edPinch") {
+        if (edPointers.size < 2) return;
+        const [a, b] = [...edPointers.values()];
+        const g = gesture;
+        const k = Math.max(0.02, Math.min(40, g.k0 * Math.hypot(b.x - a.x, b.y - a.y) / g.d0));
+        const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+        ed.ox = mx - (g.mx - g.ox) * k / g.k0;
+        ed.oy = my - (g.my - g.oy) * k / g.k0;
+        ed.k = k;
+    } else if (gesture.type === "edPan") {
+        ed.ox = gesture.ox + p.x - gesture.px;
+        ed.oy = gesture.oy + p.y - gesture.py;
+    } else if (gesture.type === "brush") {
+        brushAt(gesture.L, p);
+    } else if (gesture.type === "lasso") {
+        const q = gesture.pts[gesture.pts.length - 1];
+        if (Math.hypot(p.x - q.x, p.y - q.y) > 3 * ed.dpr) gesture.pts.push(p);
+    } else if (gesture.type === "crop") {
+        gesture.b = p;
+    }
+    edDraw();
+});
+
+function edUp(e) {
+    edPointers.delete(e.pointerId);
+    if (!gesture) return;
+    if (gesture.type === "edPinch") { if (edPointers.size === 0) gesture = null; return; }
+    const g = gesture;
+    gesture = null;
+    lastBrush = null;
+    if (g.type === "lasso") applyLasso(g);
+    if (g.type === "crop") { applyCrop(g); edFit(); }
+    $("cutUndo").disabled = !(cur() && cur().undo.length);
+    edDraw();
+    draw();
+}
+edCanvas.addEventListener("pointerup", edUp);
+edCanvas.addEventListener("pointercancel", edUp);
+edCanvas.addEventListener("pointerleave", () => { ed.hover = null; edDraw(); });
+edCanvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const p = edPt(e);
+    const f = Math.exp(-e.deltaY * 0.0015);
+    ed.ox = p.x - (p.x - ed.ox) * f;
+    ed.oy = p.y - (p.y - ed.oy) * f;
+    ed.k *= f;
+    edDraw();
+}, { passive: false });
+
 let raf = 0;
 function draw() {
+    if (ed.on) edDraw();
     scheduleSaveImages();
     if (raf) return;
     raf = requestAnimationFrame(() => { raf = 0; render(vctx, true); });
