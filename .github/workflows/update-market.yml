@@ -18,7 +18,15 @@ on:
     - cron: "47 0 * * 2-6"     # 09:47（UTC では翌日なので曜日が1つずれる）
     - cron: "47 1 * * 2-6"     # 10:47
     - cron: "47 2 * * 2-6"     # 11:47
-  workflow_dispatch: {}      # 手動実行も可能にしておく
+  # 手動実行と、Google Apps Script（scripts/gas/market-trigger.gs）からの呼び出し。
+  # GitHub の予約は5〜6時間遅れることがある（06:47 の予約が昼に動いていた。2026-11）ので、
+  # 朝は Apps Script から10分おきに呼んでもらい、上の予約は控えとして残す
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "同じ日の値でも作り直す"
+        type: boolean
+        default: true
 
 concurrency:
   group: update-market
@@ -60,13 +68,13 @@ jobs:
             --out "${{ github.workspace }}/${{ env.OUT_DIR }}"
 
       - name: 新しい日か確かめる
-        # 予約で動いたとき、取れた日が前と同じなら（もう更新済み、または米国が休場）、何もしない。
-        # 手動で動かしたときは、同じ日でも作り直す
+        # 予約や Apps Script から動いたとき、取れた日が前と同じなら（もう更新済み、または米国が休場）、何もしない。
+        # 手で動かしたとき（force にチェック）は、同じ日でも作り直す
         id: fresh
         run: |
           after=$(python3 -c "import json;print(json.load(open('$OUT_DIR/market.json')).get('session',''))")
           echo "前: ${{ steps.before.outputs.session }} / 今: $after"
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$after" = "${{ steps.before.outputs.session }}" ]; then
+          if [ "${{ github.event_name }}" = "schedule" -o "${{ inputs.force }}" = "false" ] && [ "$after" = "${{ steps.before.outputs.session }}" ]; then
             echo "同じ日のまま。更新しません。"
             git checkout -- "$OUT_DIR"
             git clean -fdq -- "$OUT_DIR"
