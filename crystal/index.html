@@ -398,6 +398,12 @@ main{
     .rate p.lead{ padding:12px 16px; }
     .item{ padding:13px 16px; }
 }
+
+/* スマホでは、サイト共通の左右の余白（20px）とページの余白が重なって本文が細くなるので、サイト共通の余白を12pxにしてページの余白はなくす（PC・iPadは変えない） */
+@media (max-width:600px){
+    body{ padding-left:12px; padding-right:12px; }
+    .page-wrapper{ padding-left:0; padding-right:0; }
+}
 </style>
 
 </head>

@@ -5,6 +5,16 @@
    ページ固有のメタ情報だけを出力する。
 ========================= */
 
+/* iPhone・iPad で、文字の小さい入力欄をタップしたときに画面が勝手に拡大されるのを止める。
+   iOS は maximum-scale=1 でも指でつまんだ拡大はできるので、見えにくい人の拡大は妨げない。
+   Android では maximum-scale=1 だと指での拡大までできなくなるため、iOS だけにする */
+{
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+              (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const vp = document.querySelector('meta[name="viewport"]');
+  if (ios && vp && !/maximum-scale/.test(vp.content)) vp.content += ", maximum-scale=1";
+}
+
 const SITE_NAME = "ToolDock";
 const SITE_ORIGIN = "https://tooldock.github.io";
 
@@ -187,6 +197,12 @@ style.textContent = `
   .bc-sep{
     margin:0 6px;
     color:#1c1d1f;
+  }
+
+  /* スマホでは、ツールの本体が早く見えるように、パンくずを詰める（PC・iPadは変えない） */
+  @media (max-width: 600px){
+    .breadcrumb{ font-size:12.5px; padding:8px 14px; margin-bottom:4px; line-height:1.5; }
+    .bc-sep{ margin:0 4px; }
   }
 
 `;

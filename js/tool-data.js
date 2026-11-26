@@ -31,6 +31,7 @@ window.POPULAR_MONTH = ["kintoku", "nouryoku", "shippo", "satei", "mylife-start"
 window.RECOMMENDED = ["nouryoku", "nouryoku-pitcher", "order", "counter", "us-market", "fukuri", "standings", "circuit"];
 
 window.UPDATES = [
+  { date: "2026-11-26", id: "prospi", kind: "update", text: "スマホで見やすく：ページの見出しとパンくずを低くしてツールが早く見えるように。iPhoneで入力欄をタップしたときに画面が勝手に拡大されないように" },
   { date: "2026-11-24", id: "prospi", kind: "new", text: "プロスピA風の選手画像ジェネレーターを公開。写真の選手をサイトの中で自動で切り抜き、メダル・スピリッツ・能力の枠つきの縦長画像を作れます" },
   { date: "2026-11-24", id: "nenmatsu-jumbo", kind: "new", text: "年末ジャンボ2026（第1134回）とミニのシミュレーターを公開。公式の当せん金と本数で抽せんでき、何枚買えば当たるか・去年との違い・ミニとの比較も分かります" },
   { date: "2026-11-21", id: "fukuri", kind: "update", text: "大学生向けに「学生納付特例を使う？今払う？」を追加。親が払う・特例で就職後に追納・追納しないの3つを、節税と加算額込みで比べられます" },
