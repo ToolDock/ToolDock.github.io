@@ -89,6 +89,13 @@ body{
 .tool-article th, .tool-article td{ border:1px solid var(--line); padding:7px 10px; text-align:right; }
 .tool-article th{ background:var(--surface-2); white-space:nowrap; text-align:center; }
 .tool-article td:first-child{ text-align:center; font-weight:700; }
+/* スマホでは金額を折り返さない（「1.3万／円」と2行になって縦に伸びるため）。表は横にスクロールする */
+@media (max-width:600px){
+    .tool-article th, .tool-article td{ white-space:nowrap; }
+    /* 横にスクロールしても、どの年収の行か分かるように、年収の列を左に止めておく */
+    .tool-article .table-scroll th:first-child, .tool-article .table-scroll td:first-child{ position:sticky; left:0; z-index:1; background:var(--surface); box-shadow:1px 0 0 var(--line); }
+    .tool-article .table-scroll thead th:first-child{ background:var(--surface-2); }
+}
 </style>
 </head>
 
