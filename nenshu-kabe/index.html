@@ -118,6 +118,16 @@ body{
 .tool-article th{ background:var(--surface-2); white-space:nowrap; }
 .tool-article table:not(:has(thead)) th{ width:30%; white-space:normal; }
 .tool-article td.num{ white-space:nowrap; font-weight:700; }
+/* スマホでは、3列の表を「年収と壁を見出しにした札」に並べ替える（細い列で1〜2文字ずつ折り返して縦に伸びるため） */
+@media (max-width:600px){
+    .tool-article table.kabe thead{ display:none; }
+    .tool-article table.kabe, .tool-article table.kabe tbody, .tool-article table.kabe tr, .tool-article table.kabe td{ display:block; width:auto; }
+    .tool-article table.kabe tr{ border:1px solid var(--line); border-radius:6px; margin:0 0 8px; padding:8px 10px; }
+    .tool-article table.kabe td{ border:0; padding:0; }
+    .tool-article table.kabe td:nth-child(1), .tool-article table.kabe td:nth-child(2){ display:inline; font-weight:700; font-size:14px; }
+    .tool-article table.kabe td:nth-child(1){ color:var(--c); margin-right:8px; }
+    .tool-article table.kabe td:nth-child(3){ margin-top:4px; }
+}
 </style>
 </head>
 
@@ -187,7 +197,7 @@ body{
 <h2>2026年の「年収の壁」一覧</h2>
 <p>給与だけで働く人の場合の目安です。税金の壁は「超えると、その分にだけ税金がかかる」もので、超えた瞬間に手取りが大きく減るわけではありません。手取りが大きく変わりやすいのは、社会保険の扶養（130万円・150万円）です。</p>
 <div class="table-scroll">
-<table>
+<table class="kabe">
 <thead><tr><th>年収</th><th>壁</th><th>超えるとどうなる</th></tr></thead>
 <tbody>
 <tr><td class="num">週20時間</td><td>社会保険への加入</td><td>勤め先の従業員が51人以上などの条件で、年収に関係なく勤め先の社会保険に入ります。2026年10月に月8.8万円（年106万円）の条件はなくなりました。昼間の学生は対象外です。</td></tr>

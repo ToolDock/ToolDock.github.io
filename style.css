@@ -350,6 +350,9 @@ footer {
 
 @media (max-width: 600px) {
   .tool-article { padding: 22px 18px; }
+  /* スマホでは、記事の表の行間と余白を詰める（本文の行間 1.95 のままだと、表が縦に間延びする） */
+  .tool-article table { font-size: 13px; line-height: 1.55; }
+  .tool-article th, .tool-article td { padding: 6px 8px; }
 }
 
 /* .breadcrumb 系のスタイルは js/head.js が注入する */
