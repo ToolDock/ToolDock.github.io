@@ -38,3 +38,35 @@ Apps Script の `engine` に貼り直し、「デプロイ」→「デプロイ�
   速すぎる・間隔が機械的すぎる記録は受け付けない。1人（ブラウザごとの id）1つの区分につき、いちばん良い記録だけ残す
 - 上位（`?a=top`）：上位100人と、自分の順位。60秒キャッシュ
 - 名前：12文字まで、文字・数字と `_ ・ ー -` だけ、1文字目は文字か数字、NGワードは弾く
+
+---
+
+# 米国市場ダッシュボードの更新（Google Apps Script）
+
+`/us-market/` は GitHub Actions（`.github/workflows/update-market.yml`）で毎朝作り直す。
+ところが GitHub の予約（cron）は混むと5〜6時間遅れ、06:47 の予約が昼の11〜14時にしか動かなかった（2026-11）。
+そこで、時間どおりに動く Apps Script から GitHub に「今すぐ動いて」と頼む（workflow_dispatch）。GitHub の予約は控えとして残す。
+
+`scripts/gas/market-trigger.gs` は、日本時間の火〜土の 6:10〜9:59 に10分おきに目を覚まし、
+サイトの `market.json` がまだ今日の分でなければ、GitHub に更新を頼む（頼んだあと25分は重ねて頼まない）。
+米国の引け（日本時間の朝6時、夏は5時）のあと、まだ前の日の値しか取れないときは、GitHub 側が何もせずに終わり、次の回にまた頼む。
+
+## 置き方（はじめの1回）
+
+1. GitHub でトークンを作る：右上のアイコン →「Settings」→ 左下の「Developer settings」→「Personal access tokens」→「Fine-grained tokens」→「Generate new token」
+   - Token name：`tooldock-market`（何でもよい）／ Expiration：1年など
+   - Repository access：「Only select repositories」で **ToolDock/ToolDock.github.io** だけ
+   - Permissions →「Repository permissions」の **Actions** を「Read and write」（ほかは触らない）
+   - 「Generate token」→ 出てきた `github_pat_…` を控える（この画面を閉じると二度と見られない）
+2. https://script.google.com で「新しいプロジェクト」（どのアカウントでもよい）
+3. 最初からある `コード.gs` の中身を消し、`scripts/gas/market-trigger.gs` の中身を貼って保存
+4. 左の歯車「プロジェクトの設定」→ 下の「スクリプト プロパティ」→「スクリプト プロパティを追加」
+   - プロパティ：`GH_TOKEN` ／ 値：1で控えた `github_pat_…`
+5. エディタに戻り、上の関数の選択で `testDispatch` を選んで「実行」→ 権限を許可
+   - 許可する中身が「外部サービスへの接続」と「スクリプトがあなたが不在のときに実行されることを許可」だけであることを確かめる
+   - 実行ログに「OK」と出て、GitHub の Actions の画面で「昨日の米国株を更新」が動き出せば成功
+6. 関数の選択で `setup` を選んで「実行」（10分おきのトリガーができる。左の時計のアイコンで確かめられる）
+
+## トークンの期限が切れたら
+
+1 と同じ手順で作り直し、4 の `GH_TOKEN` の値を差し替える。切れているあいだは、GitHub の予約（遅いほう）だけで更新される。
