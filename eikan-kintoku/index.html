@@ -500,6 +500,24 @@ table.tensei tr.co td{ background:#fdf2f8; }
 table.tensei td.r, table.tensei th.r{ text-align:right; }
 table.tensei td{ white-space:nowrap; }
 table.tensei td:last-child{ white-space:normal; }
+
+/* スマホでは、国際大会の評価の表を「評価と対象を見出しにした札」に並べ替える
+   （4列のままだと、上がる能力と特殊能力の列が細くなり、1〜3文字ずつ折り返して縦に伸びるため）。PC・iPadは表のまま */
+@media (max-width:600px){
+    #tbl thead{ display:none; }
+    #tbl, #tbl tbody, #tbl tr, #tbl td{ display:block; width:auto; }
+    #tbl tr{ padding:10px 12px; border-bottom:1px solid var(--line); }
+    #tbl td{ border:0; padding:0; }
+    #tbl td:nth-child(1), #tbl td:nth-child(2){ display:inline-block; vertical-align:middle; margin:0 8px 4px 0; }
+    #tbl td:nth-child(1) .eval{ font-size:15px; }
+    #tbl td.up{ margin:2px 0 6px; font-size:13px; line-height:1.6; }
+    #tbl td.none{ display:none; }
+    #tbl td.up br{ display:none; }
+    #tbl td.up .it{ display:inline-block; margin-right:12px; white-space:nowrap; }
+    #tbl td:nth-child(4){ line-height:1.9; }
+    #tbl td:nth-child(4) .skill{ display:inline-block; margin-right:10px; white-space:nowrap; }
+    #tbl td:nth-child(4) .up{ display:block; margin-top:2px; font-size:12.5px; }
+}
 @media (max-width:820px){
     .kt-list{ grid-template-columns:1fr; }
     .kt:nth-child(odd){ border-right:0; }
@@ -1170,7 +1188,7 @@ MVPとタイトルは<strong>最大1名までしか選ばれません</strong>�
             <tr data-side="p">
                 <td><span class="eval" id="mvp-p">大会MVP</span></td>
                 <td><span class="badge p">投手</span></td>
-                <td class="up">球速+3<br>コントロール+7<br>スタミナ+7<br>いずれかの変化球の変化量+2</td>
+                <td class="up"><span class="it">球速+3</span><br><span class="it">コントロール+7</span><br><span class="it">スタミナ+7</span><br><span class="it">いずれかの変化球の変化量+2</span></td>
                 <td>
                     <span class="skill kin">強心臓</span>
                     <span class="skill kin">怪物球威</span>
@@ -1184,7 +1202,7 @@ MVPとタイトルは<strong>最大1名までしか選ばれません</strong>�
             <tr data-side="b">
                 <td><span class="eval" id="mvp-b">大会MVP</span></td>
                 <td><span class="badge b">野手</span></td>
-                <td class="up">ミート+7<br>パワー+7<br>走力+7<br>守備力+7<br>捕球+7</td>
+                <td class="up"><span class="it">ミート+7</span><br><span class="it">パワー+7</span><br><span class="it">走力+7</span><br><span class="it">守備力+7</span><br><span class="it">捕球+7</span></td>
                 <td>
                     <span class="skill kin">勝負師</span>
                     <span class="skill kin">安打製造機</span>
@@ -1198,7 +1216,7 @@ MVPとタイトルは<strong>最大1名までしか選ばれません</strong>�
             <tr data-side="p">
                 <td><span class="eval">大会ベストナイン</span></td>
                 <td><span class="badge p">投手</span></td>
-                <td class="up">球速+2<br>コントロール+4<br>スタミナ+4<br>いずれかの変化球の変化量+1</td>
+                <td class="up"><span class="it">球速+2</span><br><span class="it">コントロール+4</span><br><span class="it">スタミナ+4</span><br><span class="it">いずれかの変化球の変化量+1</span></td>
                 <td>
                     <span class="skill">対ピンチA</span>
                     <span class="skill">重い球</span>
@@ -1212,7 +1230,7 @@ MVPとタイトルは<strong>最大1名までしか選ばれません</strong>�
             <tr data-side="b">
                 <td><span class="eval">大会ベストナイン</span></td>
                 <td><span class="badge b">野手</span></td>
-                <td class="up">ミート+4<br>パワー+4<br>走力+4<br>守備力+4<br>捕球+4</td>
+                <td class="up"><span class="it">ミート+4</span><br><span class="it">パワー+4</span><br><span class="it">走力+4</span><br><span class="it">守備力+4</span><br><span class="it">捕球+4</span></td>
                 <td>
                     <span class="skill">アベレージヒッター</span>
                     <span class="skill">パワーヒッター</span>
@@ -1261,14 +1279,14 @@ MVPとタイトルは<strong>最大1名までしか選ばれません</strong>�
             <tr data-side="b">
                 <td><span class="eval">ヒットを量産した</span></td>
                 <td><span class="badge b">野手</span></td>
-                <td class="up">ミート+7</td>
+                <td class="up"><span class="it">ミート+7</span></td>
                 <td class="none">－</td>
             </tr>
 
             <tr data-side="b">
                 <td><span class="eval">豪快なホームランを放った</span></td>
                 <td><span class="badge b">野手</span></td>
-                <td class="up">パワー+7</td>
+                <td class="up"><span class="it">パワー+7</span></td>
                 <td class="none">－</td>
             </tr>
 
@@ -1282,14 +1300,14 @@ MVPとタイトルは<strong>最大1名までしか選ばれません</strong>�
             <tr data-side="b">
                 <td><span class="eval">快足を飛ばした</span></td>
                 <td><span class="badge b">野手</span></td>
-                <td class="up">走力+5</td>
+                <td class="up"><span class="it">走力+5</span></td>
                 <td><span class="skill">走塁</span><div class="up">C以下ならB、BならAに上がる</div></td>
             </tr>
 
             <tr data-side="b">
                 <td><span class="eval">守備で貢献</span></td>
                 <td><span class="badge b">野手</span></td>
-                <td class="up">守備力+5</td>
+                <td class="up"><span class="it">守備力+5</span></td>
                 <td><span class="skill">守備職人</span></td>
             </tr>
 
@@ -1303,7 +1321,7 @@ MVPとタイトルは<strong>最大1名までしか選ばれません</strong>�
             <tr data-side="b">
                 <td><span class="eval">大事な場面で盗塁を決めた</span></td>
                 <td><span class="badge b">野手</span></td>
-                <td class="up">走力+5</td>
+                <td class="up"><span class="it">走力+5</span></td>
                 <td><span class="skill">盗塁</span><div class="up">C以下ならB、BならAに上がる</div></td>
             </tr>
 
@@ -1334,21 +1352,21 @@ MVPとタイトルは<strong>最大1名までしか選ばれません</strong>�
             <tr data-side="p">
                 <td><span class="eval">日本のエースとして活躍</span></td>
                 <td><span class="badge p">投手</span></td>
-                <td class="up">球速+2<br>コントロール+5<br>スタミナ+5<br>いずれかの変化球の変化量+1</td>
+                <td class="up"><span class="it">球速+2</span><br><span class="it">コントロール+5</span><br><span class="it">スタミナ+5</span><br><span class="it">いずれかの変化球の変化量+1</span></td>
                 <td class="none">－</td>
             </tr>
 
             <tr data-side="p">
                 <td><span class="eval">先発三本柱の一角</span></td>
                 <td><span class="badge p">投手</span></td>
-                <td class="up">球速+1<br>コントロール+3<br>スタミナ+3<br>いずれかの変化球の変化量+1</td>
+                <td class="up"><span class="it">球速+1</span><br><span class="it">コントロール+3</span><br><span class="it">スタミナ+3</span><br><span class="it">いずれかの変化球の変化量+1</span></td>
                 <td class="none">－</td>
             </tr>
 
             <tr data-side="p">
                 <td><span class="eval">粘り強くイニングを稼いだ</span></td>
                 <td><span class="badge p">投手</span></td>
-                <td class="up">スタミナ+10</td>
+                <td class="up"><span class="it">スタミナ+10</span></td>
                 <td class="none">－</td>
             </tr>
 
