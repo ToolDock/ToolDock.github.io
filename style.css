@@ -144,9 +144,11 @@ html body .td-banner a {
   color: inherit;
 }
 
+/* スマホでは見出しの帯を低くして、ツールの本体を1画面目に近づける（PC・iPadは変えない） */
 @media (max-width: 600px) {
-  .td-banner { padding: 18px 16px; }
-  html body .td-banner h1 { font-size: 23px; }
+  .td-banner { padding: 14px 16px 12px; margin-bottom: 16px; border-bottom-width: 4px; }
+  html body .td-banner h1 { font-size: 20px; line-height: 1.35; letter-spacing: 0; }
+  html body .td-banner > :not(h1) { margin-top: 6px; font-size: 13px; line-height: 1.65; }
 }
 
 textarea {
