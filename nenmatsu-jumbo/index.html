@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>年末ジャンボ2026 シミュレーター｜第1134回の当せん金・本数と確率、何枚買えば当たる？ミニとの比較 - ToolDock</title>
-<meta name="description" content="2026年の年末ジャンボ宝くじ（第1134回・1等7億円）と年末ジャンボミニ（第1135回）を、公式発表の当せん金と本数のとおりに買ったつもりで抽せんします。発売期間・抽せん日、等級ごとの確率、30枚・100枚・300枚買ったときに当たる確率、期待値、去年（2025年）との違い、ミニとどちらがいいかも載せています。">
+<title>年末ジャンボ2026｜発売期間・抽せん日、当せん番号の確認、当せん金と確率・何枚買えば当たる？シミュレーター - ToolDock</title>
+<meta name="description" content="2026年の年末ジャンボ宝くじ（第1134回・1等7億円）と年末ジャンボミニ（第1135回）の発売期間は11月24日〜12月25日、抽せん日は12月31日。手元の券の組と番号を入れておけば、抽せんのあとに当たりが分かります。公式発表の当せん金と本数のとおりに買ったつもりで抽せんもでき、等級ごとの確率、30枚・100枚・300枚買ったときに当たる確率、期待値、去年（2025年）との違い、ミニとどちらがいいかも載せています。">
 <link rel="canonical" href="https://tooldock.github.io/nenmatsu-jumbo/">
 
 <!-- OGP: scripts/static_ogp.py が書く（SNSはJavaScriptを動かさないため）。手で書き換えない -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ToolDock">
-<meta property="og:title" content="年末ジャンボ2026 シミュレーター｜第1134回の当せん金・本数と確率、何枚買えば当たる？ミニとの比較 | ToolDock">
-<meta property="og:description" content="2026年の年末ジャンボ宝くじ（第1134回・1等7億円）と年末ジャンボミニ（第1135回）を、公式発表の当せん金と本数のとおりに買ったつもりで抽せんします。発売期間・抽せん日、等級ごとの確率、30枚・100枚・300枚買ったときに当たる確率、期待値、去年（2025年）との違い、ミニとどちらがいいかも載せています。">
+<meta property="og:title" content="年末ジャンボ2026｜発売期間・抽せん日、当せん番号の確認、当せん金と確率・何枚買えば当たる？シミュレーター | ToolDock">
+<meta property="og:description" content="2026年の年末ジャンボ宝くじ（第1134回・1等7億円）と年末ジャンボミニ（第1135回）の発売期間は11月24日〜12月25日、抽せん日は12月31日。手元の券の組と番号を入れておけば、抽せんのあとに当たりが分かります。公式発表の当せん金と本数のとおりに買ったつもりで抽せんもでき、等級ごとの確率、30枚・100枚・300枚買ったときに当たる確率、期待値、去年（2025年）との違い、ミニとどちらがいいかも載せています。">
 <meta property="og:url" content="https://tooldock.github.io/nenmatsu-jumbo/">
 <meta property="og:image" content="https://tooldock.github.io/ogp/nenmatsu-jumbo.png">
 <meta property="og:image:width" content="1200">
@@ -174,7 +174,7 @@
         align-items: center;
     }
 
-    .run button {
+    .run button, #chkAdd {
         padding: 12px 28px;
         border: 0;
         border-radius: var(--r-ctl);
@@ -186,7 +186,7 @@
         cursor: pointer;
     }
 
-    .run button:hover { filter: brightness(0.92); }
+    .run button:hover, #chkAdd:hover { filter: brightness(0.92); }
 
     .lottery-meta {
         margin: 0;
@@ -423,6 +423,25 @@
         .tiers-edit input.name { width: 62px; }
         .tiers-edit .row-del { padding: 4px 6px; }
     }
+
+    /* ===== 当せん番号の確認 ===== */
+    .chk-form { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; }
+    .chk-form label { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: var(--fs-s); }
+    .chk-form input[type="text"], .chk-form select {
+        box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--line-input);
+        border-radius: var(--r-ctl); background: var(--surface); color: var(--ink); font: inherit; font-size: 16px;
+    }
+    #chkAdd { padding: 9px 22px; }
+    #chkKumi { width: 5em; }
+    #chkBan { width: 8em; }
+    .chk-err { color: #b91c1c; font-weight: 700; margin: 8px 0 4px; min-height: 1em; }
+    .chk-list { list-style: none; margin: 12px 0 0; padding: 0; }
+    .chk-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-ctl); margin-bottom: 8px; }
+    .chk-list .t { font-weight: 700; flex: 1 1 auto; }
+    .chk-list .r { flex: 1 1 100%; order: 3; }
+    .chk-list li.win { background: #fef3c7; border-color: #f59e0b; }
+    .chk-list .sub-btn { margin-left: auto; }
+    .chk-sum { font-weight: 700; }
 </style>
 </head>
 
@@ -443,6 +462,7 @@
       </p>
     </div>
 
+    <p class="nen-link"><a href="#check"><strong>買った券の当せん番号を確かめる（12月31日の抽せん後）</strong></a></p>
     <p class="nen-link"><a href="/takarakuji/"><strong>去年までの年末ジャンボ・ほかのジャンボ・ロト・ナンバーズは、宝くじシミュレーターへ</strong></a></p>
 
     <div class="form">
@@ -537,6 +557,26 @@
             <p class="note" id="manyNote"></p>
         </div>
     </div>
+
+</div>
+
+<div class="container" id="check">
+
+    <h2>年末ジャンボ2026の当せん番号を確かめる</h2>
+    <p id="chkStatus"></p>
+
+    <div class="chk-form">
+        <label>くじ<select id="chkKind"><option value="nenmatsu">年末ジャンボ</option><option value="mini">年末ジャンボミニ</option></select></label>
+        <label>組<input type="text" id="chkKumi" inputmode="numeric" maxlength="3" placeholder="07"></label>
+        <label>番号<input type="text" id="chkBan" inputmode="numeric" maxlength="6" placeholder="123450"></label>
+        <label>枚数<select id="chkN"><option value="10">10枚（連番）</option><option value="1">1枚</option></select></label>
+        <button type="button" id="chkAdd">追加</button>
+    </div>
+    <p class="chk-err" id="chkErr"></p>
+    <p class="note" style="margin-top:0">連番は、10枚のうちいちばん小さい番号を入れてください。バラは1枚ずつ入れてください。入れた番号はこの端末の中だけに保存され、どこにも送られません。</p>
+
+    <ul class="chk-list" id="chkRows"></ul>
+    <p class="chk-sum" id="chkSum"></p>
 
 </div>
 
@@ -683,6 +723,9 @@
     <p><strong>Q. 年末ジャンボ2026はいつまで買えますか？</strong><br>
     A. 2026年12月25日（金）までです。抽せんは12月31日（木）です。</p>
 
+    <p><strong>Q. 当せん番号はいつ分かりますか？</strong><br>
+    A. 抽せん日の2026年12月31日（木）です。このページの「当せん番号を確かめる」に組と番号を入れておけば、抽せんのあとに当たりが分かります。</p>
+
     <p><strong>Q. 年末ジャンボの1等の確率は？</strong><br>
     A. 2,000万分の1です。1ユニット2,000万枚に1等が1本あります。ミニの1等（3,000万円）は100万分の1です。</p>
 
@@ -707,6 +750,7 @@
 
 <script>window.TK_ONLY = ["nenmatsu", "nenmatsu-mini"];</script>
 <script src="/takarakuji/sim.js"></script>
+<script src="/nenmatsu-jumbo/check.js"></script>
 
 <div id="related-tools"><!-- RELATED: scripts/static_related.py が書く。手で書き換えない -->
 <section class="related-tools-section">
