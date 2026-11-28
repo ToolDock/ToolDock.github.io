@@ -122,6 +122,7 @@ const JUMBO_RESULTS = {
         const n = Number($("chkN").value);
         if (!Number.isInteger(kumi) || kumi < 1 || kumi > 200) { err.textContent = "組は 01〜200 の数字で入れてください。"; return; }
         if (!/^1\d{5}$/.test(banS)) { err.textContent = "番号は 100000〜199999 の6けたで入れてください。"; return; }
+        if (!Number.isInteger(n) || n < 1 || n > 1000) { err.textContent = "枚数は 1〜1000 の数字で入れてください。"; return; }
         const ban = Number(banS);
         if (ban + n - 1 > 199999) { err.textContent = "連番の最後が 199999 を超えます。最初の番号を確かめてください。"; return; }
         tickets.push({ kind, kumi, ban, n });
@@ -131,7 +132,7 @@ const JUMBO_RESULTS = {
     }
 
     $("chkAdd").addEventListener("click", add);
-    ["chkKumi", "chkBan"].forEach((id) => $(id).addEventListener("keydown", (e) => { if (e.key === "Enter") add(); }));
+    ["chkKumi", "chkBan", "chkN"].forEach((id) => $(id).addEventListener("keydown", (e) => { if (e.key === "Enter") add(); }));
 
     const ready = JUMBO_RESULTS.nenmatsu || JUMBO_RESULTS.mini;
     $("chkStatus").textContent = ready
