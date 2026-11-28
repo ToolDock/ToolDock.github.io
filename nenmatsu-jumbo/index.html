@@ -434,6 +434,7 @@
     #chkAdd { padding: 9px 22px; }
     #chkKumi { width: 5em; }
     #chkBan { width: 8em; }
+    #chkN { width: 6em; box-sizing: border-box; padding: 8px 10px; font-size: 16px; }
     .chk-err { color: #b91c1c; font-weight: 700; margin: 8px 0 4px; min-height: 1em; }
     .chk-list { list-style: none; margin: 12px 0 0; padding: 0; }
     .chk-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-ctl); margin-bottom: 8px; }
@@ -569,11 +570,11 @@
         <label>くじ<select id="chkKind"><option value="nenmatsu">年末ジャンボ</option><option value="mini">年末ジャンボミニ</option></select></label>
         <label>組<input type="text" id="chkKumi" inputmode="numeric" maxlength="3" placeholder="07"></label>
         <label>番号<input type="text" id="chkBan" inputmode="numeric" maxlength="6" placeholder="123450"></label>
-        <label>枚数<select id="chkN"><option value="10">10枚（連番）</option><option value="1">1枚</option></select></label>
+        <label>枚数<input type="number" id="chkN" min="1" max="1000" step="1" value="10" inputmode="numeric"></label>
         <button type="button" id="chkAdd">追加</button>
     </div>
     <p class="chk-err" id="chkErr"></p>
-    <p class="note" style="margin-top:0">連番は、10枚のうちいちばん小さい番号を入れてください。バラは1枚ずつ入れてください。入れた番号はこの端末の中だけに保存され、どこにも送られません。</p>
+    <p class="note" style="margin-top:0">連番は、いちばん小さい番号と枚数を入れてください（同じ組で番号が続いていれば、100枚でも1行で入ります）。バラは枚数を1にして1枚ずつ入れてください。入れた番号はこの端末の中だけに保存され、どこにも送られません。</p>
 
     <ul class="chk-list" id="chkRows"></ul>
     <p class="chk-sum" id="chkSum"></p>
